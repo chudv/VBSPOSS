@@ -1,0 +1,702 @@
+﻿@using Kendo.Mvc
+@using Kendo.Mvc.UI
+@using VBSPOSS.Extensions
+@using VBSPOSS.Models
+
+@{
+    ViewData["Title"] = "CẤU HÌNH LÃI SUẤT RÚT TRƯỚC HẠN TIỀN GỬI CÓ KỲ HẠN";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
+<div id="myPopup"></div>
+
+<style>
+    #gridMainTidePanelRate div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainTidePanelRate .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+    .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+    }
+    /* 
+    .k-input-md .k-input-inner, .k-picker-md .k-input-inner {
+        padding-block: 8px;
+        padding-inline: 16px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+    } */
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+		background: url('../images/icon_edit.png') no-repeat center center;
+		background-size: 15px 15px;
+		width: 15px;
+		height: 15px;
+		border: none;
+	}
+
+    .k-grid .btn-delete.k-button {
+		background: url('../images/icon_delete.png') no-repeat center center;
+		background-size: 15px 15px;
+		width: 15px;
+		height: 15px;
+		border: none;
+	}
+
+	.k-grid .btn-auth.k-button {
+		background: url('../images/icon_auth.png') no-repeat center center;
+		background-size: 15px 15px;
+		width: 15px;
+		height: 15px;
+		border: none;
+	}
+
+	.k-grid .btn-approval.k-button {
+		background: url('../images/icon_approval.png') no-repeat center center;
+		background-size: 15px 15px;
+		width: 15px;
+		height: 15px;
+		border: none;
+	}
+
+</style>
+
+<script>
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+    var mainWindow = $("#myPopup");
+
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "2",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadGridData() {
+        return {
+            pProductGroupCode: "",
+            pPosCode: $("#PosCodeFind").val(),
+            pCircularRefNum: $("#CircularRefNum_Find").val(),//CircularRefNum_Find
+            pFromEffectiveDate: $("#CircularDateBegin_Find").val(),
+            pToEffectiveDate: $("#CircularDateEnd_Find").val()
+        };
+    }
+
+    function refreshGridTidePanelRate() {
+        var grid = $("#gridMainTidePanelRate").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onSearchTidePenalRate(e) {
+        refreshGridTidePanelRate();
+    }
+
+    function onRowBoundTidePenalRate(e) {
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var statusRowValue = dataItem.get("Status");
+            if (statusRowValue == 0 || statusRowValue == 4)
+                row.css({ "background-color": "#f8f9fa", "color": "#6c757d" });
+            if (statusRowValue != null && statusRowValue == 4)
+                row.css({ "background-color": "#fff5f5", "color": "#dc3545" });
+            if (statusRowValue != null && statusRowValue == 3) // Đã duyệt
+                row.css({ "background-color": "#e8f5e9", "color": "green" });
+            if (statusRowValue == 1 || statusRowValue == 5)
+                row.css({ "background-color": "white", "color": "Navy" });
+        }
+
+        var grid = this;
+        grid.tbody.find("tr").each(function () {
+            var dataItem = grid.dataItem(this);
+            if (userPermission && userPermission.EditPermissionFlag == 0) {
+                $(this).find(".k-grid-ViewEdit").hide();
+            }
+            if (userPermission && userPermission.DeletePermissionFlag == 0) {
+                $(this).find(".k-grid-Delete").hide();
+            }
+
+            if (userPermission && userPermission.AuthorizePermissionFlag == 0) {
+                $(this).find(".k-grid-Authorize").hide();
+            }
+
+            if (userPermission && userPermission.ReportPermissionFlag == 0) {
+                $(this).find(".k-grid-Approval").hide();
+            }
+        });
+    }
+
+    var dataChangeTidePanelRate = false;
+
+    $(document).on('click', '#btnCreate', function (e) 
+    {
+        e.preventDefault();
+        if (userPermission && userPermission.CreatePermissionFlag == 0) {
+            alert("Bạn không có quyền thêm mới cấu hình lãi suất rút trước hạn tiền gửi CKH. Vui lòng kiểm tra lại!");
+			return;
+		}
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_AddTemp").val();
+        mainWindow.kendoWindow({
+            width: "1050px",
+            height: "750px",
+            title: "Thêm mới cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            content: {
+                url: '@Url.Action("ShowUpdateTidePenalRate", "IntRateConfig")',
+                data: { pPosCode: "", pDocumentId: 0, pListId: "", pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseTidePanelRate,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+
+    function onCloseTidePanelRate() {
+        if (dataChangeTidePanelRate == true) {
+            refreshGridTidePanelRate();
+            dataChangeTidePanelRate = false;
+        }
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+    
+    function showEditTidePenalRate(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "Quyết định [" + dataItem.CircularRefNum + "]";
+        if (dataItem.Status.toString() == "0") {
+            alert(sMessInfor + " đã được đánh dấu xóa nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "3") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "4") {
+            alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else
+        {
+            var sFlagCall = $("#EventFlag_EditTemp").val();
+            mainWindow.kendoWindow({
+                width: "1050px",
+                height: "750px",
+                title: "Chỉnh sửa cấu hình lãi suất rút trước hạn tiền gửi CKH",
+                content: { url: "../IntRateConfig/ShowUpdateTidePenalRate", data: {pPosCode: dataItem.PosCode, pDocumentId: dataItem.DocumentId, pListId: dataItem.IdList, pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall } },
+                resizable: false,
+                visible: false,
+                modal: true,
+                close: onCloseTidePanelRate,
+                actions: ["Refresh", "Close"]
+            });
+            mainWindow.data("kendoWindow").wrapper.css({ height: 750, width: 1050 });
+            mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa cấu hình lãi suất rút trước hạn tiền gửi CKH");
+        }
+    }
+
+    function deleteItemTidePenalRate(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var grid = $("#gridMainTidePanelRate").data("kendoGrid");
+
+        var deletedStatuses = [0, 2, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện đánh dấu xóa!");
+            }
+            else if (dataItem.Status == 2) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện đánh dấu xóa. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 3) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện đánh dấu xóa. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện đánh dấu xóa. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
+        var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " không?");
+        var sFlagCall = $("#EventFlag_MarkDeletedTemp").val();
+        if (isConfirm) {
+
+            kendo.ui.progress(grid.element, true);
+
+            $.ajax({
+                url: '@Url.Action("DeleteIntPenalRateConfig", "IntRateConfig")',
+                type: "POST",
+                data: JSON.stringify({
+                    Id: dataItem.Id, DocumentId: dataItem.DocumentId, IdList: dataItem.IdList,
+                }),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    kendo.ui.progress(grid.element, false); // Hide loading indicator
+                    console.log("Delete success result:", result);
+                    if (result.success) {
+                        alert("Xóa cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " thành công!");
+                        refreshGridTidePanelRate();
+                    } else {
+                        alert("Xóa cấu hình lãi suất " + sMessInfor + " thất bại! Lỗi: " + (result.message || "Không xác định"));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    kendo.ui.progress(grid.element, false); // Hide loading indicator
+                    console.error("Delete error:", xhr, status, error);
+                    alert("Xóa cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " có lỗi! Chi tiết: " + (xhr.responseText || error));
+                }
+            });
+        } 
+        else {
+            alert("Thao tác đánh dấu xóa cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " bị hủy bỏ!");
+        }
+    }
+    
+    //Trình duyệt Quyết định cấu hình lãi suất rút trước hạn tiền gửi CKH
+    function submitForApprovalTidePenalRate(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var grid = $("#gridMainTidePanelRate").data("kendoGrid");
+        // Kiểm tra trạng thái trước khi trình duyệt
+        var deletedStatuses = [0, 2, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+            }
+            else if (dataItem.Status == 2) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 3) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        mainWindow.kendoWindow({
+            width: "1050px",
+            height: "750px",
+            title: "Trình duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            content: {
+                url: '@Url.Action("ShowUpdateTidePenalRate", "IntRateConfig")',
+                data: { pPosCode: dataItem.PosCode, pDocumentId: dataItem.DocumentId, pListId: dataItem.IdList, pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTidePanelRate,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    }
+
+
+    function submitForAuthorizeTidePenalRate(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        // Kiểm tra trạng thái trước khi trình duyệt
+        var deletedStatuses = [0, 1, 5, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện phê duyệt!");
+            }
+            else if (dataItem.Status == 1 || dataItem.Status == 5) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang ở trạng thái tạo lập, chưa thực hiện trình duyệt, không thể thực hiện phê duyệt. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 3) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện phê duyệt lại. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện phê duyệt. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_AuthorizeTemp").val();
+        mainWindow.kendoWindow({
+            width: "1050px",
+            height: "750px",
+            title: "Phê duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            content: {
+                url: '@Url.Action("ShowUpdateTidePenalRate", "IntRateConfig")',
+                data: { pPosCode: dataItem.PosCode, pDocumentId: dataItem.DocumentId, pListId: dataItem.IdList, pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTidePanelRate,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+
+    }
+
+    $("#btnExportExcel").click(function (e) {
+        //e.preventDefault();
+        //$.ajax({
+        //    data: {
+        //        pDonVi_Cd_TimKiem: $("#DonVi_Cd_TimKiem").val(),
+        //        pPhongBan_Cd_TimKiem: $("#PhongBan_Cd_TimKiem").val(),
+        //        pGioiTinh_TimKiem: $("#GioiTinh_TimKiem").val(),
+        //        pNgaySinh_TimKiem_BD: $("#NgaySinh_TimKiem_BD").val(),
+        //        pNgaySinh_TimKiem_KT: $("#NgaySinh_TimKiem_KT").val(),
+        //        pHoTen_CMT_TimKiem: $("#HoTen_CMT_TimKiem").val(),
+        //        pChucVu_Cd_TimKiem: $("#ChucVu_Cd_TimKiem").val(),
+        //        pNgayDL_TimKiem: $("#NgayDL_TimKiem").val()
+        //    },
+        //    type: "POST",
+        //    url: "../HsCanBo/Export_ExcelFile_HSCB",
+        //    success: function (fileName) {
+        //        window.location = '../HsCanBo/Download?fileName=' + fileName;
+        //    },
+        //    error: function () {
+        //    }
+        //});
+    });
+
+    function getAssignedImage(Id,PosCode) {
+        var lcId = Id;
+        var lcPosCode = PosCode;
+        return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+        // if (lcPhanLoaiDoiTuong == "CN") {
+        //     return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+        // }
+        // else
+        //     return "";
+    }
+
+    function showDetailTidePenalRate(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ViewTemp").val();
+        mainWindow.kendoWindow({
+            width: "1050px",
+            height: "750px",
+            title: "Xem chi tiết thông tin Quyết định cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            content: {
+                url: '@Url.Action("ShowUpdateTidePenalRate", "IntRateConfig")',
+                data: { pPosCode: dataItem.PosCode, pDocumentId: dataItem.DocumentId, pListId: dataItem.IdList, pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTidePanelRate,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+
+    }
+</script>
+
+
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+@Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+
+@Html.Hidden("EventFlag_AddTemp", TempData["EventFlag_Add"])
+@Html.Hidden("EventFlag_EditTemp", TempData["EventFlag_Edit"])
+@Html.Hidden("EventFlag_DeleteTemp", TempData["EventFlag_Delete"])
+@Html.Hidden("EventFlag_MarkDeletedTemp", TempData["EventFlag_MarkDeleted"])
+@Html.Hidden("EventFlag_ApprovalTemp", TempData["EventFlag_Approval"])
+@Html.Hidden("EventFlag_AuthorizeTemp", TempData["EventFlag_Authorize"])
+@Html.Hidden("EventFlag_ViewTemp", TempData["EventFlag_View"])
+
+<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+
+        <div class="col-md-12">
+            <div style="display: flex; align-items: center; gap: 3px; width: 100%;">
+
+                
+            <label class="lbcontrol" style="color: navy;text-align:left;width:50px;padding-top:3px;padding-right:0px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
+            @(Html.Kendo().ComboBox().Name("PosCode_Find")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Mã sản phẩm</label>
+            @(Html.Kendo().TextBox()
+                .Name("ProductCode_Find")
+                .HtmlAttributes(new { placeholder = "Mã sản phẩm", style = "background-color:white;width: 100px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
+                .Value("")
+                )
+            <label class="lbcontrol" style="color: navy;text-align:right;width:85px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Quyết định</label>
+            @(Html.Kendo().TextBox()
+                .Name("CircularRefNum_Find")
+                .HtmlAttributes(new { placeholder = "Số/Nội dung quyết định", style = "background-color:white;width: 250px;color:green!important;padding-left:3px;padding-right: 2px;!important;" })
+                .Value("")
+                )
+            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Ngày hiệu lực</label>
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDateBegin_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 105px !important; color: green; !important;", title = "Từ ngày cần tìm kiếm" })
+                .Value(new DateTime(DateTime.Today.Year - 5, 1, 1))
+                )
+            <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDateEnd_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 105px !important; color: green; !important;", title = "Đến ngày cần tìm kiếm" })
+                .Value(DateTime.Today)
+                )
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnSearchTidePenalRate")
+                .Events(ev => ev.Click("onSearchTidePenalRate"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất rút trước hạn TG CKH" })
+                .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                .Content(" Tìm kiếm "))
+        </div>
+    </div>
+
+
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+            @(Html.Kendo().Grid<VBSPOSS.Data.Models.InterestRateConfigMasterView>()
+                .Name("gridMainTidePanelRate")
+                .Events(e => e.DataBound("onRowBoundTidePenalRate"))
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+                        command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEditTidePenalRate").HtmlAttributes(new
+                        {
+                            @class = "btn-view-edit",
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                            title = "Chỉnh sửa quyết định cấu hình LS rút trước hạn"
+                        });
+                        command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItemTidePenalRate").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                            title = "Xóa quyết định cấu hình LS rút trước hạn",
+                            @class = "btn-delete"
+                        });
+                        command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalTidePenalRate").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Trình duyệt quyết định cấu hình LS rút trước hạn",
+                            @class = "btn-approval"
+                        });
+                        command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorizeTidePenalRate").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Phê duyệt quyết định cấu hình LS rút trước hạn",
+                            @class = "btn-auth"
+                        });
+                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTidePenalRate").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Xem chi tiết",
+                            @class = "btn-view"
+                        });
+                    }).Width(160).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                    //columns.Bound(c => c.IdList).Title("Xem CT").Width(55).HtmlAttributes(new { style = "text-align: center;" }).ClientTemplate("<a onclick=showDetailTidePenalRate('#= IdList #',#= PosCode #,'#= ProductGroupCode #','#= CircularRefNum #','#= Status #') title='Xem chi tiết thông tin cán bộ' style='cursor:pointer;text-decoration:none;'>#= getAssignedImage(Id,PosCode) #  <u></u></a>");
+                    columns.Bound(c => c.DocumentId).Hidden();
+                    columns.Bound(c => c.IdList).Hidden();
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Bound(c => c.ProductGroupCode).Hidden();
+                    columns.Bound(c => c.ProductGroupName).Hidden();
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.PosCode).Hidden();
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(110).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.UserId).Hidden();
+                    columns.Bound(c => c.CircularDate).Hidden();
+                    columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(140).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ProductList).Title("Danh sách sản phẩm cấu hình").HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.StatusDesc).Title("Trạng thái").Width(70).HtmlAttributes(new { style = "text-align: center; white-space: normal !important;" });
+
+                    columns.Bound(c => c.RecordSerialNo).Hidden();
+                    columns.Bound(c => c.ProductName).Hidden();
+                    columns.Bound(c => c.CurrencyCode).Hidden();
+                    columns.Bound(c => c.AccountTypeCode).Hidden();
+                    columns.Bound(c => c.AccountTypeName).Hidden();
+                    columns.Bound(c => c.AccountSubTypeCode).Hidden();
+                    columns.Bound(c => c.AccountSubTypeName).Hidden();
+                    columns.Bound(c => c.InterestRate).Hidden();
+                    columns.Bound(c => c.PenalRate).Hidden();
+                    columns.Bound(c => c.NewInterestRate).Hidden();
+                    columns.Bound(c => c.TenorSerialNo).Hidden();
+                    columns.Bound(c => c.AmountSlab).Hidden();
+                    columns.Bound(c => c.IntRateType).Hidden();
+                    columns.Bound(c => c.SpreadRate).Hidden();
+                    columns.Bound(c => c.Remark).Hidden();
+                    columns.Bound(c => c.OrtherNotes).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.CallApiTxnStatus).Hidden();
+                    columns.Bound(c => c.CallApiReqRecordSl).Hidden();
+                    columns.Bound(c => c.CallApiResponseCode).Hidden();
+                    columns.Bound(c => c.CallApiResponseMsg).Hidden();
+                    columns.Bound(c => c.CreatedBy).Hidden();
+                    columns.Bound(c => c.CreatedDate).Hidden();
+                    columns.Bound(c => c.ModifiedBy).Hidden();
+                    columns.Bound(c => c.ModifiedDate).Hidden();
+                    columns.Bound(c => c.ApproverBy).Hidden();
+                    columns.Bound(c => c.ApprovalDate).Hidden();
+                    columns.Bound(c => c.DebitCreditFlag).Hidden();
+                    columns.Bound(c => c.AccountTypeList).Hidden();
+                    columns.Bound(c => c.ListPosCode).Hidden();
+                    columns.Bound(c => c.ProductCodeList).Hidden();
+                    columns.Bound(c => c.ListPosName).Hidden();
+                    columns.Bound(c => c.MainPosCode).Hidden();
+                    columns.Bound(c => c.MainPosName).Hidden();
+                })
+                .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+                    toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                })
+                .Excel(excel => excel.FileName("Ds quyet dinh cau hinh LS rut truoc han SP Tide.xlsx").AllPages(true))
+                .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+                .Sortable()
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(false)
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.IdList))
+                .Events(e => e.RequestEnd("onSaveGridCompletedTidePanelRate").Error("error_handlerTidePanelRate"))
+                .Read(read => read.Action("LoadGridData_MasterTidePenalRate", "IntRateConfig").Data("paramLoadGridData"))
+                .PageSize(100)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+</div>
+
+<script>
+     function onSaveGridCompletedTidePanelRate(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handlerTidePanelRate(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
+        }
+    }
+
+    $(document).ready(function () {
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH QUYẾT ĐỊNH CẤU HÌNH LÃI SUẤT RÚT TRƯỚC HẠN CỦA SẢN PHẨM TIỀN GỬI CÓ KỲ HẠN</label>");
+    });
+
+</script>

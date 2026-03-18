@@ -1,0 +1,455 @@
+﻿@model VBSPOSS.ViewModels.TideRateConfigureViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+
+@{
+    Layout = null; // Giữ là partial view
+}
+
+
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+
+<style>
+    
+
+    #tideRateConfigureGrid {
+        margin-top: 20px; /* Tăng khoảng cách trên */
+        border: 1px solid #ddd; /* Thêm viền cho Grid */
+        border-radius: 4px; /* Bo góc Grid */
+    }
+
+    .cell-updated {
+        font-weight: bold !important;
+        color: red !important;
+        background-color: #ffe6e6 !important; /* Light red background for visibility */
+    }
+
+    .term-int-rate-new {
+        background-color: #DFFFD6 !important; /* Light orange background */
+        text-align: center; /* Maintain centering */
+        font-weight: bold !important;
+    }
+
+    .create_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .create_form.button {
+        width: 100px !important;
+        height: 25px !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+</style>
+
+<script>
+
+    var updatedCells = [];
+
+    function paramProduct() {
+        return {
+            productGroupCode: "TIDE",
+        };
+    }
+
+    function paramAccountType() {
+        return {
+            productCode: $("#ProductCode").val(),
+        };
+    }
+
+    function paramAccountSubType() {
+        return {
+            accountType: $("#AccountTypeCode").val(),
+        };
+    }
+
+    function paraTideConfigureAddGridData() {
+        return {
+            productCode:$("#ProductCode").val(),
+            accountType: $("#AccountTypeCode").val(),
+            accountSubType: $("#AccountSubTypeCode").val(),
+            posCode: $("#PosCode").val(),
+            effectiveDate: $("#EffectiveDate").val(),
+        };
+    }
+
+    // Hàm xử lý khi thay đổi ProductCode
+    function onProductChange() {
+        var productCode = this.value();
+        var subCombo = $("#AccountTypeCode").data("kendoComboBox");
+
+        // Đặt lại giá trị và gọi lại DataSource để tải dữ liệu mới
+        subCombo.value("");
+        subCombo.dataSource.read(); // Gọi action Read của DataSource
+    }
+
+    // Hàm xử lý khi thay đổi ProductCode
+    function onAccountTypeChange() {
+        var productCode = this.value();
+        var subCombo = $("#AccountSubTypeCode").data("kendoComboBox");
+
+        // Đặt lại giá trị và gọi lại DataSource để tải dữ liệu mới
+        subCombo.value("");
+        subCombo.dataSource.read(); // Gọi action Read của DataSource
+    }
+
+    // Hàm xử lý khi dữ liệu của subCombo được tải xong
+    function onAccountSubTypeDataBound() {
+        var subCombo = $("#AccountSubTypeCode").data("kendoComboBox");
+        var data = subCombo.dataSource.data();
+
+        if (data.length > 0) {
+            // Đặt giá trị mặc định là mục đầu tiên
+            subCombo.value(data[0].id);
+        }
+    }
+
+    function onLoadData_TideRateConfigure(){
+        var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onRowBound_TideRateConfigureGrid(e) {
+        try {
+            var grid = this;
+            // Re-apply styling for previously updated cells
+            updatedCells.forEach(function (cell) {
+                if (cell.field === "TermIntRateNew") {
+                    var row = grid.tbody.find("tr[data-uid='" + grid.dataSource.get(cell.id).uid + "']");
+                    if (row.length) {
+                        var columnIndex = grid.columns.findIndex(function (col) {
+                            return col.field === "TermIntRateNew";
+                        });
+                        if (columnIndex !== -1) {
+                            row.find("td").eq(columnIndex).addClass("cell-updated");
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error in onRowBound_TideRateConfigureGrid:", error);
+        }
+    }
+
+    function onEdit_TideRateConfigureGrid(e) {
+       try {
+            // Style the input field during editing
+            var cell = e.container;
+            cell.find("input").css({
+                "font-weight": "bold",
+                "color": "blue"
+            });
+        } catch (error) {
+            console.error("Error in onEdit_TideRateConfigureGrid:", error);
+        }
+    }
+
+
+    function onSave_TideRateConfigureGrid(e) {
+        try {
+            // Ensure dirtyFields is initialized
+            e.model.dirtyFields = e.model.dirtyFields || {};
+
+            // Mark fields as dirty and track TermIntRateNew changes
+            for (var field in e.values) {
+                if (e.values.hasOwnProperty(field)) {
+                    e.model.dirtyFields[field] = true;
+                    if (field === "TermIntRateNew") {
+                        updatedCells.push({
+                            id: e.model.id,
+                            field: field
+                        });
+                        // Directly apply styling to the cell
+                        var row = e.container.closest("tr");
+                        var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+                        var columnIndex = grid.columns.findIndex(function (col) {
+                            return col.field === "TermIntRateNew";
+                        });
+                        if (columnIndex !== -1) {
+                            row.find("td").eq(columnIndex).addClass("cell-updated");
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error in onSave_TideRateConfigureGrid:", error);
+        }
+    }
+
+    function onSave_TideRateConfigureForm() {
+        console.log("onSave_TideRateConfigureForm triggered");
+        try {
+            var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+            if (!grid) {
+                console.error("Grid not found");
+                alert("Lỗi: Không tìm thấy grid!");
+                return;
+            }
+
+            var decisionNo = $("#CircularRefNum").val();
+
+            if (decisionNo == null || decisionNo == '') {
+                console.error("Bạn chưa nhập số Quyết định");
+                alert('Bạn chưa nhập số Quyết định');
+                return;
+            }
+
+            // Collect grid data
+            var gridData = grid.dataSource.data().toJSON();
+            console.log("Grid data:", gridData);
+
+            // Collect form data
+            var formData = $("#addTideRateConfigureForm").serializeArray();
+            var formModel = {};
+            $.each(formData, function (index, field) {
+               // alert('field.value ' + field.value);
+                formModel[field.name] = field.value;
+                // Convert date fields to ISO format
+                if (field.name === "EffectiveDate" || field.name === "ExpiredDate" || field.name === "CircularDate") {
+                    var date = kendo.parseDate(field.value, "dd/MM/yyyy");
+                    if (date) {
+                        formModel[field.name] = kendo.toString(date, "yyyy-MM-ddTHH:mm:ssZ");
+                    } else {
+                        console.warn(`Failed to parse date for ${field.name}: ${field.value}`);
+                        formModel[field.name] = null;
+                    }
+                }
+                // Convert numeric fields
+                if (field.name === "AmoutSlab") {
+                    var num = parseFloat(field.value);
+                    formModel[field.name] = isNaN(num) ? null : num;
+                }
+            });
+            console.log("Form data:", formModel);
+
+            // Combine form and grid data
+            var submitData = {
+                model: formModel,
+                gridItems: gridData
+            };
+            console.log("Submit data:", submitData);
+
+            // Send AJAX request
+            $.ajax({
+                url: '@Url.Action("SaveTideRateConfigure", "TideRateConfigure")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Save successful:", response);
+                    alert("Lưu dữ liệu thành công!");
+                    //grid.dataSource.read(); // Refresh grid
+                    //updatedCells = []; // Clear highlighted cells
+                    dataChange = true;
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Save failed:", error, xhr.responseText);
+                    alert("Lỗi khi lưu dữ liệu: " + (xhr.responseText || error));
+                }
+            });
+        } catch (error) {
+            console.error("Error in onSave_TideRateConfigureForm:", error);
+            alert("Lỗi: " + error.message);
+        }
+    }
+
+
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "",
+            pStatus: "O", 
+            pShortName : "1", 
+            pTitleChoice: "",
+            pFlagTextShow: "1", 
+            pUserPosCode: "",
+            pFlagAllBank: "0"
+        };
+    }
+</script>
+
+<form id="addTideRateConfigureForm">
+    @Html.AntiForgeryToken()
+    <div class="create_form row" style="padding-top: 5px;">
+        
+
+        <div class="col-md-3">
+            <label for="ProductCode">Mã sản phẩm</label>
+            @(Html.Kendo().ComboBoxFor(m => m.ProductCode)                                                
+                .Placeholder("Chọn mã sản phẩm")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(e => e.Change("onProductChange"))
+                .DataSource(
+                source => { source.Read(read => { read.Action("GetProductList", "ListOfValue").Data("paramProduct"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 80%; color: navy;", required = "required" })
+                .Suggest(true)
+                .AutoBind(true)
+                )
+
+        </div>
+       
+        <div class="col-md-3">
+            <label for="AccountTypeCode">Mã loại tài khoản</label>
+            @(Html.Kendo().ComboBoxFor(m => m.AccountTypeCode)
+                        .Placeholder("Chọn mã loại tài khoản")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .Events(e => e.Change("onAccountTypeChange"))
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetAccoutTypeList", "ListOfValue").Data("paramAccountType"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { style = "width: 80%; color: navy;", required = "required" })
+                        .Suggest(true)
+                        .AutoBind(false)
+                        )
+
+
+        </div>
+
+        <div class="col-md-3">
+            <label for="AccountSubTypeCode">Mã loại tài khoản phụ </label>
+            @(Html.Kendo().ComboBoxFor(m => m.AccountSubTypeCode)
+                        .Placeholder("Chọn mã loại tài khoản phụ")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .Events(e => e.DataBound("onAccountSubTypeDataBound"))
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetSubAccoutTypeList", "ListOfValue").Data("paramAccountSubType"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { style = "width: 80%; color: navy;", required = "required" })
+                        .Suggest(true)
+                        .AutoBind(false)
+                        )
+
+        </div>
+
+        <div class="col-md-3">
+            <label for="CurrencyCode">Loại tiền tệ</label>
+            @Html.Kendo().TextBoxFor(m => m.CurrencyCode).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;", @readonly = "readonly" })
+        </div>
+    </div>
+    <div class="create_form row"  style="padding-top: 5px;">
+       
+        
+
+        <div class="col-md-3">
+            <label for="PosCode">POS áp dụng </label>
+            @(Html.Kendo().ComboBoxFor(m => m.PosCode)
+                        .Filter(FilterType.Contains)
+                        .Placeholder("--- POS áp dụng ---")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViQL"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { style = "width: 80% !important;color: navy;" })
+                        .Suggest(true)
+                        .AutoBind(true)
+                        .SelectedIndex(0)
+                        )
+        </div>
+        <div class="col-md-3">
+            <label for="EffectiveDate">Ngày hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="ExpiredDate">Ngày hết hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiredDate).Format("dd/MM/yyyy").Value(new DateTime(9999, 12, 31)).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="AmoutSlab">Mức tiền gửi </label>
+            @Html.Kendo().NumericTextBoxFor(m => m.AmoutSlab).Format("n0").Value(1).Step(1).Min(1).Max(999999).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+    </div>
+   
+   
+    <div class="create_form row" style="padding-top: 5px;">
+       
+        <div class="col-md-3">
+            <label for="CircularRefNum">Số Quyết định </label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+       
+        <div class="col-md-3">
+            <label for="CircularDate">Ngày quyết định</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").Value(DateTime.Today).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+        <div class="col-md-6" style="text-align: right; padding-top: 20px;">
+            @(Html.Kendo().Button()
+                        .Name("loadDataBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;", @class = "create_form button" })
+                        .Content("Tải dữ liệu")
+                        .Events(ev => ev.Click("onLoadData_TideRateConfigure"))
+                        )
+            @(Html.Kendo().Button()
+                        .Name("saveBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;", @class= "create_form button" })
+                        .Content("Lưu lại")
+                        .Events(ev => ev.Click("onSave_TideRateConfigureForm"))
+                        )
+        </div>
+    </div>
+   
+    <div class="row" style="padding-top: 5px;">
+
+        @(Html.Kendo().Grid<TideTermViewModel>()
+                .Name("tideRateConfigureGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.TermProductCode).Title("Sản phẩm").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.TermAccountTypeCode).Title("Mã loại TK").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.TermAccountTypeName).Title("Tên loại TK").Width(200).HtmlAttributes(new { style = "text-align: left;" }).Locked(true);                    
+                    columns.Bound(c => c.TermEffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+
+                    columns.Bound(c => c.TermSerial).Title("Thứ tự").Format("{0:n0}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TermDesc).Title("Kỳ hạn").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.TermIntRate).Title("Lãi suất HT").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TermIntRateNew).Title("Lãi suất mới").Width(80).HtmlAttributes(new { style = "text-align: center;", @class = "term-int-rate-new" });
+                    //columns.Bound(c => c.IntType).Title("Loại lãi suất").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    //columns.Bound(c => c.SpreadRate).Title("Biên độ").Format("{0:n}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Bound(c => c.TermAccountSubTypeCode).Hidden().Title("Loại TK phụ").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    @* columns.Bound(c => c.CurrencyCode).Hidden().Title("Mã tiền tệ").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true); *@
+                    columns.Command(command => { command.Edit(); }).Title("Thao tác").Width(200).HtmlAttributes(new { style = "text-align: center;" });
+                })
+                //.ToolBar(toolbar => toolbar.Create())
+                .Editable(editable => editable.Mode(GridEditMode.InLine))
+                .Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
+                .HtmlAttributes(new { style = "height: 300px; width: 100%;" })
+                .Scrollable(s => s.Enabled(true).Virtual(false)) // Bật thanh cuộn ngang
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .ServerOperation(false)
+                .Read(read => read.Action("LoadTideConfigureAddGridData", "TideRateConfigure").Type(HttpVerbs.Post).Data("paraTideConfigureAddGridData")) // Chuyển sang POST
+                //.Update(update => update.Action("UpdateTideConfgiureGridData", "TideRateConfigure"))
+                .Model(model => model.Id(p => p.Id)) // Sử dụng Id
+                )
+                .AutoBind(false)
+                .Events(events => events.DataBound("onRowBound_TideRateConfigureGrid"))
+                )
+    </div>
+
+
+
+
+</form>
+
+<script>
+    // Khởi tạo lại ComboBox khi trang load để đảm bảo sự kiện hoạt động
+    $(document).ready(function () {
+        var productCombo = $("#ProductCode").data("kendoComboBox");
+        if (productCombo) {
+            productCombo.trigger("change"); // Kích hoạt sự kiện change nếu có giá trị mặc định
+        }
+    });
+    
+</script>

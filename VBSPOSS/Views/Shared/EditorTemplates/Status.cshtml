@@ -1,0 +1,11 @@
+﻿@model int?
+
+@(Html.Kendo().ComboBoxFor(m => m)
+//    .Name("Status") // Phải trùng với tên field trong Grid
+    .DataTextField("Description")
+    .DataValueField("Value")
+    .HtmlAttributes(new { data_bind = "value: Status" })
+    .BindTo((IEnumerable<VBSPOSS.Models.ValueConstModel>)ViewData["lstStatus"]) // Load dữ liệu từ ViewData
+    .Filter(FilterType.Contains)
+    .Suggest(true)
+)

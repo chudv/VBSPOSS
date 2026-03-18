@@ -1,0 +1,11 @@
+﻿@model string?
+
+@(Html.Kendo().ComboBoxFor(m => m)
+//    .Name("Status") // Phải trùng với tên field trong Grid
+    .DataTextField("Description")
+    .DataValueField("Code")
+    .HtmlAttributes(new { data_bind = "value: RateProductDebitCreditFlag" })
+    .BindTo((IEnumerable<VBSPOSS.Models.ValueConstModel>)ViewData["lstDebitCreditFlag"]) // Load dữ liệu từ ViewData
+    .Filter(FilterType.Contains)
+    .Suggest(true)
+)

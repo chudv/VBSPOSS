@@ -1,0 +1,126 @@
+﻿@using Kendo.Mvc
+@{
+    ViewBag.Title = "Thông tin Danh mục chung";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div id="myPopup"></div>
+
+<script>
+    var mainWindow = $("#myPopup");
+</script>
+
+<style>
+    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .red {
+        color: red;
+    }
+
+    .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+    .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .k-dropdown .k-dropdown-wrap {
+        height: 21px;
+    }
+
+    .k-grid .k-button-icontext .k-icon {
+        margin: 0;
+        vertical-align: middle;
+    }
+    /* changes default width of the button */
+    .k-grid tbody .k-button {
+        min-width: 18px;
+        width: 18px;
+    }
+
+    /*0 - Chữ đậm; 1 - Chữ đậm; 2 - Chữ nghiêng; 3 - Chữ thường; 4 - Chữ Nghiêng đậm; 5 - Chữ gạch chân ở dưới;*/
+    .style0 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style3 {
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+        /*text-decoration: underline dotted;
+            text-decoration: underline dotted red;
+            text-decoration: green wavy underline;
+            text-decoration: underline overline #FF3028;*/
+    }
+
+    .row {
+        display: inline-flex;
+        padding: 3px;
+    }
+
+    #gridMain div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .form-inline {
+        display: inline-flex;
+    }
+
+    .col-md-12 {
+        padding-right: 0px;
+        padding-left: 0px;
+        display: inline-flex;
+        align-items: center !important;
+    }
+
+    * {
+        font-family: 'tahoma', sans-serif;
+        font-size: 12px;
+    }
+
+    .k-icon {
+        font-size: 15px;
+    }
+</style>
+
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row row-banner">
+        <div style="flex-grow: 1; background-image: url('../img/DLine.png'); background-repeat: repeat-x; background-position: bottom;"></div>
+        <div style="display: flex; justify-items: end;">
+            <img src="../img/BLine.png">
+        </div>
+        <div style="display: flex; justify-items: center; align-content: center; font-size: 12px; font-weight: bold; color: red; width: max-content; padding: 0px 10px 0px 10px; text-transform: uppercase; color: white; background-color: #bc2c2d; align-items: center;">
+            THÔNG TIN DANH MỤC CHUNG
+        </div>
+        <h1> 1111111 </h1>
+    </div>
+
+
+</div>

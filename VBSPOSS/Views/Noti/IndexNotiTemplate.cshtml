@@ -1,0 +1,460 @@
+﻿@using Kendo.Mvc
+
+@{
+    ViewBag.Title = "MẪU THÔNG BÁO MOBILE BANKING ONLINE";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="myNoti"></div>
+
+<script>
+    var mainWindow = $("#myNoti");
+</script>
+
+<style>
+    .center {
+        margin: auto;
+        width: 99%;
+        border: 1px solid #ca8f5c;
+        padding-top: 3px;
+    }
+
+    .cssTopicName {
+        background-color: #00a65a;
+        width: 200px;
+        height: 20px;
+        display: table-cell;
+        border-radius: 3px;
+        color: white !important;
+        line-height: 20px;
+        font-family: Tahoma;
+    }
+
+    .cssCancel {
+        background-color: red;
+        width: 20px;
+        height: 20px;
+        color: white !important;
+    }
+
+    .cssEdit {
+        background-color: forestgreen;
+        width: 20px;
+        height: 20px;
+        color: white !important;
+    }
+
+    .cssQuestionsCount {
+        background-color: darkcyan;
+        width: 40px;
+        height: 20px;
+        color: white !important;
+    }
+
+    .cssStatusName {
+        background-color: #00a65a;
+        width: 190px;
+        height: 25px;
+        display: table-cell;
+        border-radius: 3px;
+        color: white !important;
+        line-height: 20px;
+        padding-top: 4px;
+    }
+
+    .k-grid-pager {
+        height: 30px;
+    }
+
+    .k-grid-toolbar {
+        padding-bottom: 3px;
+        padding-top: 3px;
+    }
+
+    #lbltotal {
+        font-weight: bold !important;
+    }
+
+    .k-grid-header .k-header > .k-link {
+        font-family: Tahoma !important;
+        font-weight: bold !important;
+        color: navy;
+    }
+
+    .k-grid th, .k-grid td {
+        font-family: tahoma;
+        color: navy;
+    }
+
+    red {
+        color: red;
+    }
+
+    green {
+        color: green;
+    }
+
+    /*0 - Chữ đậm; 1 - Chữ đậm; 2 - Chữ nghiêng; 3 - Chữ thường; 4 - Chữ Nghiêng đậm; 5 - Chữ gạch chân ở dưới;*/
+    .style0 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style3 {
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+    function returnFalse() {
+        return false;
+    }
+
+    function onSaveGridCompleted(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    //function paramProvinceCodeFind() {
+    //    return {
+    //        pProvinceCode: "",
+    //        pStatus: "A",
+    //        pTitleChoice: "---Tỉnh/Thành phố---"
+    //    };
+    //}
+    //string pFlagCall, string pFlagShowList, string pIsShowCode, string pFlagALLPOS, string pRoleUserName
+
+    function paramPosCodeFind() {
+        var lcUserRole = $("#UserRoleView").val();
+        return {
+            pFlagCall: "5",
+            pFlagShowList: "2",
+            pIsShowCode: "0",
+            pFlagALLPOS: "",
+            pRoleUserName: lcUserRole
+        };
+    }
+
+    function paramLocalityTypeCodeFind() {
+        var lcParrentLocalityTypeCode = $("#LocalityTypeCodeView").val();
+        return {
+            pPosCode: "",
+            pParentCode: lcParrentLocalityTypeCode,
+            pCode: "",
+            pCodeRelationShip: "",
+            pTitleChoice: "---Địa bàn sinh sống---",
+            pFlagCall: "1",
+            pPosName: ""
+        };
+    }
+
+    function paramLoadGridData() {
+        return {
+            findNotiType: $("#NotiTypeFind").val(),
+            findStatus: $("#StatusFind").val()
+        };
+    }
+
+    function onRowBound(e) {
+        //$("#btnCreate").find("span").addClass("k-icon k-i-plus");
+        //$("#btnExport").find("span").addClass("k-icon k-i-excel");
+        $(".k-grid-ViewEdit").find("span").addClass("k-icon k-i-edit");
+        $(".k-grid-Delete").find("span").addClass("k-icon k-i-cancel");
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiRow = dataItem.get("Status");
+            if (trangthaiRow == "0") {
+                row.css({ "background-color": "white", "color": "red" });
+            }
+        }
+    }
+
+    function refreshGrid() {
+        var grid = $("#gridMain").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onSearchNoti(e) {
+        refreshGrid();
+    }
+
+    var dataChange = false;
+
+    function showEdit(e) {
+        e.preventDefault();
+        //var _userRole = $("#tempUserRole").val();
+        //var _userName = $("#UserName").val();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        //if (_userRole == "CNTT") {
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "600px",
+            title: "Sửa thông báo",
+            content: { url: '@Url.Action("ShowNotiUpdate", "Noti")', data: { pNotiType: dataItem.NotiType, pStatus: dataItem.Status } },
+            resizable: true,
+            visible: false,
+            modal: true,
+            close: onClose,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1100 });
+        mainWindow.data("kendoWindow").center().open().title("Thay đổi thông báo");
+        //}
+        //else alert("Bạn không có quyền thực hiện sửa đổi thông tin người dùng!");
+    }   
+
+    function onClose() {
+        if (dataChange == true) {
+            refreshGrid();
+            dataChange = false;
+        }
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+    function deleteItem(e) {
+        e.preventDefault();
+        var grid = $("#gridMain").data("kendoGrid");
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = grid.dataItem(tr);
+
+        if (!dataItem) {
+            alert("Không tìm thấy bản ghi!");
+            return;
+        }
+
+        var lcNotiType = dataItem.NotiType; 
+
+        if (confirm("Bạn có chắc chắn muốn đánh dấu xóa bản ghi [" + lcNotiType + "] không?")) {
+            $.ajax({
+                type: "POST",
+                url: "../Noti/DeleteNotiTemp",
+                data: { pNotiType: lcNotiType },
+                success: function (result) {
+                    if (result == "0") {
+                        alert("Đã xóa bản ghi [" + lcNotiType + "] thành công!");
+                        grid.dataSource.read();
+                    } else {
+                        alert("Xóa thất bại!");
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra khi xóa bản ghi!");
+                }
+            });
+        }
+    }
+
+    function paramNotiType() {
+        return {
+            pNotiType: "",
+            pStatus: "A"
+        };
+    }
+</script>
+
+<div class="form-group form-inline">
+    @*Dòng 1: Tìm kiếm dữ liệu*@
+    <div class="container-fluid">
+        <div class="row align-items-center px-0 py-2" style="color: navy;">
+            <div class="col-md-12">
+                <div class="form-group row align-items-center">
+                    <label class="col-auto lbcontrol" style="width:150px; font-family:Tahoma;">
+                        Mẫu thông báo
+                    </label>
+                    <div class="col-auto">
+                        @(Html.Kendo().ComboBox()
+                            .Name("NotiTypeFind")
+                            .Filter(FilterType.Contains)
+                            .Placeholder("Chọn mẫu thông báo")
+                            .DataTextField("value")
+                            .DataValueField("id")
+                            .DataSource(source =>
+                            {
+                                source.Read(read =>
+                                {
+                                    read.Action("GetListNotiType", "Noti").Data("paramNotiType");
+                                }).ServerFiltering(false);
+                            })
+                            .HtmlAttributes(new { style = "color: navy; min-width:220px;" })
+                            .Suggest(true)
+                            .AutoBind(false)
+                            .SelectedIndex(0)
+                            )
+                    </div>
+
+                    <label class="col-auto lbcontrol" style="width:150px; font-family:Tahoma;">
+                        <span style="color:red;">*&nbsp;</span>Trạng thái
+                    </label>
+                    <div class="col-auto">
+                        @(Html.Kendo().DropDownList()
+                            .Name("StatusFind")
+                            .DataTextField("Text")
+                            .DataValueField("Value")
+                            .BindTo(new List<SelectListItem>() {
+                        new SelectListItem() { Text = "Mở", Value = "A" },
+                        new SelectListItem() { Text = "Đóng", Value = "C" }
+                        })
+                            .HtmlAttributes(new { style = "color: navy; min-width:150px;" })
+                            .AutoBind(true)
+                            .SelectedIndex(0)
+                            )
+                    </div>
+
+                    <div class="col-auto">
+                        @(Html.Kendo().Button()
+                            .Name("btnSearch")
+                            .Events(ev => ev.Click("onSearchNoti"))
+                            .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue; font-family:Tahoma;", title = "Tìm kiếm thông tin học viên" })
+                            .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                            .Content("Tìm kiếm")
+                            )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="color: navy; padding-top: 0px;" class="row">
+        <div class="col-md-12">
+            @(
+                Html.Kendo().Grid<VBSPOSS.ViewModels.NotiTempViewModel>()
+                .Name("gridMain")
+                .Events(e => e.DataBound("onRowBound"))
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+                        command.Custom("ViewEdit").Text("<span></span>").Click("showEdit").HtmlAttributes(new { title = "Sửa thông báo" });
+                        command.Custom("Delete").Text("<span></span>").Click("deleteItem").HtmlAttributes(new { title = "Xóa thông báo" });
+                    }).Width(100).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.Id).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.NotiType).Title("Loại thông báo").Width(110).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.MailSubject).Title("Tiêu đề thông báo").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.SmsTempHT).Title("Bản tin SMS").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.OttTempHT).Title("Bản tin OTT").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.EmailTempHT).Title("Bản tin Email").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.StatusHT).Title("Trạng thái").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(p => p.Status).Hidden();
+                    columns.Bound(p => p.CreatedBy).Hidden();
+                    columns.Bound(p => p.CreatedDate).Hidden();
+                    columns.Bound(p => p.ModifiedBy).Hidden();
+                    columns.Bound(p => p.ModifiedDate).Hidden();
+                    columns.Bound(p => p.SmsTemp).Hidden();
+                    columns.Bound(p => p.OttTemp).Hidden();
+                    columns.Bound(p => p.EmailTemp).Hidden();
+                })
+                .HtmlAttributes(new { style = "height: 630px;color: navy;font-family: Tahoma !important;" })
+                .ToolBar(toolbar =>
+                {
+                            toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "width: 100px; font-weight:bold; color: blue;font-family: Tahoma;" });
+                    toolbar.Excel().HtmlAttributes(new { id = "btnExportAuto", style = "width: 110px; font-weight:bold; color: blue;font-family: Tahoma;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                })
+                .Excel(excel => excel.FileName("Danh sach thong bao Noti.xlsx").AllPages(true))
+                .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+                .Sortable()
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(false)
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.Id))
+                .Events(e => e.RequestEnd("onSaveGridCompleted").Error("error_handler"))
+                .Read(read => read.Action("LoadGridData", "Noti").Data("paramLoadGridData"))
+                .PageSize(50)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        //$(".k-grid-excel").after("<label id='lbltotal' style='margin-left: 20px; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 21px;'> THÔNG TIN DANH SÁCH HỌC VIÊN - GIÁO DỤC SỐ</label>");
+        //var lcUserName = $("#UserNameView").val();
+        //var lcUserRole = $("#UserRoleView").val();
+        //var lcUserPosCode = $("#UserPosCodeView").val();
+
+        //var objGridView = $("#gridMain").data("kendoGrid");
+        //if (lcUserName != "admin") {
+        //    $("#btnCreate").hide();
+        //    objGridView.hideColumn("Status");
+        //    objGridView.hideColumn("Id");
+        //}
+        //else {
+        //    objGridView.hideColumn("CustomerId");
+        //}
+    });
+
+    $(document).on('click', '#btnCreate', function (e) {
+        e.preventDefault();
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "600px",
+            title: "Thêm mới thông tin người dùng",
+            content: { url: '@Url.Action("ShowNotiUpdate", "Noti")', data: { pNotiType: "", pStatus: "A" } },
+            resizable: true,
+            visible: false,
+            close: onClose,
+            modal: true,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1100 });
+        mainWindow.data("kendoWindow").center().open().title("Thêm mới thông tin người dùng");
+    });
+
+</script>

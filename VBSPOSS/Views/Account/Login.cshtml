@@ -1,0 +1,119 @@
+﻿@model VBSPOSS.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - VBSPOSS</title>
+    <!-- AdminLTE 3 CSS (includes Bootstrap 4) -->
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <link href="@Url.Content("~/lib/kendo-ui/styles/material-main.css")" rel="stylesheet" type="text/css" />
+    <script src="@Url.Content("~/lib/jquery/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/jszip.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.aspnetmvc.min.js")"></script>
+    <link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+    <style>
+        .text-danger {
+            color: white !important;
+        } 
+
+        .input-group .text-danger {
+            display: block;
+            min-height: 20px; /* giữ chỗ trống khi chưa có lỗi */
+            color: white !important;
+        }
+
+        .alert-danger {
+            min-height: 40px; /* hoặc cao hơn để không co form */
+        }
+    </style>
+</head>
+
+
+
+<body class="hold-transition login-page">
+
+    <div class="login-box">
+        <!-- /.login-logo -->
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                <a href="#" class="h1"><b>VBSP</b>OSS</a>
+            </div>
+            <div class="card-body">
+                <p class="login-box-msg">Đăng nhập chương trình Quản trị vận hành CoreBanking</p>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                    </div>
+                }
+
+                <form asp-action="Login" method="post">
+                    <div class="input-group mb-3">
+                        <input asp-for="UserName" class="form-control" placeholder="Tài khoản người dùng">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Mật khẩu">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-7">
+                            <div class="icheck-primary">
+                                <input type="checkbox" id="RememberMe" name="RememberMe">
+                                <label for="remember">
+                                    Ghi nhớ tôi
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-5">
+                            <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </form>
+
+                <!-- Placeholder để giữ kích thước form -->
+                <div class="social-auth-links text-center mt-2 mb-3" style="visibility: hidden; height: 80px;">
+                    <a href="#" class="btn btn-block btn-primary" style="display: none;">
+                        <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
+                    </a>
+                    <a href="#" class="btn btn-block btn-danger" style="display: none;">
+                        <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
+                    </a>
+                </div>
+                <!-- /.social-auth-links -->
+                <!-- Thay bằng đoạn text -->
+                <p class="mb-0 text-center" style="color: darkgray;">Liên hệ 0243.6417.212 nếu bạn cần hỗ trợ.</p>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/dist/js/adminlte.min.js"></script>
+    <script src="~/plugins/jquery/jquery.min.js"></script> <!-- Thêm jQuery để tránh lỗi -->
+</body>
+</html>

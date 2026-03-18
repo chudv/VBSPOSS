@@ -1,0 +1,1331 @@
+﻿@model VBSPOSS.ViewModels.TideRateConfigureBatchModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Data.Models
+@using VBSPOSS.ViewModels
+
+@{
+    Layout = null; // Giữ là partial view
+}
+
+
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+
+<style>
+
+
+    #tideRateConfigureGrid {
+        margin-top: 20px; /* Tăng khoảng cách trên */
+        border: 1px solid #ddd; /* Thêm viền cho Grid */
+        border-radius: 4px; /* Bo góc Grid */
+    }
+
+    .cell-updated {
+        font-weight: bold !important;
+        color: red !important;
+        background-color: #ffe6e6 !important; /* Light red background for visibility */
+    }
+
+    .row-changed {
+        color: red !important;
+    }
+
+    .term-int-rate-new {
+        background-color: #DFFFD6 !important; /* Light orange background */
+        text-align: center; /* Maintain centering */
+        font-weight: bold !important;
+    }
+
+    .create_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .create_form.button {
+        /* width: 100px !important; */
+        height: 25px !important;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .section-header {
+        /*  padding: 10px 0;
+                    margin-top: 10px; */
+        border-bottom: 1px dotted #d9534f; /* giống màu đỏ trong hình */
+    }
+
+    .section-title {
+        color: blue;
+        font-weight: bold;
+    }
+
+    .k-window-titlebar {
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        padding-block: 6px;
+        padding-inline: 24px;
+        border-width: 0px;
+        border-style: solid;
+        white-space: nowrap;
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        align-items: center;
+    }
+
+    .qd-valid {
+        color: green;
+        font-size: 18px;
+    }
+
+    .qd-invalid {
+        color: red;
+        font-size: 18px;
+    }
+</style>
+
+<script>
+
+    var updatedCells = [];
+
+    function paramProduct() {
+        return {
+            productGroupCode: "TIDE",
+        };
+    }
+
+    function paramAccountType() {
+        return {
+            productCode: $("#ProductCode").val(),
+        };
+    }
+
+    function paramAccountSubType() {
+        return {
+            accountType: $("#AccountTypeCode").val(),
+        };
+    }
+
+    function paraProductGridData ()
+    {
+        return {
+            depositType: $("#DepositType").val(),
+            customerType: $("#CustomerType").val()
+        };
+    }
+
+    function paraDepositTermGridData()
+    {
+        return {
+            termType: $("#TermType").val(),
+            termBasis: $("#TermBasis").val(),
+            inclusionFlag: $("#InclusionFlag").val(),
+            //sourceFlag: $("#SourceFlag").val(),
+        };
+    }
+
+    function paraTideConfigureAddGridData() {
+        return {
+            productCode:$("#ProductCode").val(),
+            accountType: $("#AccountTypeCode").val(),
+            accountSubType: $("#AccountSubTypeCode").val(),
+            posCode: $("#PosCode").val(),
+            effectiveDate: $("#EffectiveDate").val(),
+        };
+    }
+
+    function paraTideConfigureBatchGridData() {
+        var grid = $("#grdProductGrid").data("kendoGrid");
+        var selectedRows = grid.select();
+        var productCodes = [];
+
+        selectedRows.each(function () {
+            var dataItem = grid.dataItem(this);
+            productCodes.push(dataItem.AccountTypeCode);
+        });
+
+        //alert(productCodes.length);
+
+        return {
+            accountTypes: productCodes.join(","),
+            posCode: $("#PosCode").val(),
+            effectiveDate: $("#EffectiveDate").val(),
+            sourceFlag: $("#SourceFlag").val()
+        };
+    }
+
+    // Hàm xử lý khi thay đổi ProductCode
+    function onProductChange() {
+        var productCode = this.value();
+        var subCombo = $("#AccountTypeCode").data("kendoComboBox");
+
+        // Đặt lại giá trị và gọi lại DataSource để tải dữ liệu mới
+        subCombo.value("");
+        subCombo.dataSource.read(); // Gọi action Read của DataSource
+    }
+
+    // Hàm xử lý khi thay đổi ProductCode
+    function onAccountTypeChange() {
+        var productCode = this.value();
+        var subCombo = $("#AccountSubTypeCode").data("kendoComboBox");
+
+        // Đặt lại giá trị và gọi lại DataSource để tải dữ liệu mới
+        subCombo.value("");
+        subCombo.dataSource.read(); // Gọi action Read của DataSource
+    }
+
+    // Hàm xử lý khi dữ liệu của subCombo được tải xong
+    function onAccountSubTypeDataBound() {
+        var subCombo = $("#AccountSubTypeCode").data("kendoComboBox");
+        var data = subCombo.dataSource.data();
+
+        if (data.length > 0) {
+            // Đặt giá trị mặc định là mục đầu tiên
+            subCombo.value(data[0].id);
+        }
+    }
+
+    function onLoadData_TideRateConfigure(){
+        //Set nguon tu API
+
+        var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onLoadBtnClick() {
+        $("#SourceFlag").val("0");
+        onLoadData_TideRateConfigure();
+    }
+
+    function onLoadProductGrid(){
+        var grid = $("#grdProductGrid").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+
+    function onLoadTermGrid(){
+        var grid = $("#grdDepositTermGrid").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+
+    function onRowBound_TideRateConfigureGrid(e) {
+        try {
+        var grid = this;  // "this" chính là Kendo Grid
+
+        // Duyệt qua tất cả các dataItem của grid
+        grid.dataSource.data().forEach(function (dataItem) {
+            // Nếu ChangeFlag = 1 (hoặc == true tùy kiểu dữ liệu của bạn)
+            if (dataItem.ChangeFlag === 1 || dataItem.ChangeFlag === true) {
+                // Tìm row tương ứng bằng uid
+                var uid = dataItem.uid;
+                var row = grid.tbody.find("tr[data-uid='" + uid + "']");
+
+                if (row.length) {
+                    // Thêm class để thay đổi style (bạn có thể đặt tên class tùy ý)
+                    row.addClass("row-changed");
+
+                    // Nếu muốn highlight cả những ô đã thay đổi trước đó (giữ lại logic cũ của bạn)
+                    // thì vẫn giữ phần re-apply cho TermIntRateNew ở đây
+                }
+            }
+        });
+        } catch (error) {
+            console.error("Error in onRowBound_TideRateConfigureGrid:", error);
+        }
+        // try {
+        //     var grid = this;
+        //     // Re-apply styling for previously updated cells
+        //     updatedCells.forEach(function (cell) {
+        //         if (cell.field === "TermIntRateNew") {
+        //             var row = grid.tbody.find("tr[data-uid='" + grid.dataSource.get(cell.id).uid + "']");
+        //             if (row.length) {
+        //                 var columnIndex = grid.columns.findIndex(function (col) {
+        //                     return col.field === "TermIntRateNew";
+        //                 });
+        //                 if (columnIndex !== -1) {
+        //                     row.find("td").eq(columnIndex).addClass("cell-updated");
+        //                 }
+        //             }
+        //         }
+        //     });
+        // } catch (error) {
+        //     console.error("Error in onRowBound_TideRateConfigureGrid:", error);
+        // }
+    }
+
+    // function onEdit_TideRateConfigureGrid(e) {
+    //    try {
+    //         // Style the input field during editing
+    //         var cell = e.container;
+    //         cell.find("input").css({
+    //             "font-weight": "bold",
+    //             "color": "blue"
+    //         });
+
+
+    //         var model = e.model;
+    //         var grid = this; // this là grid instance
+
+    //         // Lấy giá trị min/max từ model (các cột hidden)
+    //         var minRate = model.MinTermIntRateNew;
+    //         var maxRate = model.MaxTermIntRateNew;
+
+    //         // Nếu min/max không có giá trị hợp lệ → bỏ qua validate hoặc xử lý tùy logic
+    //         if (typeof minRate !== "number" || typeof maxRate !== "number" || isNaN(minRate) || isNaN(maxRate)) {
+    //             return;
+    //         }
+
+    //         // Lấy input đang edit
+    //         var input = e.container.find("input");
+    //         var currentValue = parseFloat(input.val()) || 0;
+
+    //         // Gắn sự kiện change + keyup để validate realtime
+    //         input.off("change.kendoValidate keyup.kendoValidate").on("change.kendoValidate keyup.kendoValidate", function () {
+    //             var newValue = parseFloat($(this).val());
+
+    //             if (isNaN(newValue)) {
+    //                 // Không cho nhập chữ/ký tự không phải số
+    //                 $(this).val(currentValue);
+    //                 return;
+    //             }
+
+    //             if (newValue < minRate || newValue > maxRate) {
+    //                 // Hiển thị cảnh báo
+    //                 alert("Lãi suất mới phải nằm trong khoảng từ " + 
+    //                       kendo.toString(minRate, "n2") + 
+    //                       " đến " + 
+    //                       kendo.toString(maxRate, "n2") + 
+    //                       ". Giá trị bạn nhập không hợp lệ!");
+
+    //                 // Cách 1: Đưa về giá trị cũ (khuyến nghị)
+    //                 $(this).val(currentValue);
+
+    //                 // Cách 2: Xóa giá trị để buộc nhập lại (tùy chọn)
+    //                 // $(this).val("");
+
+    //                 // Ngăn không cho blur ra ngoài (tùy chọn - khá mạnh tay)
+    //                 // e.preventDefault(); // không luôn hiệu quả trong InCell
+    //             } else {
+    //                 // Giá trị hợp lệ → cập nhật currentValue để dùng cho lần sau
+    //                 currentValue = newValue;
+    //             }
+    //         });
+
+    //         // Validate thêm khi người dùng nhấn Enter hoặc blur (tùy chọn)
+    //         input.on("blur.kendoValidate", function () {
+    //             var finalValue = parseFloat($(this).val());
+    //             if (!isNaN(finalValue) && (finalValue < minRate || finalValue > maxRate)) {
+    //                 alert("Giá trị lãi suất mới không hợp lệ! Vui lòng nhập lại.");
+    //                 $(this).focus(); // Đưa con trỏ về lại ô input
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.error("Error in onEdit_TideRateConfigureGrid:", error);
+    //     }
+    // }
+
+        function onEdit_TideRateConfigureGrid(e) {
+        try {
+            var cell = e.container;
+            var input = cell.find("input");
+
+            input.css({
+                "font-weight": "bold",
+                "color": "blue"
+            });
+
+            // var model = e.model;
+            // var minRate = model.MinTermIntRateNew;
+            // var maxRate = model.MaxTermIntRateNew;
+
+            // if (typeof minRate !== "number" || typeof maxRate !== "number") {
+            //     return;
+            // }
+
+            // var currentValue = parseFloat(input.val());
+
+            // // ===== KEYUP: validate mềm (KHÔNG alert)
+            // input.off("keyup.kendoValidate").on("keyup.kendoValidate", function () {
+            //     var val = $(this).val();
+            //     var num = parseFloat(val);
+
+            //     // Đang gõ dở → bỏ qua
+            //     if (val === "" || val === "-" || val.endsWith(".")) {
+            //         $(this).removeClass("k-invalid");
+            //         return;
+            //     }
+
+            //     if (!isNaN(num) && (num < minRate || num > maxRate)) {
+            //         $(this).addClass("k-invalid"); // highlight đỏ
+            //     } else {
+            //         $(this).removeClass("k-invalid");
+            //     }
+            // });
+
+            // // ===== CHANGE / BLUR: validate cứng
+            // input.off("change.kendoValidate blur.kendoValidate")
+            //      .on("change.kendoValidate blur.kendoValidate", function () {
+            //     var num = parseFloat($(this).val());
+
+            //     if (isNaN(num) || num < minRate || num > maxRate) {
+            //         alert(
+            //             "Lãi suất phải nằm trong khoảng từ " +
+            //             kendo.toString(minRate, "n2") +
+            //             " đến " +
+            //             kendo.toString(maxRate, "n2")
+            //         );
+
+            //         $(this).val(currentValue);
+            //         $(this).focus();
+            //     } else {
+            //         currentValue = num; // cập nhật giá trị hợp lệ
+            //     }
+            // });
+
+        } catch (error) {
+            console.error("Error in onEdit_TideRateConfigureGrid:", error);
+        }
+    }
+
+
+    function onSave_TideRateConfigureGrid(e) {
+        try {
+
+            var posGrade = parseInt($("#PosGrade").val());  
+
+            // Ensure dirtyFields is initialized
+            e.model.dirtyFields = e.model.dirtyFields || {};
+
+            var num = e.values.TermIntRateNew;
+
+            var model = e.model;
+            var minRate = parseFloat(model.MinTermIntRateNew);
+            var maxRate = parseFloat(model.MaxTermIntRateNew);
+
+            if (typeof minRate !== "number" || typeof maxRate !== "number") {
+                return;
+            }
+
+            var newValue = parseFloat(num);
+
+            // console.log(minRate, typeof minRate);
+            // console.log(maxRate, typeof maxRate);
+            // console.log(newValue, typeof newValue);
+
+            if (posGrade !== 3 && ( isNaN(newValue) || newValue < minRate || newValue > maxRate)) {
+                    alert(
+                        "Lãi suất phải nằm trong khoảng từ " +
+                        kendo.toString(minRate, "n2") +
+                        " đến " +
+                        kendo.toString(maxRate, "n2")
+                    );
+
+                    e.preventDefault();
+            } 
+            else 
+            {
+                e.model.set("ChangeFlag", 1);
+                e.model.dirtyFields["ChangeFlag"] = true;
+
+                // Mark fields as dirty and track TermIntRateNew changes
+                for (var field in e.values) {
+                    if (e.values.hasOwnProperty(field)) {
+                        e.model.dirtyFields[field] = true;
+                        if (field === "TermIntRateNew") {
+                            updatedCells.push({
+                                id: e.model.id,
+                                field: field
+                            });
+                            // Directly apply styling to the cell
+                            var row = e.container.closest("tr");
+                            var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+                            var columnIndex = grid.columns.findIndex(function (col) {
+                                return col.field === "TermIntRateNew";
+                            });
+                            if (columnIndex !== -1) {
+                                row.find("td").eq(columnIndex).addClass("row-changed");
+                            }
+                        }
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.error("Error in onSave_TideRateConfigureGrid:", error);
+        }
+    }
+
+    function onSave_TideRateConfigureForm() {
+        console.log("onSave_TideRateConfigureForm triggered");
+        try {
+            var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+            if (!grid) {
+                console.error("Grid not found");
+                alert("Lỗi: Không tìm thấy grid!");
+                return;
+            }
+
+            var decisionNo = $("#CircularRefNum").val();
+
+            if (decisionNo == null || decisionNo == '') {
+                console.error("Bạn chưa nhập số Quyết định");
+                alert('Bạn chưa nhập số Quyết định');
+                return;
+            }
+
+            // Collect grid data
+            var gridData = grid.dataSource.data().toJSON();
+            console.log("Grid data:", gridData);
+
+            // Collect form data
+            var formData = $("#addTideRateConfigureBatchForm").serializeArray();
+            var formModel = {};
+
+            var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
+
+
+            if (applyPosLst == null || applyPosLst.length == 0) {
+                alert('Bạn chưa chọn POS áp dụng');
+                return;
+            }
+
+            $.each(formData, function (index, field) {
+               // alert('field.value ' + field.value);
+                formModel[field.name] = field.value;
+                // Convert date fields to ISO format
+                if (field.name === "EffectiveDate" || field.name === "ExpiredDate" || field.name === "CircularDate") {
+                    var date = kendo.parseDate(field.value, "dd/MM/yyyy");
+                    if (date) {
+                        formModel[field.name] = kendo.toString(date, "yyyy-MM-ddTHH:mm:ssZ");
+                    } else {
+                        console.warn(`Failed to parse date for ${field.name}: ${field.value}`);
+                        formModel[field.name] = null;
+                    }
+                }
+                // Convert numeric fields
+                if (field.name === "AmoutSlab" || field.name === "NewInterestRate") {
+                    var num = parseFloat(field.value);
+                    formModel[field.name] = isNaN(num) ? null : num;
+                }
+
+                if (field.name === "ApplyPosList" ) {
+
+                    formModel[field.name] = applyPosLst;
+                }
+            });
+            console.log("Form data:", formModel);
+
+            // Combine form and grid data
+            var submitData = {
+                model: formModel,
+                gridItems: gridData
+            };
+            console.log("Submit data:", submitData);
+
+            // Send AJAX request
+            $.ajax({
+                url: '@Url.Action("SaveBatchTideRateConfigure", "TideRateConfigure")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Save successful:", response);
+                    alert("Bạn đã tạo thay đổi lãi suất theo quyết định " +  decisionNo + " thành công!");
+                    //grid.dataSource.read(); // Refresh grid
+                    //updatedCells = []; // Clear highlighted cells
+                    dataChangeTideRateConfigure = true;
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Save failed:", error, xhr.responseText);
+                    alert("Lỗi khi lưu dữ liệu: " + (xhr.responseText || error));
+                }
+            });
+        } catch (error) {
+            console.error("Error in onSave_TideRateConfigureForm:", error);
+            alert("Lỗi: " + error.message);
+        }
+    }
+
+
+    function onSave_TideRateConfigureTemp() {
+        console.log("onSave_TideRateConfigureTemp triggered");
+        try {
+
+            var grid = $("#grdDepositTermGrid").data("kendoGrid");
+            var selectedRows = grid.select();
+            var selectedItems = [];
+
+            selectedRows.each(function () {
+                var dataItem = grid.dataItem(this);
+
+                selectedItems.push({
+                    Id: dataItem.Id,
+                    TermUnitCode: dataItem.TermUnitCode,
+                    TermValue: dataItem.TermValue,
+                    InclusionFlag: dataItem.InclusionFlag
+                });
+            });
+
+            var interestRate = parseFloat( $("#NewInterestRate").val());
+            var beforeTermInterestRate = parseFloat( $("#BeforeTermNewInterestRate").val());
+            var partialInterestRate = parseFloat( $("#PartialNewInterestRate").val());
+            var depositType = $("#DepositType").val();
+
+            if (interestRate == null ) {
+                console.error("Bạn chưa nhập lãi suất");
+                alert('Bạn chưa nhập lãi suất');
+                return;
+            }
+
+            //alert(selectedItems.length);
+
+            if (selectedItems.length ===0) {
+                alert('Bạn chưa chọn kỳ hạn!');
+                return;
+            }
+
+            // Combine form and grid data
+            var submitData = {
+                depositTerms: selectedItems,
+                interestRate: interestRate,
+                beforeTermInterestRate: beforeTermInterestRate,
+               partialInterestRate: partialInterestRate,
+               depositType: depositType
+            };
+            console.log("Submit data:", submitData);
+
+            // Send AJAX request
+            $.ajax({
+                url: '@Url.Action("SaveTideRateTemp", "TideRateConfigure")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Save successful:", response);
+                    alert(response.Message);
+                    $("#SourceFlag").val("1");
+                    //grid.dataSource.read(); // Refresh grid
+                    //updatedCells = []; // Clear highlighted cells
+                    //dataChange = true;
+                    onLoadData_TideRateConfigure();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Save failed:", error, xhr.responseText);
+                    alert((xhr.responseText || error));
+                }
+            });
+        } catch (error) {
+            console.error("Error in onSave_TideRateConfigureForm:", error);
+            alert("Lỗi: " + error.message);
+        }
+    }
+
+
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName : "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pFlagAllBank: "0"
+        };
+    }
+
+    function onProductGridDataBound(e) {
+
+        //$("#chkSelectAll").prop("checked", false);
+
+        var grid = this;
+
+        // Bắt sự kiện change của tất cả checkbox
+        grid.tbody.find(".chkSelect").off("change").on("change", function (ev) {
+            var row = $(this).closest("tr");
+            if ($(this).is(":checked")) {
+                grid.select(row); // tick = chọn row
+            } else {
+                grid.clearSelection(); // bỏ chọn tất cả
+                // tick lại các checkbox đang checked
+                grid.tbody.find(".chkSelect:checked").each(function () {
+                    grid.select($(this).closest("tr"));
+                });
+            }
+            updateSelectedProducts(grid);
+            ev.stopPropagation(); // ngăn click row
+        });
+
+        // Khi click row, đồng bộ checkbox
+        grid.tbody.find("tr").off("click").on("click", function (e) {
+            if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
+            var row = $(this);
+            var checkbox = row.find(".chkSelect");
+            var isSelected = row.hasClass("k-state-selected");
+            checkbox.prop("checked", isSelected);
+            updateSelectedProducts(grid);
+        });
+
+        updateSelectedProducts(grid); // cập nhật lần đầu
+    }
+
+    function updateSelectedProducts(grid) {
+        var selectedRows = grid.select();
+        var productCodes = [];
+
+        selectedRows.each(function () {
+            var dataItem = grid.dataItem(this);
+            productCodes.push(dataItem.AccountTypeCode);
+        });
+
+
+
+        if (productCodes.length === 0) {
+            // Khi chưa chọn gì → hiển thị tổng số sản phẩm
+            $("#selectedProducts").text("Tổng số sản phẩm: " + grid.dataSource.total());
+        } else {
+            // Khi đã chọn → hiển thị danh sách product code
+            $("#selectedProducts").text("Sản phẩm đã chọn: " + productCodes.join(", "));
+
+              var total = $("#grdProductGrid tbody .chkSelect").length;
+    //     var checked = $("#grdProductGrid tbody .chkSelect:checked").length;
+
+         $("#chkSelectAll").prop("checked", total > 0 && total === productCodes.length);
+        }
+
+
+
+    }
+
+
+    function updateSelectedTerms(grid) {
+        var selectedRows = grid.select();
+        var termCodes = [];
+
+        var txtSoThangGui = $("#DepositTermUnit").data("kendoNumericTextBox");
+
+        var defaultTermValue = 0;
+        selectedRows.each(function () {
+            var dataItem = grid.dataItem(this);
+            termCodes.push(dataItem.TermValue + dataItem.TermUnitCode);
+            if (defaultTermValue ===0 || defaultTermValue > dataItem.MinTermValue) {
+                txtSoThangGui.value(dataItem.MinTermValue); 
+                txtSoThangGui.trigger("change"); 
+                defaultTermValue = dataItem.MinTermValue;
+            }
+            
+        });
+
+        if (termCodes.length === 0) {
+            // Khi chưa chọn gì → hiển thị tổng số sản phẩm
+            $("#selectedTerms").text("Tổng số kỳ hạn: " + grid.dataSource.total());
+        } else {
+            // Khi đã chọn → hiển thị danh sách product code
+            $("#selectedTerms").text("Kỳ hạn đã chọn: " + termCodes.join(", "));
+        }
+    }
+
+
+    function onDepositTermGridDataBound(e) {
+        var grid = this;
+
+        // Bắt sự kiện change của tất cả checkbox
+        grid.tbody.find(".chkSelect").off("change").on("change", function (ev) {
+            var row = $(this).closest("tr");
+            if ($(this).is(":checked")) {
+                grid.select(row); // tick = chọn row
+            } else {
+                grid.clearSelection(); // bỏ chọn tất cả
+                // tick lại các checkbox đang checked
+                grid.tbody.find(".chkSelect:checked").each(function () {
+                    grid.select($(this).closest("tr"));
+                });
+            }
+            ev.stopPropagation(); // ngăn click row
+            updateSelectedTerms(grid);
+        });
+
+        // Khi click row, đồng bộ checkbox
+        grid.tbody.find("tr").off("click").on("click", function (e) {
+            if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
+            var row = $(this);
+            var checkbox = row.find(".chkSelect");
+            var isSelected = row.hasClass("k-state-selected");
+            checkbox.prop("checked", isSelected);
+            updateSelectedTerms(grid);
+        });
+
+        updateSelectedTerms(grid);
+    }
+
+    function onNewInterestRateChanged(e) {
+        var txtLsTraSau = $("#NewInterestRate").data("kendoNumericTextBox");
+        var lsTraSau = txtLsTraSau.value(); // giá trị đã nhập
+       // alert(lsTraSau);
+
+        var txtSoThangGui = $("#DepositTermUnit").data("kendoNumericTextBox");
+        var soThangGui = txtSoThangGui.value();
+
+        if (soThangGui <= 0 || soThangGui == null) {
+            alert("Số tháng gửi phải lớn hơn 0. Hệ thống sẽ tự động đặt lại = 1.");
+
+            txtSoThangGui.value(1); // set mặc định
+            txtSoThangGui.trigger("change"); // đồng bộ UI
+            return; // ⛔ dừng xử lý để tránh chia cho 0
+        }
+
+        // set vào ô BeforeTermNewInterestRate
+        var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+
+
+        var lsTraSauTyLe = lsTraSau/100;
+        var lsTraTruoc = tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui);
+        beforeTerm.value(lsTraTruoc);
+
+        // set vào ô PartialNewInterestRate
+        var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");
+
+        var lsDinhKy = tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui);
+        partial.value(lsDinhKy);
+    }
+
+    //Hàm tính lãi suất quy đổi sang trả trước
+    function tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui) {
+        if (soThangGui <= 0) return 0;
+
+        const result = lsTraSauTyLe / (1 + lsTraSauTyLe * soThangGui/12  ) * 100;
+        return Math.floor(result * 100) / 100;//Number(result.toFixed(2));
+    }
+
+
+    //Tính lãi suất định kỳ từ lãi suất đầu kỳ
+     
+    function tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui) {
+        if (soThangGui <= 0) return 0;
+        if (lsTraSauTyLe < 0) return 0;
+
+        // Công thức: ( (1 + r/n)^(1/n) - 1 ) × 12 × 100
+        const effective = (Math.pow(1 + lsTraSauTyLe / 12 * soThangGui, 1 / soThangGui) - 1) * 12 * 100;
+
+        return Math.floor(effective * 100) / 100 ; //Number(effective.toFixed(2));
+    }
+</script>
+
+<form id="addTideRateConfigureBatchForm">
+    @Html.Hidden("PosGrade", TempData["PosGrade"])
+    @Html.Hidden("SourceFlag", "0")
+    @Html.AntiForgeryToken()
+    <div class="section-header">
+        <div class="section-title">Khai báo thông tin chung</div>
+    </div>
+    <div class="create_form row" style="padding-top: 5px;">
+        <div class="col-md-6">
+            <div class="create_form row">
+                <div class="col-md-6">
+                    <label for="ProductCode">Loại sản phẩm</label>
+                    @(Html.Kendo().ComboBox()
+                        .Name("DepositType")
+                        .Placeholder("Chọn loại sản phẩm")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .Events(e => e.Change("onLoadProductGrid"))
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetDepositTypeList", "ListOfValue"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { id = "DepositType", style = "width: 100%; color: navy;", required = "required" })
+                        .Suggest(true)
+                        .AutoBind(true)
+                        )
+                </div>
+                <div class="col-md-6">
+                    <label for="AccountTypeCode">Loại khách hàng</label>
+                    @(Html.Kendo().ComboBox()
+                        .Name("CustomerType")
+                        .Placeholder("Chọn loại khách hàng")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .Events(e => e.Change("onLoadProductGrid"))
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetCustomerTypeList", "ListOfValue"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { id = "CustomerType", style = "width: 100%; color: navy;", required = "required" })
+                        .Suggest(true)
+                        .AutoBind(true)
+                        .SelectedIndex(0)
+                        )
+
+                </div>
+            </div>
+            <div class="create_form row">
+                <div class="col-md-12">
+                    @(
+                        Html.Kendo().Grid<ListOfProducts>()
+                        .Name("grdProductGrid")
+                        .Columns(columns =>
+                        {
+
+                            columns.Template("<input type='checkbox' class='chkSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAll' />")
+                            .Title("")
+                            .Width(50)
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" })
+                            .HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.ProductCode).Title("Sản phẩm").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.AccountTypeCode).Title("Loại TK").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.AccountTypeName).Title("Tên loại TK").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+                        })
+                        //.ToolBar(toolbar => toolbar.Create())
+                        .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
+                        .Editable(editable => editable.Mode(GridEditMode.InLine))
+                        //.Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
+                        .HtmlAttributes(new { style = "height: 150px; width: 100%;" })
+                        .Scrollable(s => s.Enabled(true).Virtual(false)) // Bật thanh cuộn ngang
+                        .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .ServerOperation(false)
+                        .Read(read => read.Action("LoadProductGridData", "TideRateConfigure").Type(HttpVerbs.Post).Data("paraProductGridData"))
+                        //.Update(update => update.Action("UpdateTideConfgiureGridData", "TideRateConfigure"))
+                        .Model(model => model.Id(p => p.AccountTypeCode)) // Sử dụng Id
+                        )
+                        .AutoBind(false)
+                        .Events(events => events.DataBound("onProductGridDataBound"))
+                        )
+                </div>
+                <div id="selectedProducts" style="margin-top:10px; font-weight:bold;"></div>
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+            <div class="create_form row" style="padding-top: 10px; align-items: center;">
+                <div class="col-md-11">
+                    <div style="display: flex; align-items: center; gap: 3px; width: 100%;">
+                      
+                        <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
+                            <label for="ApplyPosList" style="font-weight:bold; color:navy; margin: 0; white-space:nowrap;">
+                                POS áp dụng <span style="color:red;">*</span>
+                            </label>
+                            <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" />
+                            <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
+                              
+                            </label>
+                        </div>
+
+                        
+                        @(Html.Kendo().MultiSelectFor(m => m.ApplyPosList)
+                            .Filter(FilterType.Contains)
+                            .Placeholder("--- POS áp dụng ---")
+                            .DataTextField("value")
+                            .DataValueField("id")
+                            .DownArrow(true)
+                            .DataSource(source => source
+                            .Read(read => read.Action("GetListBranchForTide", "ListOfValue").Data("paramDonViQL"))
+                            .ServerFiltering(false)
+                            )
+                            .HtmlAttributes(new { id = "ApplyPosList", style = "flex: 1; color: navy;" })
+                            .AutoBind(true)
+                            )
+                    </div>
+                </div>
+            </div>
+
+
+           @*  <div class="create_form row">
+                <div class="col-md-11">
+                    <label for="PosCode">POS áp dụng </label>
+                    @(Html.Kendo().MultiSelectFor(m => m.ApplyPosList)
+                        .Filter(FilterType.Contains)
+                        .Placeholder("--- POS áp dụng ---")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .DownArrow(true)
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetListBranchForTide", "ListOfValue").Data("paramDonViQL"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { id = "ApplyPosList", style = "width: 80% !important;color: navy;" })
+                        //.Suggest(true)
+                        .AutoBind(true)
+                        //.SelectedIndex(0)
+                        )
+                </div>
+
+            </div> *@
+            <div class="create_form row">
+                <div class="col-md-6">
+                    <label for="CircularRefNum">Số Quyết định </label>
+                    <div style="display:flex; align-items:center;">
+                        @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { id = "CircularRefNum", style = "width:80%;max-width:100%;color:navy;text-transform:uppercase;" })
+                        <span id="qd-status" style="margin-left:8px; display:none;"></span>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+                    <label for="CircularDate">Ngày quyết định</label>
+                    @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").Value(DateTime.Today).HtmlAttributes(new { id = "CircularDate", style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+                </div>
+            </div>
+            <div class="create_form row">
+                <div class="col-md-6">
+                    <label for="EffectiveDate">Ngày hiệu lực</label>
+                    @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+                </div>
+                <div class="col-md-6">
+                    <label for="ExpiredDate">Ngày hết hiệu lực</label>
+                    @Html.Kendo().DatePickerFor(m => m.ExpiredDate).Format("dd/MM/yyyy").Value(new DateTime(2050, 12, 31)).HtmlAttributes(new { style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+                </div>
+            </div>
+
+
+            <div class="create_form row">
+                <div class="col-md-6">
+                    <label for="AmoutSlab">Số seri mức tiền</label>
+                    @(Html.Kendo().DropDownListFor(m => m.AmoutSlab)
+                        //.Placeholder("Chọn số seri mức tiền")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        //.Events(e => e.Change("onLoadProductGrid"))
+                        .DataSource(
+                        source => { source.Read(read => { read.Action("GetMoneyLevelSerialList", "ListOfValue"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { style = "width: 80%; color: navy;", required = "required" })
+                        //.Suggest(true)
+                        .AutoBind(true)
+                        )
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="section-header">
+        <div class="section-title">Khai báo thông tin lãi suất</div>
+    </div>
+
+    <div class="create_form row">
+        <div class="col-md-2">
+            <label for="TermType">Loại kỳ hạn</label>
+            @(Html.Kendo().ComboBox()
+                .Name("TermType")
+                .Placeholder("Chọn loại kỳ hạn")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(e => e.Change("onLoadTermGrid"))
+                .DataSource(
+                source => { source.Read(read => { read.Action("GetTermTypeList", "ListOfValue"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { id = "TermType", style = "width: 100%; color: navy;", required = "required" })
+                .Suggest(true)
+                .AutoBind(true)
+                )
+        </div>
+        <div class="col-md-1">
+            <label for="TermType">Bước nhảy</label>
+            @(Html.Kendo().NumericTextBox()
+                .Name("TermBasis")
+                .Placeholder("Nhập hệ số")
+                .Events(e => e.Change("onLoadTermGrid"))
+                .Format("n0").Min(0).Value(1).Max(10)
+                .HtmlAttributes(new { id = "TermBasis", style = "width: 100%; color: navy;", required = "required" })
+                )
+        </div>
+        <div class="col-md-3">
+            <label for="TermType">Inclusion Flag</label>
+            @(Html.Kendo().ComboBox()
+                .Name("InclusionFlag")
+                .Placeholder("Chọn inclusion flag")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(e => e.Change("onLoadTermGrid"))
+                .DataSource(
+                source => { source.Read(read => { read.Action("GetInclusionFlagList", "ListOfValue"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { id = "InclusionFlag", style = "width: 100%; color: navy;", required = "required" })
+                .Suggest(true)
+                .SelectedIndex(0)
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+
+    <div class="create_form row" style="padding-top: 5px;">
+
+        <div class="col-md-6">
+            <div class="create_form row">
+                <div class="col-md-12">
+                    @(
+                        Html.Kendo().Grid<DepositTermModel>()
+                        .Name("grdDepositTermGrid")
+                        .Columns(columns =>
+                        {
+
+                            columns.Template("<input type='checkbox' class='chkSelect' />")
+                            .Title("")
+                            .Width(50)
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" })
+                            .HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.Id).Title("Thứ tự").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.TermValue).Title("Giá trị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.TermUnitName).Title("Đơn vị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.TermDesc).Title("Mô tả").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.TermUnitCode).Hidden();
+                            columns.Bound(c => c.TermValue).Hidden();
+                            columns.Bound(c => c.InclusionFlag).Hidden();
+                            columns.Bound(c => c.MinTermValue).Hidden();
+                        })
+                        //.ToolBar(toolbar => toolbar.Create())
+                        .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
+                        .Editable(editable => editable.Mode(GridEditMode.InLine))
+                        //.Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
+                        .HtmlAttributes(new { style = "height: 150px; width: 100%;" })
+                        .Scrollable(s => s.Enabled(true).Virtual(false)) // Bật thanh cuộn ngang
+                        .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .ServerOperation(false)
+                        .Read(read => read.Action("LoadDepositTermGridData", "TideRateConfigure").Type(HttpVerbs.Post).Data("paraDepositTermGridData"))
+                        //.Update(update => update.Action("UpdateTideConfgiureGridData", "TideRateConfigure"))
+                        .Model(model => model.Id(p => p.Id)) // Sử dụng Id
+                        )
+                        .AutoBind(false)
+                        .Events(events => events.DataBound("onDepositTermGridDataBound"))
+                        )
+                </div>
+                <div id="selectedTerms" style="margin-top:10px; font-weight:bold;"></div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="create_form row">
+                <div class="col-md-5">
+                    <label for="NewInterestRate">Lãi suất thay đổi (kỳ cuối, %/năm) </label>
+                </div>
+                <div class="col-md-3">
+                    @Html.Kendo().NumericTextBoxFor(m => m.NewInterestRate).Format("n2").Decimals(2).Min(0).Max(10).Events(e => e.Change("onNewInterestRateChanged")).HtmlAttributes(new
+                        {
+                            style = "width: 80%;!important;max-width:100% !important;color:navy; background-color: #F3FFF0 !important;text-align:right;"
+                        }).Spinners(false)
+
+                </div>
+                <div class="col-md-4">
+                    <label for="NewInterestRate">Số tháng gửi</label>
+                    @Html.Kendo().NumericTextBox().Name("DepositTermUnit").Format("n0").Min(0).Value(1).Max(60).Events(e => e.Change("onNewInterestRateChanged")).HtmlAttributes(new { @id = "DepositTermUnit", style = "width: 80px;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
+                </div>
+            </div>
+            <div class="create_form row">
+                <div class="col-md-5">
+                    <label for="NewInterestRate">quy đổi lãi suất trả trước</label>
+                </div>
+                <div class="col-md-3">
+                    @Html.Kendo().NumericTextBoxFor(m => m.BeforeTermNewInterestRate).Spinners(false).Format("n2").Decimals(2).Min(0).Max(10).HtmlAttributes(new { @readonly = "readonly", style = "width: 80%;!important;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
+                </div>
+            </div>
+            <div class="create_form row">
+                <div class="col-md-5">
+                    <label for="NewInterestRate">quy đổi lãi suất định kỳ</label>
+                </div>
+                <div class="col-md-3">
+                    @Html.Kendo().NumericTextBoxFor(m => m.PartialNewInterestRate).Spinners(false).Format("n2").Decimals(2).Min(0).Max(10).HtmlAttributes(new { @readonly = "readonly", style = "width: 80%;!important;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
+                </div>
+
+            </div>
+            <div class="create_form row">
+                <div class="col-md-12 d-flex justify-content-end" style="text-align: right; padding-top: 20px;">
+                    @(Html.Kendo().Button()
+                        .Name("loadDataBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;", @class = "create_form button" })
+                        .Content("Tải dữ liệu từ iDC")
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                        .Events(ev => ev.Click("onLoadBtnClick"))
+                        )
+
+                    @(Html.Kendo().Button()
+                        .Name("saveBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 120px; font-weight: bold; color: blue;", @class = "create_form button" })
+                        .Content("Lưu tạm")
+                        .ImageUrl(Url.Content("~/images/save-icon.png"))
+                        .Events(ev => ev.Click("onSave_TideRateConfigureTemp"))
+                        )
+
+                    @(Html.Kendo().Button()
+                        .Name("createRequestBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 120px; font-weight: bold; color: blue;", @class = "create_form button" })
+                        .Content("Tạo yêu cầu")
+                        .ImageUrl(Url.Content("~/images/note_add.png"))
+
+                        .Events(ev => ev.Click("onSave_TideRateConfigureForm"))
+                        )
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px;">
+
+        @(Html.Kendo().Grid<TideTermViewModel>()
+            .Name("tideRateConfigureGrid")
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.TermProductCode).Title("SP").Width(80).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.TermAccountTypeCode).Title("Loại TK").ClientTemplate(
+                "#= TermAccountTypeCode # - #= TermAccountTypeName #"
+                ).Width(300).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                //columns.Bound(c => c.TermAccountTypeName).Title("Tên loại TK").Width(200).HtmlAttributes(new { style = "text-align: left;" }).Locked(true);
+                columns.Bound(c => c.TermEffectiveDate).Title("Hiệu lực").Format("{0:dd/MM/yyyy}").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+
+                columns.Bound(c => c.TermSerial).Title("Thứ tự").Format("{0:n0}").Width(100).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.TermDesc).Title("Kỳ hạn").Width(300).HtmlAttributes(new { style = "text-align: left;" }).Locked(true);
+                columns.Bound(c => c.InclusionFlag).Title("Inclusion Flag").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.TermIntRate).Title("Lãi suất HT").Format("{0:n2}").Width(100).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.TermIntRateNew).Title("Lãi suất mới").Format("{0:n2}").Width(80).HtmlAttributes(new { style = "text-align: center;", @class = "term-int-rate-new" });
+                columns.Bound(c => c.TermAccountSubTypeCode).Hidden().Title("Loại TK phụ").Width(150).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                //columns.Command(command => { command.Edit(); }).Title("Thao tác").Width(200).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.ChangeFlag).Hidden();
+                columns.Bound(c => c.MinInterestRateSpread).Hidden();
+                columns.Bound(c => c.MinTermIntRateNew).Hidden();
+                columns.Bound(c => c.MaxInterestRateSpread).Hidden();
+                columns.Bound(c => c.MaxTermIntRateNew).Hidden();
+            })
+            //.ToolBar(toolbar => toolbar.Create())
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
+            .Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
+            .HtmlAttributes(new { style = "height: 300px; width: 100%;" })
+            .Scrollable(s => s.Enabled(true).Virtual(false)) // Bật thanh cuộn ngang
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .Model(m =>
+            {
+                m.Id(p => p.Id);
+                m.Field(p => p.TermProductCode).Editable(false); // 🔒 readonly
+                    m.Field(p => p.TermAccountTypeCode).Editable(false);
+                    m.Field(p => p.TermEffectiveDate).Editable(false);
+                    m.Field(p => p.TermSerial).Editable(false);
+                    m.Field(p => p.TermDesc).Editable(false);
+                    m.Field(p => p.InclusionFlag).Editable(false);
+                    m.Field(p => p.TermIntRate).Editable(false);
+            })
+            .ServerOperation(false)
+            .Read(read => read.Action("LoadTideConfigureBatchGridData", "TideRateConfigure").Type(HttpVerbs.Post).Data("paraTideConfigureBatchGridData"))
+            //.Update(update => update.Action("UpdateTideConfgiureGridData", "TideRateConfigure"))
+            .Model(model => model.Id(p => p.Id)) // Sử dụng Id
+            )
+            .AutoBind(false)
+            .Events(events => events.DataBound("onRowBound_TideRateConfigureGrid"))
+            )
+    </div>
+</form>
+
+
+
+<script>
+    function onDepositTermSpin(e) {
+        onNewInterestRateChanged(e);
+    }
+
+    function onTermBasisSpin(e) {
+        onLoadTermGrid();
+    }
+
+
+    $(document).on("change", "#chkSelectAll", function () {
+        var isChecked = $(this).is(":checked");
+        var grid = $("#grdProductGrid").data("kendoGrid");
+
+        // Clear selection trước (tránh chọn chồng)
+        grid.clearSelection();
+
+        $("#grdProductGrid tbody tr").each(function () {
+            var $row = $(this);
+            var $chk = $row.find(".chkSelect");
+
+            if (isChecked) {
+                $chk.prop("checked", true);
+                grid.select($row);     // SELECT ROW
+            } else {
+                $chk.prop("checked", false);
+                // grid.clearSelection() đã xử lý
+            }
+        });
+
+        updateSelectedProducts(grid);
+    });
+
+
+    // $(document).on("change", "#grdProductGrid .chkSelect", function () {
+    //     var total = $("#grdProductGrid tbody .chkSelect").length;
+    //     var checked = $("#grdProductGrid tbody .chkSelect:checked").length;
+
+    //     $("#chkSelectAll").prop("checked", total > 0 && total === checked);
+    // });
+
+    $(document).ready(function () {
+        $("#CircularRefNum, #CircularDate").on("change blur", function () {
+
+            var circularRefNum = $("#CircularRefNum").val().trim();
+            var datePicker = $("#CircularDate").data("kendoDatePicker");
+            var circularDate = datePicker ? datePicker.value() : null;
+
+            $("#qd-status").hide();
+
+            if (!circularRefNum || !circularDate) return;
+
+            $.ajax({
+                url: "/TideRateConfigure/CheckCircular",
+                type: "GET",
+                data: {
+                    circularRefNum: circularRefNum,
+                    circularDate: kendo.toString(circularDate, "yyyy-MM-dd")
+                },
+                success: function (res) {
+
+                    if (res.isExists) {
+                        $("#qd-status")
+                            .html("⚠️")
+                            .removeClass()
+                            .addClass("qd-invalid")
+                            .attr("title", "Quyết định đã tồn tại với ngày này")
+                            .show();
+                    } else {
+                        $("#qd-status")
+                            .html("✔")
+                            .removeClass()
+                            .addClass("qd-valid")
+                            .attr("title", "Quyết định hợp lệ")
+                            .show();
+                    }
+                }
+            });
+        });
+
+        var numeric = $("#DepositTermUnit").data("kendoNumericTextBox");
+        numeric.bind("spin", onDepositTermSpin);
+
+
+        var numeric = $("#TermBasis").data("kendoNumericTextBox");
+        numeric.bind("spin", onTermBasisSpin);
+
+
+        $("#selectAllPos").on("change", function () {
+            var checked = this.checked;
+            var multiSelect = $("#ApplyPosList").data("kendoMultiSelect");
+
+            if (multiSelect) {
+                if (checked) {
+                    var dataSource = multiSelect.dataSource.data();
+                    var allValues = dataSource.map(function(item) { return item.id; });
+                    multiSelect.value(allValues);
+                } else {
+                    multiSelect.value([]);
+                }
+            }
+        });
+    });
+
+</script>

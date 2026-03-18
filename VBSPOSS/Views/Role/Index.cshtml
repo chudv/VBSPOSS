@@ -1,0 +1,82 @@
+﻿@{
+    ViewBag.Title = "Quản lý nhóm người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    
+</style>
+<script>
+    function onRowBound(e) {
+        $("#btnCreate").find("span").addClass("k-icon k-i-add");
+        $(".k-grid-delete").find("span").removeClass("k-i-close");
+        $(".k-grid-delete").find("span").addClass("k-icon k-i-cancel");
+    }
+
+    function getStatusDesc(value) {
+        if (value == 0) {
+            return "Đóng";
+        } else {
+            return "Hoạt động";
+        }
+    }
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        @(Html.Kendo().Grid<VBSPOSS.Data.Models.Role>()
+            .Name("MainGrid")
+            .Events(e => e.DataBound("onRowBound"))
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+                    command.Edit().Text(" ").UpdateText("Lưu lại").CancelText("Hủy bỏ");
+                    command.Destroy().Text(" ");
+                }).Title("Sự kiện").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RoleCode).Title("Mã nhóm người dùng").Width(130);
+                columns.Bound(c => c.RoleName).Title("Tên nhóm người dùng").Width(200);
+                @* columns.Bound(c => c.Grade).Title("Cấp người dùng").Width(150);
+                columns.Bound(c => c.GrantType).Title("Cờ hiệu lực").Width(150); *@
+                columns.Bound(c => c.Grade).Title("Cấp người dùng").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.GrantType).Title("Cờ hiệu lực").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.Status).Title("Trạng thái").Width(150).EditorTemplateName("Status")
+                .ClientTemplate("#=getStatusDesc(Status)#").HtmlAttributes(new { style = "text-align: center;" });
+                //columns.Bound(c => c.User).Title("Role").Width(200);
+                //columns.Command(command => { command.Edit().Text("Sửa").UpdateText("Lưu").CancelText("Hủy"); command.Destroy().Text("Xóa"); }).Width(155).HtmlAttributes(new { style = "text-align: center;" });
+            })
+            .HtmlAttributes(new { style = "height: 550px;" })
+            .ToolBar(toolbar =>
+            {
+                toolbar.Create().Text("Thêm mới").HtmlAttributes(new { style = "width: 110px; font-weight:bold; color: navy;" });
+                toolbar.Excel().Text("Xuất excel").HtmlAttributes(new { style = "width: 110px; font-weight:bold; color: navy;" });
+            })
+            .Excel(excel => excel.FileName("Danh_Sach_Nhom_Nguoi_Dung.xlsx").AllPages(true))
+            .Editable(editable =>
+            {
+                editable.Mode(GridEditMode.InLine);
+                editable.DisplayDeleteConfirmation("Bạn chắc chắn muốn xóa?");
+            })
+            .Sortable()
+            .Scrollable()
+            .Pageable(pageable => pageable
+            .Refresh(true)
+            .ButtonCount(5))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .Batch(false)
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.Id))
+            .Read(read => read.Action("LoadData", "Role"))
+            .Create(update => update.Action("Create", "Role"))
+            .Update(update => update.Action("Edit", "Role"))
+            .Destroy(update => update.Action("Delete", "Role"))
+            .PageSize(50)
+            )
+            .Resizable(resize => resize.Columns(true))
+            .AutoBind(true)
+            )
+
+    </div>
+
+</div>

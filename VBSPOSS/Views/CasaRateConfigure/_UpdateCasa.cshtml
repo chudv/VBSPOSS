@@ -1,0 +1,360 @@
+﻿@model VBSPOSS.ViewModels.AddCasaProductViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Extensions
+
+@{
+    Layout = null; // Partial view
+}
+
+<style>    
+    #casaRateConfigureGrid {
+        margin-top: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
+
+    .new-interest-rate {
+        background-color: #e6f3e6 !important;
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+   
+
+    .col-md-2, .col-md-3, .col-md-4 {
+        padding: 0 8px;
+    }
+
+    .casaintrate-row {
+        width: 100%;
+        padding-top: 5px;
+    }
+</style>
+
+<script>
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagShow: "1"
+        };
+    }
+
+    function paramProduct() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramAccountType() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramAccountSubType() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramLoadGridData() {
+        return {
+            productGroupCode: "CASA",
+            posCode: "@(Model.PosCode ?? "")",
+            productCode: "@(Model.ProductCode ?? "")",
+            circularRefNum: "@(Model.CircularRefNum ?? "")",
+            fromEffectiveDate: "@(Model.EffectiveDate.HasValue ? Model.EffectiveDate.Value.ToString("dd/MM/yyyy") : "")",
+            toEffectiveDate: "@(Model.ExpiredDate.HasValue ? Model.ExpiredDate.Value.ToString("dd/MM/yyyy") : "")",
+            mode: "detail"
+        };
+    }
+
+    function getDebitCreditFlagDesc(value) {
+        return value == "C" ? "Dư có" : "Dư nợ";
+    }
+
+    function onSave_CasaRateConfigureForm() {
+        console.log("onSave_CasaRateConfigureForm triggered");
+        try {
+            var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+            if (!grid) {
+                console.error("Grid not found");
+                alert("Lỗi: Không tìm thấy grid!");
+                return;
+            }
+
+            var gridData = grid.dataSource.data().toJSON().map(item => ({
+                Id: item.Id,
+                RateProductCode: item.RateProductCode,
+                RateProductName: item.RateProductName,
+                RateProductAccountTypeCode: item.RateProductAccountTypeCode,
+                RateProductAccountTypeName: item.RateProductAccountTypeName,
+                RateProductAccountSubTypeCode: item.RateProductAccountSubTypeCode,
+                RateProductCurrencyCode: item.RateProductCurrencyCode,
+                RateProductDebitCreditFlag: item.RateProductDebitCreditFlag,
+                RateProductEffectiveDate: item.RateProductEffectiveDate ? kendo.toString(new Date(item.RateProductEffectiveDate), "yyyy-MM-ddTHH:mm:ssZ") : null,
+                RateProductExpiredDate: item.RateProductExpiredDate ? kendo.toString(new Date(item.RateProductExpiredDate), "yyyy-MM-ddTHH:mm:ssZ") : null,
+                RateProductInterestRate: item.RateProductInterestRate != null ? parseFloat(item.RateProductInterestRate) : null,
+                RateProductNewInterestRate: item.RateProductNewInterestRate != null ? parseFloat(item.RateProductNewInterestRate) : null,
+                RateProductPenalRate: item.RateProductPenalRate != null ? parseFloat(item.RateProductPenalRate) : null,
+                RateProductPosCode: item.RateProductPosCode,
+                RateProductAmoutSlab: item.RateProductAmoutSlab != null ? parseFloat(item.RateProductAmoutSlab) : null
+            }));
+            console.log("Grid data:", gridData);
+
+            var formData = $("#updateCasaForm").serializeArray();
+            var formModel = {};
+            $.each(formData, function (index, field) {
+                if (field.name === "EffectiveDate" || field.name === "ExpiredDate" || field.name === "CircularDate") {
+                    var date = kendo.parseDate(field.value, "dd/MM/yyyy");
+                    formModel[field.name] = date ? kendo.toString(date, "yyyy-MM-ddTHH:mm:ssZ") : null;
+                } else if (field.name === "PenalRate") {
+                    var num = parseFloat(field.value);
+                    formModel[field.name] = isNaN(num) ? null : num;
+                } else {
+                    formModel[field.name] = field.value || null;
+                }
+            });
+
+            formModel.Id = @Model.Id;
+            formModel.NewInterestRate = null;
+            console.log("Form data:", formModel);
+
+            var submitData = {
+                model: formModel,
+                gridItems: gridData
+            };
+            console.log("Submit data:", submitData);
+
+            $.ajax({
+                url: '@Url.Action("UpdateCasa", "CasaRateConfigure")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                beforeSend: function () {
+                    kendo.ui.progress($(".k-form"), true);
+                },
+                success: function (response) {
+                    kendo.ui.progress($(".k-form"), false);
+                    console.log("Save successful:", response);
+                    if (response.success) {
+                        alert("Cập nhật dữ liệu thành công!");
+                        grid.dataSource.read();
+                    } else {
+                        alert("Lỗi khi cập nhật dữ liệu: " + (response.message || "Cập nhật thất bại"));
+                        console.error("Save error:", response);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    kendo.ui.progress($(".k-form"), false);
+                    console.error("Save failed:", error, xhr.responseText);
+                    alert("Lỗi khi cập nhật dữ liệu: " + (xhr.responseText || error));
+                }
+            });
+        } catch (error) {
+            kendo.ui.progress($(".k-form"), false);
+            console.error("Error in onSave_CasaRateConfigureForm:", error);
+            alert("Lỗi: " + error.message);
+        }
+    }
+
+    function closeDetail(e) {
+        e.preventDefault();
+        var window = $("#myPopup").data("kendoWindow");
+        if (window) {
+            window.close();
+        }
+    }
+</script>
+
+<form id="updateCasaForm">
+    @Html.AntiForgeryToken()
+    <div class="k-form">
+        <div class="row casaintrate-row">            
+            <div class="col-md-4">
+                <span for="ProductCode">Mã sản phẩm</span>
+                @(Html.Kendo().ComboBox()
+                    .Name("ProductCode")
+                    .Placeholder("Chọn mã sản phẩm...")
+                    .DataTextField("value")
+                    .DataValueField("id")
+                    .DataSource(source => source.Read(read => read.Action("GetProductList", "ListOfValue").Data("paramProduct")))
+                    .Value(Model.ProductCode ?? "")
+                    .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                    )
+            </div>            
+            <div class="col-md-4">
+                <span for="AccountTypeCode">Mã loại tài khoản</span>
+                @(Html.Kendo().ComboBox()
+                    .Name("AccountTypeCode")
+                    .Placeholder("Chọn mã loại tài khoản...")
+                    .DataTextField("value")
+                    .DataValueField("id")
+                    .DataSource(source => source.Read(read => read.Action("GetAccoutTypeList", "ListOfValue").Data("paramAccountType")))
+                    .HtmlAttributes(new { @value = Model.AccountTypeCode, style = "width: 100%; max-width: 300px; color: #1a3c70;", @readonly = "readonly", disabled = "disabled" })
+                    .Enable(false)
+                    )
+            </div>
+            <div class="col-md-4">
+                <span for="AccountSubTypeCode">Mã loại tài khoản phụ</span>
+                @(Html.Kendo().ComboBox()
+                                .Name("AccountSubTypeCode")
+                                .Placeholder("Chọn mã loại tài khoản phụ...")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .DataSource(source => source.Read(read => read.Action("GetSubAccoutTypeList", "ListOfValue").Data("paramAccountSubType")))
+                                .Value(Model.AccountSubTypeCode ?? "")
+                                .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+        </div>
+        <div class="row casaintrate-row">           
+            <div class="col-md-4">
+                <span for="CurrencyCode">Loại tiền tệ</span>
+                @(Html.Kendo().TextBox()
+                    .Name("CurrencyCode")
+                    .HtmlAttributes(new { @value = Model.CurrencyCode, style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                    )
+            </div>
+
+            <div class="col-md-4">
+                <span for="DebitCreditFlag">LS áp dụng Dư Nợ/Dư Có</span>
+                @(Html.Kendo().DropDownList()
+                                .Name("DebitCreditFlag")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .BindTo(new List<SelectListItem>
+                                {
+                                new SelectListItem { Text = "Dư Nợ", Value = "D" },
+                                new SelectListItem { Text = "Dư Có", Value = "C" }
+                                })
+                                .OptionLabel("Chọn LS áp dụng...")
+                                .Value(Model.DebitCreditFlag ?? "")
+                                .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+
+            <div class="col-md-4">
+                <span for="PosCode">POS áp dụng</span>
+                @(Html.Kendo().ComboBox()
+                                .Name("PosCode")
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- POS áp dụng ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .DataSource(source => source.Read(read => read.Action("GetListBranchs", "ListOfValue").Data("paramDonViQL")))
+                                .Value(Model.PosCode ?? "")
+                                .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+        </div>        
+        <div class="row casaintrate-row">           
+            <div class="col-md-4">
+                <span for="EffectiveDate">Ngày hiệu lực</span>
+                @(Html.Kendo().DatePicker()
+                    .Name("EffectiveDate")
+                    .Format("dd/MM/yyyy")
+                    .Value(Model.EffectiveDate ?? DateTime.Today)
+                    .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                    )
+            </div>
+            
+            <div class="col-md-4">
+                <span for="ExpiredDate">Ngày hết hiệu lực</span>
+                @(Html.Kendo().DatePicker()
+                    .Name("ExpiredDate")
+                    .Format("dd/MM/yyyy")
+                    .Value(Model.ExpiredDate ?? DateTime.Today.AddYears(1))
+                    .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                    )
+            </div>
+
+           
+        </div>
+        <div class="row casaintrate-row">
+
+            <div class="col-md-4">
+                <span for="CircularRefNum">Số Quyết định</span>
+                @(Html.Kendo().TextBox()
+                                .Name("CircularRefNum")
+                                .HtmlAttributes(new { @value = Model.CircularRefNum, style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+
+            <div class="col-md-4">
+                <span for="CircularDate">Ngày quyết định</span>
+                @(Html.Kendo().DatePicker()
+                                .Name("CircularDate")
+                                .Format("dd/MM/yyyy")
+                                .Value(Model.CircularDate)
+                                .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+
+            <div class="col-md-4">
+                <span for="PenalRate">Lãi suất phạt</span>
+                @(Html.Kendo().NumericTextBoxFor(m => m.PenalRate)
+                                .Format("n2")
+                                .Decimals(2)
+                                .Min(0)
+                                .HtmlAttributes(new { style = "width: 100%; max-width: 300px; color: #1a3c70;" })
+                                )
+            </div>
+        </div>
+       
+        <div class="row casaintrate-row">
+            <div class="col-md-12 d-flex justify-content-end">
+                @(Html.Kendo().Button()
+                    .Name("loadDataBtn")
+                    .HtmlAttributes(new { type = "button", style = "width: 100px;" })
+                    .Content("Tải dữ liệu")
+                    .Events(ev => ev.Click("onLoadData_CasaRateConfigure"))
+                    )
+                    &nbsp;
+                @(Html.Kendo().Button()
+                    .Name("saveBtn")
+                    .HtmlAttributes(new { type = "button", style = "width: 100px;" })
+                    .Content("Lưu lại")
+                    .Events(ev => ev.Click("onSave_CasaRateConfigureForm"))
+                    )
+                    &nbsp;
+               @(Html.Kendo().Button()
+                    .Name("closeBtn")
+                    .HtmlAttributes(new { type = "button", style = "width: 100px;" })
+                    .Content("Đóng")
+                    .Events(ev => ev.Click("closeDetail"))
+                    )
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px;">
+            @(Html.Kendo().Grid<VBSPOSS.ViewModels.CasaRateProductViewModel>()
+                .Name("casaRateConfigureGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.RateProductCode).Title("Mã sản phẩm").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.RateProductAccountTypeCode).Title("Mã loại TK").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.RateProductAccountTypeName).Title("Tên loại TK").Width(150).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.RateProductEffectiveDate).Title("Ngày hiệu lực").Width(120).Format("{0:dd/MM/yyyy}").HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.RateProductDebitCreditFlag).Title("LS áp dụng").Width(120).HtmlAttributes(new { style = "text-align: center;" })
+                    .ClientTemplate("#= getDebitCreditFlagDesc(RateProductDebitCreditFlag) #");
+                    columns.Bound(c => c.RateProductInterestRate).Title("Lãi suất hiện tại").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                    columns.Bound(c => c.RateProductNewInterestRate).Title("Lãi suất mới").Width(120).HtmlAttributes(new { style = "text-align: center;", @class = "new-interest-rate" }).Format("{0:n2}");
+                    columns.Bound(c => c.RateProductPenalRate).Title("Tỷ lệ phạt").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                    columns.Command(command => { command.Edit(); }).Title("Thao tác").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                })
+                .HtmlAttributes(new { style = "height: 250px; width: 100%;" })
+                .Scrollable()
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.Id))
+                .Read(read => read.Action("LoadCasaConfigureAddGridData", "CasaRateConfigure").Data("paramLoadGridData"))
+                .Update(update => update.Action("UpdateCasa", "CasaRateConfigure"))
+                .PageSize(50)
+                )
+                .Editable(editable => editable.Mode(GridEditMode.InLine))
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+</form>

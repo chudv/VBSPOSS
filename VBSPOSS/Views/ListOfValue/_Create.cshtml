@@ -1,0 +1,194 @@
+﻿@model VBSPOSS.ViewModels.AddCasaProductViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+
+@{
+    Layout = null; // Giữ là partial view
+}
+
+<style>
+    .form-group {
+        margin-bottom: 20px; /* Tăng khoảng cách dưới */
+    }
+
+    label {
+        font-weight: bold;
+        color: navy;
+        display: block;
+        margin-bottom: 8px; /* Tăng khoảng cách dưới label */
+        font-size: 16px; /* Tăng cỡ chữ */
+    }
+
+    .k-combobox, .k-datepicker {
+        width: 100%;
+        color: navy;
+        font-size: 14px; /* Tăng cỡ chữ trong input */
+        padding: 8px; /* Thêm padding cho input */
+        border-radius: 4px; /* Bo góc */
+    }
+
+    .k-button {
+        font-weight: bold;
+        color: navy;
+        padding: 10px 20px; /* Tăng kích thước nút */
+        font-size: 14px; /* Tăng cỡ chữ nút */
+        border-radius: 4px; /* Bo góc nút */
+        margin-left: 10px; /* Khoảng cách giữa các nút */
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        padding: 5px; /* Tăng padding */
+    }
+
+    .col-md-8 {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    #casaGrid {
+        margin-top: 20px; /* Tăng khoảng cách trên */
+        border: 1px solid #ddd; /* Thêm viền cho Grid */
+        border-radius: 4px; /* Bo góc Grid */
+    }
+
+    .k-grid-header th {
+        background-color: #f5f5f5; /* Màu nền header */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .k-grid-content {
+        height: 300px !important; /* Tăng chiều cao Grid */
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="addCasaForm">
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="ProductCode">Mã sản phẩm</label>
+                        @(Html.Kendo().ComboBox()
+                            .Name("ProductCode")
+                            .DataTextField("ProductName")
+                            .DataValueField("ProductCode")
+                            .Placeholder("Chọn mã sản phẩm")
+                            .BindTo(Model.ProductList.Select(p => new { ProductCode = p.ProductCode, ProductName = p.ProductName + " (" + p.ProductCode + ")" }))
+                            .HtmlAttributes(new { style = "width: 100%; color: navy;", required = "required" })
+                            .Suggest(true)
+                            .AutoBind(true)
+                            )
+                        <span class="k-invalid-msg" data-for="ProductCode"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="AccountTypeCode">Mã loại tài khoản</label>
+                        @(Html.Kendo().ComboBox()
+                            .Name("AccountTypeCode")
+                            .DataTextField("Text")
+                            .DataValueField("Value")
+                            .Placeholder("Chọn mã loại tài khoản")
+                            .BindTo(Model.AccountTypes.Select(at => new { Value = at.Value, Text = at.Text + " (" + at.Value + ")" }))
+                            .HtmlAttributes(new { style = "width: 100%; color: navy;", required = "required" })
+                            .Suggest(true)
+                            .AutoBind(true)
+                            )
+                        <span class="k-invalid-msg" data-for="AccountTypeCode"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="AccountTypeName">Tên loại tài khoản</label>
+                        @(Html.Kendo().ComboBox()
+                            .Name("AccountTypeName")
+                            .DataTextField("Text")
+                            .DataValueField("Value")
+                            .Placeholder("Chọn tên loại tài khoản")
+                            .BindTo(Model.AccountTypes.Select(at => new { Value = at.Text, Text = at.Text }))
+                            .HtmlAttributes(new { style = "width: 100%; color: navy;", required = "required" })
+                            .Suggest(true)
+                            .AutoBind(true)
+                            )
+                        <span class="k-invalid-msg" data-for="AccountTypeName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="AccountSubTypeCode">Loại tài khoản phụ</label>
+                        @(Html.Kendo().ComboBox()
+                            .Name("AccountSubTypeCode")
+                            .DataTextField("Text")
+                            .DataValueField("Value")
+                            .Placeholder("Chọn loại tài khoản phụ")
+                            .BindTo(Model.AccountSubTypes.Select(ast => new { Value = ast.Value, Text = ast.Text + " (" + ast.Value + ")" }))
+                            .HtmlAttributes(new { style = "width: 100%; color: navy;", required = "required" })
+                            .Suggest(true)
+                            .AutoBind(true)
+                            )
+                        <span class="k-invalid-msg" data-for="AccountSubTypeCode"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Để trống hoặc thêm nội dung nếu cần -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12" style="text-align: right; padding-top: 20px;">
+                    @(Html.Kendo().Button()
+                        .Name("loadDataBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;" })
+                        .Content("Tải dữ liệu")
+                        .Events(ev => ev.Click("onLoadData"))
+                        )
+                    @(Html.Kendo().Button()
+                        .Name("saveBtn")
+                        .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;", disabled = "disabled" })
+                        .Content("Lưu lại")
+                        .Events(ev => ev.Click("onSave"))
+                        )
+                </div>
+            </div>
+        </form>
+
+        @(Html.Kendo().Grid<AddCasaProductViewModel>()
+            .Name("casaGrid")
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.ProductCode).Title("Mã sản phẩm").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.AccountTypeCode).Title("Mã loại TK").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.AccountTypeName).Title("Tên loại TK").Width(180).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.AccountSubTypeCode).Title("Loại TK phụ").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.CurrencyCode).Title("Mã tiền tệ").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.InterestRate).Title("Lãi suất hiện tại").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true).Format("{0:N2}");
+                columns.Bound(c => c.NewInterestRate).Title("Lãi suất mới").EditorTemplateName("NumericEditor").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:N2}");
+                columns.Bound(c => c.ExpiredDate).Title("Ngày hết hiệu lực").Format("{0:dd/MM/yyyy}").Width(140).EditorTemplateName("DateEditor").HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.CircularRefNum).Title("Số QĐ").Width(140).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.PenalRate).Title("Tỷ lệ phạt").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:N2}");
+                columns.Command(command => { command.Edit(); }).Width(120);
+            })
+            .ToolBar(toolbar => toolbar.Create())
+            .Editable(editable => editable.Mode(GridEditMode.InLine))
+            .HtmlAttributes(new { style = "height: 500px;" })
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .ServerOperation(false)
+            .Read(read => read.Action("GetCasaGridData", "ListOfValue").Type(HttpVerbs.Post).Data("getGridData")) // Chuyển sang POST
+            .Update(update => update.Action("UpdateCasaGridData", "ListOfValue"))
+            .Model(model => model.Id(p => p.Id)) // Sử dụng Id
+            )
+            .AutoBind(false)
+            .Events(events => events.DataBound("onDataBound"))
+            )
+
+        <script id="numeric-editor" type="text/x-kendo-template">
+            <input name="NewInterestRate" data-bind="value:NewInterestRate" data-role="numerictextbox" data-format="#.##" data-decimals="2" required="required" />
+        </script>
+
+        <script id="date-editor" type="text/x-kendo-template">
+            <input name="ExpiryDate" data-bind="value:ExpiryDate" data-role="datepicker" data-format="dd/MM/yyyy" />
+        </script>
+    </div>
+</div>

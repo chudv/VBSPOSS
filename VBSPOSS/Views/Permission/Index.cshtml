@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "Cấu hình quyền";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    /* .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+            background: none !important;
+            border: none;
+            padding: 0 !important;
+            font: inherit;
+            cursor: pointer;
+        } */
+
+    /* .red {
+            color: red;
+        } */
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    /* .row {
+            display: inline-flex;
+            padding: 5px;
+        } */
+
+
+</style>
+
+
+<script>
+    function onRowBound(e) {
+
+        var rows = e.sender.tbody.children();
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var isParent = dataItem.get("IsParent");
+            if (isParent == true || isParent == 1)
+                row.addClass('style1');
+        }
+    }
+    function getStatusDesc(value) {
+        if (value == 0) {
+            return "Đóng";
+        } else {
+            return "Hoạt động";
+        }
+    }
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        @(Html.Kendo().Grid<VBSPOSS.Models.PermissionModel>()
+            .Name("MainGrid")
+            .Events(e => e.DataBound("onRowBound"))
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+                    command.Edit().Text(" ").UpdateText(" ").CancelText(" ");
+                    command.Destroy().Text(" ");
+                }).Title("Sự kiện").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.Id).Title("Thứ tự").Hidden();
+                columns.Bound(c => c.Code).Title("Mã").Width(80);
+                @* columns.Bound(c => c.Description).Title("Mô tả").Width(120);                
+                columns.Bound(c => c.Status).Title("Trạng thái").Width(60);  *@
+                columns.Bound(c => c.Description).Title("Mô tả").Width(120);
+                columns.Bound(c => c.Status).Title("Trạng thái").Width(60).EditorTemplateName("Status")
+                .ClientTemplate("#=getStatusDesc(Status)#").HtmlAttributes(new { style = "text-align: center;" });
+                //columns.Command(command => { command.Edit().Text("Sửa").UpdateText("Lưu").CancelText("Hủy"); command.Destroy().Text("Xóa"); }).Width(155).HtmlAttributes(new { style = "text-align: center;" });
+
+            })
+            .HtmlAttributes(new { style = "height: 500px;" })
+            .ToolBar(toolbar =>
+            {
+                toolbar.Create().Text("Thêm mới").HtmlAttributes(new { style = "width: 110px; font-weight:bold; color: navy;" });
+                toolbar.Excel().Text("Xuất excel").HtmlAttributes(new { style = "width: 110px; font-weight:bold; color: navy;" });
+            })
+            .Excel(excel => excel
+            .FileName("Danh_Sach_Quyen.xlsx").AllPages(true)
+            )
+            .Editable(editable =>
+            {
+                editable.Mode(GridEditMode.InLine);
+                editable.DisplayDeleteConfirmation("Bạn chắc chắn muốn xóa?");
+            })
+            .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+            .Sortable()
+            .Scrollable()
+            .Pageable(pageable => pageable
+            .Refresh(true)
+            .ButtonCount(5))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .Batch(false)
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.Id))
+            .Read(read => read.Action("LoadData", "Permission"))
+            .Create(update => update.Action("Create", "Permission"))
+            .Update(update => update.Action("Edit", "Permission"))
+            .Destroy(update => update.Action("Delete", "Permission"))
+            .PageSize(50)
+            )
+            .Resizable(resize => resize.Columns(true))
+            .AutoBind(true)
+            )
+    </div>
+</div>
+

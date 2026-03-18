@@ -1,0 +1,39 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Trình mở tệp tin đính kèm</title>
+    <style type="text/css">
+        body {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    @using (Html.BeginForm("ViewPDF", "IntRateConfig", FormMethod.Post))
+    {
+        if (TempData["OK"] == "1")
+        {
+            @Html.Raw(TempData["Embed"])
+        }
+        else if (TempData["OK"] == "0")
+        {
+            <h4>FILE ĐÍNH KÈM KHÔNG PHẢI LÀ FILE .PDF => KHÔNG THỂ MỞ ĐƯỢC</h4>
+        }
+        else if (TempData["OK"] == "2")
+        {
+            <h4>FILE ĐÍNH KÈM KHÔNG TỒN TẠI</h4>
+        }
+        else
+        {
+            <h4>LỖI KHÁC, LIÊN HỆ QUẢN TRỊ PHẦN MỀM</h4>
+        }
+    }
+</body>
+</html>

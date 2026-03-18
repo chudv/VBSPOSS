@@ -1,0 +1,562 @@
+﻿@model VBSPOSS.ViewModels.AddCasaProductViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Extensions
+
+@{
+    Layout = null; // Partial view
+}
+
+<style>
+    .k-form {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+        .k-form .k-form-field {
+            margin-bottom: 15px;
+        }
+
+        .k-form label {
+            font-weight: bold;
+            color: navy;
+        }
+
+        .k-form .k-textbox,
+        .k-form .k-datepicker,
+        .k-form .k-numerictextbox,
+        .k-form .k-combobox,
+        .k-form .k-dropdown {
+            width: 80% !important;
+            max-width: 100% !important;
+            color: navy;
+        }
+
+        .k-form .k-button {
+            font-weight: bold;
+            color: blue;
+            width: 150px;
+            margin-right: 10px;
+        }
+
+        .k-form .k-state-disabled {
+            opacity: 1;
+            background-color: #f0f0f0;
+        }
+
+    #casaRateConfigureGrid, #attachedFilesGrid {
+        margin-top: 20px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bóng đổ nhẹ */
+    }
+
+        /* Cải thiện giao diện grid */
+        #attachedFilesGrid .k-grid-header {
+            background-color: #f3f4f6; /* Màu nền header */
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        #attachedFilesGrid .k-grid-table {
+            border-collapse: collapse;
+        }
+
+            #attachedFilesGrid .k-grid-table tr:nth-child(even) {
+                background-color: #f9fafb; /* Nền xen kẽ cho hàng chẵn */
+            }
+
+            #attachedFilesGrid .k-grid-table tr:hover {
+                background-color: #e5e7eb; /* Hover nhẹ */
+            }
+
+            #attachedFilesGrid .k-grid-table td {
+                border-bottom: 1px solid #e5e7eb; /* Viền dưới mỗi hàng */
+                padding: 8px;
+            }
+
+    .new-interest-rate {
+        background-color: #d1fae5 !important;
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+
+    /* Sửa nút Xem và Xóa thẳng hàng */
+    .k-grid .k-command-cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px; /* Khoảng cách giữa nút */
+        padding: 4px;
+    }
+
+    .k-grid .k-button.view-btn {
+        background-color: #ffffff; 
+         border: 1px solid;
+       /* color: #10b981;*/
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        line-height: 1.5; /* Đảm bảo chiều cao nút đồng đều */
+    }
+
+        .k-grid .k-button.view-btn:hover {
+            background-color: #d1fae5;
+        }
+
+    .k-grid .k-button.delete-btn {
+        background-color: #ffffff; 
+        border: 1px solid;
+       /* color: #ef4444;*/
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        line-height: 1.5; /* Đảm bảo chiều cao nút đồng đều */
+    }
+
+        .k-grid .k-button.delete-btn:hover {
+            background-color: #fee2e2;
+        }
+</style>
+
+<script>
+    // Hàm toàn cục cho Kendo Grid
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagShow: "1"
+        };
+    }
+
+    function paramProduct() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramAccountType() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramAccountSubType() {
+        return { productGroupCode: "CASA" };
+    }
+
+    function paramLoadGridData() {
+        return {
+            productGroupCode: "CASA",
+            posCode: "@(Model.PosCode ?? "")",
+            productCode: "@(Model.ProductCode ?? "")",
+            circularRefNum: "@(Model.CircularRefNum ?? "")",
+            fromEffectiveDate: "@(Model.EffectiveDate.HasValue ? Model.EffectiveDate.Value.ToString("dd/MM/yyyy") : "")",
+            toEffectiveDate: "@(Model.ExpiredDate.HasValue ? Model.ExpiredDate.Value.ToString("dd/MM/yyyy") : "")",
+            mode: "detail"
+        };
+    }
+
+    function paramLoadAttachedFiles() {
+        return {
+            documentId: $("#DocumentId").val() || 0
+        };
+    }
+
+    function getDebitCreditFlagDesc(value) {
+        return value == "C" ? "Dư có" : "Dư nợ";
+    }
+
+    function onDataBound(e) {
+        console.log("Grid dataBound, data:", e.sender.dataSource.data());
+    }
+
+    function closeDocument(e) {
+        e.preventDefault();
+        var window = $("#myPopup").data("kendoWindow");
+        if (window) {
+            window.close();
+        }
+    }
+
+    function refreshAttachFileGrid() {
+        var grid = $("#attachedFilesGrid").data("kendoGrid");
+        if (grid) {
+            grid.dataSource.read().then(function() {
+                console.log("Grid dataSource read completed, data:", grid.dataSource.data());
+            }).catch(function(error) {
+                console.error("Error during dataSource.read:", error);
+            });
+        } else {
+            console.error("Grid #attachedFilesGrid is not initialized");
+        }
+    }
+
+    function deleteFile(e) {
+        e.preventDefault();
+        var grid = $("#attachedFilesGrid").data("kendoGrid");
+        if (grid) {
+            var dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
+            if (dataItem) {
+                var isConfirm = confirm("Bạn có chắc chắn muốn xóa file " + dataItem.FileName + " không?");
+                if (isConfirm) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteAttachedFile", "CasaRateConfigure")',
+                        type: "POST",
+                        data: JSON.stringify({ fileId: dataItem.FileId }),
+                        contentType: "application/json; charset=utf-8",
+                        headers: {
+                            "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(result) {
+                            if (result.success) {
+                                alert("Xóa file thành công!");
+                                refreshAttachFileGrid();
+                            } else {
+                                alert("Xóa file thất bại: " + result.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Delete file error:", error, xhr.responseText);
+                            alert("Lỗi khi xóa file: " + (xhr.responseText || error));
+                        }
+                    });
+                }
+            } else {
+                console.error("No dataItem found for the selected row");
+            }
+        } else {
+            console.error("Grid #attachedFilesGrid is not initialized");
+        }
+    }
+
+    function viewFile(e) {
+        e.preventDefault();
+        var grid = $("#attachedFilesGrid").data("kendoGrid");
+        if (grid) {
+            var dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
+            if (dataItem && dataItem.FileNameNew && dataItem.PathFile) {
+                var fileUrl = '@Url.Action("DownloadFile", "CasaRateConfigure")' + '?fileId=' + dataItem.FileId;
+                console.log("Viewing file:", dataItem.FileName, "URL:", fileUrl);
+                window.open(fileUrl, '_blank'); // Mở file trong tab mới để xem
+            } else {
+                console.error("File data not found or invalid");
+                alert("Không thể tải file. Vui lòng thử lại.");
+            }
+        } else {
+            console.error("Grid #attachedFilesGrid is not initialized");
+            alert("Lỗi khi tải file. Grid không được khởi tạo.");
+        }
+    }
+
+    $(document).ready(function() {
+        function uploadFile(e) {
+            e.preventDefault();
+            var fileInput = $("#fileUpload").get(0).files[0];
+            if (!fileInput) {
+                alert("Vui lòng chọn một file để tải lên!");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("file", fileInput);
+            var documentId = $("#DocumentId").val() || 0;
+            var casaId = $("#Id").val() || 0;
+            formData.append("documentId", documentId);
+            formData.append("id", casaId);
+
+            console.log("Uploading file with CasaId:", casaId, "DocumentId:", documentId);
+
+            $.ajax({
+                url: '@Url.Action("UploadAttachedFile", "CasaRateConfigure")',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(result) {
+                    console.log("Upload response:", result);
+                    if (result.success) {
+                        alert("Tải file lên thành công!");
+                        if (result.documentId) {
+                            $("#DocumentId").val(result.documentId);
+                            console.log("Updated DocumentId:", result.documentId);
+                        }
+                        $("#fileUpload").val("");
+                        refreshAttachFileGrid();
+                    } else {
+                        alert("Tải file lên thất bại: " + result.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Upload error:", error, xhr.responseText);
+                    alert("Lỗi khi tải file: " + (xhr.responseText || error));
+                }
+            });
+        }
+
+        // Gắn sự kiện cho button
+        $("#btnUpload").on("click", uploadFile);
+
+        // Kiểm tra khởi tạo grid
+        var grid = $("#attachedFilesGrid").data("kendoGrid");
+        if (grid) {
+            console.log("Grid #attachedFilesGrid initialized successfully");
+        } else {
+            console.error("Grid #attachedFilesGrid failed to initialize");
+            if ($("#attachedFilesGrid").length) {
+                console.log("Grid element exists in DOM");
+            } else {
+                console.error("Grid element #attachedFilesGrid not found in DOM");
+            }
+        }
+    });
+</script>
+
+<div class="k-form">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.DocumentId)
+
+    <!-- Phần thông tin chi tiết -->
+    <div class="row">
+        <div class="col-md-2">
+            <label for="ProductCode">Mã sản phẩm</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().ComboBox()
+                .Name("ProductCode")
+                .Placeholder("Chọn mã sản phẩm")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => source.Read(read => read.Action("GetProductList", "ListOfValue").Data("paramProduct")))
+                .HtmlAttributes(new { @value = Model.ProductCode, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+        <div class="col-md-2">
+            <label for="AccountTypeCode">Mã loại tài khoản</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().ComboBox()
+                .Name("AccountTypeCode")
+                .Placeholder("Chọn mã loại tài khoản")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => source.Read(read => read.Action("GetAccoutTypeList", "ListOfValue").Data("paramAccountType")))
+                .HtmlAttributes(new { @value = Model.AccountTypeCode, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+    </div>
+    <div class="row" style="padding-top: 5px;">
+        <div class="col-md-2">
+            <label for="AccountSubTypeCode">Mã loại tài khoản phụ</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().ComboBox()
+                .Name("AccountSubTypeCode")
+                .Placeholder("Chọn mã loại tài khoản phụ")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => source.Read(read => read.Action("GetSubAccoutTypeList", "ListOfValue").Data("paramAccountSubType")))
+                .HtmlAttributes(new { @value = Model.AccountSubTypeCode, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+        <div class="col-md-2">
+            <label for="CurrencyCode">Loại tiền tệ</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().TextBox()
+                .Name("CurrencyCode")
+                .HtmlAttributes(new { @value = Model.CurrencyCode, style = "width: 80%; color: navy;", @readonly = "readonly" })
+                )
+        </div>
+    </div>
+    <div class="row" style="padding-top: 5px;">
+        <div class="col-md-2">
+            <label for="DebitCreditFlag">LS áp dụng Dư Nợ/Dư Có</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().DropDownList()
+                .Name("DebitCreditFlag")
+                .DataTextField("Text")
+                .DataValueField("Value")
+                .BindTo(new List<SelectListItem>
+            {
+            new SelectListItem { Text = "Dư Nợ", Value = "D" },
+            new SelectListItem { Text = "Dư Có", Value = "C" }
+            })
+                .OptionLabel("Chọn LS áp dụng...")
+                .HtmlAttributes(new { @value = Model.DebitCreditFlag, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+        <div class="col-md-2">
+            <label for="PosCode">POS áp dụng</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().ComboBox()
+                .Name("PosCode")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- POS áp dụng ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => source.Read(read => read.Action("GetListBranchs", "ListOfValue").Data("paramDonViQL")))
+                .HtmlAttributes(new { @value = Model.PosCode, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+    </div>
+    <div class="row" style="padding-top: 5px;">
+        <div class="col-md-2">
+            <label for="EffectiveDate">Ngày hiệu lực</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().DatePicker()
+                .Name("EffectiveDate")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { @value = Model.EffectiveDate.HasValue ? Model.EffectiveDate.Value.ToString("dd/MM/yyyy") : "", style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+        <div class="col-md-2">
+            <label for="ExpiredDate">Ngày hết hiệu lực</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().DatePicker()
+                .Name("ExpiredDate")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { @value = Model.ExpiredDate.HasValue ? Model.ExpiredDate.Value.ToString("dd/MM/yyyy") : "", style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+    </div>
+    <div class="row" style="padding-top: 5px;">
+        <div class="col-md-2">
+            <label for="CircularRefNum">Số Quyết định</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().TextBox()
+                .Name("CircularRefNum")
+                .HtmlAttributes(new { @value = Model.CircularRefNum, style = "width: 80%; color: navy;", @readonly = "readonly" })
+                )
+        </div>
+        <div class="col-md-2">
+            <label for="CircularDate">Ngày quyết định</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDate")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { @value = Model.CircularDate.ToString("dd/MM/yyyy"), style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+    </div>
+    <div class="row" style="padding-top: 5px;">
+        <div class="col-md-2">
+            <label for="PenalRate">Lãi suất phạt</label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().NumericTextBox<double>()
+                .Name("PenalRate")
+                .Format("n2")
+                .Decimals(2)
+                .Min(0)
+                .HtmlAttributes(new { @value = Model.PenalRate, style = "width: 80%; color: navy;", @readonly = "readonly", disabled = "disabled" })
+                .Enable(false)
+                )
+        </div>
+        <div class="col-md-2">
+            &nbsp;
+        </div>
+        <div class="col-md-4">
+            &nbsp;
+        </div>
+    </div>
+
+    <!-- Grid hiển thị lãi suất -->
+    <div class="row" style="padding-top: 5px;">
+        @(Html.Kendo().Grid<VBSPOSS.ViewModels.CasaRateProductViewModel>()
+            .Name("casaRateConfigureGrid")
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.RateProductCode).Title("Mã sản phẩm").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.RateProductAccountTypeCode).Title("Mã loại TK").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.RateProductAccountTypeName).Title("Tên loại TK").Width(180).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.RateProductEffectiveDate).Title("Ngày hiệu lực").Width(140).Format("{0:dd/MM/yyyy}").HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                columns.Bound(c => c.RateProductDebitCreditFlag).Title("LS áp dụng<br>Dư Nợ/Dư Có").Width(150).HtmlAttributes(new { style = "text-align: center;" }).Locked(true)
+                .ClientTemplate("#= getDebitCreditFlagDesc(RateProductDebitCreditFlag) #").Encoded(false);
+                columns.Bound(c => c.RateProductInterestRate).Title("Lãi suất hiện tại").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                columns.Bound(c => c.RateProductNewInterestRate).Title("Lãi suất mới").Width(140).HtmlAttributes(new { style = "text-align: center;", @class = "new-interest-rate" }).Format("{0:n2}");
+                columns.Bound(c => c.RateProductPenalRate).Title("Tỷ lệ phạt").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+            })
+            .HtmlAttributes(new { style = "height: 300px; width: 100%;" })
+            .Scrollable()
+            .Events(events => events.DataBound("onDataBound"))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.Id))
+            .Read(read => read.Action("LoadCasaConfigureAddGridData", "CasaRateConfigure").Data("paramLoadGridData"))
+            .PageSize(50)
+            )
+            .AutoBind(true)
+            )
+    </div>
+
+    <!-- Phần upload file -->
+    <div class="row" style="padding-top: 20px;">
+        <div class="col-md-12">
+            <label>Đính kèm file</label>
+            <input type="file" id="fileUpload" name="fileUpload" style="width: 100%;" />
+            <button id="btnUpload" class="k-button">Tải lên</button>
+        </div>
+    </div>
+
+    <!-- Grid file đính kèm -->
+    <div class="row" style="padding-top: 10px;">
+        @(Html.Kendo().Grid<VBSPOSS.Data.Models.AttachedFileInfo>()
+            .Name("attachedFilesGrid")
+            .Columns(columns =>
+            {
+                columns.Bound(f => f.FileId).Hidden();
+                columns.Bound(f => f.FileName).Title("Tên file").Width(250).HtmlAttributes(new { style = "text-align: left; font-weight: 500;" });
+                columns.Bound(f => f.ContentDescription).Title("Mô tả").Width(350).HtmlAttributes(new { style = "text-align: left;" });
+                columns.Bound(f => f.CreatedDate).Title("Ngày tải lên").Width(150).Format("{0:dd/MM/yyyy HH:mm}").HtmlAttributes(new { style = "text-align: center;" });
+                columns.Command(command =>
+                {
+                    command.Custom("ViewFile").Text("Xem").Click("viewFile").HtmlAttributes(new { @class = "k-button k-button-icontext view-btn", style = "padding: 4px 10px; font-size: 12px;" });
+                    command.Custom("DeleteFile").Text("Xóa").Click("deleteFile").HtmlAttributes(new { @class = "k-button k-button-icontext delete-btn", style = "padding: 4px 10px; font-size: 12px;" });
+                }).Title("Thao tác").Width(180).HtmlAttributes(new { style = "text-align: center;" });
+            })
+            .HtmlAttributes(new { style = "height: 200px; width: 100%; font-size: 13px;" })
+            .Scrollable()
+            .Events(events => events.DataBound("onDataBound"))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.FileId))
+            .Read(read => read.Action("LoadAttachedFiles", "CasaRateConfigure").Data("paramLoadAttachedFiles"))
+            .PageSize(20)
+            )
+            .AutoBind(true)
+            )
+    </div>
+
+    <div class="row" style="padding-top: 20px; text-align: right;">
+        <div class="col-md-12">
+            @(Html.Kendo().Button()
+                .Name("closeBtn")
+                .HtmlAttributes(new { type = "button", style = "width: 150px; font-weight: bold; color: blue;" })
+                .Content("Đóng")
+                .Events(ev => ev.Click("closeDocument"))
+                )
+        </div>
+    </div>
+</div>

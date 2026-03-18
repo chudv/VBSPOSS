@@ -1,0 +1,16 @@
+﻿@model VBSPOSS.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+
+<div class="menu">
+    <ul id="menu">
+        @*<li class="text-danger">Bạn không có quyền truy cập.</li>*@
+        <li><a href="@Url.Action("Logout", "Account")"><i class="fa fa-sign-out" title="Đăng xuất"></i> <span class="collapsed">Đăng xuất</span></a></li>
+    </ul>
+</div>
+
+
+@*<h1 class="text-danger">Lỗi.</h1>
+<h2 class="text-danger">Bạn không có quyền truy cập.</h2>*@

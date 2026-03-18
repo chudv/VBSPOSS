@@ -1,0 +1,572 @@
+﻿@model VBSPOSS.ViewModels.UpdateTidePenalRateConfigViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+
+@{
+    Layout = null; // ĐK là partial view
+}
+<style>
+
+    #myTidePenalRateConfigUpd {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: 0.8;
+        display: none;
+    }
+
+    .k-window-titlebar {
+        padding-block: 10px;
+        padding-inline: 12px;
+    }
+
+    .ajax-loaderTidePenalRateConfigUpd {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px;
+        margin-top: -32px;
+        display: block;
+    }
+
+    /*  .k-grid tbody .k-button {
+            background: none !important;
+            border: none;
+            padding: 0 !important;
+            font: inherit;
+            cursor: pointer;
+            min-width: 18px;
+            width: 18px;
+        } */
+
+    /* .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+            background: none !important;
+            border: none;
+            padding: 0 !important;
+            font: inherit;
+            cursor: pointer;
+        } */
+
+    .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+        .k-grid .k-grid-header .k-header .k-link {
+            height: auto;
+        }
+
+    .k-dropdown .k-dropdown-wrap {
+        height: 21px;
+    }
+
+    .col-md-1, .col-md-2, .col-md-5, .col-md-6, .col-md-7, .col-md-12 {
+        padding-right: 0;
+        padding-left: 0;
+        vertical-align: middle;
+    }
+
+    .k-grid .k-button-icontext .k-icon {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    .label {
+        vertical-align: middle;
+        text-align: right;
+        color: navy;
+        padding-right: 3px;
+    }
+
+    .row, .row-banner {
+        display: flex;
+        padding: 1px;
+    }
+
+    .style0, .style1, .clsLock0, .clsLock1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+    }
+
+    .styleDisableCell {
+        background-color: darkgray;
+    }
+
+    #gridUpdateTidePenalRateConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .k-icon {
+        font-size: 15px;
+    }
+
+    .k-window .row, .k-window .row * {
+        box-sizing: border-box;
+    }
+
+    .k-window div.k-window-content {
+        overflow: hidden;
+    }
+
+    #EffectiveDate, #ExpiredDate, #CircularDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .k-numerictextbox .k-input {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .k-numerictextbox .k-select .k-link span.k-i-arrow-n {
+        vertical-align: baseline;
+    }
+
+    .k-numerictextbox .k-select .k-link span.k-i-arrow-s {
+        vertical-align: baseline;
+    }
+
+     .col-md-9 {
+        padding-left: 0px;
+        padding-right: 0px;
+        color:blue;
+    }
+
+    #gridUpdateTidePenalRateConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid td {
+        border-right: 1px solid #ddd !important;
+        color: navy;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-table-th, .k-grid td, .k-grid .k-table-td {
+        border-right: 1px solid #ddd !important;
+        color: navy;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridUpdateTidePenalRateConfig th {
+        padding-left: 2px;
+        padding-right: 2px;
+        padding-bottom: 1px;
+        padding-top: 1px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid-header th {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-pager {
+        color: blueviolet;
+        height: 33px;
+        padding: 0px 0px 0px 0px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+        font-weight: bold !important;
+        color: navy;
+        font-size: 11px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+        font-weight: bold !important;
+        color: navy;
+        font-size: 11px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header-locked, .k-grid .k-grid-content-locked, .k-grid .k-grid-header-locked .k-table-th, .k-grid .k-grid-content-locked td, .k-grid .k-grid-content-locked .k-table-td {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-toolbar.k-toolbar-resizable {
+        padding-bottom: 0px;
+        padding-top: 0px;
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    ._blue_link {
+        font-weight: bold;
+        color: blue;
+    }
+</style>
+
+<script>
+     function refreshGridUpdateTidePenalRateConfig() {
+        var objGridTidePenalRateUpdate = $("#gridUpdateTidePenalRateConfig").data("kendoGrid");
+        if (objGridTidePenalRateUpdate != null) {
+            objGridTidePenalRateUpdate.dataSource.read();
+        }
+    }
+
+    function onSaveGridCompletedTidePenalRateConfig(e)
+    {
+        if (e != null && e.response != null)
+        {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_HandlerTidePenalRateConfig(e) {
+        if (e.errors) {
+            var message = "Thông báo lỗi: ";
+            dataChangeDGXL = true;//Làm sao để gắn giá trị này khi thoát ra mà màn hình cha bên ngoài nó Reload đc
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+
+     function paramLoadGridUpdateTidePenalRateConfig() {
+        var listPosStr = $("#ListPosCodeChoice").val();
+        var listProductStr = $("#ListProductCodeChoice").val();
+
+        return {
+            posCode: $("#PosCode").val(),
+            productCode: $("#ProductCode").val(),
+            currencyCode: $("#CurrencyCode").val(),
+            effectiveDate: $("#EffectiveDate").val(),
+            expiredDate: $("#ExpiredDate").val(),
+            circularRefNum: $("#CircularRefNum").val(),
+            circularDate: $("#CircularDate").val(),
+            interestRateNew: $("#InterestRateNew").val(),
+            penalIntRate: $("#PenalIntRate").val(),
+            idList: $("#IdList").val(),
+            pListPosCode: listPosStr,
+            pListProductCodeChoice: listProductStr
+        };
+    }
+
+    function onRowBoundUpdateTidePenalRateConfig(e) {
+        var rows = e.sender.tbody.children();
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var statusRow = dataItem.get("Status");
+            if (statusRow == 1 || statusRow == null)
+                row.css({ "background-color": "white", "color": "red" });
+        }
+    }
+
+    function onRejectClick() {
+        $("#RejectFlag").val("1");
+        var rejectReason = $("#RejectReason").val();
+
+        if(rejectReason == "") {
+            alert('Bạn chưa nhập lý do từ chối tờ trình cấu hình lãi suất rút trước hạn của sản phẩm tiền gửi CKH. Vui lòng kiểm tra lại!');
+            return;
+        }
+    }
+
+    function onAuthorizeClick(){
+        $("#RejectFlag").val("0");
+    }
+
+</script>
+
+<form id="authorizePenalRateConfigForm" method="post" enctype="multipart/form-data" asp-controller="IntRateConfig" asp-action="SaveAuthorizeTidePenalRateConfig">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.IdList)
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.Status, new { @Value = Model == null ? 0 : Model.Status })
+    @Html.HiddenFor(m => m.PosCode, new { @Value = Model == null ? "" : Model.PosCode })
+    @Html.HiddenFor(m => m.ProductCode, new { @Value = Model == null ? "" : Model.ProductCode })
+    @Html.HiddenFor(m => m.EffectiveDate, new { @Value = Model == null ? DateTime.Now : Model.EffectiveDate })
+    @Html.HiddenFor(m => m.ExpiredDate, new { @Value = Model == null ? DateTime.MinValue : Model.ExpiredDate })
+    @Html.HiddenFor(m => m.CircularDate, new { @Value = Model == null ? DateTime.MinValue : Model.CircularDate })
+    @Html.HiddenFor(m => m.InterestRateNew, new { @Value = Model == null ? 0 : Model.InterestRateNew })
+    @Html.HiddenFor(m => m.PenalIntRate, new { @Value = Model == null ? 0 : Model.PenalIntRate })
+    @Html.HiddenFor(m => m.ProductList, new { @Value = Model == null ? "" : Model.ProductList })
+    @Html.HiddenFor(m => m.DocumentId, new { @Value = Model == null ? 0 : Model.DocumentId })
+    @Html.HiddenFor(m => m.RejectFlag, new { @Value = Model == null ? 0 : Model.RejectFlag })
+    @Html.HiddenFor(m => m.ListPosCodeChoice, new { @Value = Model == null ? "" : Model.ListPosCodeChoice })
+    @Html.HiddenFor(m => m.ListProductCodeChoice, new { @Value = Model == null ? "" : Model.ListProductCodeChoice })
+    
+    @Html.Hidden("SourceFlag", "0")
+    @Html.Hidden("FlagCallView", TempData["FlagCall"])
+    @Html.Hidden("UserNameView", TempData["UserName"])
+    
+    <div class="row" style="padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:55px;padding-top: 7px;">Đơn vị</label>
+            @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = " width: 210px; !important;max-width:100% !important;color: navy;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:75px;padding-top: 7px;padding-right: 5px!important;">Sản phẩm</label>
+            @Html.Kendo().TextBoxFor(m => m.ProductCodeList).HtmlAttributes(new { @readonly = "readonly", style = " width: 565px; !important;max-width:100% !important;color: navy;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 5px!important;">Loại tiền</label>
+            @Html.Kendo().TextBoxFor(m => m.CurrencyCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px; !important;max-width:100% !important;color: navy;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+        </div>
+    </div>
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;">Số quyết định</label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = "readonly", style = " width: 400px; !important;max-width:100% !important;color: green;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 5px!important;">Ngày ký</label>
+            @Html.Kendo().TextBoxFor(m => m.CircularDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 78px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 5px!important;">Ngày hiệu lực</label>
+            @Html.Kendo().TextBoxFor(m => m.EffectiveDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 78px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 5px!important;">Ngày hết hiệu lực</label>
+            @Html.Kendo().TextBoxFor(m => m.ExpiredDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 78px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+        </div>
+    </div>
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:80px;padding-top: 7px;">Trạng thái</label>
+            @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: green;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:95px;padding-top: 7px;padding-right: 5px!important;">Người đề nghị</label>
+            @Html.Kendo().TextBoxFor(m => m.ModifiedBy).HtmlAttributes(new { @readonly = "readonly", style = " width: 150px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            @Html.Kendo().TextBoxFor(m => m.ModifiedDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 130px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 5px!important;">Người duyệt</label>
+            @Html.Kendo().TextBoxFor(m => m.ApproverBy).HtmlAttributes(new { @readonly = "readonly", style = " width: 150px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            @Html.Kendo().TextBoxFor(m => m.ApprovalDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 130px; !important;max-width:100% !important;color: green;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+        </div>
+    </div>
+    <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            @(Html.Kendo().Grid<UpdateTidePenalRateConfigViewModel>()
+                .Name("gridUpdateTidePenalRateConfig")
+                .Events(e => e.DataBound("onRowBoundUpdateTidePenalRateConfig"))
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(45).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Bound(c => c.IdList).Hidden();
+                    columns.Bound(c => c.PosCode).Hidden();
+                    columns.Bound(c => c.EffectiveDate).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.PosName).Title("Đơn vị áp dụng").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Group(groupProduct => groupProduct.Title("Sản phẩm").HtmlAttributes(new { style = "text-align: center;padding-top:0px;padding-bottom: 0px;" })
+                    .Columns(infoProduct =>
+                    {
+                        infoProduct.Bound(x => x.ProductCode).Title("Mã SP").Width(45).HtmlAttributes(new { style = "text-align: center;" });
+                        infoProduct.Bound(x => x.ProductName).Title("Tên SP").Width(280).HtmlAttributes(new { style = "text-align: left;" });
+                    }));
+                    columns.Bound(c => c.CurrencyCode).Title("Loại tiền tệ").Width(45).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Group(groupPenalRateConfigOld => groupPenalRateConfigOld.Title("Thông tin quyết định cấu hình hiện tại").HtmlAttributes(new { style = "text-align: center;padding-top:0px;padding-bottom: 0px;" })//.Locked(true)
+                    .Columns(infoRateConfigOld =>
+                    {
+                        infoRateConfigOld.Bound(x => x.CircularRefNum).Title("Số Quyết định").Width(165).HtmlAttributes(new { style = "text-align: left;" });
+                        infoRateConfigOld.Bound(x => x.EffectiveDateText).Title("Ngày hiệu lực").Width(83).HtmlAttributes(new { style = "text-align: center;" });
+                        infoRateConfigOld.Bound(x => x.InterestRate).Title("Lãi suất").Width(55).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                    }));
+                    columns.Bound(c => c.InterestRateNew).Title("Lãi suất cấu hình").Width(80).HtmlAttributes(new { style = "text-align: center;color: green !important;", @class = "new-interest-rate" }).Format("{0:n2}");
+                })
+                .ToolBar(toolbar => toolbar.Excel().HtmlAttributes(new { id = "btnExcelFilePenalRate", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel"))
+                .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat_rut_truoc_han.xlsx").AllPages(true))
+                .HtmlAttributes(new { style = "color: navy; height: 500px; width:100%; vertical-align:middle;margin: 0;padding: 0;margin-right: 0px;padding-left: 0px; padding-right: 0px;" })
+                .Editable(editable => { editable.Mode(GridEditMode.InCell); })
+                .Sortable(false)
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(true)
+                .ServerOperation(false)
+                .Model(model =>
+                {
+                    model.Id(p => p.Id);
+                    model.Field(p => p.OrderNo).Editable(false);
+                    model.Field(p => p.PosName).Editable(false);
+                    model.Field(p => p.ProductCode).Editable(false);
+                    model.Field(p => p.ProductName).Editable(false);
+                    model.Field(p => p.CurrencyCode).Editable(false);
+                    model.Field(p => p.EffectiveDateText).Editable(false);
+                    model.Field(p => p.CircularRefNum).Editable(false);
+                    model.Field(p => p.InterestRate).Editable(false);
+                    model.Field(p => p.InterestRateNew).Editable(false);
+                })
+                .Events(e => e.RequestEnd("onSaveGridCompletedTidePenalRateConfig").Error("error_HandlerTidePenalRateConfig"))
+                .Read(read => read.Action("LoadGridData_UpdateTidePenalRateConfig", "IntRateConfig").Type(HttpVerbs.Post).Data("paramLoadGridUpdateTidePenalRateConfig"))
+                .PageSize(1000))
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(false)
+                )
+        </div>
+    </div>
+    <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <div class="row" style="padding-top: 2px; padding-left: 3px; padding-right: 3px;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px; ">Ghi chú/Lý do từ chối</label>
+                @Html.Kendo().TextBoxFor(m => m.RejectReason).HtmlAttributes(new { style = "border-inline-color:darkseagreen;border-color: lightpink; width: 860px; !important;max-width:100% !important;color: green;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <div class="col-md-9 text-left">
+                <div id="teptin" style="float:left; width:20%;padding-top:5px;">
+                    <label class="control-label" id="lblFileUploadOld" style="padding-left:5px;width: 120px; text-align: left; color: red;">Tờ trình đính kèm:</label>
+                </div>
+                <div id="teptin" style="float: left; width: 80%; padding-top: 4px;">
+                    <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 2px;" id="_attachfile_id"><span class="_blue_link"></span><span id="_no_file_attach_id"></span> </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-right">
+                @(Html.Kendo().Button()
+                    .Name("btnReject")
+                    .Events(e => e.Click("onRejectClick"))
+                    .HtmlAttributes(new { type = "submit", style = "font-weight:bold; width:85px; color: blue;padding-left: 0px; height: 25px;", title = "Từ chối tờ trình cấu hình lãi suất rút trước hạn sản phẩm tiền gửi CKH", @class = "view_form button" })
+                    .ImageUrl(Url.Content("~/images/cancel.png"))
+                    .Content("Từ chối"))
+                @(Html.Kendo().Button()
+                    .Name("btnApproval")
+                    .Events(e => e.Click("onAuthorizeClick"))
+                    .HtmlAttributes(new { type = "submit", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Phê duyệt tờ trình duyệt cấu hình lãi suất rút trước hạn sản phẩm tiền gửi CKH", @class = "view_form button" })
+                    .ImageUrl(Url.Content("~/images/icon_tick.png"))
+                    .Content("Phê duyệt"))
+            </div>
+        </div>
+    </div>
+
+
+</form>
+
+<script>
+    function showAttachedFile(pDocumentId, pFileId, pFileNameNew) {
+        var now = new Date();
+        var win = window.open('../IntRateConfig/LoadPdfAttachedFile?pDocumentId=' + pDocumentId + '&' + 'pFileId=' + pFileId + '&' + 'pFileName=' + pFileNameNew + '&t=' + now.getTime(), '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            alert('Please allow popups for this website');
+        }
+    }
+
+    function add_download_link() {
+        var lcDocumentId = $("#DocumentId").val();
+        var lcFileType = "1";
+        if (lcDocumentId != 0) {
+            $.ajax({
+                type: "GET",
+                url: "../ListOfValue/GetListAttachedFileInfo_ForDocumentId?pDocumentId=" + lcDocumentId + '&' + 'pFileType=' + lcFileType,
+                success: function (data) {
+                    files = data;
+                    if (files != null) {
+                        $("#_no_file_attach_id").text("");
+                        for (i = 0; i < files.length; i++) {
+                            var thutu = i + 1;
+                            html = '<a title="' + files[i].Description + '" href="#" onclick=showAttachedFile(' + lcDocumentId + ',' + files[i].FileId + ',"' + files[i].FileNameNew + '")' + '>' + ' [' + thutu + '] ' + "</a>&nbsp;";
+                            $("#_no_file_attach_id").append(html);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    $(function () {
+        $("#authorizePenalRateConfigForm").submit(function (event) {
+            event.preventDefault();
+            var dataString;
+            var action = this.action;
+            var contentType;
+            var processData;
+            if (this.enctype == "multipart/form-data") {
+                dataString = new FormData($(this).get(0));
+                //contentType = false;
+                //processData = false;
+            } 
+            else {
+            }
+            $.ajax({
+                url: this.action,
+                type: this.method,
+                data: dataString,
+                contentType: false,   // BẮT BUỘC
+                processData: false,   // BẮT BUỘC
+                success: function (result) {
+                    if (result && result.Errors) {
+                        alert(JSON.stringify(result.Errors));
+                        return;
+                    }
+                    var lcRejectStatus = $("#RejectFlag").val();
+                    var lcCircularRefNum = $("#CircularRefNum").val();
+                    if (lcRejectStatus == 1) {
+                        alert("Bạn đã từ chối thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn theo quyết định [" + lcCircularRefNum + "] thành công!");
+                    } 
+                    else {
+                        alert("Bạn đã phê duyệt thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn theo quyết định [" + lcCircularRefNum + "] thành công!");
+                    }
+                    dataChangeTidePanelRate = true;
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function () {
+                    alert("Lỗi khi cập nhật dữ liệu Phê duyệt/Từ chối thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!");
+                }
+            });
+            return false;
+        });
+    });
+
+    $(document).ready(function () {
+        const flagCallView = $("#FlagCallView").val();
+        refreshGridUpdateTidePenalRateConfig();
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>THÔNG TIN CẤU HÌNH LÃI SUẤT RÚT TRƯỚC HẠN CỦA SẢN PHẨM TIỀN GỬI CÓ KỲ HẠN</label>");
+        var lcDocumentIdTmp = $("#DocumentId").val();
+        
+        if(lcDocumentIdTmp != 0)
+        {
+            $("#lblFileUploadOld").show();
+            add_download_link();
+        }
+        else $("#lblFileUploadOld").hide();
+    });
+
+</script>

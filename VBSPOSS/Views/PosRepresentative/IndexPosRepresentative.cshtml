@@ -1,0 +1,509 @@
+﻿@using Kendo.Mvc
+
+@{
+    ViewData["Title"] = "CẤU HÌNH THÔNG TIN NGƯỜI ĐẠI DIỆN";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="myPopup"></div>
+
+<style>
+    #gridMainPosRepresent div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainPosRepresent .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridMainPosRepresent .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid-header .k-header > .k-link {
+        font-family: Tahoma !important;
+        font-weight: bold !important;
+        color: navy;
+    }
+
+    .k-grid th, .k-grid td {
+        font-family: tahoma;
+        color: navy;
+    }
+
+    red {
+        color: red;
+    }
+
+    green {
+        color: green;
+    }
+
+    /*0 - Chữ đậm; 1 - Chữ đậm; 2 - Chữ nghiêng; 3 - Chữ thường; 4 - Chữ Nghiêng đậm; 5 - Chữ gạch chân ở dưới;*/
+    .style0 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style3 {
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+    }
+
+    .k-dropdown .k-dropdown-wrap {
+        height: 21px;
+    }
+    /*
+        .k-input-md .k-input-inner, .k-picker-md .k-input-inner {
+            padding-block: 8px;
+            padding-inline: 16px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        } */
+</style>
+<script>
+    var mainWindow = $("#myPopup");
+</script>
+
+<script>
+    // function paramLoadListBranchFind() {
+
+    //     return {
+    //         pFlagCondi: "2",
+    //         pStatus: "O",
+    //         pShortName: "1",
+    //         pTitleChoice: "",
+    //         pFlagTextShow: "1",
+    //         pUserPosCode: "",
+    //         pUserName: "",
+    //         pFlagWholeBank: 1
+
+    //     };
+    // }
+
+        function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+    function paramLoadListStaffFind() {
+        return {
+            pPosCode: $("#MainPosCode_Find").val(),
+            pTitleChoice: "",
+            pFlagTextShow: "2"
+        };
+    }
+
+    function paramLoadGridData() {
+        return {
+            pPosCode: $("#MainPosCode_Find").val(),
+            pFromEffectiveDate: "",
+            pToEffectiveDate: "",
+            pStaffName: $("#StaffName_Find").val(),
+            pStatus: $("#Status_Find").val()
+        };
+    }
+
+    function refreshGridTidePanelRate() {
+        var grid = $("#gridMainPosRepresent").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onSearchTidePenalRate(e) {
+        refreshGridTidePanelRate();
+    }
+
+    function onRowBoundPosRepresent(e) {
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiRow = dataItem.get("Status");
+            if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0)
+            {
+                row.css("background-color", "white");
+                row.find("td").css("color", "red");
+            }
+        }
+    }
+
+    var dataChange = false;
+
+    $(document).on('click', '#btnCreate', function (e)
+    {
+        e.preventDefault();
+        var pPosCode = $("#MainPosCode_Find").val();
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        mainWindow.kendoWindow({
+            width: "1024px",
+            height: "500px",
+            title: "Thêm mới cấu hình thông tin người đại diện",
+            content: {
+                url: '@Url.Action("ShowUpdatePosRepresentative", "PosRepresentative")',
+                data: { pPosCode: pPosCode, pStaffId: "", pFlagCall: "1" }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseTidePanelRate,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
+            mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+
+    function onCloseTidePanelRate() {
+        if (dataChange == true) {
+            refreshGridTidePanelRate();
+            dataChange = false;
+        }
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+    function showEdit(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.StaffName + " - " + dataItem.StaffPositionName + "]";
+        if (dataItem.Status === 0) {
+            alert("Thành viên " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện chỉnh sửa!");
+            return;
+        }
+        mainWindow.kendoWindow({
+            width: "1024px",
+            height: "500px",
+            title: "Sửa đổi cấu hình thông tin người đại diện",
+            content: { url: "../PosRepresentative/ShowUpdatePosRepresentative", data: { pPosCode: dataItem.PosCode, pStaffId: dataItem.StaffId,pFlagCall: "2" } },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTidePanelRate,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 500, width: 1024 });
+        mainWindow.data("kendoWindow").center().open().title("Sửa đổi cấu hình thông tin người đại diện");
+    }
+
+    function deleteItem(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.StaffName + " - " + dataItem.StaffPositionName + "]";
+        if (dataItem.Status === 0) {
+            alert("Thành viên " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện đánh dấu xóa lại!");
+        }
+        else {
+            var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin thành viên " + sMessInfor + " không?");
+            if (isConfirm == true) {
+                $.ajax({
+                    data: { pStaffId: dataItem.StaffId,pEffectDate: formatDDMMYYYY(dataItem.EffectDate),pExpireDate: formatDDMMYYYY(dataItem.ExpireDate),pStatus: 1},
+                    type: "POST",
+                    url: "../PosRepresentative/DeleteMarkPosRepresentative",
+                    success: function (resultVal) {
+                        if (resultVal == "1") {
+                            alert("Bạn đã xóa thành công thông tin thành viên " + sMessInfor + "!");
+                            refreshGridTidePanelRate();
+                        }
+                        else alert("Đánh dấu xóa thông tin thành viên " + sMessInfor + " thất bại!");
+                    },
+                    error: function () {
+                        alert(" dấu xóa thông tin thành viên " + sMessInfor + " có lỗi!");
+                    }
+                });
+
+            } else {
+                alert("Thao tác bị hủy bỏ!");
+            }
+        }
+    }
+
+
+    $("#btnExportExcel").click(function (e) {
+        //e.preventDefault();
+        //$.ajax({
+        //    data: {
+        //        pDonVi_Cd_TimKiem: $("#DonVi_Cd_TimKiem").val(),
+        //        pPhongBan_Cd_TimKiem: $("#PhongBan_Cd_TimKiem").val(),
+        //        pGioiTinh_TimKiem: $("#GioiTinh_TimKiem").val(),
+        //        pNgaySinh_TimKiem_BD: $("#NgaySinh_TimKiem_BD").val(),
+        //        pNgaySinh_TimKiem_KT: $("#NgaySinh_TimKiem_KT").val(),
+        //        pHoTen_CMT_TimKiem: $("#HoTen_CMT_TimKiem").val(),
+        //        pChucVu_Cd_TimKiem: $("#ChucVu_Cd_TimKiem").val(),
+        //        pNgayDL_TimKiem: $("#NgayDL_TimKiem").val()
+        //    },
+        //    type: "POST",
+        //    url: "../HsCanBo/Export_ExcelFile_HSCB",
+        //    success: function (fileName) {
+        //        window.location = '../HsCanBo/Download?fileName=' + fileName;
+        //    },
+        //    error: function () {
+        //    }
+        //});
+    });
+
+    function getAssignedImage(Id,PosCode) {
+        var lcId = Id;
+        var lcPosCode = PosCode;
+        return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+        // if (lcPhanLoaiDoiTuong == "CN") {
+        //     return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+        // }
+        // else
+        //     return "";
+    }
+
+    function Change_PosCode(e) {
+        // var staffReload = $("#StaffName_Find").data("kendoComboBox");
+        // if (staffReload != null) {
+        //     staffReload.dataSource.read();
+        // }
+    }
+
+    function formatDDMMYYYY(date) {
+        if (!date) return null;
+
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+
+        return `${day}/${month}/${year}`;
+    }
+</script>
+
+
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+@Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+
+        <div class="col-md-12">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top:3px;padding-right:0px;padding-left:5px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
+                @(Html.Kendo().ComboBox().Name("MainPosCode_Find")
+                        .Filter(FilterType.Contains)
+                        .Placeholder("--- Đơn vị ---")
+                        .DataTextField("value")
+                        .DataValueField("id")
+                        .Events(e => e.Change("Change_PosCode"))
+                        .ClearButton(false)
+                        .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                        .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                        .Suggest(true)
+                        .AutoBind(true)
+                        .SelectedIndex(0))
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
+                @(Html.Kendo().TextBox().Name("StaffName_Find")
+                        .Placeholder("Nhập tên hoặc mã cán bộ")
+                        .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
+
+            <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
+                @(Html.Kendo().DropDownList().Name("Status_Find")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" },  new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
+                    .HtmlAttributes(new { style = "width: 120px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
+                    .SelectedIndex(0)
+                    )
+
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                        .Name("btnSearchTidePenalRate")
+                        .Events(ev => ev.Click("onSearchTidePenalRate"))
+                        .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất rút trước hạn TG CKH" })
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                        .Content(" Tìm kiếm "))
+        </div>
+    </div>
+
+
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+            @(Html.Kendo().Grid<VBSPOSS.ViewModels.PosRepresentativeViewModel>()
+                        .Name("gridMainPosRepresent")
+                        .Events(e => e.DataBound("onRowBoundPosRepresent"))
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("ViewEdit").IconClass("k-icon k-i-pencil my-view-icon").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
+                                {
+                                    @class = "btn-view-edit", // thêm class để dễ style
+                                    style = "display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                                    title = "Chỉnh sửa cấu hình người đại diện"
+                                });
+                                command.Custom("Delete").IconClass("k-icon k-i-trash my-view-icon").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
+                                {
+                                    @class = "btn-view-edit", // thêm class để dễ style
+                                    style = "display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                                    title = "Xóa (đánh dấu xóa) cấu hình người đại diện"
+                                });
+                            }).Width(100).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+
+                            //columns.Bound(c => c.Id).Title("Xem CT").Width(55).HtmlAttributes(new { style = "text-align: center;" }).ClientTemplate("<a onclick=showDetailTidePenalRate('#= IdList #',#= PosCode #,'#= ProductGroupCode #','#= CircularRefNum #','#= Status #') title='Xem chi tiết thông tin cán bộ' style='cursor:pointer;text-decoration:none;'>#= getAssignedImage(Id,PosCode) #  <u></u></a>");
+                            columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.MainPosName).Title("Chi nhánh").Width(180).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.StaffName).Title("Họ tên").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.DateOfBirthText).Title("Ngày sinh").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.GendersText).Title("Giới tính").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.StaffPositionName).Title("Chức vụ").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.StaffMobileNo).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.EffectDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.ExpireDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                       
+                            columns.Bound(c => c.PosMobileNo).Hidden();
+                            columns.Bound(c => c.PosFaxNo).Hidden();
+                            columns.Bound(c => c.PosAddressFull).Hidden(); ;
+                            columns.Bound(c => c.PosAddressLine).Hidden();
+                            columns.Bound(c => c.PosSubCommune).Hidden();
+                            columns.Bound(c => c.RepresentativeType).Hidden();
+                            columns.Bound(c => c.RepresentativeTypeText).Hidden();
+                            columns.Bound(c => c.MainPosCode).Hidden();
+                            columns.Bound(c => c.PosCode).Hidden();
+                            columns.Bound(c => c.PosSubCommuneText).Hidden();
+                            columns.Bound(c => c.PosCommune).Hidden();
+                            columns.Bound(c => c.PosCommuneText).Hidden();
+                            columns.Bound(c => c.PosDistrict).Hidden();
+                            columns.Bound(c => c.PosDistrictText).Hidden();
+                            columns.Bound(c => c.PosProvince).Hidden();
+                            columns.Bound(c => c.PosProvinceText).Hidden();
+                            columns.Bound(c => c.PosSubCommuneId).Hidden();
+                            columns.Bound(c => c.StaffId).Hidden();
+                            columns.Bound(c => c.StaffCode).Hidden();
+                            columns.Bound(c => c.DateOfBirth).Hidden();
+                            columns.Bound(c => c.Genders).Hidden();
+                            columns.Bound(c => c.StaffPosCode).Hidden();
+                            columns.Bound(c => c.StaffPosName).Hidden();
+                            columns.Bound(c => c.StaffDepartmentCode).Hidden();
+                            columns.Bound(c => c.StaffPositionCode).Hidden();
+                            columns.Bound(c => c.StaffEmail).Hidden();
+                            columns.Bound(c => c.EffectDateText).Hidden();
+                            columns.Bound(c => c.ExpireDateText).Hidden();
+                            columns.Bound(c => c.CreatedBy).Hidden();
+                            columns.Bound(c => c.CreatedDate).Hidden();
+                            columns.Bound(c => c.ModifiedBy).Hidden();
+                            columns.Bound(c => c.ModifiedDate).Hidden();
+                            columns.Bound(c => c.DecisionNo).Hidden();
+                            columns.Bound(c => c.DecisionTitle).Hidden();
+                            columns.Bound(c => c.Status).Hidden();
+                            columns.Bound(c => c.StatusText).Hidden();
+                            columns.Bound(c => c.Notes).Hidden();
+                            columns.Bound(c => c.Id).Hidden();
+                            columns.Bound(c => c.MainPosName).Hidden(); 
+                            columns.Bound(c => c.StaffDepartmentName).Hidden(); 
+
+                        })
+                        .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
+                        .ToolBar(toolbar =>
+                        {
+                            toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+                            toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                        })
+                        .Excel(excel => excel.FileName("Danh sach can bo NHCSXH.xlsx").AllPages(true))
+                        .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+                        .Sortable()
+                        .Scrollable()
+                        .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                        .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .Batch(false)
+                        .ServerOperation(false)
+                        .Model(model => model.Id(p => p.Id))
+                        .Events(e => e.RequestEnd("onSaveGridCompletedTidePanelRate").Error("error_handlerTidePanelRate"))
+                        .Read(read => read.Action("LoadGridData_PosRepresentative", "PosRepresentative").Data("paramLoadGridData"))
+                        .PageSize(100)
+                        )
+                        .Resizable(resize => resize.Columns(true))
+                        .AutoBind(false)
+                        )
+        </div>
+    </div>
+
+
+</div>
+
+
+<script>
+     function onSaveGridCompletedTidePanelRate(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handlerTidePanelRate(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
+        }
+    }
+
+    $(document).ready(function () {
+        // var combo = $("#StaffName_Find").data("kendoComboBox");
+        // if ($("#PosCode_Find").val()) {
+        //     combo.dataSource.read();
+        //     //Change_PosCode();
+        // }
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI ĐẠI DIỆN</label>");
+
+    });
+</script>

@@ -1,0 +1,433 @@
+﻿@model VBSPOSS.ViewModels.InterestRateConfigMasterViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Constants
+@using VBSPOSS.Data.Models
+@using VBSPOSS.ViewModels
+
+@{
+    Layout = null; // Giữ là partial view
+}
+
+
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+
+<style>
+    .view_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .view_form.button {
+        /* width: 100px !important; */
+        height: 25px !important;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .section-header {
+        /*  padding: 10px 0;
+                                            margin-top: 10px; */
+        border-bottom: 1px dotted #d9534f; /* giống màu đỏ trong hình */
+    }
+
+    .section-title {
+        color: blue;
+        font-weight: bold;
+    }
+
+    .row-changed {
+        color: red !important;
+    }
+
+
+    .view_form.button {
+        /* width: 100px !important; */
+        height: 25px !important;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+</style>
+
+
+<script>
+    function paraTideConfigureViewGridData() {
+        return {
+            idList: $("#IdList").val(),
+        };
+    }
+
+
+
+    function onRowBound_TideRateViewGrid(e) {
+        try {
+        var grid = this;  // "this" chính là Kendo Grid
+
+    // Duyệt qua tất cả các dataItem của grid
+    grid.dataSource.data().forEach(function (dataItem) {
+        // Nếu ChangeFlag = 1 (hoặc == true tùy kiểu dữ liệu của bạn)
+        if (dataItem.ChangeFlag === 1 || dataItem.ChangeFlag === true) {
+            // Tìm row tương ứng bằng uid
+            var uid = dataItem.uid;
+            var row = grid.tbody.find("tr[data-uid='" + uid + "']");
+
+            if (row.length) {
+                // Thêm class để thay đổi style (bạn có thể đặt tên class tùy ý)
+                row.addClass("row-changed");
+
+                // Nếu muốn highlight cả những ô đã thay đổi trước đó (giữ lại logic cũ của bạn)
+                // thì vẫn giữ phần re-apply cho TermIntRateNew ở đây
+            }
+        }
+    });
+
+
+    countChangedRows();
+
+    } catch (error) {
+        console.error("Error in onRowBound_TideRateConfigureGrid:", error);
+    }
+    }
+</script>
+
+<form id="trcApprovalForm" method="post" enctype="multipart/form-data" asp-controller="TideRateConfigure" asp-action="SaveApprovalForm">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.IdList)
+    <div class="section-header">
+        <div class="section-title">Thông tin chung</div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+
+        <div class="col-md-3">
+            <label for="CircularRefNum">Số Quyết định </label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+        <div class="col-md-3">
+            <label for="CircularDate">Ngày quyết định</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+
+        <div class="col-md-3">
+            <label for="EffectiveDate">Ngày hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="ExpiredDate">Ngày hết hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+
+        <div class="col-md-6">
+            <label for="Status">Trạng thái </label>
+            @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+        <div class="col-md-6">
+            <label for="PosName">Áp dụng tại:</label>
+            @Html.Kendo().TextBoxFor(m => m.ApplyPosList).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+
+        <div class="col-md-6">
+            <label for="CreatedBy">Người đề nghị </label>
+            @Html.Kendo().TextBoxFor(m => m.CreatedBy).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+        <div class="col-md-6">
+            <label for="ApproverBy">Người duyệt</label>
+            @Html.Kendo().TextBoxFor(m => m.ApproverBy).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+    </div>
+
+    <div class="view_form row">
+        <div class="col-md-12 d-flex justify-content-end" style="text-align: right; padding-top: 20px;">
+            @(Html.Kendo().Button()
+                        .Name("btnPrintReport")
+                        .HtmlAttributes(new { type = "button", style = "width: 120px; font-weight: bold; color: blue;", @class = "view_form button" })
+                        .Content("In tờ trình")
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                                                                        //.Events(ev => ev.Click("onLoadBtnClick"))
+                        )
+
+            @(Html.Kendo().Button()
+                        .Name("btnApproval")
+                        .HtmlAttributes(new { type = "submit", style = "width: 120px; font-weight: bold; color: blue;", @class = "view_form button" })
+                        .Content("Trình duyệt")
+                        .ImageUrl(Url.Content("~/images/note_add.png"))
+                                                                        //.Events(ev => ev.Click("onSave_TideRateConfigureForm"))
+                        )
+        </div>
+    </div>
+    <div class="view_form row">
+        <div class="col-md-2">
+            <label>Upload tờ trình: </label>
+        </div>
+        <div class="col-md-10">
+            @* <input type="file" name="fileUpload" />        *@
+            <!-- input file thật (ẩn) -->
+            <input type="file" id="fileUpload" name="fileUpload" hidden accept="application/pdf" />
+
+            <!-- nút chọn file -->
+            <button type="button" class="btn btn-primary" id="btnChooseFile">
+                Chọn file
+            </button>
+
+            <!-- tên file -->
+            <span id="fileName" style="margin-left:10px; font-style: italic;">
+                Chưa chọn file
+            </span>
+
+            <!-- nút xóa -->
+            <button type="button" class="btn btn-danger btn-sm"
+                    id="btnRemoveFile" style="display:none; margin-left:10px;">
+                ✖
+            </button>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <div class="section-title">Thông tin lãi suất <span id="lblChangedCount" style="color:red;"></span></div>
+
+    </div>
+
+    <div class="view_form row" style="padding-top: 5px;">
+
+        @(Html.Kendo().Grid<TideTermViewModel>()
+                .Name("tideRateConfigureGrid")
+                                               // .Pageable()
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.TermProductCode).Title("SP").Width(80).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                    columns.Bound(c => c.TermAccountTypeCode).Title("Loại TK").ClientTemplate(
+                    "#= TermAccountTypeCode # - #= TermAccountTypeName #"
+                    ).Width(300).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                                                                                                     //columns.Bound(c => c.TermAccountTypeName).Title("Tên loại TK").Width(200).HtmlAttributes(new { style = "text-align: left;" }).Locked(true);
+                    columns.Bound(c => c.TermEffectiveDate).Title("Hiệu lực").Format("{0:dd/MM/yyyy}").Width(120).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+
+                    columns.Bound(c => c.TermSerial).Title("Thứ tự").Format("{0:n0}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TermDesc).Title("Kỳ hạn").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.InclusionFlag).Title("Inclusion Flag").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TermIntRate).Title("Lãi suất HT").Format("{0:n4}").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TermIntRateNew).Title("Lãi suất mới").Format("{0:n4}").Width(120).HtmlAttributes(new { style = "text-align: center;", @class = "term-int-rate-new" });
+                    columns.Bound(c => c.TermAccountSubTypeCode).Hidden().Title("Loại TK phụ").Width(140).HtmlAttributes(new { style = "text-align: center;" }).Locked(true);
+                                                                                                                                                                              @* columns.Command(command => { command.Edit(); }).Title("Thao tác").Width(200).HtmlAttributes(new { style = "text-align: center;" }); *@
+                    columns.Bound(c => c.ChangeFlag).Hidden();
+                })
+                .ToolBar(toolbar => toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel"))
+                .Editable(editable => editable.Mode(GridEditMode.InLine))
+                .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat.xlsx").AllPages(true))
+                                                                                                   //.Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
+                .HtmlAttributes(new { style = "height: 400px; width: 100%;" })
+                .Scrollable(s => s.Enabled(true).Virtual(false)) // Bật thanh cuộn ngang
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .ServerOperation(false)
+                .Read(read => read.Action("LoadTideConfigureViewGridData", "TideRateConfigure").Type(HttpVerbs.Post).Data("paraTideConfigureViewGridData"))
+                //.Update(update => update.Action("UpdateTideConfgiureGridData", "TideRateConfigure"))
+                .Model(model => model.Id(p => p.Id)) // Sử dụng Id
+                )
+                .AutoBind(true)
+                .Events(events => events.DataBound("onRowBound_TideRateViewGrid"))
+                )
+    </div>
+
+
+
+</form>
+
+<script>
+    $(document).ready(function () {
+        countChangedRows();
+
+        // Click nút "Chọn file"
+        $("#btnChooseFile").click(function () {
+            $("#fileUpload").click();
+        });
+
+        // Khi chọn file
+        $("#fileUpload").on("change", function () {
+            if (this.files && this.files.length > 0) {
+                $("#fileName").text(this.files[0].name);
+                $("#btnRemoveFile").show();
+            } else {
+                resetFile();
+            }
+        });
+
+        // Click nút xóa
+        $("#btnRemoveFile").click(function () {
+            resetFile();
+        });
+
+        function resetFile() {
+            $("#fileUpload").val("");   // xóa file
+            $("#fileName").text("Chưa chọn file");
+            $("#btnRemoveFile").hide();
+        }
+
+            $("#fileUpload").on("change", function () {
+            if (!this.files || this.files.length === 0) return;
+
+            var file = this.files[0];
+            var fileName = file.name.toLowerCase();
+
+            if (!fileName.endsWith(".pdf")) {
+                alert("Chỉ cho phép upload file PDF");
+                resetFile();
+                return;
+            }
+
+            $("#fileName").text(file.name);
+            $("#btnRemoveFile").show();
+        });
+    });
+
+    function countChangedRows() {
+        var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+        if (!grid) return;
+
+        // Lấy toàn bộ dữ liệu trên Grid (vì bạn đang ServerOperation(false))
+        var data = grid.dataSource.view();
+
+        // Đếm số dòng có ChangeFlag = 1
+        var total = data.length;
+        var count = data.filter(x => x.ChangeFlag === 1).length;
+
+        // Gán vào label hiển thị
+        $("#lblChangedCount").text("(Số kỳ hạn thay đổi: " + count + "/" + total + ")");
+    }
+
+
+    $(function () {
+        $("#trcApprovalForm").submit(function (event) {
+            event.preventDefault();
+
+        var fileInput = $("#fileUpload")[0];
+        if (!fileInput || fileInput.files.length === 0) {
+            alert("Vui lòng đính kèm file tờ trình (PDF) trước khi trình duyệt!");
+            return false;
+        }
+
+        // (optional) check loại file lần nữa
+        var file = fileInput.files[0];
+        if (file.type !== "application/pdf") {
+            alert("Chỉ cho phép upload file PDF!");
+            return false;
+        }
+
+        var decisionRef = $("#CircularRefNum").val();
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        alert('token' + token);
+            var dataString;
+            var action = this.action;
+            var contentType;
+            var processData;
+            if (this.enctype == "multipart/form-data") {
+                dataString = new FormData($(this).get(0));
+                //contentType = false;
+                //processData = false;
+            } else {
+            }
+
+            $.ajax({
+                url: this.action,
+                type: this.method,
+                data: dataString,
+                contentType: false,   // BẮT BUỘC
+                processData: false,   // BẮT BUỘC
+                headers: {
+            'RequestVerificationToken': token
+        },
+                success: function (result) {
+
+                    if (result && result.Errors) {
+                        // var errorMessages = [];
+
+                        // for (var key in result.Errors) {
+                        //     if (result.Errors.hasOwnProperty(key)) {
+                        //         errorMessages = errorMessages.concat(result.Errors[key]);
+                        //     }
+                        // }
+
+                        //alert(errorMessages.join("\n"));
+                        alert(JSON.stringify(result.Errors));
+                        return;
+                    }
+                    alert("Trình duyệt thay đổi lãi suất theo văn bản " + decisionRef +  " thành công");
+                    dataChangeTideRateConfigure = true;
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function () {
+                    alert("Lỗi khi cập nhật dữ liệu");
+                }
+            });
+            return false;
+        });
+    });
+
+
+
+    $("#btnPrintReport").click(function () {
+
+        var circularRefNum = $("#CircularRefNum").val();
+        var listId = $("#IdList").val();
+
+        //alert('listId' + listId + 'circularRefNum ' + circularRefNum);
+
+        $.ajax({
+            url: '/Report/GenerateToTrinh_Tide',
+            type: 'POST',
+            data: { listId: listId, circularRefNum: circularRefNum },
+            xhrFields: {
+                responseType: 'blob'   // BẮT BUỘC
+            },
+            success: function (data, status, xhr) {
+
+                var fileName = "to_trinh.pdf";
+                var disposition = xhr.getResponseHeader("Content-Disposition");
+
+                if (disposition) {
+
+                    // Ưu tiên filename*=UTF-8''
+                    var utf8Match = disposition.match(/filename\*\=UTF-8''(.+)/);
+                    if (utf8Match && utf8Match.length > 1) {
+                        fileName = decodeURIComponent(utf8Match[1]);
+                    }
+                    else {
+                        // fallback filename=
+                        var asciiMatch = disposition.match(/filename="?([^";]+)"?/);
+                        if (asciiMatch && asciiMatch.length > 1) {
+                            fileName = asciiMatch[1];
+                        }
+                    }
+                }
+
+                var blob = new Blob([data], {
+                    type: xhr.getResponseHeader("Content-Type") || "application/octet-stream"
+                });
+
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            },
+            error: function () {
+                alert("Không tải được file");
+            }
+        });
+    });
+</script>

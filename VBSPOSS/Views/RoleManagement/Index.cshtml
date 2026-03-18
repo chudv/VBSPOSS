@@ -1,0 +1,350 @@
+﻿@using Kendo.Mvc
+
+@{
+    ViewData["Title"] = "Phân quyền sử dụng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div id="myPopup"></div>
+
+<script>
+    var mainWindow = $("#myPopup");
+</script>
+
+
+<style>
+    /*0 - Chữ đậm; 1 - Chữ đậm; 2 - Chữ nghiêng; 3 - Chữ thường; 4 - Chữ Nghiêng đậm; 5 - Chữ gạch chân ở dưới;*/
+    .style0 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style3 {
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+    }    
+
+
+    .lbcontrol {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+   
+</style>
+
+<script>
+    function onSaveGridCompleted(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+    function param_RoleFind() {
+        return {
+            grantType: 0,
+            pTitleChoice: "--- Nhóm quyền người dùng ---"
+        };
+    }
+    // function param_PermitFind() {
+    //     return {
+    //         pTitleChoice: "--- Quyền được phân ---"
+    //     };
+    // }
+
+    function paramLoadGridData() {
+        // var lcPermitIdFind = $("#PermitIdFind").val();
+        // if (lcPermitIdFind == null || lcPermitIdFind == "")
+        //     lcPermitIdFind = -1;
+        return {
+            roleCode: $("#cboRoleFind").val(),
+            roleName: "",
+            menuId: 0,
+            menuText: $("#txtMenuFind").val()            
+        };
+    }
+
+    function refreshGrid() {
+        var grid = $("#gridMain").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onRowBound(e) {
+
+        // $(".k-grid-ViewEdit").find("span").addClass("k-icon k-i-edit");
+        // $(".k-grid-Delete").find("span").addClass("k-icon k-i-cancel");
+
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiBG = dataItem.get("Status");
+            if (trangthaiBG == "0" || trangthaiBG == "C" || trangthaiBG == null)
+                row.css({ "background-color": "white", "color": "red" });
+        }
+    }
+
+    function onSearch(e) {
+        refreshGrid();
+    }
+
+    var dataChange = false;
+
+    $(document).on('click', '#btnCreateGroup', function (e) {
+        e.preventDefault();
+        mainWindow.kendoWindow({
+            width: "1300px",
+            height: "750px",
+            title: "Thêm mới phân quyền nhóm người dùng với các chức năng",
+            content: { url: "../RoleManagement/ShowBatchAuthorization", data: { menuId: 0, roleCode: "", pFlagCall: "1" } },
+            resizable: true,
+            visible: false,
+            close: onClose,
+            modal: true,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 750, width: 1300 });
+        mainWindow.data("kendoWindow").center().open().title("Thêm mới phân quyền nhóm người dùng với các chức năng");
+    });
+
+    // $(document).on('click', '#btnCreate', function (e) {
+    //     e.preventDefault();
+    //     mainWindow.kendoWindow({
+    //         width: "600px",
+    //         height: "330px",
+    //         title: "Thêm mới phân quyền nhóm người dùng với chức năng",
+    //         content: { url: "../Permit/ShowUpdatePermit", data: { pMenuId: 0, pGroupUser: "", pFlagCall: "1" } },
+    //         resizable: true,
+    //         visible: false,
+    //         close: onClose,
+    //         modal: true,
+    //         actions: ["Refresh", "Close"]
+    //     });
+    //     mainWindow.data("kendoWindow").wrapper.css({ height: 330, width: 600 });
+    //     mainWindow.data("kendoWindow").center().open().title("Thêm mới phân quyền nhóm người dùng với chức năng");
+    // });
+
+    // function showEdit(e) {
+    //     e.preventDefault();
+    //     var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //     mainWindow.kendoWindow({
+    //         width: "600px",
+    //         height: "330px",
+    //         title: "Thay đổi phân quyền nhóm người dùng với chức năng",
+    //         content: { url: "../Permit/ShowUpdatePermit", data: { pMenuId: dataItem.Id, pGroupUser: dataItem.GroupCode, pFlagCall: "2" } },
+    //         resizable: false,
+    //         visible: false,
+    //         close: onClose,
+    //         modal: true,
+    //         actions: ["Refresh", "Close"]
+    //     });
+    //     mainWindow.data("kendoWindow").wrapper.css({ height: 330, width: 600 });
+    //     mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa phân quyền nhóm người dùng với chức năng");
+    // }
+
+    function onClose() {
+        if (dataChange == true) {
+            refreshGrid();
+            dataChange = false;
+        }
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+    // function deleteItem(e) {
+    //     var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //     var sMessInfor = "nhóm người dùng [" + dataItem.GroupName + "] chức năng [" + dataItem.Text + "]";
+    //     var lcPermitUpdateText = dataItem.PermitUpdateText;
+    //     var lcPermitViewText = dataItem.PermitViewText;
+    //     var lcPermitNoAccessText = dataItem.PermitNoAccessText;
+
+    //     if ((lcPermitNoAccessText == "") && (lcPermitUpdateText == "X" || lcPermitViewText == "X")) {
+    //         var isConfirm = confirm("Bạn có chắc chắn muốn xóa dữ liệu phân quyền " + sMessInfor + " này không?");
+    //         if (isConfirm == true) {
+    //             $.ajax({
+    //                 data: { pMenuId: dataItem.Id, pGroupUser: dataItem.GroupCode },
+    //                 type: "POST",
+    //                 url: "../Permit/DeletePermit",
+    //                 success: function (result) {
+    //                     var iRowDelete = parseInt(result);
+    //                     if (iRowDelete != 0 && iRowDelete != 99) {
+    //                         alert("Bạn đã Xóa dữ liệu phân quyền " + sMessInfor + " thành công!");
+    //                         refreshGrid();
+    //                     }
+    //                     else if (iRowDelete == 0)
+    //                         alert("Không tìm thấy bản ghi phân quyền " + sMessInfor + " để xóa. Vui lòng kiểm tra lại!");
+    //                     else if (iRowDelete == 99)
+    //                         alert("Xóa dữ liệu phân quyền " + sMessInfor + " có lỗi. Vui lòng kiểm tra lại!");
+    //                 },
+    //                 error: function () {
+    //                     alert("Xóa dữ liệu phân quyền " + sMessInfor + " có lỗi!");
+    //                 }
+    //             });
+    //         }
+    //         else alert("Thao tác bị hủy bỏ!");
+    //     }
+    //     else
+    //         alert("Bạn chưa thực hiện phân quyền " + sMessInfor + ". Vì vậy không có dữ liệu để xóa!");
+    // }
+</script>
+
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+
+
+<div class="row" style="margin-bottom: 5px;">
+    <div class="col-md-12">
+        <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top:3px;">Nhóm quyền</label>
+        @(Html.Kendo().ComboBox().Name("cboRoleFind")
+            .Filter(FilterType.Contains)
+            .Placeholder("--- Nhóm quyền ---")
+            .DataTextField("value")
+            .DataValueField("id")
+            .DataSource(source => { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("param_RoleFind"); }).ServerFiltering(false); })
+            .HtmlAttributes(new { style = "width: 300px; !important;max-width: 100% !important;color: navy;" })
+            .Suggest(true)
+            .AutoBind(true)
+            .SelectedIndex(0))
+        <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top:3px;">Tên chức năng</label>
+        @(Html.Kendo().TextBox()
+            .Name("txtMenuFind")
+            .HtmlAttributes(new { placeholder = "Tên chức năng", style = "width: 350px; !important;max-width:100% !important;color: navy;" })
+            .Value("")
+            )        
+
+            <div style="padding-left: 5px; padding-right: 5px;">
+            @(Html.Kendo().Button()
+                        .Name("btnSearch")
+                        .Events(ev => ev.Click("onSearch"))
+                        .HtmlAttributes(new { type = "button", style = "width:120px; height: 25px; color: navy;padding-left: 0px; ", title = "Tìm kiếm thông tin phân quyền nhóm người dùng với chức năng" })
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                        .Content("Tìm kiếm"))
+            </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @(Html.Kendo().Grid<VBSPOSS.Models.MenuRolesViewModel>()
+            .Name("gridMain")
+            .Events(e => e.DataBound("onRowBound"))
+            .Columns(columns =>
+            {
+                @* columns.Command(command =>
+                {
+                    command.Custom("ViewEdit").Text("<span></span>").Click("showEdit").HtmlAttributes(new { title = "Sửa thông tin phân quyền chức năng với nhóm người dùng" });
+                    command.Custom("Delete").Text("<span></span>").Click("deleteItem").HtmlAttributes(new { title = "Xóa phân quyền chức năng với nhóm người dùng" });
+                }).Width(150).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" }); *@
+                columns.Bound(c => c.Id).Hidden();
+                columns.Bound(c => c.Order).Hidden();
+                
+                columns.Bound(c => c.RoleCode).Hidden();
+                columns.Bound(c => c.Controller).Hidden();
+                columns.Bound(c => c.Action).Hidden();
+                columns.Bound(c => c.Area).Hidden();
+                columns.Bound(c => c.ImageClass).Hidden();
+                columns.Bound(c => c.ActiveLi).Hidden();
+                columns.Bound(c => c.Status).Hidden();
+                columns.Bound(c => c.ParentId).Hidden();
+                columns.Bound(c => c.IsParent).Hidden();
+                columns.Bound(c => c.HasChild).Hidden();
+                columns.Bound(c => c.IsSelect).Hidden();                
+                
+                columns.Bound(c => c.Order).Title("STT").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RoleName).Title("Nhóm người dùng").Width(180).HtmlAttributes(new { style = "text-align: left;" });
+                columns.Bound(c => c.Text).Title("Chức năng").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+
+                columns.Group(group => group.Title("Quyền được phân").HtmlAttributes(new { style = "text-align: center;" })
+                .Columns(info =>
+                {
+                    info.Bound(x => x.ViewPermissionDesc).Title("Xem").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    info.Bound(x => x.CreatePermissionDesc).Title("Tạo").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    info.Bound(x => x.EditPermissionDesc).Title("Sửa").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    info.Bound(x => x.DeletePermissionDesc).Title("Xóa").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    info.Bound(x => x.AuthorizationPermissionDesc).Title("Duyệt").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    info.Bound(x => x.ReportPermissionDesc).Title("Tạo tờ trình").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                }));
+                columns.Bound(c => c.GroupOrder).Title("Thứ tự chức năng").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.StatusDesc).Title("Trạng thái").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+            })
+            .HtmlAttributes(new { style = "height: 580px;color: navy!important;font-family: tahoma!important;" })
+            .ToolBar(toolbar =>
+            {
+                toolbar.Custom().IconClass("k-icon k-i-plus").Text("Phân quyền theo lô").Name("btnCreateGroup").HtmlAttributes(new { id = "btnCreateGroup", style = "width: 150px; height: 25px; font-weight:bold; color: navy;", title = "Thêm mới phân quyền các chức năng cho một nhóm người dùng" });
+                //toolbar.Custom().Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", title = "Thêm mới phân quyền một chức năng cho một nhóm người dùng", style = "width: 80px; font-weight:bold; color: navy;" });
+                    toolbar.Excel().HtmlAttributes(new { id = "btnExportAuto", title = "Xuất dữ liệu trên lưới ra file excel", style = "width: 100px;  height: 25px; font-weight:bold; color: navy;" }).Text("Xuất excel");
+            })
+            .Excel(excel => excel.FileName("Danh sach phan quyen, chuc nang.xlsx").AllPages(true))
+            .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+            .Sortable()
+            .Scrollable()
+            .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .Batch(false)
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.Id))
+            .Events(e => e.RequestEnd("onSaveGridCompleted").Error("error_handler"))
+            .Read(read => read.Action("LoadMenuRoleToGridData", "RoleManagement").Data("paramLoadGridData"))
+            .PageSize(50)
+            )
+            .Resizable(resize => resize.Columns(true))
+            .AutoBind(true)
+            )
+    </div>
+</div>
+
+@* <script>
+    // $(document).ready(function () {
+    //     // $(".k-grid-excel").after("<label id='lbl_space' style='width:70%; font-size: 13px; font-weight: bold; color: blue;text-align:center;line-height: 24px;font-family: tahoma;'>DANH SÁCH CHỨC NĂNG PHÂN QUYỀN CHO NHÓM NGƯỜI DÙNG</label>");
+
+    //     // var cboPermitIdFind = $("#PermitIdFind").data("kendoComboBox");
+    //     // if (cboPermitIdFind != null) {
+    //     //     cboPermitIdFind.value(-1);
+    //     // }
+    // });
+</script> *@

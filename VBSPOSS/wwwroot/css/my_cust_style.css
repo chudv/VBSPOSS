@@ -1,0 +1,215 @@
+﻿.text-primary {
+    color: #006C3D !important;
+    font-weight: bold;
+}
+
+.content-header {
+    padding: 10px .5rem;
+}
+
+
+* {
+    font-family: 'tahoma', sans-serif;
+    font-size: 12px;
+}
+
+/*.k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {*/
+    /*background: none !important;
+    border: none;*/
+    /*padding: 0 !important;
+    font: inherit;
+    cursor: pointer;
+}*/
+
+.red {
+    color: red;
+}
+
+/*.k-grid .k-grid-header .k-header .k-link {
+    height: auto;
+}
+
+.k-grid .k-grid-header .k-header {
+    overflow: visible !important;
+    white-space: normal !important;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.k-dropdown .k-dropdown-wrap {
+    height: 21px;
+}
+
+.k-grid .k-button-icontext .k-icon {
+    margin: 0;
+    vertical-align: middle;
+}*/
+/* changes default width of the button */
+/*.k-grid tbody .k-button {
+    min-width: 18px;
+    width: 18px;
+}*/
+
+/*0 - Chữ đậm; 1 - Chữ đậm; 2 - Chữ nghiêng; 3 - Chữ thường; 4 - Chữ Nghiêng đậm; 5 - Chữ gạch chân ở dưới;*/
+.style0 {
+    font-weight: bold;
+    color: blueviolet;
+}
+
+.style1 {
+    font-weight: bold;
+    color: blueviolet;
+}
+
+.style2 {
+    font-style: italic;
+}
+
+.style3 {
+}
+
+.style4 {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.style5 {
+    text-decoration: underline;
+    /*text-decoration: underline dotted;
+                text-decoration: underline dotted red;
+                text-decoration: green wavy underline;
+                text-decoration: underline overline #FF3028;*/
+}
+
+.row {
+    display: inline-flex;
+    padding: 2px;
+}
+
+.form-inline {
+    display: inline-flex;
+}
+
+.col-md-12 {
+    padding-right: 0px;
+    padding-left: 0px;
+    display: inline-flex;
+    align-items: center !important;
+}
+
+/* * {
+            font-family: 'tahoma', sans-serif;
+            font-size: 12px;
+        } */
+
+/*.k-icon {
+    font-size: 15px;
+}
+
+.k-grid td {
+    border-width: 0 0 0px 1px;
+    vertical-align: middle;
+    color: navy;
+}*/
+
+/*.k-input * {
+    font-family: 'tahoma', sans-serif !important;
+    font-size: 12px !important;*/
+    /* padding-left: 3px;
+    padding-right: 3px;*/
+    /*padding-top: 4px;
+    padding-bottom: 4px;*/
+    /*background-color: white !important;*/
+/*    height: 27px !important;*/
+    /*padding-block: 1px;
+    padding-inline: 5px;*/
+/*}*/
+
+.k-input:not(.k-multiselect.k-input) {
+    font-family: tahoma, sans-serif !important;
+    font-size: 12px !important;
+    background-color: white !important;
+    height: 27px !important;
+    line-height: 27px;
+}
+
+.k-multiselect .k-input {
+    height: auto !important;
+    line-height: normal !important;
+}
+
+/*.k-input-spinner .k-spinner-increase .k-button-icon, .k-input-spinner .k-spinner-decrease .k-button-icon {
+    margin-block: -2em;
+    margin-inline: 0;
+    min-width: auto !important;
+    min-height: auto !important;
+}*/
+
+.k-window-title {    
+    font-size: 16px !important;
+}
+
+.k-button * {
+    font-family: 'tahoma', sans-serif !important;
+    font-size: 12px !important;
+}
+
+.k-grid * {    
+    font-size: 12px !important;
+}
+
+.k-input-spinner .k-spinner-increase .k-button-icon, .k-input-spinner .k-spinner-decrease .k-button-icon {
+    margin-block: -2em !important;    
+    min-width: auto !important;
+    min-height: auto !important;
+}
+
+/*.k-window-title {
+    font-size: 14px;
+    font-family: tahoma;
+    color: blueviolet;
+}*/
+/*
+.k-svg-icon {
+    width: 24px;
+    height: 24px;
+    outline: 0;
+    line-height: 1;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    position: relative;
+}
+*/
+/*.bg-dark {*/
+/*    background-image: url("/images/bg-header-vtf.png") !important;*/
+    /*box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px 0 rgba(0, 0, 0, .14), 0 1px 18px 0 rgba(0, 0, 0, .12);
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 110px;
+}
+
+.align-items-center {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-size: 25px;
+}
+
+.k-menu:not(.k-context-menu) > .k-item:hover, .k-menu:not(.k-context-menu) > .k-item.k-hover {
+    background-color: rgba(0, 0, 0, 0.0696);
+    border-radius: 50px !important;
+}
+
+
+.my-view-icon {
+    color: blue !important;*/ /* đổi màu icon */
+    /*font-size: 18px;*/ /* chỉnh kích thước nếu muốn */
+/*}
+
+.my-icon-success {
+    color: green !important;*/ /* đổi màu icon */
+    /*font-size: 18px;*/ /* chỉnh kích thước nếu muốn */
+/*}*/

@@ -1,0 +1,968 @@
+﻿@model VBSPOSS.ViewModels.UpdateTidePenalRateConfigViewModel
+
+@using System.Text.Json
+@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+
+
+@{
+    Layout = null; // ĐK là partial view
+}
+
+
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+
+<style>
+
+    #myTidePenalRateConfigUpd {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: 0.8;
+        display: none;
+    }
+
+    /* .k-window-titlebar {
+            padding-block: 10px;
+            padding-inline: 12px;
+        } */
+
+    .ajax-loaderTidePenalRateConfigUpd {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px;
+        margin-top: -32px;
+        display: block;
+    }
+
+    /*  .k-grid tbody .k-button {
+            background: none !important;
+            border: none;
+            padding: 0 !important;
+            font: inherit;
+            cursor: pointer;
+            min-width: 18px;
+            width: 18px;
+        } */
+
+    /* .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+            background: none !important;
+            border: none;
+            padding: 0 !important;
+            font: inherit;
+            cursor: pointer;
+        } */
+
+    /*  .k-grid .k-grid-header .k-header {
+            overflow: visible !important;
+            white-space: normal !important;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .k-grid .k-grid-header .k-header .k-link {
+            height: auto;
+        }
+
+        .k-dropdown .k-dropdown-wrap {
+            height: 21px;
+        }
+
+        .col-md-1, .col-md-2, .col-md-5, .col-md-6, .col-md-7, .col-md-12 {
+            padding-right: 0;
+            padding-left: 0;
+            vertical-align: middle;
+        }
+
+        .k-grid .k-button-icontext .k-icon {
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .label {
+            vertical-align: middle;
+            text-align: right;
+            color: navy;
+            padding-right: 3px;
+        }
+
+        .row, .row-banner {
+            display: flex;
+            padding: 1px;
+        }
+
+        .style0, .style1, .clsLock0, .clsLock1 {
+            font-weight: bold;
+            color: blueviolet;
+        }
+
+        .style2 {
+            font-style: italic;
+        }
+
+        .style4 {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .style5 {
+            text-decoration: underline;
+        }
+
+        .styleDisableCell {
+            background-color: darkgray;
+        } */
+
+    #gridUpdateTidePenalRateConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    /*  .k-icon {
+            font-size: 15px;
+        } */
+
+    #GhiChu {
+        width: 100% !important;
+        padding: 3px 8px 3px 6px !important;
+        background-color: chartreuse;
+    }
+
+    /* .k-window .row, .k-window .row * {
+            box-sizing: border-box;
+        }
+
+        .k-window div.k-window-content {
+            overflow: hidden;
+        } */
+
+    #EffectiveDate, #ExpiredDate, #CircularDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    /*  .k-numerictextbox .k-input {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .k-numerictextbox .k-select .k-link span.k-i-arrow-n {
+         vertical-align: baseline;
+        }
+
+        .k-numerictextbox .k-select .k-link span.k-i-arrow-s {
+            vertical-align: baseline;
+        } */
+
+    #gridUpdateTidePenalRateConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid td {
+        border-right: 1px solid #ddd !important;
+        color: navy;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-table-th, .k-grid td, .k-grid .k-table-td {
+        border-right: 1px solid #ddd !important;
+        color: navy;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridUpdateTidePenalRateConfig th {
+        padding-left: 2px;
+        padding-right: 2px;
+        padding-bottom: 1px;
+        padding-top: 1px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid-header th {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-pager {
+        color: blueviolet;
+        height: 33px;
+        padding: 0px 0px 0px 0px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+        font-weight: bold !important;
+        color: navy;
+        font-size: 11px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+        font-weight: bold !important;
+        color: navy;
+        font-size: 11px;
+    }
+
+    #gridUpdateTidePenalRateConfig .k-grid .k-grid-header-locked, .k-grid .k-grid-content-locked, .k-grid .k-grid-header-locked .k-table-th, .k-grid .k-grid-content-locked td, .k-grid .k-grid-content-locked .k-table-td {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    /* .k-multiselect-wrap .k-input {
+            background-color: white !transparent;
+            height: 2.13em;
+            max-width: 100% !important;
+            padding-top: 5px;
+            color: green;
+        } */
+</style>
+
+<script>
+
+    function onMultiSelectDataBound(e) {
+        var multiSelect = e.sender;  // this là MultiSelect instance
+        var values = $.map(multiSelect.dataSource.data(), function (dataItem) {
+            return dataItem.id;
+        });
+        // Lấy giá trị pre-selected từ Model (serialize an toàn)
+        var listPosCode = @Html.Raw(JsonSerializer.Serialize(Model?.ListPosCode ?? new List<string>()));
+            var cleanedList = listPosCode.map(function (x) {
+            return x.trim();
+        });
+        multiSelect.value(cleanedList);
+    }
+
+    function onMultiSelectDataBoundProduct(e) {
+        var multiSelect = e.sender;  // this là MultiSelect instance
+        var values = $.map(multiSelect.dataSource.data(), function (dataItem) {
+            return dataItem.id;
+        });
+        // Lấy giá trị pre-selected từ Model (serialize an toàn)
+        var listProductCode = @Html.Raw(JsonSerializer.Serialize(Model?.ListProductCode ?? new List<string>()));
+            var cleanedList = listProductCode.map(function (x) {
+            return x.trim();
+        });
+        multiSelect.value(cleanedList);
+    }
+
+    function paramListBranchLoadUpd() {
+        return {
+            pFlagCondi: "6",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "0",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1,
+            pFlagAllBank: "1"
+        };
+    }
+    function paramProductLoadUpd() {
+        return {
+            pFlagCallList: 1,
+            pProductGroupCode: "TIDE",
+            pProductCode: "",
+            pAccountTypeCode: "",
+            pTitleChoice: "--- Chọn tất cả ---",
+            pFlagTextShow: "0",
+            pControlFlag: "1",
+            pProductGroupCodeParams: "DEPOSITPENAL"
+        };
+    }
+
+
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName : "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pFlagAllBank: "0"
+        };
+    }
+
+     function paramProductLoadUpdMultiSelect() {
+        return {
+            pFlagCallList: 1,
+            pProductGroupCode: "TIDE",
+            pProductCode: "",
+            pAccountTypeCode: "",
+            pTitleChoice: "--- Chọn tất cả ---",
+            pFlagTextShow: "0",
+            pControlFlag: "2"
+        };
+    }
+
+    //Tải dữ liệu trên lưới danh sách sản phẩm Tide và lãi suất rút trước hạn
+    function onLoadData_TidePenalRate(){
+        var CircularRefNum = $("#CircularRefNum").val();
+        var lcCircularDate = $("#CircularDate").val();
+        var lcEffectiveDate = $("#EffectiveDate").val();
+        var dCircularDate = stringToDate(lcCircularDate, "dd/MM/yyyy", "/");
+        var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
+        var lcExpiredDate = $("#ExpiredDate").val();
+        var dExpiredDate = stringToDate(lcExpiredDate, "dd/MM/yyyy", "/");
+        if (CircularRefNum == null || CircularRefNum == "") {
+            alert('Bạn số quyết định và tiêu đề quyết định thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn cần thêm mới. Vui lòng kiểm tra lại!');
+            $('#CircularRefNum').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (dEffectiveDate < dCircularDate) {
+            alert("Ngày hiệu lực [" + lcEffectiveDate + "] quyết định thay đổi lãi suất nhỏ hơn ngày ký [" + dCircularDate + "] quyết định. Vui lòng kiểm tra lại!");
+            $('#EffectiveDate').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (dExpiredDate <= dEffectiveDate) {
+            alert("Thông tin quyết định thay đổi lãi suất có Ngày hết hiệu [" + lcExpiredDate + "] lực nhỏ hơn hoặc bằng ngày hiệu lực [" + lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+            $('#EffectiveDate').focus();
+            e.preventDefault();
+            return false;
+        }
+
+        var selectedPosCodes = [];
+        $('#ListPosCode :selected').each(function (i, selected) {
+            selectedPosCodes[i] = $(selected).val();
+        });
+        if (selectedPosCodes.length <= 0) {
+            alert('Bạn chưa chọn đơn vị áp dụng để khai báo lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!');
+            e.preventDefault();
+            $("#ListPosCode").focus();
+            return false;
+        }
+
+        $("#SourceFlag").val("0");
+        var objGridTidePenalRateUpdate = $("#gridUpdateTidePenalRateConfig").data("kendoGrid");
+        if (objGridTidePenalRateUpdate != null) {
+            objGridTidePenalRateUpdate.dataSource.read();
+        }
+    }
+
+     function refreshGridUpdateTidePenalRateConfig() {
+        var objGridTidePenalRateUpdate = $("#gridUpdateTidePenalRateConfig").data("kendoGrid");
+        if (objGridTidePenalRateUpdate != null) {
+            objGridTidePenalRateUpdate.dataSource.read();
+        }
+    }
+
+    function onSaveGridCompletedTidePenalRateConfig(e)
+    {
+        if (e != null && e.response != null)
+        {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_HandlerTidePenalRateConfig(e) {
+        if (e.errors) {
+            var message = "Thông báo lỗi: ";
+            dataChangeDGXL = true;//Làm sao để gắn giá trị này khi thoát ra mà màn hình cha bên ngoài nó Reload đc
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+    function find_ReplaceALL(string, target, replacement) {
+        if (string != "") {
+            var i = 0, length = string.length;
+            for (i; i < length; i++) {
+                string = string.replace(target, replacement);
+            }
+        }
+        return string;
+    }
+
+    function stringToDate(_date, _format, _delimiter) {
+        var formatLowerCase = _format.toLowerCase();
+        var formatItems = formatLowerCase.split(_delimiter);
+        var dateItems = _date.split(_delimiter);
+        var monthIndex = formatItems.indexOf("mm");
+        var dayIndex = formatItems.indexOf("dd");
+        var yearIndex = formatItems.indexOf("yyyy");
+        var month = parseInt(dateItems[monthIndex]);
+        month -= 1;
+        var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
+        return formatedDate;
+    }
+
+    function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    function convertDateToString(inputDate, outFormat) {
+        var iDate = 0;
+        var iMonth = 0;
+        var iYear = 0;
+        var lcDate="";
+        var lcMonth="";
+        var lcYear = "";
+        var lcResult = "";
+        var formatLowerCase = outFormat.toLowerCase();
+
+        iDate = inputDate.getDate();
+        iMonth = inputDate.getMonth() + 1;
+        iYear = inputDate.getFullYear();
+
+        lcDate = iDate.toString().padStart(2, '0');
+        lcMonth = iMonth.toString().padStart(2, '0');
+        lcYear = iYear.toString();
+        if(outFormat == "ddmmyyyy")
+        lcResult = lcDate + lcMonth + lcYear;
+        else if (outFormat == "dd/mm/yyyy")
+        lcResult = lcDate + "/" + lcMonth + "/" + lcYear;
+        else if (outFormat == "dd-mm-yyyy")
+        lcResult = lcDate + "-" + lcMonth + "-" + lcYear;
+        else if (outFormat == "dd.mm.yyyy")
+        lcResult = lcDate + "." + lcMonth + "." + lcYear;
+        return lcResult;
+    }
+
+    function paramLoadGridUpdateTidePenalRateConfig() {
+        var selectedPosCodes = [];
+        var listPosStr = "";
+        $('#ListPosCode :selected').each(function (i, selected) {
+            selectedPosCodes[i] = $(selected).val();
+            listPosStr += selectedPosCodes[i] + ";";
+        });
+        
+        if (listPosStr == null || listPosStr == "")
+            listPosStr = $("#ListPosCodeChoice").val();
+            
+        var selectedProductCodes = [];
+        var listProductStr = "";
+        $('#ListProductCode :selected').each(function (i, selected) {
+            selectedProductCodes[i] = $(selected).val();
+            listProductStr += selectedProductCodes[i] + ";";
+        });
+        if (listProductStr == null || listProductStr == "")
+            listProductStr = $("#ListProductCodeChoice").val();
+        return {
+            posCode: $("#PosCode").val(),
+            productCode: $("#ProductCode").val(),
+            currencyCode: $("#CurrencyCode").val(),
+            effectiveDate: $("#EffectiveDate").val(),
+            expiredDate: $("#ExpiredDate").val(),
+            circularRefNum: $("#CircularRefNum").val(),
+            circularDate: $("#CircularDate").val(),
+            interestRateNew: $("#InterestRateNew").val(),
+            penalIntRate: $("#PenalIntRate").val(),
+            idList: $("#IdList").val(),
+            pListPosCode: listPosStr,
+            pListProductCodeChoice: listProductStr
+        };
+    }
+
+    function onRowBoundUpdateTidePenalRateConfig(e) {
+        var rows = e.sender.tbody.children();
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var statusRow = dataItem.get("Status");
+            if (statusRow == 1 || statusRow == null)
+                row.css({ "background-color": "white", "color": "red" });
+        }
+    }
+
+    function onSave_TidePenalRate(){
+
+        console.log("onSave_TidePenalRate triggered");
+
+        try {
+            var lcCircularRefNum = $("#CircularRefNum").val();
+            var lcCircularDate = $("#CircularDate").val();
+            var lcEffectiveDate = $("#EffectiveDate").val();
+            var dCircularDate = stringToDate(lcCircularDate, "dd/MM/yyyy", "/");
+            var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
+            var lcExpiredDate = $("#ExpiredDate").val();
+            var dExpiredDate = stringToDate(lcExpiredDate, "dd/MM/yyyy", "/");
+            if (lcCircularRefNum == null || lcCircularRefNum == "") {
+                alert('Bạn số quyết định và tiêu đề quyết định thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn cần thêm mới. Vui lòng kiểm tra lại!');
+                $('#CircularRefNum').focus();
+                e.preventDefault();
+                return false;
+            }
+            if (dEffectiveDate < dCircularDate) {
+                alert("Ngày hiệu lực [" + lcEffectiveDate + "] quyết định thay đổi lãi suất nhỏ hơn ngày ký [" + dCircularDate + "] quyết định. Vui lòng kiểm tra lại!");
+                $('#EffectiveDate').focus();
+                e.preventDefault();
+                return false;
+            }
+            if (dExpiredDate <= dEffectiveDate) {
+                alert("Thông tin quyết định thay đổi lãi suất có Ngày hết hiệu [" + lcExpiredDate + "] lực nhỏ hơn hoặc bằng ngày hiệu lực [" + lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+                $('#EffectiveDate').focus();
+                e.preventDefault();
+                return false;
+            }
+
+            var selectedPosCodes = [];
+            $('#ListPosCode :selected').each(function (i, selected) {
+                selectedPosCodes[i] = $(selected).val();
+            });
+            if (selectedPosCodes.length <= 0) {
+                alert('Bạn chưa chọn đơn vị áp dụng để khai báo lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!');
+                e.preventDefault();
+                $("#ListPosCode").focus();
+                return false;
+            }
+            var applyPosLst = $("#ListPosCode").data("kendoMultiSelect").value();
+
+            var gridTidePenalRateConfig = $("#gridUpdateTidePenalRateConfig").data("kendoGrid");
+            var selectedItems = [];
+            //Lấy chi tiết danh sách SP và Lãi suất cấu hình lãi suất rút trước hạn sản phẩm tiền gửi Tide (Trên lưới)
+            var allVisibleItems = gridTidePenalRateConfig.dataSource.view(); // → mảng các object dataItem
+            allVisibleItems.forEach(function(dataItem) {
+                selectedItems.push({
+                    Id: dataItem.Id,
+                    OrderNo: dataItem.OrderNo,
+                    IdList: dataItem.IdList,
+                    PosCode: dataItem.PosCode,
+                    PosName: dataItem.PosName,
+                    EffectiveDate: dataItem.EffectiveDate,
+                    ProductCode: dataItem.ProductCode,
+                    ProductName: dataItem.ProductName,
+                    CurrencyCode: dataItem.CurrencyCode,
+                    CircularRefNum: dataItem.CircularRefNum,
+                    EffectiveDateText: dataItem.EffectiveDateText,
+                    InterestRate: dataItem.InterestRate,
+                    InterestRateNew: dataItem.InterestRateNew,
+                    Status: dataItem.Status,
+                    StatusUpdateCore: dataItem.StatusUpdateCore,
+                    MaxInterestRateSpread: dataItem.MaxInterestRateSpread,
+                    MinInterestRateSpread: dataItem.MinInterestRateSpread,
+                    InterestRateHO: dataItem.InterestRateHO
+                });
+            });
+
+            if (selectedItems.length == 0) {
+                alert("Bạn tải dữ liệu danh sách sản phẩm cần cấu hình lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!");
+                return;
+            }
+            //Lấy các thông tin chung cho cấu hình lãi suất rút trước hạn sản phẩm tiền gửi Tide
+            var posCode = $("#PosCode").val();
+            var productCode = $("#ProductCode").val();
+            var currencyCode = $("#CurrencyCode").val();
+            var interestRate = parseFloat( $("#InterestRateNew").val());
+            var penalIntRate = parseFloat( $("#PenalIntRate").val());
+            if (interestRate == null ) {
+                console.error("Bạn chưa nhập lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!");
+                alert("Bạn chưa nhập lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!");
+                return;
+            }
+
+            var listPosStr = "";
+            $('#ListPosCode :selected').each(function (i, selected) {
+                listPosStr += selectedPosCodes[i] + ";";
+            });
+
+            var selectedProductCodes = [];
+            $('#ListProductCode :selected').each(function (i, selected) {
+                selectedProductCodes[i] = $(selected).val();
+            });
+            var listProductStr = "";
+            $('#ListProductCode :selected').each(function (i, selected) {
+                listProductStr += selectedProductCodes[i] + ";";
+            });
+
+            // Combine form and grid data
+            var submitData = {
+                flagCall: $("#FlagCallView").val(),
+                posCode: posCode,
+                productCode: productCode,
+                currencyCode: currencyCode,
+                effectiveDate: lcEffectiveDate,
+                expiredDate: lcExpiredDate,
+                circularRefNum: lcCircularRefNum,
+                circularDate: lcCircularDate,
+                interestRate: interestRate,
+                penalIntRate: penalIntRate,
+                listItemUpdates: selectedItems,
+                listPosCodeChoice: listPosStr,
+                listProductCodeChoice: listProductStr
+            };
+            console.log("Submit data SaveTidePenalRateConfig():", submitData);
+
+            // Send AJAX request
+            $.ajax({
+                url: '@Url.Action("SaveTidePenalRateConfig", "IntRateConfig")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Save successful:", response);
+                    alert(response.Message);
+                    $("#SourceFlag").val("1");
+                    dataChangeTidePanelRate = true;
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Save failed:", error, xhr.responseText);
+                    alert("Lỗi khi lưu dữ liệu cấu hình lãi suất rút trước hạn sản phẩm tiền gửi CKH: " + (xhr.responseText || error));
+                }
+            });
+        } catch (error) {
+            console.error("Error in onSave_TidePenalRate:", error);
+            alert("Lỗi cập nhật cấu hình lãi suất rút trước hạn sản phẩm tiền gửi CKH: " + error.message);
+        }
+    }
+
+    function Checked_ChoiceAllPos() {
+        var isCheckVal = $("#ckb_checkallPos").is(":checked");
+        var multislListPos = $("#ListPosCode").data("kendoMultiSelect");
+        if (isCheckVal == true) {
+            var values = $.map(multislListPos.dataSource.data(), function (dataItem) {
+                return dataItem.id;
+            });
+            multislListPos.value(values);
+        }
+        else
+            multislListPos.value([]);
+    }
+
+    function Checked_ChoiceAllProduct() {
+        var isCheckVal = $("#ckb_checkallProduct").is(":checked");
+        var multislListProduct = $("#ListProductCode").data("kendoMultiSelect");
+        if (isCheckVal == true) {
+            var values = $.map(multislListProduct.dataSource.data(), function (dataItem) {
+                return dataItem.id;
+            });
+            multislListProduct.value(values);
+        }
+        else
+            multislListProduct.value([]);
+    }
+
+    function onEdit_TidePenalRateConfig(e) {
+       try {
+            // Style the input field during editing
+            var cell = e.container;
+            cell.find("input").css({
+                "font-weight": "bold",
+                "color": "blue"
+            });
+
+           // alert("Vào sửa");
+            // var model = e.model;
+            // var grid = this; // this là grid instance
+
+            // // Lấy giá trị min/max từ model (các cột hidden)
+            // var rateHO = model.InterestRateHO;
+            // var minRate = rateHO - model.MinInterestRateSpread;
+            // var maxRate = rateHO + model.MaxInterestRateSpread;
+            // //alert("Vào sửa ="+rateHO.toString());
+            // // Nếu min/max không có giá trị hợp lệ → bỏ qua validate hoặc xử lý tùy logic
+            // if (typeof minRate !== "number" || typeof maxRate !== "number" || isNaN(minRate) || isNaN(maxRate)) {
+            //     return;
+            // }
+
+            // // Lấy input đang edit
+            // var input = e.container.find("input");
+            // var currentValue = parseFloat(input.val()) || 0;
+
+            // // Gắn sự kiện change + keyup để validate realtime
+            // input.off("change.kendoValidate keyup.kendoValidate").on("change.kendoValidate keyup.kendoValidate", function () {
+            //     var newValue = parseFloat($(this).val());
+
+            //     if (isNaN(newValue)) {
+            //         // Không cho nhập chữ/ký tự không phải số
+            //         $(this).val(currentValue);
+            //         return;
+            //     }
+
+            //     if (newValue < minRate || newValue > maxRate) {
+            //         // Hiển thị cảnh báo
+            //         alert("Lãi suất mới phải nằm trong khoảng từ " +
+            //               kendo.toString(minRate, "n2") +
+            //               " đến " +
+            //               kendo.toString(maxRate, "n2") +
+            //               ". Giá trị bạn nhập không hợp lệ!");
+
+            //         // Cách 1: Đưa về giá trị cũ (khuyến nghị)
+            //         $(this).val(currentValue);
+
+            //         // Cách 2: Xóa giá trị để buộc nhập lại (tùy chọn)
+            //         // $(this).val("");
+
+            //         // Ngăn không cho blur ra ngoài (tùy chọn - khá mạnh tay)
+            //         // e.preventDefault(); // không luôn hiệu quả trong InCell
+            //     } else {
+            //         // Giá trị hợp lệ → cập nhật currentValue để dùng cho lần sau
+            //         currentValue = newValue;
+            //     }
+            // });
+
+            // // Validate thêm khi người dùng nhấn Enter hoặc blur (tùy chọn)
+            // input.on("blur.kendoValidate", function () {
+            //     var finalValue = parseFloat($(this).val());
+            //     if (!isNaN(finalValue) && (finalValue < minRate || finalValue > maxRate)) {
+            //         alert("Giá trị lãi suất mới không hợp lệ! Vui lòng nhập lại.");
+            //         $(this).focus(); // Đưa con trỏ về lại ô input
+            //     }
+            // });
+        } catch (error) {
+            console.error("Error in onEdit_TidePenalRateConfig:", error);
+        }
+    }
+
+    function onSave_TideRatePenalGrid(e) {
+        try {
+            // Ensure dirtyFields is initialized
+            e.model.dirtyFields = e.model.dirtyFields || {};
+
+            // e.model.set("ChangeFlag", 1);
+            // e.model.dirtyFields["ChangeFlag"] = true;
+
+            // // Mark fields as dirty and track TermIntRateNew changes
+            // for (var field in e.values) {
+            //     if (e.values.hasOwnProperty(field)) {
+            //         e.model.dirtyFields[field] = true;
+            //         if (field === "TermIntRateNew") {
+            //             updatedCells.push({
+            //                 id: e.model.id,
+            //                 field: field
+            //             });
+            //             // Directly apply styling to the cell
+            //             var row = e.container.closest("tr");
+            //             var grid = $("#tideRateConfigureGrid").data("kendoGrid");
+            //             var columnIndex = grid.columns.findIndex(function (col) {
+            //                 return col.field === "TermIntRateNew";
+            //             });
+            //             if (columnIndex !== -1) {
+            //                 row.find("td").eq(columnIndex).addClass("row-changed");
+            //             }
+            //         }
+            //     }
+            // }
+
+            var model = e.model;
+
+            var rateHO = parseFloat(model.InterestRateHO);
+            var minRate = rateHO - parseFloat(model.MinInterestRateSpread);
+            var maxRate = rateHO + parseFloat(model.MaxInterestRateSpread);
+            var num = e.values.TermIntRateNew;
+            var newValue = parseFloat(num);
+            if (isNaN(newValue) || newValue < minRate || newValue > maxRate) {
+                alert("Lãi suất cấu hình mới phải nằm trong khoảng từ lãi suất tối thiểu " + kendo.toString(minRate, "n2") + " đến lãi suất tối đa " + kendo.toString(maxRate, "n2") + ". Vui lòng kiểm tra lại!");
+                // ❗ Hủy Save → KHÔNG lặp
+                e.preventDefault();
+            }
+        } catch (error) {
+            console.error("Error in onSave_TideRatePenalGrid:", error);
+        }
+    }
+</script>
+
+<form id="addTideRateConfigureForm">
+    @Html.HiddenFor(m => m.IdList, new { @Value = Model == null ? "" : Model.IdList })
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.Status, new { @Value = Model == null ? 0 : Model.Status })
+    @Html.HiddenFor(m => m.PosCode, new { @Value = Model == null ? "" : Model.PosCode })
+    @Html.HiddenFor(m => m.ProductCode, new { @Value = Model == null ? "" : Model.ProductCode })
+    @Html.HiddenFor(m => m.ListPosCodeChoice, new { @Value = Model == null ? "" : Model.ListPosCodeChoice })
+    @Html.HiddenFor(m => m.ListProductCodeChoice, new { @Value = Model == null ? "" : Model.ListProductCodeChoice })
+    @Html.HiddenFor(m => m.MinInterestRateSpread, new { @Value = Model == null ? 0 : Model.MinInterestRateSpread })
+    @Html.HiddenFor(m => m.MaxInterestRateSpread, new { @Value = Model == null ? 0 : Model.MaxInterestRateSpread })
+    @Html.Hidden("SourceFlag", "0")
+    @Html.Hidden("FlagCallView", TempData["FlagCall"])
+    @Html.AntiForgeryToken()
+
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:70px;padding-top: 7px;">Đơn vị</label>
+            @(Html.Kendo().CheckBox().Name("ckb_checkallPos").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllPos();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả đơn vị (POS)" }))
+            &nbsp;
+            @(Html.Kendo().MultiSelectFor(m => m.ListPosCode)
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Chọn Đơn vị áp dụng ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(e => e
+                .DataBound("onMultiSelectDataBound")  // ← Thêm event dataBound
+                )
+                .DownArrow(true)   //Thêm dòng này để có mũi tên xuống
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramListBranchLoadUpd"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 910px; !important;max-width: 100% !important;color: green;text-align: left;flex: 1; padding-left: 2px; padding-right: 2px;" })
+                .AutoBind(true))
+        </div>
+    </div>
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:70px;padding-top: 7px;">Sản phẩm</label>
+            @(Html.Kendo().CheckBox().Name("ckb_checkallProduct").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllProduct();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả sản phẩm hoặc không cần tích chọn nếu muốn chọn tất cả" }))
+            &nbsp;
+            @(Html.Kendo().MultiSelectFor(m => m.ListProductCode)
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Chọn Sản phẩm ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(e => e
+                .DataBound("onMultiSelectDataBoundProduct")  // ← Thêm event dataBound
+                )
+                .DownArrow(true)   //Thêm dòng này để có mũi tên xuống
+                .DataSource(source => { source.Read(read => { read.Action("GetListOfProducts", "ListOfValue").Data("paramProductLoadUpd"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { id = "ListProductCode", style = "width: 910px; !important;max-width: 100% !important;color: green;text-align: left;flex: 1; padding-left: 2px; padding-right: 2px;" })
+                .AutoBind(true))
+        </div>
+    </div>
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top: 7px;padding-right: 5px!important;">Loại tiền</label>
+            @Html.Kendo().TextBoxFor(m => m.CurrencyCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px; !important;max-width:100% !important;color: navy;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;">Ngày hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 5px!important;">Ngày hết hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiredDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 5px!important;">Số quyết định</label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { placeholder = "Số và tiêu đề quyết định", style = " width: 200px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 5px!important;">Ngày ký</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+        </div>
+    </div>
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:110px;padding-top: 7px;">Lãi suất cấu hình</label>
+            @Html.Kendo().NumericTextBoxFor(m => m.InterestRateNew).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 95px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 5px!important;">Lãi phạt</label>
+            @Html.Kendo().NumericTextBoxFor(m => m.PenalIntRate).Enable(false).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 115px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
+            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 5px!important;">Trạng thái</label>
+            @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: green;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;width:35px;padding-top: 7px;"></label>
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnLoadTidePenalRate")
+                .Events(ev => ev.Click("onLoadData_TidePenalRate"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:105px; color: blue;padding-left: 0px; height: 25px;", title = "Tải danh sách sản phẩm Tide để cấu hình lãi suất rút trước hạn" })
+                .ImageUrl(Url.Content("~/images/xem_bao_cao.png"))
+                .Content("Tải dữ liệu"))
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnSaveTidePenalRate")
+                .Events(ev => ev.Click("onSave_TidePenalRate"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:90px; color: blue;padding-left: 0px; height: 25px;", title = "Cập nhật thông tin cấu hình lãi suất rút trước hạn sản phẩm Tide" })
+                .ImageUrl(Url.Content("~/images/save.png"))
+                .Content("Lưu lại"))
+        </div>
+    </div>
+    <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            @(Html.Kendo().Grid<UpdateTidePenalRateConfigViewModel>()
+                .Name("gridUpdateTidePenalRateConfig")
+                .Events(e => e.DataBound("onRowBoundUpdateTidePenalRateConfig"))
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(45).HtmlAttributes(new { style = "text-align: center;" });//.Locked(true)
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Bound(c => c.IdList).Hidden();
+                    columns.Bound(c => c.PosCode).Hidden();
+                    columns.Bound(c => c.EffectiveDate).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.MinInterestRateSpread).Hidden();
+                    columns.Bound(c => c.MaxInterestRateSpread).Hidden();
+                    columns.Bound(c => c.PosName).Title("Đơn vị áp dụng").Width(90).HtmlAttributes(new { style = "text-align: center;" });//.Locked(true)
+
+                    columns.Group(groupProduct => groupProduct.Title("Sản phẩm").HtmlAttributes(new { style = "text-align: center;padding-top:0px;padding-bottom: 0px;" })//.Locked(true)
+                    .Columns(infoProduct =>
+                    {
+                        infoProduct.Bound(x => x.ProductCode).Title("Mã SP").Width(45).HtmlAttributes(new { style = "text-align: center;" });
+                        infoProduct.Bound(x => x.ProductName).Title("Tên SP").Width(260).HtmlAttributes(new { style = "text-align: left;" });
+                    }));
+                    columns.Bound(c => c.CurrencyCode).Title("Loại tiền tệ").Width(45).HtmlAttributes(new { style = "text-align: center;" });//.Locked(true)
+
+                    columns.Group(groupPenalRateConfigOld => groupPenalRateConfigOld.Title("Thông tin quyết định cấu hình hiện tại").HtmlAttributes(new { style = "text-align: center;padding-top:0px;padding-bottom: 0px;" })//.Locked(true)
+                    .Columns(infoRateConfigOld =>
+                    {
+                        infoRateConfigOld.Bound(x => x.CircularRefNum).Title("Số Quyết định").Width(165).HtmlAttributes(new { style = "text-align: left;" });
+                        infoRateConfigOld.Bound(x => x.EffectiveDateText).Title("Ngày hiệu lực").Width(83).HtmlAttributes(new { style = "text-align: center;" });
+                        infoRateConfigOld.Bound(x => x.InterestRate).Title("Lãi suất").Width(55).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                        infoRateConfigOld.Bound(x => x.InterestRateHO).Title("Lãi suất HSC").Width(55).HtmlAttributes(new { style = "text-align: center;" }).Format("{0:n2}");
+                    }));
+                    columns.Bound(c => c.InterestRateNew).Title("Lãi suất cấu hình").Width(80).HtmlAttributes(new { style = "text-align: center;color: blue !important;", @class = "new-interest-rate" }).Format("{0:n2}");
+                })
+                .HtmlAttributes(new { style = "color: navy; height: 440px; width:100%; vertical-align:middle;margin: 0;padding: 0;margin-right: 0px;padding-left: 0px; padding-right: 0px;" })
+                .Editable(editable => { editable.Mode(GridEditMode.InCell); })
+                .Events(events => events.Edit("onEdit_TidePenalRateConfig").Save("onSave_TideRatePenalGrid"))
+                .Sortable(false)
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+               // .Batch(true)
+                .ServerOperation(false)
+                .Model(model =>
+                {
+                    model.Id(p => p.Id);
+                    model.Field(p => p.OrderNo).Editable(false);
+                    model.Field(p => p.PosName).Editable(false);
+                    model.Field(p => p.ProductCode).Editable(false);
+                    model.Field(p => p.ProductName).Editable(false);
+                    model.Field(p => p.CurrencyCode).Editable(false);
+                    model.Field(p => p.EffectiveDateText).Editable(false);
+                    model.Field(p => p.CircularRefNum).Editable(false);
+                    model.Field(p => p.InterestRate).Editable(false);
+                })
+                .Events(e => e.RequestEnd("onSaveGridCompletedTidePenalRateConfig").Error("error_HandlerTidePenalRateConfig"))
+                .Read(read => read.Action("LoadGridData_UpdateTidePenalRateConfig", "IntRateConfig").Type(HttpVerbs.Post).Data("paramLoadGridUpdateTidePenalRateConfig"))
+                .PageSize(1000))
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(false)
+                )
+        </div>
+    </div>
+
+</form>
+
+
+<script>
+    $(document).ready(function () {
+        const flagCallView = $("#FlagCallView").val();
+        if(flagCallView=="2")
+        {
+            refreshGridUpdateTidePenalRateConfig();
+            $("#btnLoadTidePenalRate").data("kendoButton").enable(false);
+            
+            $("#ListProductCode").data("kendoMultiSelect").readonly(true);
+            $("#ckb_checkallProduct").prop("disabled", true);
+
+            $("#ListPosCode").data("kendoMultiSelect").readonly(true);
+            $("#ckb_checkallPos").prop("disabled", true);
+        }
+    });
+</script>

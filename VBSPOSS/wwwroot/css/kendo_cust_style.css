@@ -1,0 +1,88 @@
+﻿/*the default Kendo Grid has waaay too much row padding so this reduces it*/
+.k-grid-header .k-grid-header-wrap th.k-header {
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 3px;
+    font-size: small;
+    font-weight: bold;
+    color: blue;
+}
+
+.k-grid-content tr td {
+    padding: 3px !important;
+}
+
+.k-grid tr.k-alt,
+.k-grid tr {
+    padding: 3px !important; /* Thay đổi giá trị tùy ý */
+    /*height: auto !important;*/
+}
+
+.k-grid td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: small;
+}
+
+
+/* Set padding và font-size cho tất cả Kendo Buttons */
+.k-button {
+    font-size: small !important; /* Thay đổi kích thước font */
+    padding: 8px 10px !important; /* Điều chỉnh padding */
+    text-transform: none !important;
+}
+
+    /* Nếu muốn thay đổi padding cho chỉ Primary Buttons */
+    .k-button.k-primary {
+        font-size: small !important;
+        padding: 8px 10px !important;
+    }
+
+
+/* Set font-size cho toàn bộ Kendo ComboBox */
+.k-combobox .k-input {
+    font-size: small !important;
+}
+
+/* Nếu muốn chỉnh font-size cho dropdown items */
+.k-combobox .k-list .k-item {
+    font-size: small !important;
+}
+
+.k-grid .k-cell-inner > .k-link {
+    width: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    overflow: hidden;
+}
+
+.k-input-md, .k-picker-md {
+    /*font-size: 16px;
+    line-height: 1.25;*/
+    font-size: small;
+}
+
+.k-button-md {
+    font-size: small;
+}
+
+
+
+.k-input-md .k-clear-value {
+    padding-block: 0px;
+    padding-inline: 8px;
+    box-sizing: content-box;
+}
+
+
+.k-window-titlebar {
+    padding-block: 8px !important;
+}
+
+
+.k-window-content {
+    padding-block: 0px !important;
+}

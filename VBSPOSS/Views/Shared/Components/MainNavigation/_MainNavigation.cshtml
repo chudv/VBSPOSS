@@ -1,0 +1,52 @@
+﻿@model VBSPOSS.Models.UserModel;
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@using static VBSPOSS.Helpers.NavigationIndicatorHelper;
+@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor;
+
+<style>
+    .user-greeting {
+        padding: 0 !important; /* bỏ padding mặc định của nav-link */
+        margin: 0 !important; /* bỏ margin */
+        line-height: 1 !important; /* thu hẹp chiều cao dòng */
+        /* font-size: 14px;  nếu muốn chữ nhỏ gọn hơn */ 
+       
+    }
+
+    .main-header .nav-link {
+        height: 1.8rem;
+        position: relative;
+    }
+</style>
+
+@if (SignInManager.IsSignedIn(User))
+{
+    @* <span class="nav-link user-greeting text-dark">
+        Xin chào, @Model.FullName!
+        [<a href="#" onclick="document.getElementById('logoutForm').submit();">Thoát</a>]
+    </span>
+
+    <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline" id="logoutForm">
+        <button type="submit" class="btn btn-link nav-link" style="border: none; background: none; cursor: pointer; float: right; display: none;">
+            Đăng xuất
+        </button>
+    </form>
+    <span class="nav-link user-greeting text-dark">
+        @Model.DepartmentDesc - @Model.PosName
+    </span> *@
+    <li class="nav-item d-flex flex-column text-right">
+        <span class="nav-link user-greeting" style=" color: #006C3D;">
+            Xin chào, @Model.FullName!
+            [<a href="#" onclick="document.getElementById('logoutForm').submit();">Thoát</a>]
+        </span>
+        <span class="nav-link user-greeting" style=" color: #006C3D;">
+            @Model.DepartmentDesc - @Model.PosName
+        </span>
+    </li>
+
+    <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-none" id="logoutForm">
+        <button type="submit" class="btn btn-link nav-link">Đăng xuất</button>
+    </form>
+}

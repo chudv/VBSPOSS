@@ -1,0 +1,296 @@
+﻿@model VBSPOSS.ViewModels.InterestRateConfigMasterViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Constants
+@using VBSPOSS.Data.Models
+@using VBSPOSS.ViewModels
+@{
+    Layout = null; // Giữ là partial view
+}
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+<style>
+    .view_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .view_form.button {
+        height: 25px !important;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .section-header {
+        border-bottom: 1px dotted #d9534f;
+    }
+
+    .section-title {
+        color: blue;
+        font-weight: bold;
+    }
+
+    .row-changed {
+        color: red !important;
+    }
+
+    .new-interest-rate {
+        background-color: #DFFFD6 !important;
+        font-weight: bold !important;
+    }
+    /* Style cho nút download trong grid file */
+    .k-grid .btn-download.k-button {
+        background: url('../images/download_icon.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+        padding: 0;
+        min-width: 15px;
+    }
+</style>
+<script>
+    var rowNumber = 1;
+
+    function paraCasaConfigureViewGridData() {
+        return {
+            idList: $("#IdList").val(),
+        };
+    }
+
+    function paraAttachFileGridData() {
+        return {
+            documentNumber: $("#CircularRefNum").val(),
+        };
+    }
+
+    function onRowBound_CasaRateViewGrid(e) {
+        try {
+            var grid = this;
+            grid.dataSource.data().forEach(function (dataItem) {
+                if (dataItem.ChangeFlag === 1 || dataItem.ChangeFlag === true) {
+                    var uid = dataItem.uid;
+                    var row = grid.tbody.find("tr[data-uid='" + uid + "']");
+                    if (row.length) {
+                        row.addClass("row-changed");
+                    }
+                }
+            });
+            grid.tbody.find("tr").each(function () {
+                $(this).find("td").eq(6).addClass("new-interest-rate");
+            });
+            countChangedRows();
+        } catch (error) {
+            console.error("Error in onRowBound_CasaRateViewGrid:", error);
+        }
+    }
+
+    function onRowBound_AttachFileGrid(e) {
+        rowNumber = 1;
+    }
+
+    function onDownloadFile(e) {
+        e.preventDefault();
+        var grid = $("#casaFileUploadGrid").data("kendoGrid");
+        var dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
+        if (!dataItem || !dataItem.FileId) {
+            kendo.alert("Không tìm thấy file!");
+            return;
+        }
+        window.location.href = '@Url.Action("DownloadFile", "CasaRateConfigure")?fileId=' + dataItem.FileId;
+    }
+
+    function countChangedRows() {
+        var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+        if (!grid) return;
+        var data = grid.dataSource.view();
+        var total = data.length;
+        var count = data.filter(x => x.ChangeFlag === 1).length;
+        $("#lblChangedCount").text("(Số sản phẩm thay đổi: " + count + "/" + total + ")");
+    }
+
+    $(document).ready(function () {
+        countChangedRows();
+    });
+</script>
+
+<form id="viewCasaRateConfigureForm">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.IdList)
+
+    <!-- Thông tin chung -->
+    <div class="section-header">
+        <div class="section-title">Thông tin chung</div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-3">
+            <label for="CircularRefNum">Số Quyết định </label>
+              @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="CircularDate">Ngày quyết định</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="EffectiveDate">Ngày hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="ExpiryDate">Ngày hết hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+       
+    @*     <div class="col-md-4">
+            <label for="CreatedBy">Trạng thái </label>
+            @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div> *@
+
+        <div class="col-md-4">
+            <label for="Status">Trạng thái </label>
+            @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 70%;!important;max-width:100% !important;color:navy;" })
+        </div>
+       
+
+        <div class="col-md-4">
+            <label for="CreatedBy">Người đề nghị </label>
+            @Html.Kendo().TextBoxFor(m => m.CreatedBy).HtmlAttributes(new { @readonly = true, style = "width: 70%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-4">
+            <label for="ApproverBy">Người duyệt</label>
+            @Html.Kendo().TextBoxFor(m => m.ApproverBy).HtmlAttributes(new { @readonly = true, style = "width: 70%;!important;max-width:100% !important;color:navy;" })
+        </div>
+
+
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-12">
+            <label for="ApplyPosList">Áp dụng tại:</label>
+            @Html.Kendo().TextBoxFor(m => m.ApplyPosList).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+
+    <!-- -->
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-1">
+            <label for="Remark">Ghi chú </label>
+        </div>
+        <div class="col-md-10">
+            @Html.Kendo().TextBoxFor(m => m.Remark).HtmlAttributes(new { @readonly = true, style = "width: 100%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+
+    <!-- TabStrip  -->
+    @(Html.Kendo().TabStrip()
+            .Name("tabstrip")
+            .Animation(animation => animation.Open(effect => effect.Fade(FadeDirection.In)))
+            .Items(tabstrip =>
+            {
+                // Tab 1: Thông tin lãi suất
+                tabstrip.Add().Text("Thông tin lãi suất")
+            .Selected(true)
+            .Content(@<text>
+        <div class="section-header">
+            <div class="section-title">Thông tin lãi suất CASA <span id="lblChangedCount" style="color:red;"></span></div>
+        </div>
+        <div class="view_form row" style="padding-top: 5px;">
+            @(Html.Kendo().Grid<CasaRateProductViewModel>()
+            .Name("casaRateConfigureGrid")
+            .Columns(columns =>
+            {
+            columns.Bound(c => c.RateProductCode).Title("Mã SP").Width(120).Locked(true).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.RateProductAccountTypeCode).Title("Loại TK").Width(100).Locked(true).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.RateProductAccountTypeName).Title("Tên loại TK").Width(220).Locked(true).HtmlAttributes(new { style = "text-align: left;" });
+            columns.Bound(c => c.RateProductEffectiveDate).Title("Hiệu lực").Format("{0:dd/MM/yyyy}").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.RateProductDebitCreditFlag).Title("Dư Nợ/Dư Có")
+            .ClientTemplate("#= RateProductDebitCreditFlag === 'C' ? 'Dư có' : 'Dư nợ' #")
+            .Width(130).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.RateProductInterestRate).Title("Lãi suất HT").Format("{0:n4}").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.RateProductNewInterestRate).Title("Lãi suất mới").Format("{0:n4}").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+            columns.Bound(c => c.ChangeFlag).Hidden();
+            })
+            .ToolBar(toolbar => toolbar.Excel()
+            .HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;", title = "Xuất dữ liệu trên lưới ra file excel" })
+            .Text("Xuất excel"))
+            .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat_CASA.xlsx").AllPages(true))
+            .HtmlAttributes(new { style = "height: 400px; width: 100%;" })
+            .Scrollable(s => s.Enabled(true).Virtual(false))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .ServerOperation(false)
+            .Read(read => read.Action("LoadCasaConfigureViewGridData", "CasaRateConfigure").Type(HttpVerbs.Post).Data("paraCasaConfigureViewGridData"))
+            .Model(model => model.Id(p => p.Id))
+            )
+            .AutoBind(true)
+            .Events(events => events.DataBound("onRowBound_CasaRateViewGrid"))
+            )
+        </div>
+    </text>);
+
+                // Tab 2: Thông tin tờ trình - Grid file đính kèm
+                tabstrip.Add().Text("Thông tin tờ trình")
+            .Content(@<text>
+        @(Html.Kendo().Grid<AttachedFileInfo>()
+        .Name("casaFileUploadGrid")
+        .Columns(columns =>
+        {
+        columns.Bound(c => c.FileId)
+        .Title("STT")
+        .Width(60)
+        .HtmlAttributes(new { style = "text-align:center;" })
+        .ClientTemplate("#= ++rowNumber #");
+        columns.Bound(c => c.DocumentNumber).Title("Số quyết định").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+        columns.Bound(c => c.FileName).Title("Tập tin").Width(300).HtmlAttributes(new { style = "text-align: left;" });
+        columns.Bound(c => c.FileType).Title("Loại file").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+        columns.Command(command =>
+        {
+        command.Custom("Download")
+        .Text("<span></span>")
+        .Click("onDownloadFile")
+        .HtmlAttributes(new { title = "Tải file", @class = "btn-download k-button" });
+        }).Width(80).Title("Tải file").HtmlAttributes(new { style = "text-align: center;" });
+        })
+        .HtmlAttributes(new { style = "height: 250px; width: 100%;" })
+        .Scrollable()
+        .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("LoadAttachFileGridData", "CasaRateConfigure").Type(HttpVerbs.Post).Data("paraAttachFileGridData"))
+        )
+        .AutoBind(true)
+        .Events(events => events.DataBound("onRowBound_AttachFileGrid"))
+        )
+    </text>);
+
+                // Tab 3: Trạng thái cập nhật iDC
+                tabstrip.Add().Text("Trạng thái cập nhật iDC")
+            .Content(@<text>
+        @* <div class="view_form row" style="padding-top: 15px; padding-left: 20px;">
+            <div class="col-md-3"><label>Trạng thái cập nhật</label></div>
+            <div class="col-md-9">
+                @Html.Kendo().TextBoxFor(m => m.StatusUpdateCoreDesc).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
+            </div>
+        </div>
+        <div class="view_form row" style="padding-top: 10px; padding-left: 20px;">
+            <div class="col-md-3"><label>Txn Status</label></div>
+            <div class="col-md-9">
+                @Html.Kendo().TextBoxFor(m => m.CallApiTxnStatus).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
+            </div>
+        </div>
+        <div class="view_form row" style="padding-top: 10px; padding-left: 20px;">
+            <div class="col-md-3"><label>Response Code</label></div>
+            <div class="col-md-9">
+                @Html.Kendo().TextBoxFor(m => m.CallApiResponseCode).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
+            </div>
+        </div>
+        <div class="view_form row" style="padding-top: 10px; padding-left: 20px;">
+            <div class="col-md-3"><label>Response Message</label></div>
+            <div class="col-md-9">
+                @Html.Kendo().TextBoxFor(m => m.CallApiResponseMsg).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
+            </div>
+        </div> *@
+    </text>);
+            })
+        )
+</form>

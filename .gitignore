@@ -1,0 +1,30 @@
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET
+# Windows Installer files
+.vs/
+
+# User-specific files
+.vscode/
+.idea/
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Build results
+bin/
+obj/
+logs/
+
+# JetBrains Rider
+.idea/
+
+# NPM
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+

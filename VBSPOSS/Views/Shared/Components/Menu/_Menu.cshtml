@@ -1,0 +1,87 @@
+﻿@model List<VBSPOSS.Data.Models.MenuRoleView>
+
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+        <!-- Trang chủ -->
+        <li class="nav-item">
+            <a asp-controller="Home" asp-action="Index" class="nav-link">
+                <i class="nav-icon fa fa-home" title="Trang chủ"></i>
+                <p>Trang chủ</p>
+            </a>
+        </li>
+
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                if (item.IsParent == false && item.ParentId == 0)
+                {
+                    <li class="nav-item">
+                        <a href="@Url.Action(item.Action, item.Controller)" class="nav-link">
+                            <i class="nav-icon @(string.IsNullOrEmpty(item.ImageClass) ? "" : item.ImageClass)" title="@item.Text"></i>
+                            <p>@item.Text</p>
+                        </a>
+                    </li>
+                }
+                else if (item.IsParent == true && item.ParentId == 0)
+                {
+                    <li class="nav-item has-treeview">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon @(string.IsNullOrEmpty(item.ImageClass) ? "" : item.ImageClass)" title="@item.Text"></i>
+                            <p>
+                                @item.Text
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            @foreach (var child in Model.Where(p => p.ParentId == item.Id))
+                            {
+                                if (child.IsParent == true)
+                                {
+                                    <li class="nav-item has-treeview">
+                                        <a href="#" class="nav-link">
+                                            <i class="nav-icon @(string.IsNullOrEmpty(child.ImageClass) ? "" : child.ImageClass)"></i>
+                                            <p>
+                                                @child.Text
+                                                <i class="fas fa-angle-left right"></i>
+                                            </p>
+                                        </a>
+                                        <ul class="nav nav-treeview">
+                                            @foreach (var subChild in Model.Where(p => p.ParentId == child.Id))
+                                            {
+                                                <li class="nav-item">
+                                                    <a href="@Url.Action(subChild.Action, subChild.Controller, new { menuId = subChild.Id })" class="nav-link">
+                                                        <i class="nav-icon @(string.IsNullOrEmpty(subChild.ImageClass) ? "" : subChild.ImageClass)"></i>
+                                                        <p>@subChild.Text</p>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="nav-item">
+                                        <a href="@Url.Action(child.Action, child.Controller, new { menuId = child.Id })" class="nav-link">
+                                            <i class="nav-icon @(string.IsNullOrEmpty(child.ImageClass) ? "" : child.ImageClass)"></i>
+                                            <p>@child.Text</p>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </li>
+                }
+            }
+        }
+        else
+        {
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fa fa-exclamation-triangle"></i>
+                    <p>Không có menu</p>
+                </a>
+            </li>
+        }
+    </ul>
+</nav>

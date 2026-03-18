@@ -1,0 +1,322 @@
+﻿@model VBSPOSS.ViewModels.InterestRateConfigMasterViewModel
+@using Kendo.Mvc.UI
+@using VBSPOSS.Constants
+@using VBSPOSS.Data.Models
+@using VBSPOSS.ViewModels
+
+
+@{
+    Layout = null; // Giữ là partial view
+}
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+<style>
+    .view_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .view_form.button {
+        height: 25px !important;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+    .section-header {
+        border-bottom: 1px dotted #d9534f;
+    }
+    .section-title {
+        color: blue;
+        font-weight: bold;
+    }
+    .row-changed {
+        color: red !important;
+    }
+    .new-interest-rate {
+        background-color: #DFFFD6 !important;
+        font-weight: bold !important;
+    }
+</style>
+<script>
+    function paraCasaConfigureViewGridData() {
+        return {
+            idList: $("#IdList").val(),
+        };
+    }
+    function onRowBound_CasaRateViewGrid(e) {
+        try {
+            var grid = this;
+            // Highlight toàn bộ dòng có ChangeFlag = 1
+            grid.dataSource.data().forEach(function (dataItem) {
+                if (dataItem.ChangeFlag === 1 || dataItem.ChangeFlag === true) {
+                    var uid = dataItem.uid;
+                    var row = grid.tbody.find("tr[data-uid='" + uid + "']");
+                    if (row.length) {
+                        row.addClass("row-changed");
+                    }
+                }
+            });
+            // Highlight cột lãi suất mới (giống kiểu cũ của bạn)
+            grid.tbody.find("tr").each(function () {
+                $(this).find("td").eq(6).addClass("new-interest-rate");
+            });
+            countChangedRows();
+        } catch (error) {
+            console.error("Error in onRowBound_CasaRateViewGrid:", error);
+        }
+    }
+    function countChangedRows() {
+        var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+        if (!grid) return;
+        var data = grid.dataSource.view();
+        var total = data.length;
+        var count = data.filter(x => x.ChangeFlag === 1).length;
+        $("#lblChangedCount").text("(Số sản phẩm thay đổi: " + count + "/" + total + ")");
+    }
+</script>
+
+<form id="casaApprovalForm" method="post" enctype="multipart/form-data" asp-controller="CasaRateConfigure"
+      asp-action="SaveApprovalForm">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.IdList)
+
+    <!-- Thông tin chung -->
+    <div class="section-header">
+        <div class="section-title">Thông tin chung</div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-3">
+            <label for="CircularRefNum">Số Quyết định </label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="CircularDate">Ngày quyết định</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="EffectiveDate">Ngày hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-3">
+            <label for="ExpiryDate">Ngày hết hiệu lực</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-6">
+            <label for="Status">Trạng thái </label>
+            @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-6">
+            <label for="ApplyPosList">Áp dụng tại:</label>
+            @Html.Kendo().TextBoxFor(m => m.ApplyPosList).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px; width: 100%;">
+        <div class="col-md-6">
+            <label for="CreatedBy">Người đề nghị </label>
+            @Html.Kendo().TextBoxFor(m => m.CreatedBy).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+        <div class="col-md-6">
+            <label for="ApproverBy">Người duyệt</label>
+            @Html.Kendo().TextBoxFor(m => m.ApproverBy).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+        </div>
+    </div>
+
+    <!-- Nút In tờ trình và Trình duyệt -->
+    <div class="view_form row">
+        <div class="col-md-12 d-flex justify-content-end" style="text-align: right; padding-top: 20px;">
+            @(Html.Kendo().Button()
+                        .Name("btnPrintReport")
+                        .HtmlAttributes(new { type = "button", style = "width: 120px; font-weight: bold; color: blue;", @class = "view_form button" })
+                        .Content("In tờ trình")
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+            )
+            @(Html.Kendo().Button()
+                        .Name("btnApproval")
+                        .HtmlAttributes(new { type = "submit", style = "width: 120px; font-weight: bold; color: blue;", @class = "view_form button" })
+                        .Content("Trình duyệt")
+                        .ImageUrl(Url.Content("~/images/note_add.png"))
+            )
+        </div>
+    </div>
+
+    <!-- Upload tờ trình (chỉ 1 file PDF) -->
+    <div class="view_form row">
+        <div class="col-md-2">
+            <label>Upload tờ trình: </label>
+        </div>
+        <div class="col-md-10">
+            <input type="file" id="fileUpload" name="fileUpload" hidden accept="application/pdf" />
+            <button type="button" class="btn btn-primary" id="btnChooseFile">
+                Chọn file
+            </button>
+            <span id="fileName" style="margin-left:10px; font-style: italic;">
+                Chưa chọn file
+            </span>
+            <button type="button" class="btn btn-danger btn-sm"
+                    id="btnRemoveFile" style="display:none; margin-left:10px;">
+                ✖
+            </button>
+        </div>
+    </div>
+
+    <!-- Grid lãi suất CASA -->
+    <div class="section-header">
+        <div class="section-title">Thông tin lãi suất CASA <span id="lblChangedCount" style="color:red;"></span></div>
+    </div>
+    <div class="view_form row" style="padding-top: 5px;">
+        @(Html.Kendo().Grid<CasaRateProductViewModel>()
+            .Name("casaRateConfigureGrid")
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.RateProductCode).Title("Mã SP").Width(120).Locked(true).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RateProductAccountTypeCode).Title("Loại TK").Width(120).Locked(true).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RateProductAccountTypeName).Title("Tên loại TK").Width(250).Locked(true).HtmlAttributes(new { style = "text-align: left;" });
+                columns.Bound(c => c.RateProductEffectiveDate).Title("Hiệu lực").Format("{0:dd/MM/yyyy}").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RateProductDebitCreditFlag).Title("Dư Nợ/Dư Có")
+                    .ClientTemplate("#= RateProductDebitCreditFlag === 'C' ? 'Dư có' : 'Dư nợ' #")
+                    .Width(130).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RateProductInterestRate).Title("Lãi suất HT").Format("{0:n4}").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.RateProductNewInterestRate).Title("Lãi suất mới").Format("{0:n4}").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.ChangeFlag).Hidden();
+            })
+            .ToolBar(toolbar => toolbar.Excel()
+                .HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;", title = "Xuất dữ liệu trên lưới ra file excel" })
+                .Text("Xuất excel"))
+            .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat_CASA.xlsx").AllPages(true))
+            .HtmlAttributes(new { style = "height: 400px; width: 100%;" })
+            .Scrollable(s => s.Enabled(true).Virtual(false))
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .ServerOperation(false)
+                .Read(read => read.Action("LoadCasaConfigureViewGridData", "CasaRateConfigure").Type(HttpVerbs.Post).Data("paraCasaConfigureViewGridData"))
+                .Model(model => model.Id(p => p.Id))
+            )
+            .AutoBind(true)
+            .Events(events => events.DataBound("onRowBound_CasaRateViewGrid"))
+        )
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        countChangedRows();
+
+        // Xử lý chọn file PDF
+        $("#btnChooseFile").click(function () {
+            $("#fileUpload").click();
+        });
+
+        $("#fileUpload").on("change", function () {
+            if (this.files && this.files.length > 0) {
+                var file = this.files[0];
+                var fileName = file.name.toLowerCase();
+                if (!fileName.endsWith(".pdf")) {
+                    alert("Chỉ cho phép upload file PDF");
+                    resetFile();
+                    return;
+                }
+                $("#fileName").text(file.name);
+                $("#btnRemoveFile").show();
+            } else {
+                resetFile();
+            }
+        });
+
+        $("#btnRemoveFile").click(function () {
+            resetFile();
+        });
+
+        function resetFile() {
+            $("#fileUpload").val("");
+            $("#fileName").text("Chưa chọn file");
+            $("#btnRemoveFile").hide();
+        }
+
+        // Submit form + file
+        $("#casaApprovalForm").submit(function (event) {
+            event.preventDefault();
+
+            var fileInput = $("#fileUpload")[0];
+            if (!fileInput || fileInput.files.length === 0) {
+                alert("Vui lòng đính kèm file tờ trình (PDF) trước khi trình duyệt!");
+                return false;
+            }
+
+            var file = fileInput.files[0];
+            if (file.type !== "application/pdf") {
+                alert("Chỉ cho phép upload file PDF!");
+                return false;
+            }
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: this.action,
+                type: this.method,
+                data: formData,
+                contentType: false,
+                processData: false,
+                headers: {
+            "RequestVerificationToken": token
+        },
+                success: function (result) {
+                    alert("Trình duyệt thành công");
+                    dataChangeCasaRateConfigure = true; // nếu bạn có biến này
+                    mainWindow.data("kendoWindow").close();
+                },
+                error: function () {
+                    alert("Lỗi khi cập nhật dữ liệu");
+                }
+            });
+        });
+
+        // Nút In tờ trình  điều chỉnh URL nếu khác)
+        $("#btnPrintReport").click(function () {
+
+           // alert('aaaa');
+            var circularRefNum = $("#CircularRefNum").val();
+            var listId = $("#IdList").val();
+           
+          //  alert(circularRefNum);
+           // alert(listId);
+            $.ajax({
+                url: '/Report/GenerateToTrinh_Casa',  // <-- 
+                type: 'POST',
+                data: { listId: listId, circularRefNum: circularRefNum },
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (data, status, xhr) {
+                    var fileName = "to_trinh_casa.pdf";
+                    var disposition = xhr.getResponseHeader("Content-Disposition");
+                    if (disposition) {
+                        var utf8Match = disposition.match(/filename\*\=UTF-8''(.+)/);
+                        if (utf8Match && utf8Match.length > 1) {
+                            fileName = decodeURIComponent(utf8Match[1]);
+                        } else {
+                            var asciiMatch = disposition.match(/filename="?([^";]+)"?/);
+                            if (asciiMatch && asciiMatch.length > 1) {
+                                fileName = asciiMatch[1];
+                            }
+                        }
+                    }
+                    var blob = new Blob([data], { type: xhr.getResponseHeader("Content-Type") || "application/octet-stream" });
+                    var url = window.URL.createObjectURL(blob);
+                    var link = document.createElement("a");
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                    link.remove();
+                },
+                error: function () {
+                    alert("Không tải được file");
+                }
+            });
+        });
+    });
+</script>

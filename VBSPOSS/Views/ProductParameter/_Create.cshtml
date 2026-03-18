@@ -1,0 +1,379 @@
+﻿@using Kendo.Mvc.UI
+@using VBSPOSS.Extensions
+@using VBSPOSS.ViewModels
+@model VBSPOSS.ViewModels.ProductParameterCreateViewModel
+
+<div id="notification"></div>
+
+<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
+<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+
+<style>
+
+    .form-group {
+        width: 100%;
+    }
+
+    .form-group label {
+        color: navy;
+        font-weight: bold;
+        /* text-align: right; */
+        padding-top: 7px;
+        /* width: 100%; */
+    }
+
+    .k-invalid-msg {
+        color: red;
+        font-size: 12px;
+    }
+
+    #gridCreateDetail .k-grid-header th {
+        text-align: center;
+        vertical-align: middle;
+        border-right: 1px solid #ddd !important;
+    }
+
+    .group-header-current {
+        background-color: #e6f2ff !important;
+        font-weight: bold;
+        color: navy;
+    }
+
+    .group-header-new {
+        background-color: #fff0e6 !important;
+        font-weight: bold;
+        color: navy;
+    }
+    /* Nút ở dưới grid */
+    .grid-toolbar-bottom {
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .grid-toolbar-bottom .k-button {
+        margin: 0 10px;
+        min-width: 120px;
+    }
+
+    .k-grid td[data-field="NewApplyPosFlag"] {
+        text-align: center !important;
+        vertical-align: middle !important;
+        padding: 4px 0 !important;
+    }
+
+        .k-grid td[data-field="NewApplyPosFlag"] input[type="checkbox"] {
+            margin: 0 auto;
+            display: block;
+            transform: scale(1.2); 
+        }
+</style>
+
+<script>
+    var notification = $("#notification").kendoNotification({
+        position: { top: 20, right: 20 },
+        autoHideAfter: 5000
+    }).data("kendoNotification");
+
+    function paraProductLoadGridData() {
+        var datePicker = $("#EffectedDate").data("kendoDatePicker");
+        var effectedDateStr = "";
+        if (datePicker && datePicker.value()) {
+            effectedDateStr = kendo.toString(datePicker.value(), "dd/MM/yyyy");
+        }
+        return {
+            productGroupCode: $("#ProductGroupCode").val() || "",
+            effectedDate: effectedDateStr
+        };
+    }
+
+    function loadProductGrid() {
+        var groupCode = $("#ProductGroupCode").val();
+        var effectedDate = $("#EffectedDate").data("kendoDatePicker").value();
+        if (!groupCode || groupCode === "") {
+            notification.show({ message: "Vui lòng chọn phân loại!", type: "error" });
+            return;
+        }
+        if (!effectedDate) {
+            notification.show({ message: "Vui lòng chọn ngày hiệu lực!", type: "error" });
+            return;
+        }
+        var effectedDateStr = kendo.toString(effectedDate, "dd/MM/yyyy");
+        console.log("Bắt đầu load thủ công: Group=" + groupCode + ", EffectedDate=" + effectedDateStr);
+        $.ajax({
+            url: '@Url.Action("LoadProductsForCreate", "ProductParameter")',
+            type: "POST",
+            data: JSON.stringify({
+                productGroupCode: groupCode,
+                effectedDate: effectedDateStr
+            }),
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                console.log("AJAX success - Response:", response);
+                if (response && response.length) {
+                    console.log("Data nhận được: " + response.length + " dòng");
+                    var grid = $("#gridCreateDetail").data("kendoGrid");
+                    if (grid) {
+                        grid.dataSource.data(response);
+                        console.log("Data bound thủ công thành công");
+                    }
+                } else if (response && response.error) {
+                    notification.show({ message: response.error, type: "warning" });
+                } else {
+                    notification.show({ message: "Không có dữ liệu!", type: "warning" });
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log("AJAX error:", status, error, xhr.responseText);
+                notification.show({ message: "Lỗi tải dữ liệu: " + (xhr.responseText || "Unknown error"), type: "error" });
+            }
+        });
+    }    
+
+    // Hàm Hiển thị thông báo khi Lưu
+        function saveBatch() {
+        var grid = $("#gridCreateDetail").data("kendoGrid");
+        if (!grid) {
+            notification.show({ message: "Grid chưa sẵn sàng!", type: "error" });
+            return;
+        }
+
+        var data = grid.dataSource.data().toJSON();
+        var changedData = data.filter(item =>
+            item.NewApplyPosFlag !== (item.CurrentApplyPos === "X") ||
+            item.NewMinSpread !== item.CurrentMinSpread ||
+            item.NewMaxSpread !== item.CurrentMaxSpread ||
+            (item.Remark && item.Remark.trim() !== "")
+        );
+
+        if (changedData.length === 0) {
+            notification.show({ message: "Không có thay đổi nào để lưu!", type: "warning" });
+            return;
+        }
+
+        // Hiển thị loading khi gửi
+        kendo.ui.progress($("#createForm"), true);
+
+        var formData = new FormData($("#createForm")[0]);
+        formData.append("Items", JSON.stringify(changedData));
+
+        $.ajax({
+            url: '@Url.Action("SaveBatchProductParameter", "ProductParameter")',
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (res) {
+                // Luôn tắt loading trước
+                kendo.ui.progress($("#createForm"), false);
+
+                // Hiển thị thông báo dựa trên response
+                if (res && res.success) {
+                    // notification.show({
+                    //     message: "Lưu đề xuất thành công! " + (res.message || ""),
+                    //     type: "success"
+                    // });
+                    alert((res.message || ""));
+                    // Đóng popup và refresh grid cha
+                    doCompleteWindow();
+                    // Nếu có refresh grid Index
+                    if (window.parent && window.parent.refreshGrid) {
+                        window.parent.refreshGrid();
+                    }
+                } else {
+                    // notification.show({
+                    //     message: "Lưu thất bại: " + (res?.message || "Không xác định"),
+                    //     type: "error"
+                    // });
+                    alert( (res?.message || "Lỗi: Không xác định"));
+                }
+            },
+            error: function (xhr, status, error) {
+                kendo.ui.progress($("#createForm"), false);
+                // notification.show({
+                //     message: "Lỗi hệ thống khi lưu: " + (xhr.responseText || error),
+                //     type: "error"
+                // });
+                alert(  "Lỗi hệ thống khi lưu: " + (xhr.responseText || error));
+                console.error("Save error:", xhr, status, error);
+            }
+        });
+    }
+
+
+
+
+    function doCompleteWindow() {
+        // Đóng popup và refresh grid cha nếu cần
+        var popup = $("#createWindow").data("kendoWindow"); // Nếu popup có ID
+        if (popup) {
+            popup.close();
+        } else {
+            window.close(); // Hoặc dùng parent window
+        }
+        // Nếu có flag thay đổi, refresh grid Index
+        if (window.dataChange) {
+            if (window.parent && window.parent.refreshGrid) {
+                window.parent.refreshGrid();
+            }
+            window.dataChange = false;
+        }
+    }
+</script>
+
+<div class="container-fluid">
+    <form id="createForm" class="form-horizontal">
+        <div class="row form-group">
+            
+            <div class="col-md-4">
+                <label>Phân loại <span style="color:red;">*</span></label>
+                @(Html.Kendo().DropDownListFor(m => m.ProductGroupCode)
+                    .BindTo(Model.ProductGroupOptions)
+                    .OptionLabel("--- Chọn phân loại ---")
+                    .HtmlAttributes(new Dictionary<string, object> { { "required", "required" }, { "style", "width:200px;" } })
+                    )
+                <span class="k-invalid-msg" data-valmsg-for="ProductGroupCode"></span>
+            </div>
+            
+            <div class="col-md-3">
+                <label>Ngày hiệu lực <span style="color:red;">*</span></label>
+                @(Html.Kendo().DatePickerFor(m => m.EffectedDate)
+                    .Format("dd/MM/yyyy")
+                    .Min(DateTime.Today.AddDays(1))
+                    .Value(Model.EffectedDate)
+                    .HtmlAttributes(new Dictionary<string, object> { { "required", "required" }, { "style", "width:100px;" } })
+                    )
+                <span class="k-invalid-msg" data-valmsg-for="EffectedDate"></span>
+            </div>
+
+           
+            <div class="col-md-3">
+                <label>Ghi chú</label>
+                @(Html.Kendo().TextAreaFor(m => m.Remark)
+                                .Rows(3)
+                                .HtmlAttributes(new { style = "width:200px; resize:vertical;" })
+                                )
+                <small class="text-muted"> </small>
+            </div>
+
+            <div class="col-md-2">
+                @(Html.Kendo().Button()
+                                .Name("btnLoadList")
+                                .Content("Tải danh sách")
+                                .Events(e => e.Click("loadProductGrid"))
+                                .HtmlAttributes(new { type = "button", style = "width: 120px; height: 25px; font-weight: bold; color: blue;", @class = "create_form button" })                                
+                                .ImageUrl(Url.Content("~/images/tim_kiem.png"))                                
+                                )
+            </div>
+        </div>        
+
+      @*   <hr /> *@
+
+
+        <div class="row form-group">
+            @(Html.Kendo().Button()
+                        .Name("btnSave")
+                        .Content("Lưu lại")
+                        .Events(e => e.Click("saveBatch"))
+                        .HtmlAttributes(new { @class = "k-button k-primary" })
+                        )
+            @(Html.Kendo().Button()
+                        .Name("btnExit")
+                        .Content("Thoát")
+                        .Events(e => e.Click("doCompleteWindow"))
+                        .HtmlAttributes(new { @class = "k-button" })
+                        )
+        </div>
+
+        <!-- Grid chính -->
+        @(Html.Kendo().Grid<ProductParameterDetailViewModel>()
+            .Name("gridCreateDetail")
+            .Columns(columns =>
+            {
+                columns.Bound(p => p.STT).Title("STT").Width(60).Locked(true);
+                columns.Bound(p => p.ProductCode).Title("Mã SP").Width(90).Locked(true);
+                columns.Bound(p => p.ProductName).Title("Tên SP").Width(250).Locked(true);
+                columns.Group(group => group
+                .Title("Thông tin cấu hình hiện tại")
+                .HeaderHtmlAttributes(new { @class = "group-header-current" })
+                .Columns(sub =>
+                {
+                    sub.Bound(p => p.CurrentApplyPos).Title("AD POS").Width(80).HtmlAttributes(new Dictionary<string, object> { { "style", "text-align:center;" } });
+                        sub.Bound(p => p.CurrentMinSpread).Title("LSĐC tối thiểu").Width(120).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right; vertical-align:middle;" }); 
+                        sub.Bound(p => p.CurrentMaxSpread).Title("LSĐC tối đa").Width(120).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right; vertical-align:middle;" }); 
+                })
+                );
+                columns.Group(group => group
+                .Title("Thông tin cấu hình mới")
+                .HeaderHtmlAttributes(new { @class = "group-header-new" })
+                .Columns(sub =>
+                {
+                    sub.Bound(p => p.NewApplyPosFlag)
+                .Title("AD POS")
+                .Width(80)
+                .ClientTemplate(
+                "<input type='checkbox' class='chk-pos' " +
+                "#= NewApplyPosFlag ? 'checked=checked' : '' # />"
+                )
+                @* .ClientTemplate(
+                "<input type='checkbox' " +
+                "class='k-checkbox' " +
+                "data-bind='checked: NewApplyPosFlag' " +  
+                "#= NewApplyPosFlag ? 'checked=\"checked\"' : '' # " +
+                "style='margin: 0 auto; display: block;' />"
+                ) *@
+                .HtmlAttributes(new { style = "text-align:center; vertical-align:middle;" });
+
+                        sub.Bound(p => p.NewMinSpread).Title("LSĐC tối thiểu").Width(120).Format("{0:N2}").EditorTemplateName("DecimalEditor").HtmlAttributes(new { style = "text-align:right; vertical-align:middle;" }); 
+                        sub.Bound(p => p.NewMaxSpread).Title("LSĐC tối đa").Width(120).Format("{0:N2}").EditorTemplateName("DecimalEditor").HtmlAttributes(new { style = "text-align:right; vertical-align:middle;" }); 
+                })
+                );
+                columns.Bound(p => p.Remark)
+                .Title("Ghi chú")
+                .Width(200)
+                .EditorTemplateName("TextAreaEditor")
+                    .HtmlAttributes(new Dictionary<string, object> { { "style", "text-align:left; vertical-align:middle;" } });
+            })
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
+            .Scrollable()
+            .Sortable()
+            .Pageable(p => p.PageSizes(new[] { 20, 50, 100 }))
+            .DataSource(ds => ds
+            .Ajax()
+            .ServerOperation(false)
+            .Model(m =>
+            {
+                m.Id(p => p.ProductCode);
+                m.Field(p => p.STT).Editable(false);
+                m.Field(p => p.ProductCode).Editable(false);
+                m.Field(p => p.ProductName).Editable(false);
+                m.Field(p => p.CurrentApplyPos).Editable(false);
+                m.Field(p => p.CurrentMinSpread).Editable(false);
+                m.Field(p => p.CurrentMaxSpread).Editable(false);
+            })
+            )
+            .AutoBind(false)
+            )
+
+        
+    </form>
+</div>
+
+
+<script>
+    // Dùng event delegation vì checkbox được render động
+    $(document).on("change", "#gridCreateDetail .chk-pos", function () {
+
+        var grid = $("#gridCreateDetail").data("kendoGrid");
+        var row = $(this).closest("tr");
+        var dataItem = grid.dataItem(row);
+
+        // Cập nhật vào datasource
+        dataItem.set("NewApplyPosFlag", this.checked);
+    });
+</script>

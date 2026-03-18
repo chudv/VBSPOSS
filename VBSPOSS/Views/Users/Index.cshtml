@@ -1,0 +1,431 @@
+﻿@{
+    ViewBag.Title = "Danh sách người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div id="myPopup"></div>
+<style>
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+
+    /* .k-picker-wrap .k-input {
+        padding-right: 5px;
+    }
+
+    .k-picker-wrap .k-select {
+        margin-left: 2px;
+        width: 30px;
+    } */
+
+    #NgaySinh_TimKiem_BD {
+        width: 50px !important;
+    }
+
+    #NgaySinh_TimKiem_KT {
+        width: 50px !important;
+    }
+
+    .labelClass {
+        padding-right: 5px !important;
+        padding-left: 5px !important;
+    }
+
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-reset-password.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+    
+</style>
+
+<script>
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagShow: "1"
+        };
+    }
+
+    function paramPhongBan() {
+        //string pFlagCallRoot = "0", string pPhanLoai = "", string pStatus = "0", string pTenVT = "1", string pTitleChoice = "", string pFlagShow = "1"
+        return {
+            pFlagCallRoot: "0",
+            pParentId: "15",
+            pTenVT: "0",
+            pTitleChoice: "--- Chọn Phòng ban ---",
+            pStatus: "1"
+        };
+    }
+    function paramChucVu() {
+        return {
+            pFlagCallRoot: "0",
+            pParentId: "14",
+            pTenVT: "0",
+            pTitleChoice: "--- Chọn Chức vụ ---",
+            pStatus: "1"
+        };
+    }
+
+
+    function paramRole() {
+        return {
+            grantType: 0,
+            pTitleChoice: "--- Nhóm quyền người dùng ---"
+        };
+    }
+
+    function paramLoadGridData() {
+
+        //string findPosCode, string findDepartment, string findTitleCode, string fromBirthDay, string toBirthDay, string findFullName, string findSex, string findUserName, string findRoleCode)
+        return {
+            findPosCode: $("#DonVi_Cd_TimKiem").val(),
+            findDepartment: $("#PhongBan_Cd_TimKiem").val(),
+            findTitleCode: $("#ChucVu_Cd_TimKiem").val(),
+            fromBirthDay: $("#NgaySinh_TimKiem_BD").val(),
+            toBirthDay: $("#NgaySinh_TimKiem_KT").val(),
+            findFullName: $("#HoTen_TimKiem").val(),
+            findSex: $("#GioiTinh_TimKiem").val(),
+            findUserName: $("#TenNd_TimKiem").val(),
+            findRoleCode: $("#NhomNd_HT_TimKiem").val()
+        };
+    }
+
+    function onRowBound(e) { 
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var _status = dataItem.get("Status");
+            if (_status == 0 || _status == null)
+                row.addClass('red');
+        }
+    }
+
+
+</script>
+
+@Html.Hidden("tempUserGrade", TempData["UserGrade"])
+@Html.Hidden("tempUserRole", TempData["UserRole"])
+@Html.Hidden("tempUserName", TempData["UserName"])
+@Html.Hidden("tempUserPosCode", TempData["PosCode"])
+
+<div class="row">
+    <div class="col-md-12">
+        <span class="labelClass">Đơn vị</span>
+        @(Html.Kendo().ComboBox().Name("DonVi_Cd_TimKiem")
+            .Filter(FilterType.Contains)
+            .Placeholder("--- Đơn vị công tác người dùng ---")
+            .DataTextField("value")
+            .DataValueField("id")
+            .DataSource(
+            source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViQL"); }).ServerFiltering(false); })
+            .HtmlAttributes(new { style = "width: 210px; !important;max-width: 100% !important;color: navy;" })
+            .Suggest(true)
+            .AutoBind(true)
+            .SelectedIndex(0)
+            )
+        <span class="labelClass">Họ tên</span>
+        @(Html.Kendo().TextBox()
+                .Name("HoTen_TimKiem")
+                .HtmlAttributes(new { placeholder = "Nhập họ tên", style = "background-color:While;width: 150px;color:navy;" })
+                .Value("")
+                )
+       
+        <span class="labelClass">Tên đăng nhập</span>
+        @(Html.Kendo().TextBox()
+                .Name("TenNd_TimKiem")
+                .HtmlAttributes(new { placeholder = "Nhập tên đăng nhập", style = "background-color:While;width: 150px;color:navy;" })
+                .Value("")
+                )
+        <span class="labelClass">Nhóm quyền</span>
+        @(Html.Kendo().ComboBox().Name("NhomNd_HT_TimKiem")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Nhóm quyền ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("paramRole"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 250px !important;max-width: 100% !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+
+                <div style="padding-right: 10px; padding: 10px;">
+            @(Html.Kendo().Button()
+                        .Name("btnSearch")
+                        .Events(ev => ev.Click("onSearch"))
+                        .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Tìm kiếm danh sách người dùng theo lựa chọn" })
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                        .Content(" Tìm kiếm"))
+
+            @(Html.Kendo().Button()
+                        .Name("btnReset")
+                        .Events(ev => ev.Click("onReset"))
+                        .HtmlAttributes(new { type = "button", style = "width: 82px; font-weight:bold; color: blue;height: 25px;", title = "Hủy bỏ lựa chọn tìm kiếm" })
+                        .ImageUrl(Url.Content("~/images/cancel.png"))
+                        .Content(" Hủy bỏ"))
+                </div>
+        
+    </div>
+
+   
+</div>
+
+<div style="color: navy; padding-top: 5px;" class="row">
+    <div class="col-md-12">
+        @(Html.Kendo().Grid<VBSPOSS.Models.UserModel>()
+            .Name("MainGrid")
+            .Events(e => e.DataBound("onRowBound"))
+            .Columns(columns =>
+                {
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Command(command =>
+                    {
+                        command.Custom("ViewEdit").Text("<span style='color: blue;'> </span>").Click("showUserEdit").HtmlAttributes(new { style = "width: 50px !important; vertical-align: center; text-align: center;", title = "Sửa thông tin tài khoản người dùng", @class = "btn-view-edit" });
+                        command.Custom("Delete").Text("<span style='color: blue;'> </span>").Click("deleteUser").HtmlAttributes(new { style = "width: 50px !important;vertical-align: center;text-align: center;", title = "Xóa thông tin tài khoản người dùng", @class = "btn-delete" });
+                        command.Custom("ResetPassword").Text("<span style='color: blue;'> </span>").Click("resetPassword").HtmlAttributes(new { style = "width: 50px !important;vertical-align: center;text-align: center;", title = "Reset mật khẩu", @class = "btn-reset-password" });
+                    }).Width(180).Title("Thao tác").HtmlAttributes(new { style = "text-align: center;vertical-align: center;" });
+                columns.Bound(c => c.Order).Title("STT").Width(37).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.UserName).Title("Tên đăng nhập").Width(110);
+                columns.Bound(c => c.FullName).Title("Họ và tên").Width(140);
+                // columns.Bound(c => c.BirthDate).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(75).HtmlAttributes(new { style = "text-align: center;" });
+                columns.Bound(c => c.SexDesc).Title("Giới tính").Width(50);
+                columns.Bound(c => c.PosName).Title("Đơn vị công tác").Width(170);
+                columns.Bound(c => c.DepartmentDesc).Title("Phòng ban").Width(150);
+                columns.Bound(c => c.TitleDesc).Title("Chức vụ").Width(100);
+                columns.Bound(c => c.Status).Hidden();                    
+            })
+
+            .HtmlAttributes(new { style = "height: 500px;color: navy;" })
+            .ToolBar(toolbar =>
+            {
+                toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "width: 95px; height: 25px; font-weight:bold; color: blue;" });
+                    toolbar.Excel().Text("Xuất excel").HtmlAttributes(new { style = "width: 100px;  height: 25px; font-weight:bold; color: blue;" });
+            })
+            .Excel(excel => excel.FileName("Danh sach nguoi dung.xlsx").AllPages(true))
+            .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+            .Sortable()
+            .Scrollable()
+            .Pageable(pageable => pageable
+            .Refresh(true)
+            .ButtonCount(5))
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .Batch(false)
+            .ServerOperation(false)
+            .Model(model => model.Id(p => p.Id))
+            .Events(e => e.RequestEnd("onSaveGridCompleted").Error("error_handler"))
+            .Read(read => read.Action("LoadUsersGridData", "Users").Data("paramLoadGridData"))
+            .PageSize(50)
+            )
+            .Resizable(resize => resize.Columns(true))
+            .AutoBind(true)
+            )
+    </div>
+</div>
+
+<script>
+
+    function onSaveGridCompleted(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handler(e) {        
+        $("#MainGrid").data("kendoGrid").cancelChanges();
+        alert(e.errors);
+    }
+
+
+    function refreshGrid() {
+        var grid = $("#MainGrid").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onSearch(e) {
+        refreshGrid();
+    }
+
+    function onReset(e) {       
+    }
+
+    function showUserEdit(e) {
+        e.preventDefault();
+        var _userRole = $("#tempUserRole").val();
+        //var _userName = $("#UserName").val();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (_userRole == "CNTT") {
+            mainWindow.kendoWindow({
+                width: "1100px",
+                height: "600px",
+                title: "Thay đổi thông tin người dùng",
+                content: { url: '@Url.Action("ShowUserUpdate", "Users")', data: { userName: dataItem.UserName } },
+                resizable: false,
+                visible: false,
+                modal: true,
+                close: onClose,
+                actions: ["Refresh", "Close"]
+            });
+            mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1100 });
+            mainWindow.data("kendoWindow").center().open().title("Thay đổi thông tin người dùng");
+        }
+        else alert("Bạn không có quyền thực hiện sửa đổi thông tin người dùng!");
+    }
+
+    function deleteUser(e) {
+        var sGroupUser = $("#tempUserRole").val();
+        var sUserName = $("#tempUserName").val();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (sUserName == "admin" || sGroupUser == "CNTT") {
+            var lcNd_ThongTin = dataItem.FullName + " [" + dataItem.UserName + "]";
+            var isQuestion = confirm("Bạn có chắc chắn muốn xóa Người dùng [" + lcNd_ThongTin + "] đã chọn không?");
+            if (isQuestion == true) {
+                $.ajax({
+                    data: { userName: dataItem.UserName },
+                    type: "POST",
+                    url: '@Url.Action("DeleteUser", "Users")',
+                    success: function (result) {
+                        if (result == "0") {
+                            alert("Bạn đã Xóa dữ liệu Người dùng [" + lcNd_ThongTin + "] thành công!");
+                            refreshGrid();
+                        }
+                        else {
+                            alert("Xóa dữ liệu Người dùng thất bại!");
+                        }
+                    },
+                    error: function () {
+                        alert("Reset mật khẩu có lỗi!");
+                    }
+
+                });
+            } else {
+                alert("Thao tác bị hủy bỏ!");
+            }
+        }
+        else alert("Bạn không có quyền thực hiện xóa thông tin người dùng!");
+    }
+
+    function resetPassword(e) {
+        var sGroupUser = $("#tempUserRole").val();
+        var sUserName = $("#tempUserName").val();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (sUserName == "admin" || sGroupUser == "CNTT") {
+            var lcNd_ThongTin = dataItem.FullName + " [" + dataItem.UserName + "]";
+            var isQuestion = confirm("Bạn có chắc chắn muốn reset mật khẩu của tài khoản [" + lcNd_ThongTin + "] đã chọn không?");
+            if (isQuestion == true) {
+                $.ajax({
+                    data: { userName: dataItem.UserName },
+                    type: "POST",
+                    url: '@Url.Action("ResetPassword", "Users")',
+                    success: function (result) {
+                        if (result == "0") {
+                            alert("Bạn đã reset mật khẩu tài khoản Người dùng [" + lcNd_ThongTin + "] thành công!");
+                            refreshGrid();
+                        }
+                        else {
+                            alert("Reset mật khẩu người dùng thất bại!");
+                        }
+                    },
+                    error: function () {
+                        alert("Reset mật khẩu có lỗi!");
+                    }
+
+                });
+            } else {
+                alert("Thao tác bị hủy bỏ!");
+            }
+        }
+        else alert("Bạn không có quyền thực reset mật khẩu tài khoản người dùng!");
+    }
+
+    $(document).on('click', '#btnCreate', function (e) {
+        e.preventDefault();
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "600px",
+            title: "Thêm mới thông tin người dùng",
+            content: { url: '@Url.Action("ShowUserUpdate", "Users")', data: { userName: "" } },
+            resizable: true,
+            visible: false,
+            close: onClose,
+            modal: true,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1100 });
+        mainWindow.data("kendoWindow").center().open().title("Thêm mới thông tin người dùng");
+    });
+
+    var dataChange = false;
+    var mainWindow = $("#myPopup");
+
+    function onClose() {
+        if (dataChange == true)
+            refreshGrid();
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+</script>
