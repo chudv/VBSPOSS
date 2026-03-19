@@ -30,7 +30,7 @@ namespace VBSPOSS.Controllers
         /// Defines the _service.
         /// </summary>
         private readonly IListOfValueService _serviceLOV;
-
+        //private readonly IAdministrationService _userService;
         private readonly IProductService _productService;
 
         private readonly IApiInternalService _internalServiceAPI;
@@ -45,12 +45,14 @@ namespace VBSPOSS.Controllers
         /// <param name="logger">The logger<see cref="ILogger{ListController}"/>.</param>
         /// <param name="menuService">The menuService<see cref="IPermitService"/>.</param>
         public ListOfValueController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper, 
-                                IProductService productService, IApiInternalService internalServiceAPI, IInterestRateConfigureService intRateConfigService) : base(logger, adminService, sessionHelper)
+                                IProductService productService, IApiInternalService internalServiceAPI, IInterestRateConfigureService intRateConfigService,
+                                IAdministrationService userService) : base(logger, adminService, sessionHelper)
         {
             _serviceLOV = serviceLOV;
             _productService = productService;
             _internalServiceAPI = internalServiceAPI;
             _intRateConfigService = intRateConfigService;
+            //_userService = userService;
         }
 
         /// <summary>
@@ -405,8 +407,13 @@ namespace VBSPOSS.Controllers
         ///                             '4': Mã - Họ tên - Chức vụ - Tên tập thể
         ///                             '5': Mã - Tên - Chức vụ
         /// </param>
+        /// <param name="pFlagCall">Cờ xác định cách gọi. Giá trị: 
+        ///                     '0' hoặc Rỗng: Mặc định;
+        ///                     '1': Lấy danh sách có loại trừ những người đã tạo tài khoản trong bảng Users
+        ///                     '2': Lấy danh sách có loại trừ những người đã tạo tài khoản trong bảng UserIDCMaster
+        /// </param>
         /// <returns>Danh sách cán bộ NHCSXH</returns>
-        public async Task<JsonResult> GetListStaffVBSP(string pPosCode, string pTitleChoice = "", string pFlagTextShow = "1")
+        public async Task<JsonResult> GetListStaffVBSP(string pPosCode, string pTitleChoice = "", string pFlagTextShow = "1", string pFlagCall = "0")
         {
             string sTitleChoice = "", sNameShow = "";
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
@@ -419,32 +426,47 @@ namespace VBSPOSS.Controllers
            
             if (listStaffVBSP != null && listStaffVBSP.Success && listStaffVBSP.Result != null && listStaffVBSP.Result.Count > 0)
             {
-                foreach (StaffVbspInforViewModel item in listStaffVBSP.Result)
+                List<StaffVbspInforViewModel> listStaffVBSPTemp = new List<StaffVbspInforViewModel>();
+                if (pFlagCall == "1")
                 {
-                    iCountTemp++;
-                    if (pFlagTextShow == "1") //Hiển thị Tên
-                        sNameShow = item.StaffName;
-                    else if (pFlagTextShow == "0") //Hiển thị Mã - Tên
-                        sNameShow = $"{item.StaffCode} - {item.StaffName}";
-                    else if (pFlagTextShow == "2") //Hiển thị Mã - Tên - Chức vụ - Phòng ban - Đơn vị - Chi nhánh
+                    DateTime fromDate = DateTime.Now.AddYears(-60);
+                    DateTime toDate = DateTime.Now;
+                    List<string> listStaffIdExist = new List<string>();
+                    var listStaffIdExistTmp = _administrationService.GetUsers("", "", "", fromDate, toDate, "", "", "", "", "");
+                    if (listStaffIdExistTmp != null && listStaffIdExistTmp.Count != 0)
+                        listStaffIdExist = listStaffIdExistTmp.Where(w => w.Status != StatusLov.StatusClosed).Select(s => s.StaffId).ToList();
+                    listStaffVBSPTemp = listStaffVBSP.Result.Where(w => w.StaffId != "" && !listStaffIdExist.Contains(w.StaffId)).ToList();
+                }
+                else listStaffVBSPTemp = listStaffVBSP.Result;
+                if (listStaffVBSPTemp != null && listStaffVBSPTemp.Count != 0)
+                {
+                    foreach (StaffVbspInforViewModel item in listStaffVBSP.Result)
                     {
-                        if (item.MainPosCode == item.PosCode)
+                        iCountTemp++;
+                        if (pFlagTextShow == "1") //Hiển thị Tên
+                            sNameShow = item.StaffName;
+                        else if (pFlagTextShow == "0") //Hiển thị Mã - Tên
+                            sNameShow = $"{item.StaffCode} - {item.StaffName}";
+                        else if (pFlagTextShow == "2") //Hiển thị Mã - Tên - Chức vụ - Phòng ban - Đơn vị - Chi nhánh
                         {
-                            if (item.PosCode == "000100" || item.PosCode == "000199")
-                                sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName}";
-                            else if (item.PosCode == "000100" || item.PosCode == "000101" || item.PosCode == "000196" || item.PosCode == "000197" || item.PosCode == "000199")
-                                sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName}";
-                            else sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName}";
+                            if (item.MainPosCode == item.PosCode)
+                            {
+                                if (item.PosCode == "000100" || item.PosCode == "000199")
+                                    sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName}";
+                                else if (item.PosCode == "000100" || item.PosCode == "000101" || item.PosCode == "000196" || item.PosCode == "000197" || item.PosCode == "000199")
+                                    sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName}";
+                                else sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName}";
+                            }
+                            else sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName} - {item.MainPosName}";
                         }
-                        else sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName} - {item.StaffPosName} - {item.MainPosName}";
+                        else if (pFlagTextShow == "3") //Hiển thị Mã - Tên - Chức vụ - Phòng ban
+                            sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName}";
+                        else if (pFlagTextShow == "4") //Hiển thị Mã - Tên - Chức vụ - Tên tập thể
+                            sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.DepartmentUnitName}";
+                        else if (pFlagTextShow == "5") //Hiển thị Mã - Tên - Chức vụ
+                            sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName}";
+                        dataListOfStaffVBSP.Add(new { id = item.StaffId, value = sNameShow });
                     }
-                    else if (pFlagTextShow == "3") //Hiển thị Mã - Tên - Chức vụ - Phòng ban
-                        sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.StaffDepartmentName}";
-                    else if (pFlagTextShow == "4") //Hiển thị Mã - Tên - Chức vụ - Tên tập thể
-                        sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName} - {item.DepartmentUnitName}";
-                    else if (pFlagTextShow == "5") //Hiển thị Mã - Tên - Chức vụ
-                        sNameShow = $"{iCountTemp.ToString()}. {item.StaffCode} - {item.StaffName} - {item.StaffPositionName}";
-                    dataListOfStaffVBSP.Add(new { id = item.StaffId, value = sNameShow });
                 }
             }
             return Json(dataListOfStaffVBSP);
@@ -455,8 +477,13 @@ namespace VBSPOSS.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pStaffId">Id Cán bộ cần lấy thông tin chi tiết</param>
+        /// <param name="pFlagCall">Cờ xác định cách gọi. Giá trị: 
+        ///                     '0' hoặc Rỗng: Mặc định;
+        ///                     '1': Lấy danh sách có loại trừ những người đã tạo tài khoản trong bảng Users
+        ///                     '2': Lấy danh sách có loại trừ những người đã tạo tài khoản trong bảng UserIDCMaster
+        /// </param>
         /// <returns>Thông tin chi tiết của cán bộ</returns>
-        public async Task<JsonResult> GetListStaffVBSPByStaffId([DataSourceRequest] DataSourceRequest request, string pStaffId)
+        public async Task<JsonResult> GetListStaffVBSPByStaffId([DataSourceRequest] DataSourceRequest request, string pStaffId, string pFlagCall = "0")
         {
             if (string.IsNullOrEmpty(pStaffId))
                 pStaffId = "";
@@ -464,46 +491,64 @@ namespace VBSPOSS.Controllers
             var listStaffVBSP = await _internalServiceAPI.GetListStaffByStaffId(pStaffId);
             if (listStaffVBSP != null && listStaffVBSP.Success && listStaffVBSP.Result != null && listStaffVBSP.Result.Count > 0)
             {
-                foreach (StaffVbspInforViewModel item in listStaffVBSP.Result)
+                List<StaffVbspInforViewModel> listStaffVBSPTemp = new List<StaffVbspInforViewModel>();
+                pFlagCall = "1";
+                if (pFlagCall == "1")
                 {
-                    dataListOfStaffVBSP.Add(new
-                    {
-                        Id = item.Id,
-                        MainPosCode = item.MainPosCode,
-                        MainPosName = item.MainPosName,
-                        PosCode = item.PosCode,
-                        PosName = item.PosName,
-                        StaffId = item.StaffId,
-                        StaffCode = item.StaffCode,
-                        StaffName = item.StaffName,
-                        DateOfBirth = item.DateOfBirth,
-                        GenderCode = item.GenderCode,
-                        GenderText = item.GenderText,
-                        StaffPosCode = item.StaffPosCode,
-                        StaffPosName = item.StaffPosName,
-                        StaffDepartmentCode = item.StaffDepartmentCode,
-                        StaffDepartmentName = item.StaffDepartmentName,
-                        StaffPositionCode = item.StaffPositionCode,
-                        StaffPositionName = item.StaffPositionName,
-                        StaffMobileNo = item.StaffMobileNo,
-                        StaffEmail = item.StaffEmail,
-                        AddressDetail = item.AddressDetail,
-                        IdNo = item.IdNo,
-                        IssuedDate = item.IssuedDate,
-                        IssuedPlace = item.IssuedPlace,
-                        DegreeCode = item.DegreeCode,
-                        StaffStatus = item.StaffStatus,
-                        StaffStatusText = item.StaffStatusText,
-                        DepartmentUnitCode = item.DepartmentUnitCode,
-                        DepartmentUnitName = item.DepartmentUnitName,
-                        RetirementDate = item.RetirementDate,
-                        Notes = item.Notes,
-                        CreatedBy = item.CreatedBy,
-                        CreatedDate = item.CreatedDate,
-                        ModifiedBy = item.ModifiedBy,
-                        ModifiedDate = item.ModifiedDate,
-                    });
+                    DateTime fromDate = DateTime.Now.AddYears(-60);
+                    DateTime toDate = DateTime.Now;
+                    List<string> listStaffIdExist = new List<string>();
+                    var listStaffIdExistTmp = _administrationService.GetUsers("", "", "", fromDate, toDate, "", "", "", "", "");
+                    if (listStaffIdExistTmp != null && listStaffIdExistTmp.Count != 0)
+                        listStaffIdExist = listStaffIdExistTmp.Where(w => w.Status != StatusLov.StatusClosed).Select(s => s.StaffId).ToList();
+                    listStaffVBSPTemp = listStaffVBSP.Result.Where(w => w.StaffId != "" && !listStaffIdExist.Contains(w.StaffId)).ToList();
                 }
+                else listStaffVBSPTemp = listStaffVBSP.Result;
+
+                if (listStaffVBSPTemp != null && listStaffVBSPTemp.Count != 0)
+                {
+                    foreach (StaffVbspInforViewModel item in listStaffVBSPTemp)
+                    {
+                        dataListOfStaffVBSP.Add(new
+                        {
+                            Id = item.Id,
+                            MainPosCode = item.MainPosCode,
+                            MainPosName = item.MainPosName,
+                            PosCode = item.PosCode,
+                            PosName = item.PosName,
+                            StaffId = item.StaffId,
+                            StaffCode = item.StaffCode,
+                            StaffName = item.StaffName,
+                            DateOfBirth = item.DateOfBirth,
+                            GenderCode = item.GenderCode,
+                            GenderText = item.GenderText,
+                            StaffPosCode = item.StaffPosCode,
+                            StaffPosName = item.StaffPosName,
+                            StaffDepartmentCode = item.StaffDepartmentCode,
+                            StaffDepartmentName = item.StaffDepartmentName,
+                            StaffPositionCode = item.StaffPositionCode,
+                            StaffPositionName = item.StaffPositionName,
+                            StaffMobileNo = item.StaffMobileNo,
+                            StaffEmail = item.StaffEmail,
+                            AddressDetail = item.AddressDetail,
+                            IdNo = item.IdNo,
+                            IssuedDate = item.IssuedDate,
+                            IssuedPlace = item.IssuedPlace,
+                            DegreeCode = item.DegreeCode,
+                            StaffStatus = item.StaffStatus,
+                            StaffStatusText = item.StaffStatusText,
+                            DepartmentUnitCode = item.DepartmentUnitCode,
+                            DepartmentUnitName = item.DepartmentUnitName,
+                            RetirementDate = item.RetirementDate,
+                            Notes = item.Notes,
+                            CreatedBy = item.CreatedBy,
+                            CreatedDate = item.CreatedDate,
+                            ModifiedBy = item.ModifiedBy,
+                            ModifiedDate = item.ModifiedDate,
+                        });
+                    }
+                } 
+                
             }
             return Json(dataListOfStaffVBSP);
         }

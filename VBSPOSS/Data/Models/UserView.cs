@@ -56,5 +56,7 @@
         public string RoleName { get;set; }
 
         public int Grade { get; set; }
+
+        public string StaffId { get; set; }
     }
 }

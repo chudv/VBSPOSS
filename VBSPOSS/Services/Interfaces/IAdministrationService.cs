@@ -111,27 +111,23 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="batchUpdateData"></param>
         /// <returns></returns>
         int BatchUpdateRole(BatchAuthorizationModel batchUpdateData);
-
-
+       
         /// <summary>
-        /// Lấy danh sách người dùng
+        /// Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
         /// </summary>
-        /// <param name="posCode"></param>
-        /// <param name="departmentCode"></param>
-        /// <param name="titleCode"></param>
-        /// <param name="fromBirthDay"></param>
-        /// <param name="toBirthDay"></param>
-        /// <param name="fullName"></param>
-        /// <param name="sex"></param>
-        /// <param name="userName"></param>
-        /// <param name="roleCode"></param>
-        /// <returns></returns>
-        // public List<UserView> GetUsers(string posCode, string departmentCode, string titleCode, DateTime fromBirthDay, DateTime toBirthDay, string fullName, string sex, string userName, string roleCode);
-
-        //  public Task<string> UpdateUser(UserModel data, string modifileBy);
-
-        public List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay, string fullName, string sex, string userName, string roleCode);
-
+        /// <param name="posCode">Mã POS</param>
+        /// <param name="departmentCode">Mã phòng ban</param>
+        /// <param name="titleCode">Mã chức vụ người dùng</param>
+        /// <param name="fromBirthDay">Ngày sinh từ ngày</param>
+        /// <param name="toBirthDay">Ngày sinh đến ngày</param>
+        /// <param name="fullName">Họ và tên</param>
+        /// <param name="sex">Giới tính</param>
+        /// <param name="userName">Tài khoản người dùng</param>
+        /// <param name="roleCode">Mã nhóm người dùng</param>
+        /// <param name="staffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
+        /// <returns>Danh sách thông tin người dùng từ vUsers trả ra Model UserModel</returns>
+        List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay,
+                            string fullName, string sex, string userName, string roleCode, string staffId);
 
         /// <summary>
         /// Hàm lấy thông tin phân quyền của nhóm người dùng theo mã MenuId
