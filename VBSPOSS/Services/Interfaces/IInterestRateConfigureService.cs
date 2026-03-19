@@ -22,8 +22,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns></returns>
         /// 
         //add thêm phần mã sản phẩm
-        Task<List<CasaRateProductViewModel>> GetCasaRateByProductsAndTypesAsync(List<string> productCodes,List<string> accountTypes,string posCode,DateTime referenceDate);
-        Task<List<InterestRateConfigMasterView>> GetInterestRateConfigMasterViewListAsync(string productGroupCode, string posCode, string productCode, string circularRefNum, DateTime? fromDate, DateTime? toDate, string searchText, int? statusDesc= null);
+        Task<List<CasaRateProductViewModel>> GetCasaRateByProductsAndTypesAsync(List<string> productCodes, List<string> accountTypes, string posCode, DateTime referenceDate);
+        Task<List<InterestRateConfigMasterView>> GetInterestRateConfigMasterViewListAsync(string productGroupCode, string posCode, string productCode, string circularRefNum, DateTime? fromDate, DateTime? toDate, string searchText, int? statusDesc = null);
 
         //    Task<List<InterestRateConfigMaster>> GetInterestRateConfigMasterListAsync(string productGroupCode, string posCode, string productCode, string circularRefNum, DateTime? fromEffectiveDate, DateTime? toEffectiveDate);
         //add lại
@@ -106,7 +106,7 @@ namespace VBSPOSS.Services.Interfaces
 
         //add Casa
 
-        Task<string> SaveCasaRateConfigureData(AddCasaProductViewModel model, List<CasaRateProductViewModel> gridItems, string userName);
+        Task<string> SaveCasaRateConfigureData(AddCasaProductViewModel model, List<CasaRateProductViewModel> gridItems, string userName, string userPosCode);
         // Task<string> UpdateCasaConfigureGridData(CasaRateProductViewModel model, string userName);
 
 
@@ -128,7 +128,7 @@ namespace VBSPOSS.Services.Interfaces
         Task<string> GetCircularRefNumByDocumentIdAsync(long documentId);
 
 
-        Task<List<InterestRateConfigMasterModel>> GetInterestRateConfigMasterListAsync(string productGroupCode, string posCode, string productCode,string circularRefNum, DateTime? fromEffectiveDate, DateTime? toEffectiveDate);
+        Task<List<InterestRateConfigMasterModel>> GetInterestRateConfigMasterListAsync(string productGroupCode, string posCode, string productCode, string circularRefNum, DateTime? fromEffectiveDate, DateTime? toEffectiveDate);
 
         //add
         //Task<List<InterestRateConfigMasterModel>> GetInterestRateConfigMasterViewListAsync(string productGroupCode, string posCode, string productCode, string circularRefNum, DateTime? fromDate, DateTime? toDate);
@@ -212,6 +212,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns></returns>
         Task<int> SaveApprovalDecision(string userName, List<long> lstId, int rejectFlag, string rejectReason);
 
+        Task<int> SaveApprovalDecisionCasa(string userName, List<long> lstId, int rejectFlag, string rejectReason);
         /// <summary>
         /// Hàm kiểm tra số quyết định và ngày quyết định đã tồn tại hay chưa   
         /// </summary>

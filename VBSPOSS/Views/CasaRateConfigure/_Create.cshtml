@@ -38,7 +38,7 @@
     }
 
     .section-header {
-     /*    border-bottom: 1px dotted #d9534f; */
+        /*    border-bottom: 1px dotted #d9534f; */
         margin-top: 1px;
         /* padding-bottom: 5px; */
     }
@@ -54,7 +54,7 @@
         margin-right: 0;
     }
 
-   /* Số quyết định*/
+    /* Số quyết định*/
     .qd-valid {
         color: green;
         font-size: 18px;
@@ -66,439 +66,460 @@
     }
 </style>
 <script>
-var updatedCells = [];
-var dataChangeCasaRateConfigure = false;
+    var updatedCells = [];
+    var dataChangeCasaRateConfigure = false;
 
-// Tham số load grid lãi suất (batch)
-function paraCasaConfigureBatchGridData() {
-    var grid = $("#casaProductGrid").data("kendoGrid");
-    //var selectedRows = grid.select();
-    var selectedRows = grid.tbody.find(".k-state-selected");
-    var productCodes = [];
-    var accountTypeCodes = [];
-    selectedRows.each(function () {
-        var dataItem = grid.dataItem(this);
-        productCodes.push(dataItem.ProductCode);
-        accountTypeCodes.push(dataItem.AccountTypeCode);
-    });
+    // Tham số load grid lãi suất (batch)
+        function paraCasaConfigureBatchGridData() {
+            var grid = $("#casaProductGrid").data("kendoGrid");
+            if (!grid) return { productCodes: "", accountTypes: "", posCode: "", effectiveDate: "", newInterestRate: "" };
 
-    console.log("Selected ProductCodes:", productCodes); // Debug: Kiểm tra console F12 xem có đúng số lượng không
-    console.log("Selected AccountTypeCodes:", accountTypeCodes);
+            var selectedRows = grid.select();           // Đây là cách đúng khi dùng columns.Select()
+            var productCodes = [];
+            var accountTypeCodes = [];
 
-    return {
-        productCodes: productCodes.join(","),
-        accountTypes: accountTypeCodes.join(","),
-        posCode: $("#ApplyPosList").val().join(",") || "",
-        effectiveDate: $("#EffectiveDate").val(),
-        newInterestRate: $("#NewInterestRate").val()
-    };
-}
-
-// Tải dữ liệu khi ấn nút
-function onLoadData_CasaRateConfigure() {
-    var mainGrid = $("#casaRateConfigureGrid").data("kendoGrid");
-    var selectGrid = $("#casaProductGrid").data("kendoGrid");
-    if (!mainGrid || !selectGrid) {
-        alert("Grid chưa sẵn sàng!");
-        return;
-    }
-    var selectedRows = selectGrid.select();
-    if (selectedRows.length === 0) {
-        alert("Vui lòng chọn ít nhất một loại tài khoản!");
-        return;
-    }
-    mainGrid.dataSource.read();
-}
-
-// Đồng bộ checkbox và thống kê
-function onProductGridDataBound(e) {
-    var grid = this;
-    grid.tbody.find(".chkSelect").off("change").on("change", function () {
-        var row = $(this).closest("tr");
-        if ($(this).is(":checked")) {
-            row.addClass("k-state-selected"); // Thêm class select thủ công
-        } else {
-            row.removeClass("k-state-selected"); // Bỏ class select
-        }
-        updateSelectedCount(grid);
-    });
-
-    grid.tbody.find("tr").off("click").on("click", function (e) {
-        if ($(e.target).is("input:checkbox")) return;
-        var row = $(this);
-        var checkbox = row.find(".chkSelect");
-        checkbox.prop("checked", !checkbox.prop("checked"));
-        if (checkbox.is(":checked")) {
-            row.addClass("k-state-selected");
-        } else {
-            row.removeClass("k-state-selected");
-        }
-        updateSelectedCount(grid);
-    });
-    updateSelectedCount(grid);
-}
-
-// Thống kê số lượng đã chọn + tên
-// function updateSelectedCount(grid) {
-//     var selectedRows = grid.tbody.find(".k-state-selected"); // Sửa: Lấy từ class để chính xác
-//     var count = selectedRows.length;
-//     var total = grid.dataSource.total();
-//     if (count === 0) {
-//         $("#selectedProducts").text("Tổng số loại tài khoản: " + total);
-//     } else {
-//         var names = [];
-//         selectedRows.each(function () {
-//             var item = grid.dataItem(this);
-//             names.push(item.AccountTypeCode + " - " + (item.AccountTypeName || item.AccountTypeCode));
-//         });
-//         $("#selectedProducts").text("Đã chọn (" + count + "): " + names.join(" | "));
-//                  //   $("#selectedProducts").text("Đã chọn (" + count + ")
-//     }
-// }
-    function updateSelectedCount(grid) {
-        var selectedRows = grid.tbody.find(".k-state-selected");
-        var count = selectedRows.length;
-        var total = grid.dataSource.total();
-
-        if (count === 0) {
-            $("#selectedProducts").text("Tổng số loại tài khoản: " + total);
-        } else {
-            var codes = [];
             selectedRows.each(function () {
-                var item = grid.dataItem(this);
-                codes.push(item.AccountTypeCode);
-            });
-
-            $("#selectedProducts").text("Đã chọn " + count + ": " + codes.join(" | "));
-          
-        }
-    }
-
-// Các hàm edit/save grid dưới (giữ nguyên)
-// function onEdit_CasaRateConfigureGrid(e) {
-//     e.container.find("input").css({ "font-weight": "bold", "color": "blue" });
-// }
-
-//add
-    function onEdit_CasaRateConfigureGrid(e) {
-        try {
-            // Style input khi đang edit
-            var cell = e.container;
-            cell.find("input").css({
-                "font-weight": "bold",
-                "color": "blue"
-            });
-
-        //     var model = e.model;
-        //     var grid = this; // 
-
-        //     var minRate = model.MinTermIntRateNew;   
-        //     var maxRate = model.MaxTermIntRateNew;   
-
-        //     // Nếu min/max không hợp lệ → bỏ qua validate
-        //     if (typeof minRate !== "number" || typeof maxRate !== "number" || isNaN(minRate) || isNaN(maxRate)) {
-        //         return;
-        //     }
-
-        //     // Lấy input đang edit
-        //     var input = e.container.find("input");
-        //     var currentValue = parseFloat(input.val()) || 0;
-
-        //     // Validate realtime khi change hoặc keyup
-        //     input.off("change.kendoValidate keyup.kendoValidate").on("change.kendoValidate keyup.kendoValidate", function () {
-        //         var newValue = parseFloat($(this).val());
-
-        //         if (isNaN(newValue)) {
-        //             // Không cho nhập chữ → đưa về giá trị cũ
-        //             $(this).val(currentValue);
-        //             return;
-        //         }
-
-        //         if (newValue < minRate || newValue > maxRate) {
-        //             alert("Lãi suất mới phải nằm trong khoảng từ " +
-        //                   kendo.toString(minRate, "n2") +
-        //                   " đến " +
-        //                   kendo.toString(maxRate, "n2") +
-        //                   ". Giá trị bạn nhập không hợp lệ!");
-
-                  
-        //             $(this).val(currentValue);
-        //         } else {
-        //             // Hợp lệ → cập nhật currentValue
-        //             currentValue = newValue;
-        //         }
-        //     });
-
-        //     // Validate khi blur (rời ô)
-        //     input.on("blur.kendoValidate", function () {
-        //         var finalValue = parseFloat($(this).val());
-        //         if (!isNaN(finalValue) && (finalValue < minRate || finalValue > maxRate)) {
-        //             alert("Giá trị lãi suất mới không hợp lệ! Vui lòng nhập lại.");
-        //             $(this).focus(); // Đưa focus về lại ô
-        //         }
-        //     });
-
-        // 
-        } 
-        catch (error) {
-            console.error("Error in onEdit_CasaRateConfigureGrid:", error);
-        }
-    }
-
-// function onSave_CasaRateConfigureGrid(e) {
-//     e.model.dirtyFields = e.model.dirtyFields || {};
-
-
-
-
-
-//     for (var field in e.values) {
-//         if (e.values.hasOwnProperty(field)) {
-//             e.model.dirtyFields[field] = true;
-//             if (field === "RateProductNewInterestRate") {
-//                 updatedCells.push({ id: e.model.Id, field: field });
-//             }
-//         }
-//     }
-//     $("#saveBtn").prop("disabled", false);
-
-
-
-
-// }
-    function onSave_CasaRateConfigureGrid(e) {
-        try {
-            // Khởi tạo dirtyFields nếu chưa có
-            e.model.dirtyFields = e.model.dirtyFields || {};
-
-            var num = e.values.RateProductNewInterestRate;  // 
-            var model = e.model;
-
-            // Điều kiện cấu hình thêm mới lãi suất 
-            var rateHO = parseFloat(model.InterestRateHO);
-            var minRate = rateHO - parseFloat(model.MinInterestRateSpread);
-            var maxRate = rateHO + parseFloat(model.MaxInterestRateSpread);
-
-            // Log 
-            console.log("rateHO:", rateHO, typeof rateHO);
-            console.log("minRate:", minRate, typeof minRate);
-            console.log("maxRate:", maxRate, typeof maxRate);
-            console.log("newValue:", num, typeof num);
-
-            // Kiểm tra nếu min/max không hợp lệ (null, NaN) → cho phép save hoặc xử lý tùy ý
-            if (isNaN(rateHO) || isNaN(minRate) || isNaN(maxRate)) {
-                console.warn("Không tính được min/max spread, bỏ qua validate");
-                // Nếu muốn bắt buộc validate thì alert và preventDefault ở đây
-                // return;
-            } else {
-                var newValue = parseFloat(num);
-
-                if (isNaN(newValue) || newValue < minRate || newValue > maxRate) {
-                    alert(
-                        "Lãi suất mới phải nằm trong khoảng từ " +
-                        kendo.toString(minRate, "n2") +
-                        " đến " +
-                        kendo.toString(maxRate, "n2") +
-                        ". Giá trị bạn nhập không hợp lệ!"
-                    );
-                    e.preventDefault();  // Ngăn lưu ô này
-                    return;              // Dừng xử lý tiếp
+                var dataItem = grid.dataItem(this);
+                if (dataItem) {
+                    productCodes.push(dataItem.ProductCode);
+                    accountTypeCodes.push(dataItem.AccountTypeCode);
                 }
+            });
+
+            console.log("Selected ProductCodes:", productCodes);
+            console.log("Selected AccountTypeCodes:", accountTypeCodes);
+
+            return {
+                productCodes: productCodes.join(","),
+                accountTypes: accountTypeCodes.join(","),
+                posCode: $("#ApplyPosList").val().join(",") || "",
+                effectiveDate: $("#EffectiveDate").val(),
+                newInterestRate: $("#NewInterestRate").val()
+            };
+        }
+
+    // Tải dữ liệu khi ấn nút
+    function onLoadData_CasaRateConfigure() {
+        var mainGrid = $("#casaRateConfigureGrid").data("kendoGrid");
+        var selectGrid = $("#casaProductGrid").data("kendoGrid");
+        if (!mainGrid || !selectGrid) {
+            alert("Grid chưa sẵn sàng!");
+            return;
+        }
+        var selectedRows = selectGrid.select();
+        if (selectedRows.length === 0) {
+            alert("Vui lòng chọn ít nhất một loại tài khoản!");
+            return;
+        }
+        mainGrid.dataSource.read();
+    }
+
+    // Đồng bộ checkbox và thống kê
+        function onProductGridDataBound(e) {
+            updateSelectedCount(this);   // chỉ cần cập nhật số lượng đã chọn
+        }
+
+
+    // function onProductGridDataBound(e) {
+    //     var grid = this;
+    //     grid.tbody.find(".chkSelect").off("change").on("change", function () {
+    //         var row = $(this).closest("tr");
+    //         if ($(this).is(":checked")) {
+    //             row.addClass("k-state-selected"); // Thêm class select thủ công
+    //         } else {
+    //             row.removeClass("k-state-selected"); // Bỏ class select
+    //         }
+    //         updateSelectedCount(grid);
+    //     });
+
+    //     grid.tbody.find("tr").off("click").on("click", function (e) {
+    //         if ($(e.target).is("input:checkbox")) return;
+    //         var row = $(this);
+    //         var checkbox = row.find(".chkSelect");
+    //         checkbox.prop("checked", !checkbox.prop("checked"));
+    //         if (checkbox.is(":checked")) {
+    //             row.addClass("k-state-selected");
+    //         } else {
+    //             row.removeClass("k-state-selected");
+    //         }
+    //         updateSelectedCount(grid);
+    //     });
+    //     updateSelectedCount(grid);
+    // }
+
+
+
+
+
+
+
+    // Thống kê số lượng đã chọn + tên
+    // function updateSelectedCount(grid) {
+    //     var selectedRows = grid.tbody.find(".k-state-selected"); // Sửa: Lấy từ class để chính xác
+    //     var count = selectedRows.length;
+    //     var total = grid.dataSource.total();
+    //     if (count === 0) {
+    //         $("#selectedProducts").text("Tổng số loại tài khoản: " + total);
+    //     } else {
+    //         var names = [];
+    //         selectedRows.each(function () {
+    //             var item = grid.dataItem(this);
+    //             names.push(item.AccountTypeCode + " - " + (item.AccountTypeName || item.AccountTypeCode));
+    //         });
+    //         $("#selectedProducts").text("Đã chọn (" + count + "): " + names.join(" | "));
+    //                  //   $("#selectedProducts").text("Đã chọn (" + count + ")
+    //     }
+    // }
+        function updateSelectedCount(grid) {
+            var selectedRows = grid.tbody.find(".k-state-selected");
+            var count = selectedRows.length;
+            var total = grid.dataSource.total();
+
+            if (count === 0) {
+                $("#selectedProducts").text("Tổng số loại tài khoản: " + total);
+            } else {
+                var codes = [];
+                selectedRows.each(function () {
+                    var item = grid.dataItem(this);
+                    codes.push(item.AccountTypeCode);
+                });
+
+                $("#selectedProducts").text("Đã chọn " + count + ": " + codes.join(" | "));
+
             }
+        }
 
-            // Hợp lệ → đánh dấu dirty + highlight ô
-            e.model.set("ChangeFlag", 1);
-            e.model.dirtyFields["ChangeFlag"] = true;
+    // Các hàm edit/save grid dưới (giữ nguyên)
+    // function onEdit_CasaRateConfigureGrid(e) {
+    //     e.container.find("input").css({ "font-weight": "bold", "color": "blue" });
+    // }
 
-            for (var field in e.values) {
-                if (e.values.hasOwnProperty(field)) {
-                    e.model.dirtyFields[field] = true;
+    //add
+        function onEdit_CasaRateConfigureGrid(e) {
+            try {
+                // Style input khi đang edit
+                var cell = e.container;
+                cell.find("input").css({
+                    "font-weight": "bold",
+                    "color": "blue"
+                });
 
-                    if (field === "RateProductNewInterestRate") {
-                        updatedCells.push({
-                            id: e.model.Id,
-                            field: field
-                        });
+            //     var model = e.model;
+            //     var grid = this; //
 
-                        // Highlight ô lãi suất mới 
-                        var row = e.container.closest("tr");
-                        var grid = $("#casaRateConfigureGrid").data("kendoGrid");
-                        var columnIndex = grid.columns.findIndex(function (col) {
-                            return col.field === "RateProductNewInterestRate";
-                        });
-                        if (columnIndex !== -1) {
-                            row.find("td").eq(columnIndex).addClass("cell-updated");
+            //     var minRate = model.MinTermIntRateNew;
+            //     var maxRate = model.MaxTermIntRateNew;
+
+            //     // Nếu min/max không hợp lệ → bỏ qua validate
+            //     if (typeof minRate !== "number" || typeof maxRate !== "number" || isNaN(minRate) || isNaN(maxRate)) {
+            //         return;
+            //     }
+
+            //     // Lấy input đang edit
+            //     var input = e.container.find("input");
+            //     var currentValue = parseFloat(input.val()) || 0;
+
+            //     // Validate realtime khi change hoặc keyup
+            //     input.off("change.kendoValidate keyup.kendoValidate").on("change.kendoValidate keyup.kendoValidate", function () {
+            //         var newValue = parseFloat($(this).val());
+
+            //         if (isNaN(newValue)) {
+            //             // Không cho nhập chữ → đưa về giá trị cũ
+            //             $(this).val(currentValue);
+            //             return;
+            //         }
+
+            //         if (newValue < minRate || newValue > maxRate) {
+            //             alert("Lãi suất mới phải nằm trong khoảng từ " +
+            //                   kendo.toString(minRate, "n2") +
+            //                   " đến " +
+            //                   kendo.toString(maxRate, "n2") +
+            //                   ". Giá trị bạn nhập không hợp lệ!");
+
+
+            //             $(this).val(currentValue);
+            //         } else {
+            //             // Hợp lệ → cập nhật currentValue
+            //             currentValue = newValue;
+            //         }
+            //     });
+
+            //     // Validate khi blur (rời ô)
+            //     input.on("blur.kendoValidate", function () {
+            //         var finalValue = parseFloat($(this).val());
+            //         if (!isNaN(finalValue) && (finalValue < minRate || finalValue > maxRate)) {
+            //             alert("Giá trị lãi suất mới không hợp lệ! Vui lòng nhập lại.");
+            //             $(this).focus(); // Đưa focus về lại ô
+            //         }
+            //     });
+
+            //
+            }
+            catch (error) {
+                console.error("Error in onEdit_CasaRateConfigureGrid:", error);
+            }
+        }
+
+    // function onSave_CasaRateConfigureGrid(e) {
+    //     e.model.dirtyFields = e.model.dirtyFields || {};
+
+
+
+
+
+    //     for (var field in e.values) {
+    //         if (e.values.hasOwnProperty(field)) {
+    //             e.model.dirtyFields[field] = true;
+    //             if (field === "RateProductNewInterestRate") {
+    //                 updatedCells.push({ id: e.model.Id, field: field });
+    //             }
+    //         }
+    //     }
+    //     $("#saveBtn").prop("disabled", false);
+
+
+
+
+    // }
+        function onSave_CasaRateConfigureGrid(e) {
+            try {
+                // Khởi tạo dirtyFields nếu chưa có
+
+                var posGrade = parseInt($("#PosGrade").val());
+
+
+                e.model.dirtyFields = e.model.dirtyFields || {};
+
+                var num = e.values.RateProductNewInterestRate;  //
+                var model = e.model;
+
+                // Điều kiện cấu hình thêm mới lãi suất
+                var rateHO = parseFloat(model.InterestRateHO);
+                var minRate = rateHO - parseFloat(model.MinInterestRateSpread);
+                var maxRate = rateHO + parseFloat(model.MaxInterestRateSpread);
+
+                // Log
+                console.log("rateHO:", rateHO, typeof rateHO);
+                console.log("minRate:", minRate, typeof minRate);
+                console.log("maxRate:", maxRate, typeof maxRate);
+                console.log("newValue:", num, typeof num);
+
+                // Kiểm tra nếu min/max không hợp lệ (null, NaN) → cho phép save hoặc xử lý tùy ý
+                if (isNaN(rateHO) || isNaN(minRate) || isNaN(maxRate)) {
+                    console.warn("Không tính được min/max spread, bỏ qua validate");
+                    // Nếu muốn bắt buộc validate thì alert và preventDefault ở đây
+                    // return;
+                } else {
+                    var newValue = parseFloat(num);
+                          if (posGrade !== 3 && ( isNaN(newValue) || newValue < minRate || newValue > maxRate))
+
+                    // if (isNaN(newValue) || newValue < minRate || newValue > maxRate)
+                    {
+                        alert(
+                            "Lãi suất mới phải nằm trong khoảng từ " +
+                            kendo.toString(minRate, "n2") +
+                            " đến " +
+                            kendo.toString(maxRate, "n2") +
+                            ". Giá trị bạn nhập không hợp lệ!"
+                        );
+                        e.preventDefault();  // Ngăn lưu ô này
+                        return;              // Dừng xử lý tiếp
+                    }
+                }
+
+                // Hợp lệ → đánh dấu dirty + highlight ô
+                e.model.set("ChangeFlag", 1);
+                e.model.dirtyFields["ChangeFlag"] = true;
+
+                for (var field in e.values) {
+                    if (e.values.hasOwnProperty(field)) {
+                        e.model.dirtyFields[field] = true;
+
+                        if (field === "RateProductNewInterestRate") {
+                            updatedCells.push({
+                                id: e.model.Id,
+                                field: field
+                            });
+
+                            // Highlight ô lãi suất mới
+                            var row = e.container.closest("tr");
+                            var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+                            var columnIndex = grid.columns.findIndex(function (col) {
+                                return col.field === "RateProductNewInterestRate";
+                            });
+                            if (columnIndex !== -1) {
+                                row.find("td").eq(columnIndex).addClass("cell-updated");
+                            }
                         }
                     }
                 }
-            }
 
-        } catch (error) {
-            console.error("Error in onSave_CasaRateConfigureGrid:", error);
-        }
-    }
-
-
-function onRowBound_CasaRateConfigureGrid(e) {
-    var grid = this;
-    updatedCells.forEach(function (cell) {
-        if (cell.field === "RateProductNewInterestRate") {
-            var row = grid.tbody.find("tr[data-uid='" + grid.dataSource.get(cell.id).uid + "']");
-            if (row.length) {
-                var colIdx = grid.columns.findIndex(c => c.field === "RateProductNewInterestRate");
-                if (colIdx !== -1) {
-                    row.find("td").eq(colIdx).addClass("cell-updated");
-                }
+            } catch (error) {
+                console.error("Error in onSave_CasaRateConfigureGrid:", error);
             }
         }
-    });
-}
 
-// Hàm lưu
-function onSave_CasaRateConfigureForm() {
-    try {
-        var grid = $("#casaRateConfigureGrid").data("kendoGrid");
-        if (!grid) {
-            alert("Lỗi: Không tìm thấy grid!");
-            return;
-        }
-        var decisionNo = $("#CircularRefNum").val().trim();
-        if (!decisionNo) {
-            alert("Bạn chưa nhập số Quyết định!");
-            return;
-        }
-        var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
-        if (!applyPosLst || applyPosLst.length === 0) {
-            alert("Vui lòng chọn ít nhất một POS áp dụng!");
-            return;
-        }
-        // Lấy dữ liệu grid
-        var gridData = grid.dataSource.data().toJSON().map(item => ({
-            Id: 0,
-            RateProductCode: item.RateProductCode,
-            RateProductName: item.RateProductName,
-            RateProductAccountTypeCode: item.RateProductAccountTypeCode,
-            RateProductAccountTypeName: item.RateProductAccountTypeName,
-            RateProductAccountSubTypeCode: item.RateProductAccountSubTypeCode || "0",
-            RateProductCurrencyCode: item.RateProductCurrencyCode || "VND",
-            RateProductDebitCreditFlag: item.RateProductDebitCreditFlag || "C",
-            RateProductEffectiveDate: item.RateProductEffectiveDate,
-            RateProductExpiredDate: item.RateProductExpiredDate,
-            RateProductInterestRate: item.RateProductInterestRate,
-            RateProductNewInterestRate: item.RateProductNewInterestRate,
-            RateProductPenalRate: item.RateProductPenalRate || 0,
-            RateProductPosCode: item.RateProductPosCode,
-            RateProductAmoutSlab: item.RateProductAmoutSlab || 0,
-                
 
-                            InterestRateHO: item.InterestRateHO || 0,
-    MinInterestRateSpread: item.MinInterestRateSpread || 0,
-    MaxInterestRateSpread: item.MaxInterestRateSpread || 0
-        }));
-        // Lấy dữ liệu form
-        var formModel = {
-            EffectiveDate: $("#EffectiveDate").data("kendoDatePicker").value(),
-            ExpiredDate: $("#ExpiredDate").data("kendoDatePicker").value(),
-            CircularDate: $("#CircularDate").data("kendoDatePicker").value(),
-            CircularRefNum: $("#CircularRefNum").val(),
-            NewInterestRate: $("#NewInterestRate").data("kendoNumericTextBox").value(),
-            PenalRate: 0,
-            AmoutSlab: 0,
-            DebitCreditFlag: "C",
-            ApplyPosList: applyPosLst
-        };
-        var submitData = {
-            model: formModel,
-            gridItems: gridData
-        };
-        $.ajax({
-            url: '@Url.Action("SaveCasaRateConfigure", "CasaRateConfigure")',
-            type: "POST",
-            data: JSON.stringify(submitData),
-            contentType: "application/json; charset=utf-8",
-            headers: {
-                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-            },
-            beforeSend: function () {
-                kendo.ui.progress($("#addCasaForm"), true);
-            },
-            success: function (response) {
-                kendo.ui.progress($("#addCasaForm"), false);
-                if (response.Success) {
-                   // alert("Lưu thông tin lãi suất CASA thành công!");
-                        alert("Bạn đã tạo thay đổi lãi suất theo quyết định " +  decisionNo + " thành công!");
-                    dataChangeCasaRateConfigure = true;
-                    mainWindow.data("kendoWindow").close();
-                    $("#saveBtn").prop("disabled", true);
-                } else {
-                    alert("Lưu thất bại: " + (response.Message || "Unknown error"));
+    function onRowBound_CasaRateConfigureGrid(e) {
+        var grid = this;
+        updatedCells.forEach(function (cell) {
+            if (cell.field === "RateProductNewInterestRate") {
+                var row = grid.tbody.find("tr[data-uid='" + grid.dataSource.get(cell.id).uid + "']");
+                if (row.length) {
+                    var colIdx = grid.columns.findIndex(c => c.field === "RateProductNewInterestRate");
+                    if (colIdx !== -1) {
+                        row.find("td").eq(colIdx).addClass("cell-updated");
+                    }
                 }
-            },
-            error: function (xhr) {
-                kendo.ui.progress($("#addCasaForm"), false);
-                alert("Lỗi server: " + (xhr.responseText || xhr.statusText));
             }
         });
-    } catch (error) {
-        kendo.ui.progress($("#addCasaForm"), false);
-        alert("Lỗi JS: " + error.message);
     }
-}
 
-function onCloseCasaRateConfigure() {
-    if (dataChangeCasaRateConfigure == true) {
-        refreshGridCasaRateConfigure(); // Hàm refresh grid Index
-        dataChangeCasaRateConfigure = false; // Reset lại
-    }
-}
-
-function paramDonViQL() {
-    return {
-        pFlagCondi: "5",
-        pStatus: "O",
-        pShortName: "1",
-        pTitleChoice: "",
-        pFlagTextShow: "1",
-        pUserPosCode: "",
-        pFlagAllBank: "0"
-    };
-}
-
-$("#CircularRefNum, #CircularDate").on("change blur", function () {
-    var circularRefNum = $("#CircularRefNum").val().trim();
-    var datePicker = $("#CircularDate").data("kendoDatePicker");
-    var circularDate = datePicker ? datePicker.value() : null;
-    $("#qd-status").hide();
-    if (!circularRefNum || !circularDate) return;
-    $.ajax({
-        url: '@Url.Action("CheckCircular", "CasaRateConfigure")',
-        type: "GET",
-        data: {
-            circularRefNum: circularRefNum,
-            circularDate: kendo.toString(circularDate, "yyyy-MM-dd")
-        },
-        success: function (res) {
-            if (res.isExists) {
-                $("#qd-status")
-                    .html("⚠️")
-                    .removeClass("qd-valid")
-                    .addClass("qd-invalid")
-                    .attr("title", "Quyết định đã tồn tại với ngày này")
-                    .show();
-            } else if (res.isValid) {
-                $("#qd-status")
-                    .html("✔")
-                    .removeClass("qd-invalid")
-                    .addClass("qd-valid")
-                    .attr("title", "Quyết định hợp lệ")
-                    .show();
+    // Hàm lưu
+    function onSave_CasaRateConfigureForm() {
+        try {
+            var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+            if (!grid) {
+                alert("Lỗi: Không tìm thấy grid!");
+                return;
             }
-        },
-        error: function () {
-            $("#qd-status").hide();
+            var decisionNo = $("#CircularRefNum").val().trim();
+            if (!decisionNo) {
+                alert("Bạn chưa nhập số Quyết định!");
+                return;
+            }
+            var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
+            if (!applyPosLst || applyPosLst.length === 0) {
+                alert("Vui lòng chọn ít nhất một POS áp dụng!");
+                return;
+            }
+            // Lấy dữ liệu grid
+            var gridData = grid.dataSource.data().toJSON().map(item => ({
+                Id: 0,
+                RateProductCode: item.RateProductCode,
+                RateProductName: item.RateProductName,
+                RateProductAccountTypeCode: item.RateProductAccountTypeCode,
+                RateProductAccountTypeName: item.RateProductAccountTypeName,
+                RateProductAccountSubTypeCode: item.RateProductAccountSubTypeCode || "0",
+                RateProductCurrencyCode: item.RateProductCurrencyCode || "VND",
+                RateProductDebitCreditFlag: item.RateProductDebitCreditFlag || "C",
+                RateProductEffectiveDate: item.RateProductEffectiveDate,
+                RateProductExpiredDate: item.RateProductExpiredDate,
+                RateProductInterestRate: item.RateProductInterestRate,
+                RateProductNewInterestRate: item.RateProductNewInterestRate,
+                RateProductPenalRate: item.RateProductPenalRate || 0,
+                RateProductPosCode: item.RateProductPosCode,
+                RateProductAmoutSlab: item.RateProductAmoutSlab || 0,
+
+
+                                InterestRateHO: item.InterestRateHO || 0,
+        MinInterestRateSpread: item.MinInterestRateSpread || 0,
+        MaxInterestRateSpread: item.MaxInterestRateSpread || 0
+            }));
+            // Lấy dữ liệu form
+            var formModel = {
+                EffectiveDate: $("#EffectiveDate").data("kendoDatePicker").value(),
+                ExpiredDate: $("#ExpiredDate").data("kendoDatePicker").value(),
+                CircularDate: $("#CircularDate").data("kendoDatePicker").value(),
+                CircularRefNum: $("#CircularRefNum").val(),
+                NewInterestRate: $("#NewInterestRate").data("kendoNumericTextBox").value(),
+                PenalRate: 0,
+                AmoutSlab: 0,
+                DebitCreditFlag: "C",
+                ApplyPosList: applyPosLst
+            };
+            var submitData = {
+                model: formModel,
+                gridItems: gridData
+            };
+            $.ajax({
+                url: '@Url.Action("SaveCasaRateConfigure", "CasaRateConfigure")',
+                type: "POST",
+                data: JSON.stringify(submitData),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                beforeSend: function () {
+                    kendo.ui.progress($("#addCasaForm"), true);
+                },
+                success: function (response) {
+                    kendo.ui.progress($("#addCasaForm"), false);
+                    if (response.Success) {
+                       // alert("Lưu thông tin lãi suất CASA thành công!");
+                            alert("Bạn đã tạo thay đổi lãi suất theo quyết định " +  decisionNo + " thành công!");
+                        dataChangeCasaRateConfigure = true;
+                        mainWindow.data("kendoWindow").close();
+                        $("#saveBtn").prop("disabled", true);
+                    } else {
+                        alert("Lưu thất bại: " + (response.Message || "Unknown error"));
+                    }
+                },
+                error: function (xhr) {
+                    kendo.ui.progress($("#addCasaForm"), false);
+                    alert("Lỗi server: " + (xhr.responseText || xhr.statusText));
+                }
+            });
+        } catch (error) {
+            kendo.ui.progress($("#addCasaForm"), false);
+            alert("Lỗi JS: " + error.message);
         }
+    }
+
+    function onCloseCasaRateConfigure() {
+        if (dataChangeCasaRateConfigure == true) {
+            refreshGridCasaRateConfigure(); // Hàm refresh grid Index
+            dataChangeCasaRateConfigure = false; // Reset lại
+        }
+    }
+
+    function paramDonViQL() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pFlagAllBank: "0"
+        };
+    }
+
+    $("#CircularRefNum, #CircularDate").on("change blur", function () {
+        var circularRefNum = $("#CircularRefNum").val().trim();
+        var datePicker = $("#CircularDate").data("kendoDatePicker");
+        var circularDate = datePicker ? datePicker.value() : null;
+        $("#qd-status").hide();
+        if (!circularRefNum || !circularDate) return;
+        $.ajax({
+            url: '@Url.Action("CheckCircular", "CasaRateConfigure")',
+            type: "GET",
+            data: {
+                circularRefNum: circularRefNum,
+                circularDate: kendo.toString(circularDate, "yyyy-MM-dd")
+            },
+            success: function (res) {
+                if (res.isExists) {
+                    $("#qd-status")
+                        .html("⚠️")
+                        .removeClass("qd-valid")
+                        .addClass("qd-invalid")
+                        .attr("title", "Quyết định đã tồn tại với ngày này")
+                        .show();
+                } else if (res.isValid) {
+                    $("#qd-status")
+                        .html("✔")
+                        .removeClass("qd-invalid")
+                        .addClass("qd-valid")
+                        .attr("title", "Quyết định hợp lệ")
+                        .show();
+                }
+            },
+            error: function () {
+                $("#qd-status").hide();
+            }
+        });
     });
-});
 </script>
 
 
@@ -535,7 +556,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                     .Title("")
                     .Width(50)
                     .ClientHeaderTemplate("<input type='checkbox' id='selectAll' title='Chọn tất cả' />");
-                   
+
                     columns.Bound("ProductCode").Title("Mã sản phẩm").Width(140);
                     columns.Bound("AccountTypeCode").Title("Mã loại TK").Width(120);
                     columns.Bound("AccountTypeName").Title("Tên loại TK").Width(300);
@@ -552,7 +573,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                 )
             <div id="selectedProducts" style="margin-top:10px; font-weight:bold; color:navy;">Đang tải danh sách loại tài khoản...</div>
         </div>
-      
+
     </div>
 
     <div class="row" style="margin-top: 15px;">
@@ -609,13 +630,14 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
 
 <form id="addCasaForm">
     @Html.AntiForgeryToken()
+    @Html.Hidden("PosGrade", TempData["PosGrade"])
 
     <!-- Thông tin chung + POS áp dụng -->
     <div class="section-header">
         <div class="section-title">Thông tin chung</div>
     </div>
 
-   
+
     @* <div class="row" style="padding-top: 10px;">
         <div class="col-md-3">
             <label style="font-weight:bold; color:navy; margin-bottom:0; white-space:nowrap; padding-right:16px">
@@ -646,7 +668,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                 <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                     <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" />
                     @* <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
-                     
+
                     </label> *@
                 </div>
             </div>
@@ -667,7 +689,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                 )
         </div>
     </div>
-@* 
+    @* 
     <div class="create_form row" style="padding-top: 10px;">
         <div class="col-md-1">
             <label style="font-weight:bold; color:navy; margin-bottom:0; white-space:nowrap; padding-right:16px">
@@ -676,7 +698,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
             <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                 <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" />
                 <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
-                    
+
                 </label>
             </div>
         </div>
@@ -693,7 +715,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                     )
                     .HtmlAttributes(new { id = "ApplyPosList", style = "width: 100% !important; color: navy;" })
                     .AutoBind(true)
-                 
+
                     )
                <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                     <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" />
@@ -701,12 +723,12 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                         Chọn tất cả
                     </label>
                 </div> 
-               
+
             </div>
         </div>
     </div>
  *@
-   
+
     <!-- Layout 2 cột: Trái = Grid chọn TK, Phải = Thông tin ngày + lãi suất -->
     <div class="row" style="margin-top: 4px;">
         <!-- CỘT TRÁI: Grid chọn loại tài khoản (50%) -->
@@ -716,26 +738,28 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                 .Name("casaProductGrid")
                 .Columns(columns =>
                 {
-                    columns.Template(@"<input type='checkbox' class='chkSelect' />")
-                    .Title("")
+                    // Cột checkbox chọn tất cả (built-in của Kendo)
+                    columns.Select()
                     .Width(50)
-                    //.ClientHeaderTemplate("<input type='checkbox' id='selectAll' title='Chọn tất cả' />")
-                    .ClientHeaderTemplate("")
                     .HeaderHtmlAttributes(new { style = "text-align:center;" })
-                    .HtmlAttributes(new { style = "text-align:center;" }); ;
+                    .HtmlAttributes(new { style = "text-align:center;" });
 
                     columns.Bound("ProductCode").Title("Mã sản phẩm").Width(100);
                     columns.Bound("AccountTypeCode").Title("Mã loại TK").Width(120);
-                    columns.Bound("AccountTypeName").Title("Tên loại TK").Width(200);
+                    columns.Bound("AccountTypeName").Title("Tên loại TK").Width(250);
                 })
-                .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
-                .Scrollable(s => s.Height(250)) 
+                .Selectable(selectable => selectable
+                .Mode(GridSelectionMode.Multiple)
+                .Type(GridSelectionType.Row)
+                )
+                .Scrollable(s => s.Height(250))
                 .DataSource(ds => ds
                 .Ajax()
                 .ServerOperation(false)
                 .Read(read => read.Action("LoadCasaProductGridData", "CasaRateConfigure").Type(HttpVerbs.Post))
                 )
-                .Events(e => e.DataBound("onProductGridDataBound"))
+                .Events(e => e.DataBound("onProductGridDataBound")
+                .Change("onProductGridDataBound"))
                 .AutoBind(true)
                 )
             <div id="selectedProducts" style="margin-top:10px; font-weight:bold; color:navy; text-align:center;">
@@ -743,7 +767,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
             </div>
         </div>
 
-       
+
 
 
         <div class="col-md-6">
@@ -795,7 +819,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                     </div>
                 </div>
 
-                
+
                 <div class="row" style="margin-bottom:20px;">
                     <div class="col-md-12">
                         <label style=" padding-right:15px">Lãi suất  </label>
@@ -849,9 +873,9 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
 
                     columns.Bound(c => c.MinInterestRateSpread).Hidden();
                     columns.Bound(c => c.MaxInterestRateSpread).Hidden();
-                    // 
+                    //
                 })
-                .Editable(e => e.Mode(GridEditMode.InCell))  // 
+                .Editable(e => e.Mode(GridEditMode.InCell))  //
                 .Scrollable(s => s.Height(450))
                 .Events(e => e
                 .Edit("onEdit_CasaRateConfigureGrid")
@@ -868,7 +892,7 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                     m.Field(p => p.RateProductDebitCreditFlag).Editable(false);
                     m.Field(p => p.RateProductInterestRate).Editable(false);
                     m.Field(p => p.RateProductAccountTypeName).Editable(false);
-                    
+
                 })
                 .ServerOperation(false)
                 .Read(read => read.Action("LoadCasaConfigureAddGridData", "CasaRateConfigure")
@@ -907,16 +931,16 @@ $("#CircularRefNum, #CircularDate").on("change blur", function () {
                     // Lấy tất cả giá trị có trong DataSource
                     var dataSource = multiSelect.dataSource.data();
                     var allValues = dataSource.map(function(item) {
-                        return item.id;  
+                        return item.id;
                     });
-                    multiSelect.value(allValues);  
+                    multiSelect.value(allValues);
                 } else {
-                    multiSelect.value([]);  
+                    multiSelect.value([]);
                 }
             }
         });
 
-    
+
         $("#ApplyPosList").data("kendoMultiSelect").bind("change", function () {
             var multiSelect = this;
             var dataSource = multiSelect.dataSource.data();

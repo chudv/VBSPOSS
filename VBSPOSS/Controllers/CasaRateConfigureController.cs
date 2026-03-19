@@ -79,180 +79,7 @@ namespace VBSPOSS.Controllers
 
         //add
 
-        //adđ lại từ Db View
 
-
-        //   public async Task<ActionResult> LoadInterestRateGridData([DataSourceRequest] DataSourceRequest request, string pProductGroupCode,
-        //string pPosCode, string pProductCode, string pCircularRefNum, string pFromEffectiveDate, string pToEffectiveDate, string searchText, string pStatusDesc =null )
-        //   {
-        //       try
-        //       {
-        //           if (string.IsNullOrEmpty(pPosCode))
-        //               pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
-        //           if (string.IsNullOrEmpty(pProductGroupCode))
-        //               pProductGroupCode = ProductGroupCode.CASA.Code;
-        //           if (string.IsNullOrEmpty(pCircularRefNum))
-        //               pCircularRefNum = "";
-        //           // Parsing date an toàn
-        //           DateTime? fromDate = null;
-        //           DateTime? toDate = null;
-        //           if (!string.IsNullOrEmpty(pFromEffectiveDate) && DateTime.TryParseExact(pFromEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFromDate))
-        //           {
-        //               fromDate = parsedFromDate.Date;
-        //           }
-        //           if (!string.IsNullOrEmpty(pToEffectiveDate) && DateTime.TryParseExact(pToEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedToDate))
-        //           {
-        //               toDate = parsedToDate.Date.AddDays(1);
-        //           }
-        //           // Log input
-        //           WriteLog(LogType.INFOR, $"LoadInterestRateGridData Params - pProductGroupCode: '{pProductGroupCode ?? "NULL"}', pPosCode: '{pPosCode ?? "NULL"}', pProductCode: '{pProductCode ?? "NULL"}', pCircularRefNum: '{pCircularRefNum ?? "NULL"}', fromDate: {fromDate}, toDate: {toDate}");
-        //           // Gọi service
-        //           var list = await _interestRateConfigureService.GetInterestRateConfigMasterViewListAsync(pProductGroupCode, pPosCode, pProductCode ?? "", pCircularRefNum, fromDate, toDate, searchText, pStatusDesc);
-        //           // Log output
-        //           var firstProductListFromService = list?.FirstOrDefault()?.ProductList ?? "NULL_FROM_SERVICE";
-        //           var firstIdFromService = list?.FirstOrDefault()?.Id ?? 0;
-        //           WriteLog(LogType.INFOR, $"Service returned {list?.Count ?? 0} records. First entity ProductList: '{firstProductListFromService}', First Id from View: {firstIdFromService}");
-        //           if (list == null || !list.Any())
-        //           {
-        //               WriteLog(LogType.ERROR, "No data from service - check query filters or DB View data for CASA");
-        //           }
-        //           // Map
-        //           var viewModels = _mapper.Map<List<InterestRateConfigMasterModel>>(list ?? new List<InterestRateConfigMasterView>());
-
-
-        //           foreach (var vm in viewModels)
-        //           {
-        //               vm.IsSelected = false;
-
-        //               if (string.IsNullOrEmpty(vm.ProductList))
-        //               {
-        //                   vm.ProductList = firstProductListFromService == "NULL_FROM_SERVICE" ? "No data" : "N/A";
-        //               }
-
-
-        //           }
-        //           // FIX: Explicit set Id nếu =0
-        //           int fixedCount = 0; // FIX: Thêm biến count
-        //           for (int i = 0; i < viewModels.Count && i < list.Count; i++)
-        //           {
-        //               if (viewModels[i].Id == 0)
-        //               {
-        //                   var sourceId = list[i].Id; // FIX: Log source Id để check
-        //                   viewModels[i].Id = sourceId > 0 ? sourceId : (list[i].DocumentId > 0 ? list[i].DocumentId : viewModels[i].Id);
-        //                   fixedCount++;
-        //                   WriteLog(LogType.INFOR, $"Fixed Id[{i}] = {viewModels[i].Id} (source Id={sourceId}, DocId={list[i].DocumentId}) for ProductCode = {viewModels[i].ProductCode}");
-        //               }
-        //           }
-        //           WriteLog(LogType.INFOR, $"Fixed {fixedCount}/{viewModels.Count} Ids"); // FIX: Uncomment log
-        //           WriteLog(LogType.INFOR, $"LoadInterestRateGridData - Returning {viewModels.Count} records");
-        //           var firstProductListAfterMap = viewModels.FirstOrDefault()?.ProductList ?? "NULL_AFTER_MAP";
-        //           var firstIdAfterFix = viewModels.FirstOrDefault()?.Id ?? 0;
-        //           WriteLog(LogType.INFOR, $"After mapping/fix: First model ProductList: '{firstProductListAfterMap}', First Id: {firstIdAfterFix}");
-        //           return Json(viewModels.ToDataSourceResult(request, ModelState));
-        //       }
-        //       catch (Exception ex)
-        //       {
-        //           WriteLog(LogType.INFOR, $"LoadInterestRateGridData(...) => Error: {ex.Message}");
-        //           WriteLog(LogType.ERROR, $"LoadInterestRateGridData Error: {ex.Message} | Inner: {ex.InnerException?.Message ?? "None"} | Stack: {ex.StackTrace}");
-        //           return Json(new { Errors = "Có lỗi xảy ra khi lấy danh sách cấu hình lãi suất CASA." });
-        //       }
-        //   }
-
-        //    public async Task<ActionResult> LoadInterestRateGridData(
-        //[DataSourceRequest] DataSourceRequest request,
-        //string pProductGroupCode,
-        //string pPosCode,
-        //string pCircularRefNum,
-        //string pFromEffectiveDate,
-        //string pToEffectiveDate,
-        //string searchText = null,
-        //string status = null)  // 
-        //    {
-        //        try
-        //        {
-        //            if (string.IsNullOrEmpty(pPosCode))
-        //                pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
-
-        //            if (string.IsNullOrEmpty(pProductGroupCode))
-        //                pProductGroupCode = ProductGroupCode.CASA.Code;
-
-        //            if (string.IsNullOrEmpty(pCircularRefNum))
-        //                pCircularRefNum = "";
-
-        //            // Parsing date an toàn (giữ nguyên của bạn, tốt hơn sếp)
-        //            DateTime? fromDate = null;
-        //            DateTime? toDate = null;
-        //            if (!string.IsNullOrEmpty(pFromEffectiveDate) && DateTime.TryParseExact(pFromEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFrom))
-        //            {
-        //                fromDate = parsedFrom.Date;
-        //            }
-        //            if (!string.IsNullOrEmpty(pToEffectiveDate) && DateTime.TryParseExact(pToEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTo))
-        //            {
-        //                toDate = parsedTo.Date.AddDays(1);
-        //            }
-
-        //            // Parse status thành int (giống sếp)
-        //            int? statusValue = null;
-        //            if (!string.IsNullOrEmpty(status) && int.TryParse(status, out int parsedStatus))
-        //            {
-        //                statusValue = parsedStatus;
-        //            }
-
-        //            // Log params (giữ chi tiết của bạn)
-        //            WriteLog(LogType.INFOR, $"LoadInterestRateGridData Params - pProductGroupCode: '{pProductGroupCode ?? "NULL"}', pPosCode: '{pPosCode ?? "NULL"}', pCircularRefNum: '{pCircularRefNum ?? "NULL"}', searchText: '{searchText ?? "NULL"}', status: '{status ?? "NULL"}', fromDate: {fromDate}, toDate: {toDate}");
-
-        //            // Gọi service (đã có client-side filter)
-        //            var list = await _interestRateConfigureService.GetInterestRateConfigMasterViewListAsync(
-        //                pProductGroupCode,
-        //                pPosCode,
-        //                "",  // pProductCode nếu không dùng thì truyền rỗng
-        //                pCircularRefNum,
-        //                fromDate,
-        //                toDate,
-        //                searchText,
-        //                //status != null ? int.Parse(status) : -1
-        //                statusValue.HasValue ? statusValue.Value.ToString() : null);  // Truyền string để service xử lý
-
-        //            // Log output (giữ của bạn)
-        //            var firstProductList = list?.FirstOrDefault()?.ProductList ?? "NULL";
-        //            var firstId = list?.FirstOrDefault()?.Id ?? 0;
-        //            WriteLog(LogType.INFOR, $"Service returned {list?.Count ?? 0} records. First ProductList: '{firstProductList}', First Id: {firstId}");
-
-        //            if (list == null || !list.Any())
-        //            {
-        //                WriteLog(LogType.ERROR, "No data from service - check filters or DB View");
-        //            }
-
-        //            // Map & fix Id (giữ nguyên logic tốt của bạn)
-        //            var viewModels = _mapper.Map<List<InterestRateConfigMasterModel>>(list ?? new List<InterestRateConfigMasterView>());
-
-        //            foreach (var vm in viewModels)
-        //            {
-        //                vm.IsSelected = false;
-        //                if (string.IsNullOrEmpty(vm.ProductList))
-        //                    vm.ProductList = "N/A";
-        //            }
-
-        //            // Fix Id
-        //            int fixedCount = 0;
-        //            for (int i = 0; i < viewModels.Count && i < (list?.Count ?? 0); i++)
-        //            {
-        //                if (viewModels[i].Id == 0)
-        //                {
-        //                    var sourceId = list[i].Id;
-        //                    viewModels[i].Id = sourceId > 0 ? sourceId : (list[i].DocumentId > 0 ? list[i].DocumentId : viewModels[i].Id);
-        //                    fixedCount++;
-        //                }
-        //            }
-
-        //            return Json(viewModels.ToDataSourceResult(request, ModelState));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            WriteLog(LogType.ERROR, $"LoadInterestRateGridData Error: {ex.Message} | Inner: {ex.InnerException?.Message ?? "None"}");
-        //            return Json(new { Errors = "Có lỗi xảy ra khi lấy danh sách cấu hình lãi suất CASA." });
-        //        }
-        //    }
 
         public async Task<ActionResult> LoadInterestRateGridData(
     [DataSourceRequest] DataSourceRequest request,
@@ -318,7 +145,7 @@ namespace VBSPOSS.Controllers
                     WriteLog(LogType.ERROR, "No data from service - check filters or DB View");
                 }
 
-                
+
                 var viewModels = _mapper.Map<List<InterestRateConfigMasterModel>>(list ?? new List<InterestRateConfigMasterView>());
 
                 foreach (var vm in viewModels)
@@ -328,7 +155,7 @@ namespace VBSPOSS.Controllers
                         vm.ProductList = "N/A";
                 }
 
-               
+
                 int fixedCount = 0;
                 for (int i = 0; i < viewModels.Count && i < (list?.Count ?? 0); i++)
                 {
@@ -365,72 +192,6 @@ namespace VBSPOSS.Controllers
 
             return Json(statuses);
         }
-        //    public async Task<ActionResult> LoadInterestRateGridData([DataSourceRequest] DataSourceRequest request, string pProductGroupCode,
-        //string pPosCode, string pProductCode, string pCircularRefNum, string pFromEffectiveDate, string pToEffectiveDate)
-        //    {
-        //        try
-        //        {
-        //            if (string.IsNullOrEmpty(pPosCode))
-        //                pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
-        //            if (string.IsNullOrEmpty(pProductGroupCode))
-        //                pProductGroupCode = ProductGroupCode.CASA.Code;
-        //            if (string.IsNullOrEmpty(pCircularRefNum))
-        //                pCircularRefNum = "";
-
-        //            DateTime? fromDate = null;
-        //            DateTime? toDate = null;
-        //            if (!string.IsNullOrEmpty(pFromEffectiveDate) && DateTime.TryParseExact(pFromEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFromDate))
-        //            {
-        //                fromDate = parsedFromDate.Date;
-        //            }
-        //            if (!string.IsNullOrEmpty(pToEffectiveDate) && DateTime.TryParseExact(pToEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedToDate))
-        //            {
-        //                toDate = parsedToDate.Date.AddDays(1);
-        //            }
-
-        //            WriteLog(LogType.INFOR, $"LoadInterestRateGridData Params - pProductGroupCode: '{pProductGroupCode}', pPosCode: '{pPosCode}', pProductCode: '{pProductCode}', pCircularRefNum: '{pCircularRefNum}', fromDate: {fromDate}, toDate: {toDate}");
-
-        //            var list = await _interestRateConfigureService.GetInterestRateConfigMasterViewListAsync(pProductGroupCode, pPosCode, pProductCode ?? "", pCircularRefNum, fromDate, toDate);
-
-        //            WriteLog(LogType.INFOR, $"Service returned {list?.Count ?? 0} records.");
-
-        //            if (list == null || !list.Any())
-        //            {
-        //                WriteLog(LogType.ERROR, "No data from service - check query filters or DB View data for CASA");
-        //            }
-
-        //            var viewModels = _mapper.Map<List<InterestRateConfigMasterModel>>(list ?? new List<InterestRateConfigMasterView>());
-
-        //            foreach (var vm in viewModels)
-        //            {
-        //                vm.IsSelected = false;
-        //                if (string.IsNullOrEmpty(vm.ProductList))
-        //                {
-        //                    vm.ProductList = "N/A";
-        //                }
-        //            }
-
-        //            // Fix Id = 0
-        //            int fixedCount = 0;
-        //            for (int i = 0; i < viewModels.Count && i < list.Count; i++)
-        //            {
-        //                if (viewModels[i].Id == 0)
-        //                {
-        //                    var sourceId = list[i].Id;
-        //                    viewModels[i].Id = sourceId > 0 ? sourceId : (list[i].DocumentId > 0 ? list[i].DocumentId : viewModels[i].Id);
-        //                    fixedCount++;
-        //                }
-        //            }
-        //            WriteLog(LogType.INFOR, $"Fixed {fixedCount}/{viewModels.Count} Ids");
-
-        //            return Json(viewModels.ToDataSourceResult(request, ModelState));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            WriteLog(LogType.ERROR, $"LoadInterestRateGridData Error: {ex.Message} | Stack: {ex.StackTrace}");
-        //            return Json(new DataSourceResult { Errors = "Có lỗi xảy ra khi lấy danh sách cấu hình lãi suất CASA." });
-        //        }
-        //    }
 
 
         [HttpGet]
@@ -452,118 +213,6 @@ namespace VBSPOSS.Controllers
 
 
 
-        //    public async Task<ActionResult> LoadInterestRateGridData([DataSourceRequest] DataSourceRequest request, string pProductGroupCode,
-        //string pPosCode, string pProductCode, string pCircularRefNum, string pFromEffectiveDate, string pToEffectiveDate)
-        //    {
-        //        try
-        //        {
-        //            if (string.IsNullOrEmpty(pPosCode))
-        //                pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
-        //            if (string.IsNullOrEmpty(pProductGroupCode))
-        //                pProductGroupCode = ProductGroupCode.CASA.Code;
-        //            if (string.IsNullOrEmpty(pCircularRefNum))
-        //                pCircularRefNum = "";
-
-        //            // Parsing date an toàn
-        //            DateTime? fromDate = null;
-        //            DateTime? toDate = null;
-        //            if (!string.IsNullOrEmpty(pFromEffectiveDate) && DateTime.TryParseExact(pFromEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFromDate))
-        //            {
-        //                fromDate = parsedFromDate.Date;
-        //            }
-        //            if (!string.IsNullOrEmpty(pToEffectiveDate) && DateTime.TryParseExact(pToEffectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedToDate))
-        //            {
-        //                toDate = parsedToDate.Date.AddDays(1);
-        //            }
-
-        //            // Log input
-        //            WriteLog(LogType.INFOR, $"LoadInterestRateGridData Params - pProductGroupCode: '{pProductGroupCode ?? "NULL"}', pPosCode: '{pPosCode ?? "NULL"}', pProductCode: '{pProductCode ?? "NULL"}', pCircularRefNum: '{pCircularRefNum ?? "NULL"}', fromDate: {fromDate}, toDate: {toDate}");
-
-        //            // Gọi service
-        //            var list = await _interestRateConfigureService.GetInterestRateConfigMasterViewListAsync(pProductGroupCode, pPosCode, pProductCode ?? "", pCircularRefNum, fromDate, toDate);
-
-        //            // Log output
-        //            var firstProductListFromService = list?.FirstOrDefault()?.ProductList ?? "NULL_FROM_SERVICE";
-        //            var firstIdFromService = list?.FirstOrDefault()?.Id ?? 0;
-        //            WriteLog(LogType.INFOR, $"Service returned {list?.Count ?? 0} records. First entity ProductList: '{firstProductListFromService}', First Id from View: {firstIdFromService}");
-
-        //            if (list == null || !list.Any())
-        //            {
-        //                WriteLog(LogType.ERROR, "No data from service - check query filters or DB View data for CASA");
-        //            }
-
-        //            // Map
-        //            var viewModels = _mapper.Map<List<InterestRateConfigMasterModel>>(list ?? new List<InterestRateConfigMasterView>());
-
-        //            foreach (var vm in viewModels)
-        //            {
-        //                vm.IsSelected = false;
-        //                if (string.IsNullOrEmpty(vm.ProductList))
-        //                {
-        //                    vm.ProductList = firstProductListFromService == "NULL_FROM_SERVICE" ? "No data" : "N/A";
-        //                }
-
-        //                // === THÊM MỚI: XỬ LÝ DANH SÁCH POS ÁP DỤNG CHO GRID INDEX ===
-        //                List<long> lstIds = new List<long>();
-
-        //                // Ưu tiên dùng IdList (vì một tờ trình có thể gồm nhiều master record)
-        //                if (!string.IsNullOrEmpty(vm.IdList))
-        //                {
-        //                    lstIds = vm.IdList
-        //                        .Split(';', StringSplitOptions.RemoveEmptyEntries)
-        //                        .Where(s => long.TryParse(s, out _))
-        //                        .Select(long.Parse)
-        //                        .ToList();
-        //                }
-
-        //                // Fallback: nếu IdList rỗng thì dùng Id hiện tại
-        //                if (!lstIds.Any() && vm.Id > 0)
-        //                {
-        //                    lstIds.Add(vm.Id);
-        //                }
-
-        //                // Lấy tên POS áp dụng
-        //                if (lstIds.Any())
-        //                {
-        //                    vm.ApplyPosList = await _interestRateConfigureService.GetApplyPosListByIdsAsync(lstIds);
-        //                }
-        //                else
-        //                {
-        //                    vm.ApplyPosList = "Không có POS áp dụng";
-        //                }
-        //                // ===================================================
-        //            }
-
-        //            // FIX: Explicit set Id nếu =0 (giữ nguyên logic cũ của bạn)
-        //            int fixedCount = 0;
-        //            for (int i = 0; i < viewModels.Count && i < list.Count; i++)
-        //            {
-        //                if (viewModels[i].Id == 0)
-        //                {
-        //                    var sourceId = list[i].Id;
-        //                    viewModels[i].Id = sourceId > 0 ? sourceId : (list[i].DocumentId > 0 ? list[i].DocumentId : viewModels[i].Id);
-        //                    fixedCount++;
-        //                    WriteLog(LogType.INFOR, $"Fixed Id[{i}] = {viewModels[i].Id} (source Id={sourceId}, DocId={list[i].DocumentId}) for ProductCode = {viewModels[i].ProductCode}");
-        //                }
-        //            }
-        //            WriteLog(LogType.INFOR, $"Fixed {fixedCount}/{viewModels.Count} Ids");
-
-        //            WriteLog(LogType.INFOR, $"LoadInterestRateGridData - Returning {viewModels.Count} records");
-
-        //            return Json(viewModels.ToDataSourceResult(request, ModelState));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            WriteLog(LogType.INFOR, $"LoadInterestRateGridData(...) => Error: {ex.Message}");
-        //            WriteLog(LogType.ERROR, $"LoadInterestRateGridData Error: {ex.Message} | Inner: {ex.InnerException?.Message ?? "None"} | Stack: {ex.StackTrace}");
-
-        //            // === SỬA Ở ĐÂY ===
-        //            return Json(new DataSourceResult
-        //            {
-        //                Errors = "Có lỗi xảy ra khi lấy danh sách cấu hình lãi suất CASA. Vui lòng thử lại hoặc liên hệ IT."
-        //            });
-        //        }
-        //    }
 
 
 
@@ -593,6 +242,7 @@ namespace VBSPOSS.Controllers
                 DebitCreditFlag = "C",
                 NewInterestRate = 0
             };
+            TempData["PosGrade"] = UserGrade;
             return PartialView("_Create", model);
         }
 
@@ -624,82 +274,7 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        // SỬA: LoadCasaConfigureAddGridData (giữ cho "add", simplify "detail" - không fallback, chỉ dùng idList nếu có)
-        //[HttpPost]
-        //public async Task<IActionResult> LoadCasaConfigureAddGridData([DataSourceRequest] DataSourceRequest request)
-        //{
-        //    try
-        //    {
-        //        var formData = Request.Form;
-        //        // Parse idListStr an toàn
-        //        var idListStr = formData["idList"].ToString(); // Trả về "" nếu empty
-        //        var lstId = idListStr.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
-        //        var productCode = (formData["productCode"].ToString() ?? "").Trim();
-        //        var accountTypeCode = (formData["accountType"].ToString() ?? "").Trim();
-        //        var accountSubTypeCode = (formData["accountSubType"].ToString() ?? "").Trim();
-        //        var effectiveDate = formData["fromEffectiveDate"].ToString() ?? "";
-        //        var posCode = (formData["posCode"].ToString() ?? "0").Trim();
-        //        var circularRefNum = (formData["circularRefNum"].ToString() ?? "").Trim();
-        //        var newInterestRateStr = formData["NewInterestRate"].ToString() ?? "0";
-        //        var mode = (formData["mode"].ToString() ?? "detail").Trim();
-        //        var masterIdStr = formData["masterId"].ToString() ?? "0";
-        //        var documentIdStr = formData["documentId"].ToString() ?? "0";
-        //        long masterId = long.TryParse(masterIdStr, out long outMasterVar) ? outMasterVar : 0;
-        //        long documentId = long.TryParse(documentIdStr, out long outDocVar) ? outDocVar : 0;
 
-        //        WriteLog(LogType.INFOR, $"Params: idList='{idListStr}' ({lstId.Count} IDs), productCode='{productCode}', circularRefNum='{circularRefNum}', masterId={masterId}, documentId={documentId}, mode={mode}");
-        //        decimal? newInterestRate = string.IsNullOrEmpty(newInterestRateStr) ? 0m : Convert.ToDecimal(newInterestRateStr, CultureInfo.InvariantCulture);
-        //        DateTime? fromDate = null;
-        //        if (!string.IsNullOrEmpty(effectiveDate) && DateTime.TryParseExact(effectiveDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFromDate))
-        //        {
-        //            fromDate = parsedFromDate;
-        //        }
-        //        else
-        //        {
-        //            fromDate = DateTime.Today;
-        //        }
-        //        List<CasaRateProductViewModel> models = new();
-        //        List<InterestRateConfigMasterModel> dbList = new();
-
-        //        if (mode == "detail")
-        //        {
-
-        //            if (lstId.Any())
-        //            {
-        //                WriteLog(LogType.INFOR, $"Using idList filter for detail mode: {lstId.Count} IDs (e.g. {string.Join(",", lstId.Take(3))})");
-        //                models = await _interestRateConfigureService.GetCasaTermsAsync(lstId); // Gọi service mới: Chỉ lấy matching IDs
-        //                                                                                       // Override NewInterestRate nếu pass (cho edit/view)
-        //                foreach (var modelItem in models)
-        //                    modelItem.RateProductNewInterestRate = newInterestRate ?? modelItem.RateProductNewInterestRate ?? 0m;
-
-        //                WriteLog(LogType.INFOR, $"idList mode returned {models.Count} rows");
-        //            }
-        //            else
-        //            {
-        //                // Không có idList → empty (không fallback, tránh load nhầm data)
-        //                WriteLog(LogType.ERROR, "No idList for detail mode, returning empty");
-        //            }
-        //            return Json(models.ToDataSourceResult(request, ModelState)); // Return sớm cho detail
-        //        }
-        //        else
-        //        {
-        //            // Mode add: Giữ nguyên (load từ API)
-        //            if (posCode == PosValue.HEAD_POS)
-        //                posCode = "0";
-        //            models = await _interestRateConfigureService.GetCasaProdList(posCode, productCode, DateTime.Now);
-        //            foreach (var model in models)
-        //                model.RateProductNewInterestRate = newInterestRate ?? model.RateProductNewInterestRate ?? 0m;
-        //        }
-        //        // SỬA MỚI: Return trực tiếp ở cuối (bỏ var result hoàn toàn)
-        //        WriteLog(LogType.INFOR, $"Returning {models.Count} rows");
-        //        return Json(models.ToDataSourceResult(request, ModelState));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        WriteLog(LogType.ERROR, $"Error: {ex.Message}\nStackTrace: {ex.StackTrace}");
-        //        return Json(new DataSourceResult { Data = new List<CasaRateProductViewModel>(), Total = 0 });
-        //    }
-        //}
 
 
         // đóng tạm LoadCasaConfigureAddGridData
@@ -899,7 +474,7 @@ namespace VBSPOSS.Controllers
                 WriteLog(LogType.ERROR, "ShowCasaConfigDetail: Missing circularRefNum");
                 return NotFound("Thiếu thông tin quyết định");
             }
-            var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum,effectDate);
+            var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum, effectDate);
             // Sau khi có lstIds (danh sách Id của các master record)
 
             if (model == null)
@@ -913,56 +488,6 @@ namespace VBSPOSS.Controllers
             ViewBag.FlagCall = pFlagCall;
             return PartialView("_Detail", model);
         }
-
-
-        //[HttpGet]
-        //public async Task<IActionResult> ShowCasaConfigDetail(int pId, string circularRefNum, string idList, string pFlagCall)
-        //{
-        //    if (string.IsNullOrEmpty(circularRefNum))
-        //    {
-        //        WriteLog(LogType.ERROR, "ShowCasaConfigDetail: Missing circularRefNum");
-        //        return NotFound("Thiếu thông tin quyết định");
-        //    }
-
-        //    var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum);
-        //    if (model == null)
-        //    {
-        //        WriteLog(LogType.ERROR, $"ShowCasaConfigDetail: No data for circularRefNum={circularRefNum}");
-        //        return NotFound("Không tìm thấy dữ liệu chi tiết");
-        //    }
-
-        //    // === THÊM: Xử lý IdList và lấy danh sách POS áp dụng ===
-        //    string finalIdList = idList ?? model.IdList ?? "";
-        //    List<long> lstIds = new List<long>();
-
-        //    if (!string.IsNullOrEmpty(finalIdList))
-        //    {
-        //        lstIds = finalIdList
-        //            .Split(';', StringSplitOptions.RemoveEmptyEntries)
-        //            .Where(s => long.TryParse(s, out _))
-        //            .Select(long.Parse)
-        //            .ToList();
-        //    }
-
-
-        //    string applyPosListDisplay = "";
-        //    if (lstIds.Any())
-        //    {
-        //        applyPosListDisplay = await _interestRateConfigureService.GetApplyPosListByIdsAsync(lstIds);
-        //    }
-
-        //    // Gán vào model để View hiển thị
-        //    //   model.ApplyPosList = applyPosListDisplay;
-
-        //    // Log để debug
-        //    WriteLog(LogType.INFOR, $"ShowCasaConfigDetail: Loaded model with IdList='{finalIdList}', POS áp dụng: '{applyPosListDisplay}'");
-
-        //    // Truyền thêm cho grid (nếu cần)
-        //    ViewBag.IdList = finalIdList;
-        //    ViewBag.FlagCall = pFlagCall;
-
-        //    return PartialView("_Detail", model);
-        //}
 
 
 
@@ -1001,7 +526,7 @@ namespace VBSPOSS.Controllers
                 }
 
                 // 
-                var message = await _interestRateConfigureService.SaveCasaRateConfigureData(request.Model, request.GridItems, UserName);
+                var message = await _interestRateConfigureService.SaveCasaRateConfigureData(request.Model, request.GridItems, UserName, UserPosCode);
                 Console.WriteLine($"Save result: {message}");
                 return Ok(new { Success = true, Message = $"{message}" });
             }
@@ -1189,38 +714,6 @@ namespace VBSPOSS.Controllers
 
 
 
-        //public async Task<IActionResult> ShowDetailCasaConfig(long id)
-        //{
-        //    var casa = await _interestRateConfigureService.GetCasaByIdAsync(id);
-        //    if (casa == null)
-        //    {
-        //        return NotFound("Không tìm thấy cấu hình lãi suất.");
-        //    }
-
-        //    var model = new AddCasaProductViewModel
-        //    {
-        //        Id = casa.Id,
-        //        ProductCode = casa.ProductCode ?? "",
-        //        ProductName = casa.ProductName ?? "",
-        //        AccountTypeCode = casa.AccountTypeCode ?? "",
-        //        AccountTypeName = casa.AccountTypeName ?? "",
-        //        AccountSubTypeCode = casa.AccountSubTypeCode ?? "0",
-        //        CurrencyCode = casa.CurrencyCode ?? "VND",
-        //        DebitCreditFlag = casa.DebitCreditFlag ?? "C",
-        //        EffectiveDate = casa.EffectiveDate ?? DateTime.Today,
-        //        ExpiredDate = casa.ExpiryDate ?? DateTime.Today.AddYears(1),
-        //        CircularRefNum = casa.CircularRefNum ?? "",
-        //        CircularDate = casa.CreatedDate ?? DateTime.Today,
-        //        PosCode = casa.PosCode ?? "",
-        //        InterestRate = casa.InterestRate ?? 0,
-        //        NewInterestRate = casa.NewInterestRate ?? 0,
-        //        PenalRate = casa.PenalRate ?? 0,
-        //        AmoutSlab = casa.AmountSlab ?? 0
-        //    };
-
-        //    // Không cần gán GridItems trực tiếp vì grid sẽ load từ LoadCasaConfigureAddGridData
-        //    return PartialView("_Detail", model);
-        //}
 
         //add ShowDetailCasaConfig
 
@@ -1267,158 +760,6 @@ namespace VBSPOSS.Controllers
                 return StatusCode(500, "Có lỗi xảy ra khi tải chi tiết cấu hình lãi suất CASA.");
             }
         }
-
-        // Đóng tạm
-        //public async Task<IActionResult> ShowDetailCasaConfig(string id)
-        //{
-        //    try
-        //    {
-        //        if (!long.TryParse(id, out var longId))
-        //        {
-        //            WriteLog(LogType.ERROR, $"ID không hợp lệ: {id}");
-        //            return BadRequest("ID không hợp lệ.");
-        //        }
-
-        //        var casa = await _interestRateConfigureService.GetCasaByIdAsync(longId);
-        //        var model = new AddCasaProductViewModel
-        //        {
-        //            Id = casa.Id,
-        //            ProductCode = casa.ProductCode ?? "",
-        //            ProductName = casa.ProductName ?? "",
-        //            AccountTypeCode = casa.AccountTypeCode ?? "",
-        //            AccountTypeName = casa.AccountTypeName ?? "",
-        //            AccountSubTypeCode = casa.AccountSubTypeCode ?? "0",
-        //            CurrencyCode = casa.CurrencyCode ?? "VND",
-        //            DebitCreditFlag = casa.DebitCreditFlag ?? "Credit",
-        //            EffectiveDate = casa.EffectiveDate ?? DateTime.Today,
-        //            ExpiredDate = casa.ExpiryDate,
-        //            CircularRefNum = casa.CircularRefNum ?? "",
-        //            CircularDate = casa.CircularDate ?? DateTime.Today,
-        //            PosCode = casa.PosCode ?? "0",
-        //            InterestRate = casa.InterestRate ?? 0m, // Xử lý decimal?
-        //            NewInterestRate = casa.NewInterestRate ?? 0m,
-        //            PenalRate = casa.PenalRate ?? 0m,
-        //            AmoutSlab = casa.AmountSlab ?? 0m,
-        //            DocumentId = casa.DocumentId
-        //        };
-
-        //        WriteLog(LogType.INFOR, $"View model for ShowDetailCasaConfig: {JsonConvert.SerializeObject(model)}");
-        //        return PartialView("_Detail", model);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        WriteLog(LogType.ERROR, $"Lỗi trong ShowDetailCasaConfig (id={id}): {ex.Message}\nStackTrace: {ex.StackTrace}");
-        //        return StatusCode(500, "Lỗi khi tải chi tiết cấu hình.");
-        //    }
-        //}
-
-
-
-
-
-
-        //[HttpGet]
-        //public async Task<IActionResult> ShowDocumentConfig(string filter = "", long id = 0)
-        //{
-        //    try
-        //    {
-        //        AddCasaProductViewModel model = null;
-        //        List<long> lstIds = new List<long>();
-        //        long documentId = 0;
-
-        //        if (!string.IsNullOrEmpty(filter))
-        //        {
-        //            // Parse filter JSON từ Index (PosCode, CircularRefNum, dates...)
-        //            var filterObj = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter);
-        //            string posCode = filterObj.ContainsKey("pPosCode") ? filterObj["pPosCode"].ToString() : "";
-        //            string circularRefNum = filterObj.ContainsKey("pCircularRefNum") ? filterObj["pCircularRefNum"].ToString() : "";
-        //            string productCode = filterObj.ContainsKey("pProductCode") ? filterObj["pProductCode"].ToString() : "";
-        //            DateTime? fromDate = null;
-        //            if (filterObj.ContainsKey("pFromEffectiveDate") && DateTime.TryParse(filterObj["pFromEffectiveDate"].ToString(), out var parsedFrom))
-        //                fromDate = parsedFrom;
-        //            DateTime? toDate = null;
-        //            if (filterObj.ContainsKey("pToEffectiveDate") && DateTime.TryParse(filterObj["pToEffectiveDate"].ToString(), out var parsedTo))
-        //                toDate = parsedTo;
-
-        //            WriteLog(LogType.INFOR, $"ShowDocumentConfig: Filter - PosCode={posCode}, Circular={circularRefNum}, From={fromDate}, To={toDate}");
-
-        //            // GỌI SERVICE: Load multiple + build model/IdList
-        //            var (summaryModel, ids) = await _interestRateConfigureService.GetCasaMasterListByFilterAsync(ProductGroupCode.CASA.Code, posCode, productCode, circularRefNum, fromDate, toDate);
-        //            model = summaryModel;
-        //            lstIds = ids;
-        //            if (model != null && lstIds.Any())
-        //            {
-        //                model.IdList = string.Join(";", lstIds);  // Cho grid load nếu cần
-        //                WriteLog(LogType.INFOR, $"ShowDocumentConfig: Loaded {lstIds.Count} records, IdList={model.IdList}");
-        //            }
-        //        }
-        //        else if (id > 0)
-        //        {
-        //            // Fallback single id (giữ nguyên cũ)
-        //            var casa = await _interestRateConfigureService.GetCasaByIdAsync(id);
-        //            if (casa == null)
-        //            {
-        //                WriteLog(LogType.ERROR, $"ShowDocumentConfig - Id: {id}, Casa not found");
-        //                return NotFound("Không tìm thấy cấu hình lãi suất.");
-        //            }
-        //            model = new AddCasaProductViewModel
-        //            {
-        //                Id = casa.Id,
-        //                ProductCode = casa.ProductCode ?? "",
-        //                ProductName = casa.ProductName ?? "",
-        //                AccountTypeCode = casa.AccountTypeCode ?? "",
-        //                AccountTypeName = casa.AccountTypeName ?? "",
-        //                AccountSubTypeCode = casa.AccountSubTypeCode ?? "0",
-        //                CurrencyCode = casa.CurrencyCode ?? "VND",
-        //                DebitCreditFlag = casa.DebitCreditFlag ?? "C",
-        //                EffectiveDate = casa.EffectiveDate ?? DateTime.Today,
-        //                ExpiredDate = casa.ExpiryDate ?? DateTime.Today.AddYears(1),
-        //                CircularRefNum = casa.CircularRefNum ?? "",
-        //                CircularDate = casa.CircularDate ?? DateTime.Today,
-        //                PosCode = casa.PosCode ?? "",
-        //                InterestRate = casa.InterestRate ?? 0m,
-        //                NewInterestRate = casa.NewInterestRate ?? 0m,
-        //                PenalRate = casa.PenalRate ?? 0m,
-        //                AmoutSlab = casa.AmountSlab ?? 0m,
-        //                DocumentId = casa.DocumentId
-        //            };
-        //            lstIds.Add(id);
-        //            model.IdList = id.ToString();
-        //        }
-
-        //        if (model == null)
-        //        {
-        //            WriteLog(LogType.ERROR, $"ShowDocumentConfig: No data with filter={filter} or id={id}");
-        //            return NotFound("Không tìm thấy dữ liệu tờ trình.");
-        //        }
-
-        //        // DocumentId logic (gọi service batch update)
-        //        documentId = model.DocumentId ?? 0;
-        //        if (documentId == 0)
-        //        {
-        //            documentId = await _interestRateConfigureService.CreateNewDocumentId();
-        //            await _interestRateConfigureService.UpdateCasaDocumentIdBatchAsync(lstIds, documentId);  // GỌI SERVICE BATCH
-        //            model.DocumentId = documentId;
-        //            WriteLog(LogType.INFOR, $"ShowDocumentConfig: Created new DocumentId={documentId} for {lstIds.Count} records");
-        //        }
-        //        else
-        //        {
-        //            WriteLog(LogType.INFOR, $"ShowDocumentConfig: Using existing DocumentId={documentId} for {lstIds.Count} records");
-        //        }
-
-        //        // GỌI SERVICE: Build ApplyPosList từ lstIds
-        //        model.ApplyPosList = await _interestRateConfigureService.GetApplyPosListByIdsAsync(lstIds);
-
-        //        ViewBag.IdList = model.IdList;  // Pass cho grid nếu _Document có
-        //        ViewBag.DocumentId = documentId;  // Cho upload
-        //        return PartialView("_Document", model);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        WriteLog(LogType.ERROR, $"ShowDocumentConfig error: {ex.Message}");
-        //        return StatusCode(500, $"Lỗi khi tải tờ trình: {ex.Message}");
-        //    }
-        //}
 
 
 
@@ -1895,7 +1236,7 @@ namespace VBSPOSS.Controllers
                 if (model != null && ModelState.IsValid)
                 {
                     var lstId = StringHelper.ConvertToLongList(model.IdList, ';');
-                    var status = await _interestRateConfigureService.SaveApprovalDecision(UserName, lstId, model.RejectFlag, model.RejectReason);
+                    var status = await _interestRateConfigureService.SaveApprovalDecisionCasa(UserName, lstId, model.RejectFlag, model.RejectReason);
 
                     if (status > 0)
                         return Json(new[] { model }.ToDataSourceResult(request, ModelState));
@@ -1922,8 +1263,8 @@ namespace VBSPOSS.Controllers
 
         // SỬA: ShowCasaConfigDetail (thêm log, đảm bảo IdList không empty)
         [HttpGet]
-        
-            public async Task<IActionResult> ShowApprovalConfig(int pId, string circularRefNum, string effectDate, string idList, string pFlagCall)
+
+        public async Task<IActionResult> ShowApprovalConfig(int pId, string circularRefNum, string effectDate, string idList, string pFlagCall)
         {
             if (string.IsNullOrEmpty(circularRefNum))
             {
@@ -1944,7 +1285,7 @@ namespace VBSPOSS.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> ShowAuthorizeScreen(int pId, string circularRefNum, string effectDate, string idList, string pFlagCall)
-      
+
         {
             if (string.IsNullOrEmpty(circularRefNum))
             {
@@ -1953,7 +1294,7 @@ namespace VBSPOSS.Controllers
                 // return NotFound();
             }
             var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum, effectDate);
-           // var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum ??);
+            // var model = await _interestRateConfigureService.GetCasaInterestRateDetailViews(circularRefNum ??);
 
             if (model == null)
             {
@@ -2524,59 +1865,7 @@ namespace VBSPOSS.Controllers
         //    }
         //}
 
-        //[HttpGet]
-        //public async Task<IActionResult> ShowApproval(long id)
-        //{
-        //    try
-        //    {
-        //        if (id <= 0)
-        //        {
-        //            _logger.LogWarning($"ShowApproval - Invalid ID: {id}");
-        //            return StatusCode(400, new { message = "ID không hợp lệ." });
-        //        }
 
-        //        var casa = await _interestRateConfigureService.GetCasaByIdAsync(id);
-        //        if (casa == null)
-        //        {
-        //            _logger.LogWarning($"ShowApproval - No record found for Id: {id}");
-        //            return StatusCode(404, new { message = $"Không tìm thấy cấu hình lãi suất với ID: {id}" });
-        //        }
-
-        //        var viewModel = new AddCasaProductViewModel
-        //        {
-        //            Id = casa.Id,
-        //            ProductCode = casa.ProductCode,
-        //            ProductName = casa.ProductName,
-        //            AccountTypeName = casa.AccountTypeName,
-        //            CircularRefNum = casa.CircularRefNum,
-        //            PosCode = casa.PosCode,
-        //            InterestRate = casa.InterestRate ?? 0,
-        //            EffectiveDate = casa.EffectiveDate,
-        //            ExpiredDate = casa.ExpiryDate,
-        //            DocumentId = casa.DocumentId,
-        //            AccountTypeCode = casa.AccountTypeCode ?? casa.AccountTypeName,
-        //            AccountSubTypeCode = casa.AccountSubTypeCode ?? "DEFAULT",
-        //            CurrencyCode = casa.CurrencyCode ?? "VND",
-        //            DebitCreditFlag = casa.DebitCreditFlag ?? "Credit",
-        //            NewInterestRate = casa.NewInterestRate ?? casa.InterestRate,
-        //            PenalRate = casa.PenalRate ?? 0,
-        //            AmoutSlab = casa.AmountSlab,
-        //            CircularDate = casa.CircularDate ?? casa.ModifiedDate ?? DateTime.Now,
-        //            ProductList = new List<Product>(),
-        //            AccountTypes = new List<SelectListItem>(),
-        //            AccountSubTypes = new List<SelectListItem>(),
-        //            GridItems = new List<CasaRateProductViewModel>()
-        //        };
-
-        //        _logger.LogInformation($"ShowApproval - Rendering _Approval.cshtml for Id: {id}, ProductCode: {casa.ProductCode}, DocumentId: {viewModel.DocumentId}");
-        //        return PartialView("_Approval", viewModel);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, $"ShowApproval - Id: {id}");
-        //        return StatusCode(500, new { message = "Có lỗi xảy ra khi tải thông tin cấu hình lãi suất.", detail = ex.Message });
-        //    }
-        //}
 
 
 

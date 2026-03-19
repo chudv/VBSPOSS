@@ -128,7 +128,7 @@ namespace VBSPOSS.Services.Implements
 
         public List<Product> GetProductList(string productGroupCode)
         {
-            return _context.ListOfProducts.Where(p => p.ProductGroupCode == productGroupCode)
+            return _context.ListOfProducts.Where(p => p.ProductGroupCode == productGroupCode && p.Status == 1)
                 .Select(p => new Product
                 {
                     ProductGroupCode = p.ProductGroupCode,

@@ -812,7 +812,7 @@
                 .Name("CircularDateBegin_Find")
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
-                .Value(new DateTime(DateTime.Today.Year - 5, 1, 1))
+                .Value(DateTime.Today.AddMonths(-1))
                 )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()

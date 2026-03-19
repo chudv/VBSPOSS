@@ -125,7 +125,7 @@
     <div class="view_form row" style="padding-top: 5px; width: 100%;">
         <div class="col-md-3">
             <label for="CircularRefNum">Số Quyết định </label>
-              @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
         </div>
         <div class="col-md-3">
             <label for="CircularDate">Ngày quyết định</label>
@@ -142,8 +142,8 @@
     </div>
 
     <div class="view_form row" style="padding-top: 5px; width: 100%;">
-       
-    @*     <div class="col-md-4">
+
+        @*     <div class="col-md-4">
             <label for="CreatedBy">Trạng thái </label>
             @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 80%;!important;max-width:100% !important;color:navy;" })
         </div> *@
@@ -152,7 +152,7 @@
             <label for="Status">Trạng thái </label>
             @Html.Kendo().TextBoxFor(m => m.StatusDesc).HtmlAttributes(new { @readonly = true, style = "width: 70%;!important;max-width:100% !important;color:navy;" })
         </div>
-       
+
 
         <div class="col-md-4">
             <label for="CreatedBy">Người đề nghị </label>
@@ -266,7 +266,7 @@
                 // Tab 3: Trạng thái cập nhật iDC
                 tabstrip.Add().Text("Trạng thái cập nhật iDC")
             .Content(@<text>
-        @* <div class="view_form row" style="padding-top: 15px; padding-left: 20px;">
+        <div class="view_form row" style="padding-top: 15px; padding-left: 20px;">
             <div class="col-md-3"><label>Trạng thái cập nhật</label></div>
             <div class="col-md-9">
                 @Html.Kendo().TextBoxFor(m => m.StatusUpdateCoreDesc).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
@@ -289,7 +289,7 @@
             <div class="col-md-9">
                 @Html.Kendo().TextBoxFor(m => m.CallApiResponseMsg).HtmlAttributes(new { @readonly = true, style = "width: 100%; color:navy;" })
             </div>
-        </div> *@
+        </div>
     </text>);
             })
         )
