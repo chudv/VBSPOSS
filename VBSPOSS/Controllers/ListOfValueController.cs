@@ -520,6 +520,7 @@ namespace VBSPOSS.Controllers
                             StaffCode = item.StaffCode,
                             StaffName = item.StaffName,
                             DateOfBirth = item.DateOfBirth,
+                            DateOfBirthText = item.DateOfBirth.ToString("dd/MM/yyyy"),
                             GenderCode = item.GenderCode,
                             GenderText = item.GenderText,
                             StaffPosCode = item.StaffPosCode,

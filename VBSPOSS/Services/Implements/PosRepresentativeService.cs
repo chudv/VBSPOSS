@@ -84,7 +84,7 @@ public class PosRepresentativeService : IPosRepresentativeService
         {
             var localityListByStaff = _dbContext.PosRepresentatives.Where(w =>w.StaffId != ""
                                     && (string.IsNullOrEmpty(pStaffId) || w.StaffId == pStaffId)
-                                    && (string.IsNullOrEmpty(pPosCode) || w.MainPosCode == pPosCode)
+                                    && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode || w.MainPosCode == pPosCode)
                                     && (pStatus == -1 || w.Status == pStatus))
                                     .Where(delegate (PosRepresentative c)
                                     {
@@ -116,80 +116,7 @@ public class PosRepresentativeService : IPosRepresentativeService
             throw new Exception($"Lỗi khi tải dữ liệu: {ex.Message}", ex);
         }
     }
-    public List<PosRepresentativeViewModel> GetPosRepresentativeList(string pPosCode, string pStaffId,
-    string pStaffName, int pStatus, string userPosCode)
-    {
-        int iCount = 0;
-        var answer = new List<PosRepresentativeViewModel>();
-        try
-        {
-            var query = _dbContext.PosRepresentatives.Where(w => w.StaffId != "");
 
-            // Logic lọc theo PosCode
-            if (!string.IsNullOrEmpty(pPosCode))
-            {
-                // Tìm kiếm theo PosCode cụ thể
-                query = query.Where(w => w.PosCode == pPosCode);
-            }
-            else if (!string.IsNullOrEmpty(userPosCode))
-            {
-                // Kiểm tra xem userPosCode có phải là MainPosCode không
-                var isMainPos = _dbContext.PosRepresentatives
-                    .Any(x => x.MainPosCode == userPosCode);
-
-                if (isMainPos || userPosCode == "000100")
-                {
-                    // Nếu là MainPosCode, lấy tất cả PosCode thuộc MainPosCode đó
-                    query = query.Where(w => w.MainPosCode == userPosCode);
-                }
-                else
-                {
-                    // Nếu là PosCode thường, chỉ lấy PosCode của user
-                    query = query.Where(w => w.PosCode == userPosCode);
-                }
-            }
-
-            // Các điều kiện lọc khác
-            if (!string.IsNullOrEmpty(pStaffId))
-                query = query.Where(w => w.StaffId == pStaffId);
-
-            if (pStatus != -1)
-                query = query.Where(w => w.Status == pStatus);
-
-            // Lọc theo tên cán bộ
-            if (!string.IsNullOrEmpty(pStaffName))
-            {
-                query = query.Where(c =>
-                    (c.StaffName != null && c.StaffName.ToLower().Contains(pStaffName.ToLower())) ||
-                    (c.StaffName != null && Utilities.ConvertToUnSign(c.StaffName.ToLower())
-                        .IndexOf(pStaffName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                );
-            }
-
-            var localityListByStaff = query
-                .OrderBy(o => o.PosCode)
-                .ThenBy(o => o.StaffDepartmentCode)
-                .ThenBy(o => o.StaffPositionCode)
-                .ToList();
-
-            if (localityListByStaff != null && localityListByStaff.Count != 0)
-            {
-                foreach (var item in localityListByStaff)
-                {
-                    iCount++;
-                    PosRepresentativeViewModel objItem = new PosRepresentativeViewModel();
-                    objItem = _mapper.Map<PosRepresentativeViewModel>(item);
-                    objItem.OrderNo = iCount;
-                    answer.Add(objItem);
-                }
-            }
-            return answer;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Lỗi khi tải dữ liệu: {ex.Message}", ex);
-        }
-    }
     /// <summary>
     /// Hàm thực hiện cập nhật dữ liệu thông tin người đại diện
     /// </summary>
