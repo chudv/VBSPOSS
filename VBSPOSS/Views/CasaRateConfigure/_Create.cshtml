@@ -3,7 +3,6 @@
 @using VBSPOSS.ViewModels
 @using VBSPOSS.Data.Models
 
-
 @{
     Layout = null;
 }
@@ -120,56 +119,13 @@
         }
 
 
-    // function onProductGridDataBound(e) {
-    //     var grid = this;
-    //     grid.tbody.find(".chkSelect").off("change").on("change", function () {
-    //         var row = $(this).closest("tr");
-    //         if ($(this).is(":checked")) {
-    //             row.addClass("k-state-selected"); // Thêm class select thủ công
-    //         } else {
-    //             row.removeClass("k-state-selected"); // Bỏ class select
-    //         }
-    //         updateSelectedCount(grid);
-    //     });
-
-    //     grid.tbody.find("tr").off("click").on("click", function (e) {
-    //         if ($(e.target).is("input:checkbox")) return;
-    //         var row = $(this);
-    //         var checkbox = row.find(".chkSelect");
-    //         checkbox.prop("checked", !checkbox.prop("checked"));
-    //         if (checkbox.is(":checked")) {
-    //             row.addClass("k-state-selected");
-    //         } else {
-    //             row.removeClass("k-state-selected");
-    //         }
-    //         updateSelectedCount(grid);
-    //     });
-    //     updateSelectedCount(grid);
-    // }
+   
 
 
 
 
 
 
-
-    // Thống kê số lượng đã chọn + tên
-    // function updateSelectedCount(grid) {
-    //     var selectedRows = grid.tbody.find(".k-state-selected"); // Sửa: Lấy từ class để chính xác
-    //     var count = selectedRows.length;
-    //     var total = grid.dataSource.total();
-    //     if (count === 0) {
-    //         $("#selectedProducts").text("Tổng số loại tài khoản: " + total);
-    //     } else {
-    //         var names = [];
-    //         selectedRows.each(function () {
-    //             var item = grid.dataItem(this);
-    //             names.push(item.AccountTypeCode + " - " + (item.AccountTypeName || item.AccountTypeCode));
-    //         });
-    //         $("#selectedProducts").text("Đã chọn (" + count + "): " + names.join(" | "));
-    //                  //   $("#selectedProducts").text("Đã chọn (" + count + ")
-    //     }
-    // }
         function updateSelectedCount(grid) {
             var selectedRows = grid.tbody.find(".k-state-selected");
             var count = selectedRows.length;
@@ -260,11 +216,7 @@
             }
         }
 
-    // function onSave_CasaRateConfigureGrid(e) {
-    //     e.model.dirtyFields = e.model.dirtyFields || {};
-
-
-
+   
 
 
     //     for (var field in e.values) {
