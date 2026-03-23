@@ -1016,33 +1016,33 @@ namespace VBSPOSS.Services.Implements
         }
 
         /// <summary>
-        /// Lấy danh sách người dùng
+        /// Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
         /// </summary>
-        /// <param name="posCode"></param>
-        /// <param name="departmentCode"></param>
-        /// <param name="titleCode"></param>
-        /// <param name="fromBirthDay"></param>
-        /// <param name="toBirthDay"></param>
-        /// <param name="fullName"></param>
-        /// <param name="sex"></param>
-        /// <param name="userName"></param>
-        /// <param name="roleCode"></param>
-        /// <returns></returns>
-        public List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay, string fullName, string sex, string userName, string roleCode)
+        /// <param name="posCode">Mã POS</param>
+        /// <param name="departmentCode">Mã phòng ban</param>
+        /// <param name="titleCode">Mã chức vụ người dùng</param>
+        /// <param name="fromBirthDay">Ngày sinh từ ngày</param>
+        /// <param name="toBirthDay">Ngày sinh đến ngày</param>
+        /// <param name="fullName">Họ và tên</param>
+        /// <param name="sex">Giới tính</param>
+        /// <param name="userName">Tài khoản người dùng</param>
+        /// <param name="roleCode">Mã nhóm người dùng</param>
+        /// <param name="staffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
+        /// <returns>Danh sách thông tin người dùng từ vUsers trả ra Model UserModel</returns>
+        public List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay, 
+                            string fullName, string sex, string userName, string roleCode, string staffId)
         {
             List<UserModel> _result = new List<UserModel>();
-            // var _lstUser = _dbContext.UserViews.ToList();
-            var _lstUser = _dbContext.UserViews.Where(w =>
-            (string.IsNullOrEmpty(posCode) || posCode == "000100" || w.PosCode == posCode)
-            && (string.IsNullOrEmpty(departmentCode) || w.DepartmentCode == departmentCode)
-            && (string.IsNullOrEmpty(titleCode) || w.TitleCode == titleCode)
-            && (string.IsNullOrEmpty(fullName) || w.FullName.Contains(fullName))
-            && (string.IsNullOrEmpty(sex) || w.Sex == sex)
-            && (string.IsNullOrEmpty(userName) || w.UserName == userName)
-            && (fromBirthDay == null || w.BirthDay >= fromBirthDay)
-            && (toBirthDay == null || w.BirthDay <= toBirthDay)
-            && (string.IsNullOrEmpty(roleCode) || w.DefaultRole == roleCode)
-            ).ToList();
+            var _lstUser = _dbContext.UserViews.Where(w => (string.IsNullOrEmpty(posCode) || posCode == "000100" || posCode == "000199" || w.PosCode == posCode)
+                                    && (string.IsNullOrEmpty(departmentCode) || w.DepartmentCode == departmentCode)
+                                    && (string.IsNullOrEmpty(titleCode) || w.TitleCode == titleCode)
+                                    && (string.IsNullOrEmpty(fullName) || w.FullName.Contains(fullName))
+                                    && (string.IsNullOrEmpty(sex) || w.Sex == sex)
+                                    && (string.IsNullOrEmpty(userName) || w.UserName == userName)
+                                    && (fromBirthDay == null || w.BirthDay >= fromBirthDay)
+                                    && (toBirthDay == null || w.BirthDay <= toBirthDay)
+                                    && (string.IsNullOrEmpty(roleCode) || w.DefaultRole == roleCode)
+                                    && (string.IsNullOrEmpty(staffId) || w.StaffId == staffId)).ToList();
             for (int i = 0; i < _lstUser.Count; i++)
             {
                 var _userModel = _mapper.Map<UserModel>(_lstUser[i]);

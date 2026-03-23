@@ -68,20 +68,10 @@ public class PosRepresentativeController : BaseController
     {
         try
         {
-            //if (string.IsNullOrEmpty(pPosCode))
-            //{
-            //    // Nếu user thuộc MainPosCode (ví dụ: 000100), lấy tất cả PosCode thuộc MainPosCode đó
-            //    // Nếu user thuộc PosCode thường, chỉ lấy PosCode của user
-            //    pPosCode = ""; // Để trống để lấy theo logic trong Service
-            //}
             if (string.IsNullOrEmpty(pPosCode))
                 pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
             if (string.IsNullOrEmpty(pStaffId))
                 pStaffId = "";
-            //int iFromEffectiveDate = 0, ToEffectiveDate = 0;
-            //iFromEffectiveDate = Convert.ToInt32(CustConverter.StringToDate(pFromEffectiveDate.ToString(), FormatParameters.FORMAT_DATE).ToString(FormatParameters.FORMAT_DATE_INT));
-            //ToEffectiveDate = Convert.ToInt32(CustConverter.StringToDate(pToEffectiveDate.ToString(), FormatParameters.FORMAT_DATE).ToString(FormatParameters.FORMAT_DATE_INT));
-
             var listStaffVBSP = _service.GetPosRepresentativeList(pPosCode, pStaffId, pStaffName, pStatus);
 
             return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));

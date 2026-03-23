@@ -1,4 +1,5 @@
-﻿using Kendo.Mvc.TagHelpers;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Kendo.Mvc.TagHelpers;
 
 namespace VBSPOSS.Models
 {
@@ -48,8 +49,10 @@ namespace VBSPOSS.Models
 
 
     public class UserIDCMaster
-    {
+    {        
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+
         public string PosCode { get; set; }
         public string PosName { get; set; }
         public string StaffId { get; set; }

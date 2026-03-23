@@ -76,34 +76,20 @@
         height: 21px;
     }
     /*
-        .k-input-md .k-input-inner, .k-picker-md .k-input-inner {
-            padding-block: 8px;
-            padding-inline: 16px;
-            padding-top: 4px;
-            padding-bottom: 4px;
-        } */
+            .k-input-md .k-input-inner, .k-picker-md .k-input-inner {
+                padding-block: 8px;
+                padding-inline: 16px;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            } */
 </style>
 <script>
     var mainWindow = $("#myPopup");
 </script>
 
 <script>
-    // function paramLoadListBranchFind() {
 
-    //     return {
-    //         pFlagCondi: "2",
-    //         pStatus: "O",
-    //         pShortName: "1",
-    //         pTitleChoice: "",
-    //         pFlagTextShow: "1",
-    //         pUserPosCode: "",
-    //         pUserName: "",
-    //         pFlagWholeBank: 1
-
-    //     };
-    // }
-
-        function paramLoadListBranchFind() {
+    function paramLoadListBranchFind() {
         return {
             pFlagCondi: "5",
             pStatus: "O",
@@ -319,7 +305,7 @@
 
         <div class="col-md-12">
             <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top:3px;padding-right:0px;padding-left:5px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
-                @(Html.Kendo().ComboBox().Name("MainPosCode_Find")
+            @(Html.Kendo().ComboBox().Name("MainPosCode_Find")
                         .Filter(FilterType.Contains)
                         .Placeholder("--- Đơn vị ---")
                         .DataTextField("value")
@@ -333,18 +319,18 @@
                         .SelectedIndex(0))
 
             <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
-                @(Html.Kendo().TextBox().Name("StaffName_Find")
+            @(Html.Kendo().TextBox().Name("StaffName_Find")
                         .Placeholder("Nhập tên hoặc mã cán bộ")
                         .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
 
             <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
-                @(Html.Kendo().DropDownList().Name("Status_Find")
-                    .DataTextField("Text")
-                    .DataValueField("Value")
-                    .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" },  new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
-                    .HtmlAttributes(new { style = "width: 120px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
-                    .SelectedIndex(0)
-                    )
+            @(Html.Kendo().DropDownList().Name("Status_Find")
+                        .DataTextField("Text")
+                        .DataValueField("Value")
+                        .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" }, new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
+                        .HtmlAttributes(new { style = "width: 120px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
+                        .SelectedIndex(0)
+                        )
 
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
@@ -391,7 +377,7 @@
                             columns.Bound(c => c.StaffMobileNo).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.EffectDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.ExpireDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                       
+
                             columns.Bound(c => c.PosMobileNo).Hidden();
                             columns.Bound(c => c.PosFaxNo).Hidden();
                             columns.Bound(c => c.PosAddressFull).Hidden(); ;
@@ -430,8 +416,8 @@
                             columns.Bound(c => c.StatusText).Hidden();
                             columns.Bound(c => c.Notes).Hidden();
                             columns.Bound(c => c.Id).Hidden();
-                            columns.Bound(c => c.MainPosName).Hidden(); 
-                            columns.Bound(c => c.StaffDepartmentName).Hidden(); 
+                            columns.Bound(c => c.MainPosName).Hidden();
+                            columns.Bound(c => c.StaffDepartmentName).Hidden();
 
                         })
                         .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })

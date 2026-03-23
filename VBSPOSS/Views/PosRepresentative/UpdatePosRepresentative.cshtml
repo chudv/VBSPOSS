@@ -27,6 +27,7 @@
         padding-left: 2px;
         padding-right: 2px;
     }
+
 </style>
 
 <script>
@@ -72,89 +73,6 @@
         }
     }
 
-    function Change_Staff(e) {
-        if (isEditMode) return;
-        var combo = $("#StaffId").data("kendoComboBox");
-        if (!combo) return;
-        var staffId = combo.value();
-        if (!staffId || staffId === "0") {
-            $("#StaffMobileNo").val("");
-            var birthdayPicker = $("#DateOfBirth").data("kendoDatePicker");
-            if (birthdayPicker) {
-                birthdayPicker.value(null);
-                birthdayPicker.enable(true);
-            }
-            var genderDDL = $("#Genders").data("kendoDropDownList");
-            if (genderDDL) {
-                genderDDL.value("");
-                genderDDL.enable(true);
-            }
-            $("#StaffEmail").val("").prop('readonly', false);
-
-            var masked = $("#StaffMobileNo").data("kendoMaskedTextBox");
-            if (masked) {
-                masked.readonly(false);
-            }
-            return;
-        }
-        loadStaffDetails(staffId);
-    }
-
-    function loadStaffDetails(staffId) {
-        $.ajax({
-            type: "GET",
-            url: "@Url.Action("GetStaffByCode", "RoleManagement")",
-            dataType: "json",
-            data: { staffCode: staffId },
-            success: function (data) {
-
-                if (!data) return;
-
-                var phoneNumber = data.Mobile || "";
-                var masked = $("#StaffMobileNo").data("kendoMaskedTextBox");
-
-                if (masked) {
-                    masked.value(phoneNumber);
-                    masked.readonly(true);
-                } else {
-                    $("#StaffMobileNo").val(phoneNumber).prop("readonly", true);
-                }
-
-                var birthdayPicker = $("#DateOfBirth").data("kendoDatePicker");
-                if (birthdayPicker) {
-                    if (data.Birthday) {
-                        birthdayPicker.value(new Date(data.Birthday));
-                    } else {
-                        birthdayPicker.value(null);
-                    }
-                    birthdayPicker.enable(false);
-                }
-
-                var genderDDL = $("#Genders").data('kendoDropDownList');
-                if (genderDDL) {
-                    if (data.Sex) {
-                        genderDDL.value(data.Sex);
-                    } else {
-                        genderDDL.value("");
-                    }
-                    genderDDL.enable(false);
-                }
-
-                if (data.Email) {
-                    $("#StaffEmail").val(data.Email);
-                } else {
-                    $("#StaffEmail").val("");
-                }
-                $("#StaffEmail").prop('readonly', true);
-            },
-            error: function (xhr, status, error) {
-                console.error("Lỗi khi lấy thông tin cán bộ:", error);
-                alert("Không thể lấy thông tin cán bộ. Vui lòng thử lại!");
-            }
-        });
-    }
-
-
     var staffLists;
     function LoadStaffInfoDetail(e) {
         var objStaffId = $("#StaffId").data("kendoComboBox");
@@ -170,25 +88,31 @@
                     success: function (data) {
                         staffLists = data;
                         if (staffLists != null && staffLists.length != 0) {
-                            alert("staffLists[0]" + staffLists[0].StaffName);
-                            // $("#Ten_Nd").val("");
-                            // $("#HoTen").val(staffLists[0].HoTen);
-                            // $("#GioiTinh").data('kendoDropDownList').value(staffLists[0].GioiTinh);
-                            // $("#NgaySinh").val(memberLstaffListsists[0].NgaySinh);
-                            // $("#DonVi_Cd").data('kendoComboBox').value(staffLists[0].DonVi_CD);
-                            // Change_DonVi();
-                            // $("#PhongBan_Cd").data('kendoComboBox').value(staffLists[0].PhongBan_CD);
+                            $("#StaffCode").val(staffLists[0].StaffCode);
+                            $("#Genders").val(staffLists[0].GenderText);
+                            $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
 
-                            // $("#ChucVu_Cd").data('kendoComboBox').value(staffLists[0].ChucVu_CD);
-                            // $("#TrinhDoCM_Cd").data('kendoComboBox').value(staffLists[0].TrinhDoCM_CD);
-                            // $("#SoCMT").val(staffLists[0].SoCMT);
+                            // var rawDate = staffLists[0].DateOfBirth;
+                            // if (rawDate) {
+                            // var d = new Date(rawDate);
+                            // var formatted = ("0" + d.getDate()).slice(-2) + "/" +
+                            //                 ("0" + (d.getMonth() + 1)).slice(-2) + "/" +
+                            //                 d.getFullYear();
+                            // $("#DateOfBirth").prop('readonly', false).val(formatted).prop('readonly', true);
+                            // } else {
+                            // $("#DateOfBirth").prop('readonly', false).val("").prop('readonly', true);
+                            // }
+                            $("#StaffPosName").val(staffLists[0].StaffPosName);
+                            $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
+                            $("#StaffPositionName").val(staffLists[0].StaffPositionName);
+                            $("#StaffMobileNo").val(staffLists[0].StaffMobileNo);
+                            $("#StaffEmail").val(staffLists[0].StaffEmail);
+                            $("#StaffPosCode").val(staffLists[0].StaffPosCode);
+                            $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
+                            $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
 
-                            // $("#NgayCap").val(staffLists[0].NgayCap);
-                            // $("#NoiCap").val(staffLists[0].NoiCap);
-                            // $("#DienThoai").val(staffLists[0].DienThoai);
-                            // $("#E_mail").val(staffLists[0].E_Mail);
-                            // $("#IdCanBo").val(staffLists[0].IdCanBo);
-                            // $("#Ma_TV").val(staffLists[0].Ma_TV);
+
+
                         }
                     }
                 });
@@ -208,22 +132,22 @@
         var statusDDL = $("#Status").data("kendoDropDownList");
         var statusValue = statusDDL.value();
 
- 
+
         if (statusValue === "0") {
             var expirePicker = $("#ExpireDate").data("kendoDatePicker");
             if (expirePicker) {
-           
+
                 expirePicker.value(new Date());
-              
+
                 $("#ckb_ExpireDate").prop('checked', true);
-                
+
                 expirePicker.enable(true);
             }
         }
     }
 
     function onClick(e) {
-      
+
         if (isEditMode) {
 
             var isCheckVal = $("#ckb_ExpireDate").is(":checked");
@@ -284,25 +208,24 @@
     function setEditMode() {
         isEditMode = true;
 
-
+        $("#PosCode").closest(".k-combobox").css("pointer-events", "none").addClass("readonly-field");
+        $("#StaffId").closest(".k-combobox").css("pointer-events", "none").addClass("readonly-field");
+        $("#EffectDate").closest(".k-datepicker").css("pointer-events", "none");
         var checkInterval = setInterval(function() {
             var posCodeCombo = $("#PosCode").data("kendoComboBox");
-            var staffCodeCombo = $("#StaffCode").data("kendoComboBox");
+            var staffIdCombo = $("#StaffId").data("kendoComboBox");
 
             if (posCodeCombo && staffCodeCombo &&
                 posCodeCombo.dataSource.data().length > 0 &&
-                staffCodeCombo.dataSource.data().length > 0) {
+                staffIdCombo.dataSource.data().length > 0) {
 
                 clearInterval(checkInterval);
 
-                if (posCodeCombo) {
-                    posCodeCombo.enable(false);
-                    posCodeCombo.wrapper.addClass("readonly-field");
-                }
-                if (staffCodeCombo) {
-                    staffCodeCombo.enable(false);
-                    staffCodeCombo.wrapper.addClass("readonly-field");
-                }
+                posCodeCombo.enable(false);
+                posCodeCombo.wrapper.css("pointer-events", "none").addClass("readonly-field");
+
+                staffIdCombo.enable(false);
+                staffIdCombo.wrapper.css("pointer-events", "none").addClass("readonly-field");
 
                 var birthdayPicker = $("#DateOfBirth").data("kendoDatePicker");
                 if (birthdayPicker) {
@@ -333,7 +256,7 @@
                 var effectPicker = $("#EffectDate").data("kendoDatePicker");
                 if (effectPicker) {
                     effectPicker.enable(false);
-                    effectPicker.wrapper.addClass("readonly-field");
+                    effectPicker.wrapper.css("pointer-events", "none");
                 }
 
                 var expirePicker = $("#ExpireDate").data("kendoDatePicker");
@@ -368,7 +291,7 @@
 
                 $("#Notes").prop('readonly', false).removeClass("readonly-field").addClass("editable-field");
             }
-        }, 100); 
+        }, 100);
 
         setTimeout(function() {
             clearInterval(checkInterval);
@@ -379,7 +302,7 @@
 <form asp-controller="PosRepresentative" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
     @Html.Hidden("FlagCallView", TempData["FlagCall"])
     @Html.HiddenFor(m => m.PosName, new { @Value = Model == null ? "" : Model.PosName })
-    @Html.HiddenFor(m => m.Genders, new { @Value = Model == null ? "" : Model.Genders })
+    @*     @Html.HiddenFor(m => m.Genders, new { @Value = Model == null ? "" : Model.Genders })   *@
     @Html.HiddenFor(m => m.StaffDepartmentCode, new { @Value = Model == null ? "" : Model.StaffDepartmentCode })
     @Html.HiddenFor(m => m.StaffPositionCode, new { @Value = Model == null ? "" : Model.StaffPositionCode })
     @Html.HiddenFor(m => m.StaffPosCode, new { @Value = Model == null ? "" : Model.StaffPosCode })
@@ -392,17 +315,17 @@
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 200px;color: navy;text-align:left;">Phòng giao dịch/Hội sở tỉnh</label>
                 @(Html.Kendo().ComboBoxFor(m => m.PosCode)
-                    .Filter(FilterType.Contains)
-                    .Placeholder("--- Đơn vị ---")
-                    .DataTextField("value")
-                    .DataValueField("id")
-                    .ClearButton(false)
-                    .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-                    .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                    .Events(e => e.Change("Change_PosCode"))
-                    .Suggest(true)
-                    .AutoBind(true)
-                    .SelectedIndex(0))
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Đơn vị ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .ClearButton(false)
+                                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .Events(e => e.Change("Change_PosCode"))
+                                .Suggest(true)
+                                .AutoBind(true)
+                                .SelectedIndex(0))
             </div>
         </div>
 
@@ -410,17 +333,17 @@
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 200px; vertical-align: bottom;color: navy;text-align:left;">Cán bộ phân giao quản lý</label>
                 @(Html.Kendo().ComboBoxFor(m => m.StaffId)
-                    .Filter(FilterType.Contains)
-                    .Placeholder("--- Danh sách cán bộ ---")
-                    .DataTextField("value")
-                    .DataValueField("id")
-                    .ClearButton(false)
-                    .DataSource(source => { source.Read(read => { read.Action("GetListStaffVBSP", "ListOfValue").Data("paramLoadListStaffFind"); }).ServerFiltering(false); })
-                    .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                    .Events(e => e.Change("LoadStaffInfoDetail"))
-                    .Suggest(true)
-                    .AutoBind(true)
-                    .SelectedIndex(0))
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Danh sách cán bộ ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .ClearButton(false)
+                                .DataSource(source => { source.Read(read => { read.Action("GetListStaffVBSP", "ListOfValue").Data("paramLoadListStaffFind"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .Events(e => e.Change("LoadStaffInfoDetail"))
+                                .Suggest(true)
+                                .AutoBind(true)
+                                .SelectedIndex(0))
             </div>
         </div>
 
@@ -431,7 +354,7 @@
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Ngày sinh</label>
                 @Html.TextBoxFor(m => m.DateOfBirth, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:80px;padding-top: 7px;padding-right: 10px!important;">Giới tính</label>
-                @Html.Kendo().TextBoxFor(m => m.GendersText).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBoxFor(m => m.Genders).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Điện thoại</label>
                 @Html.Kendo().TextBoxFor(m => m.StaffMobileNo).HtmlAttributes(new { @readonly = "readonly", style = " width: 85px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 10px!important;">Email</label>
@@ -466,19 +389,19 @@
 
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
                 @(Html.Kendo().DropDownListFor(m => m.Status)
-                    .DataTextField("Text")
-                    .DataValueField("Value")
-                    .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" }, new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" } })
-                    .HtmlAttributes(new { style = "color: blue;width: 200px !important;max-width: 100% !important;" })
-                    .Events(e => e.Change("Change_Status"))
-                    .SelectedIndex(0))
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" }, new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" } })
+                                .HtmlAttributes(new { style = "color: blue;width: 200px !important;max-width: 100% !important;" })
+                                .Events(e => e.Change("Change_Status"))
+                                .SelectedIndex(0))
             </div>
         </div>
 
         <div class="row" style="padding-top: 7px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 160px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:3px;">Số Quyết định</label>
-                @Html.Kendo().TextBoxFor(m => m.DecisionNo).HtmlAttributes(new { placeholder = "Số và tiêu đề quyết định", style = " width: 790px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;"})
+                @Html.Kendo().TextBoxFor(m => m.DecisionNo).HtmlAttributes(new { placeholder = "Số và tiêu đề quyết định", style = " width: 790px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
 
             </div>
         </div>
@@ -495,17 +418,17 @@
                 @Html.TextAreaFor(m => m.Notes, new { @class = "k-textbox", style = "min-height:50px;width:790px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2" })
             </div>
         </div>
-        
+
         <div class="row" style="padding-top: 13px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
                 <label class="control-label" id="lblMessageInfor" style="width: 750px; text-align: left; color: red;"></label>
                 &nbsp;&nbsp;
                 @(Html.Kendo().Button()
-                    .Name("btnSave")
-                    .Events(ev => ev.Click("onClick"))
-                    .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin phân giao cán bộ phụ trách địa bàn" })
-                    .ImageUrl(Url.Content("~/images/save.png"))
-                    .Content("Lưu lại"))
+                                .Name("btnSave")
+                                .Events(ev => ev.Click("onClick"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin phân giao cán bộ phụ trách địa bàn" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Lưu lại"))
                 &nbsp;
                 @(Html.Kendo().Button().Name("btnThoat").Events(ev => ev.Click("onCloseUpdate")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
             </div>
@@ -551,7 +474,7 @@
             var form = this;
             var posCode = $("#PosCode").val();
 
-         
+
             if (!isEditMode) {
                 $.ajax({
                     url: '/PosRepresentative/CheckOpenPosRepresentative',
@@ -571,7 +494,7 @@
                     }
                 });
             } else {
-           
+
                 submitFormAjax(form);
             }
 
@@ -628,13 +551,13 @@
         else $("#ckb_ExpireDate").prop('checked', true);
         IsChecked_ExpireDate();
 
-    
+
         var lcFlagCallView = $("#FlagCallView").val();
         if (lcFlagCallView == "2") {
-         
+
             isEditMode = true;
 
-           
+
             setTimeout(function() {
                 setEditMode();
             }, 300);
