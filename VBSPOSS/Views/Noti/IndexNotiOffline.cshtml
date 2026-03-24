@@ -1,0 +1,1039 @@
+﻿@using Kendo.Mvc
+@using VBSPOSS.Extensions
+@using VBSPOSS.Models
+@{
+    ViewBag.Title = "THÔNG BÁO LẠI MẬT KHẨU CHO NGƯỜI DÙNG ĐI GIAO DỊCH OFFLINE";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
+<div id="myPopup"></div>
+<div id="notification"></div>
+<style>
+    #gridMainCasaRate div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainCasaRate .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridMainCasaRate .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-auth.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-approval.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+    /* .k-picker-wrap .k-input { */
+    /*     padding-right: 5px; */
+    /* } */
+
+    /* .k-picker-wrap .k-select { */
+    /*     margin-left: 2px; */
+    /*     width: 30px; */
+    /* } */
+
+    #StaredDate_From_TimKiem {
+        width: 50px !important;
+    }
+
+    #StaredDate_End_TimKiem {
+        width: 50px !important;
+    }
+
+    #Search_Panel {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px; /* Khoảng cách giữa các button, có thể điều chỉnh */
+    }
+
+    .status-red {
+        color: red !important;
+    }
+    /* * {
+                        font-family: 'tahoma', sans-serif;
+                        font-size: 12px;
+                    } */
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+    /* .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button { */
+    /*     /*background: none !important;*/ */
+    /*     border: none; */
+    /*     padding: 0 !important; */
+    /*     font: inherit; */
+    /*     cursor: pointer; */
+    /* } */
+
+    .red {
+        color: red;
+    }
+    /*#MainGrid .k-grid-header .k-header {
+                            background-color: ButtonFace;
+                        }
+                            */
+    /*.k-grid-header, .k-grid-header .k-header {
+                            background-color: #ca8f5c;
+                            color: navy;
+                        }*/
+    /* .k-grid .k-grid-header .k-header .k-link { */
+    /*     height: auto; */
+    /*     font-weight: bold !important; */
+    /*     color: blue; */
+    /*     font-size: 11px; */
+    /* } */
+
+    /* .k-grid td { */
+    /*     border-width: 0 0 0px 1px; */
+    /*     vertical-align: middle; */
+    /*     color: navy; */
+    /* } */
+
+    /* .k-grid .k-grid-header .k-header { */
+    /*     overflow: visible !important; */
+    /*     white-space: normal !important; */
+    /*     vertical-align: middle; */
+    /*     text-align: center; */
+    /*     font-weight: bold !important; */
+    /*     color: navy; */
+    /*     font-size: 11px; */
+    /* } */
+
+    /* .k-dropdown .k-dropdown-wrap { */
+    /*     height: 21px; */
+    /* } */
+
+    /* .col-md-1, .col-md-2, .col-md-5, .col-md-6, .col-md-7 { */
+    /*     padding-right: 0px; */
+    /*     padding-left: 0px; */
+    /*     vertical-align: middle; */
+    /* } */
+
+    /* .k-grid .k-button-icontext .k-icon { */
+    /*     margin: 0; */
+    /*     vertical-align: middle; */
+    /* } */
+    /* changes default width of the button */
+    /* .k-grid tbody .k-button { */
+    /*     min-width: 18px; */
+    /*     width: 18px; */
+    /* } */
+
+    /* .row-banner { */
+    /*     display: inline-flex; */
+    /*     padding: 3px; */
+    /* } */
+
+    /* .k-icon { */
+    /*     font-size: 15px; */
+    /* } */
+
+    /* .row { */
+    /*     display: inline-flex; */
+    /*     padding: 3px; */
+    /* } */
+
+    #gridMainCasaConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    /* .col-md-12 { */
+    /*     padding-right: 0px; */
+    /*     padding-left: 0px; */
+    /*     align-items: center !important; */
+    /* } */
+
+    /* .k-checkbox-label, .k-radio-label { */
+    /*     padding-top: 0px !important; */
+    /*     padding-left: 12px; */
+    /* } */
+</style>
+<script>
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+    // Khởi tạo Kendo Notification
+    var notification = $("#notification").kendoNotification({
+        position: {
+            top: 20,
+            right: 20
+        },
+        autoHideAfter: 5000
+    }).data("kendoNotification");
+    var mainWindow = $("#myPopup");
+    function paramLoadListBranchFind() {
+         return {
+             pFlagCondi: "5",
+             pStatus: "O",
+             pShortName: "1",
+             pTitleChoice: "",
+             pFlagTextShow: "1",
+             pUserPosCode: "",
+             pUserName: "",
+             pFlagWholeBank: 1
+         };
+     }
+
+    
+        function paramLoadGridData() {
+        var combo = $("#TXNCode_Find").data("kendoComboBox");
+        var statusValue = combo ? combo.value() : null;  // 
+
+        var params = {
+            pProductGroupCode: "CASA",
+            pPosCode: $("#PosCode_Find").val() || "",
+            pCircularRefNum: $("#CircularRefNum_Find").val() || "",
+            pFromEffectiveDate: $("#CircularDateBegin_Find").val() || "",
+            pToEffectiveDate: $("#CircularDateEnd_Find").val() || "",
+            pProductCode: $("#ProductCode_Find").val() || "",
+              searchText: $("#TXNName_Find").val(),
+        //  searchText: $("#ProductCode_Find").val() || "",  // 
+            status: statusValue                          // 
+        };
+
+        console.log("Params gửi lên server:", params);  // 
+
+        return params;
+    }
+    function refreshGridCasaRateConfigure() {
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+    function onSearchCasaRateConfigure(e) {
+        refreshGridCasaRateConfigure();
+    }
+    function onRowBoundCasaRateConfigure(e) {
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiRow = dataItem.get("Status");
+            if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0 || trangthaiRow == 4)
+                row.css({ "background-color": "#f8f9fa", "color": "#6c757d" });
+            if (trangthaiRow != null && trangthaiRow == 4)
+                row.css({ "background-color": "#fff5f5", "color": "#dc3545" });
+            if (trangthaiRow != null && trangthaiRow == 3) // Đã duyệt
+                row.css({ "background-color": "#e8f5e9", "color": "#2e7d32" });
+
+        }
+       
+  
+        var grid = this;
+        grid.tbody.find("tr").each(function () {
+            var dataItem = grid.dataItem(this);
+            if (userPermission.EditPermissionFlag == 0) {
+                $(this).find(".k-grid-ViewEdit").hide();
+            }
+            if (userPermission.DeletePermissionFlag == 0) {
+                $(this).find(".k-grid-Delete").hide();
+            }
+            if (userPermission.AuthorizePermissionFlag == 0) {
+                $(this).find(".k-grid-Authorize").hide();
+            }
+            if (userPermission.ReportPermissionFlag == 0) {
+                $(this).find(".k-grid-Approval").hide();
+            }
+        });
+
+
+        // var grid = this;
+        // grid.tbody.find("tr").each(function () {
+        //     var dataItem = grid.dataItem(this);
+        //     //alert(userPermission.ReportPermissionFlag);
+        //     if (userPermission && userPermission.EditPermissionFlag == 0) {
+        //         $(this).find(".k-grid-ViewEdit").hide();
+        //     }
+        //     if (userPermission && userPermission.DeletePermissionFlag == 0) {
+        //         $(this).find(".k-grid-Delete").hide();
+        //     }
+
+        //     if (userPermission && userPermission.AuthorizePermissionFlag == 0) {
+        //         $(this).find(".k-grid-Authorize").hide();
+        //     }
+
+        //     if (userPermission && userPermission.ReportPermissionFlag == 0) {
+        //         $(this).find(".k-grid-Approval").hide();
+        //     }
+        // });
+
+
+        // Checkbox logic
+        $("#gridMainCasaRate").on("click", ".chkbx", function () {
+            var grid = $("#gridMainCasaRate").data("kendoGrid");
+            var dataItem = grid.dataItem($(this).closest("tr"));
+            var checked = $(this).is(":checked");
+            if (checked) {
+                var dataItems = grid.dataSource.view();
+                for (var i = 0; i < dataItems.length; i++) {
+                    if (dataItems[i] && dataItems[i].Id && dataItems[i].Id !== dataItem.Id) {
+                        dataItems[i].set("IsSelected", false);
+                    }
+                }
+                dataItem.set("IsSelected", true);
+            } else {
+                dataItem.set("IsSelected", false);
+            }
+            $("#gridMainCasaRate .chkbx").each(function () {
+                var rowDataItem = grid.dataItem($(this).closest("tr"));
+                $(this).prop("checked", rowDataItem.IsSelected);
+            });
+        });
+    }
+    var dataChangeCasaRateConfigure = false;
+    function onCloseCasaRateConfigure() {
+        if (dataChangeCasaRateConfigure == true) {
+            refreshGridCasaRateConfigure();
+            dataChangeCasaRateConfigure = false;
+        }
+    }
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+    $(document).on('click', '#btnCreate', function (e) {
+        e.preventDefault();
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+         
+
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "680px",
+            title: "Thêm mới cấu hình lãi suất",
+            content: {
+                url: '@Url.Action("ShowCreateConfig", "Noti")',
+                data: { pId: 0, pFlagCall: "1" }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseCasaRateConfigure,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+    $(document).on('click', '#btnBatchCreate', function (e) {
+        e.preventDefault();
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        mainWindow.kendoWindow({
+            width: "1250px",
+            height: "700px",
+            title: "Thêm mới cấu hình lãi suất theo lô",
+            content: {
+                url: '@Url.Action("ShowBatchCreateConfig", "Noti")',
+                data: { pId: 0, pFlagCall: "1" }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseCasaRateConfigure,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+    // FIX: showDetails - fallback Id/IdList, log debug
+                   function showDetails(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+
+        var formattedDate = kendo.toString(dataItem.EffectiveDate, "yyyyMMdd");
+
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "680px",
+            title: "Chi tiết cấu hình lãi suất CASA",
+            content: {
+                url: '@Url.Action("ShowCasaConfigDetail", "Noti")',
+               // data: { id: dataItem.Id, circularRefNum: dataItem.CircularRefNum , idList: dataItem.IdList , pFlagCall: "1"}
+                data: { id: dataItem.Id, circularRefNum: dataItem.CircularRefNum , effectDate: formattedDate, idList: dataItem.IdList  , pFlagCall: "1"}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCasaRateConfigure,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    }
+    // FIX: showEdit - fallback Id/IdList
+    function showEdit(e) {
+        e.preventDefault();
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = grid.dataItem(tr);
+        var useId = dataItem.Id > 0 ? dataItem.Id : (dataItem.IdList > 0 ? dataItem.IdList : 0);
+        console.log("UseId for Edit:", useId); // Debug
+        if (useId > 0) {
+            if (mainWindow.data("kendoWindow")) {
+                mainWindow.data("kendoWindow").destroy();
+            }
+            mainWindow.kendoWindow({
+                width: "1200px",
+                height: "650px",
+                title: "Sửa cấu hình lãi suất",
+                content: {
+                    url: '@Url.Action("ShowUpdateCasaConfig", "Noti")',
+                    data: { pId: useId, pFlagCall: "2" }
+                },
+                resizable: false,
+                visible: false,
+                modal: true,
+                close: onCloseCasaRateConfigure,
+                actions: ["Refresh", "Close"],
+                error: function (e) {
+                    notification.show({
+                        message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                        type: "error"
+                    }, "error");
+                    mainWindow.data("kendoWindow").close();
+                }
+            });
+            mainWindow.data("kendoWindow").center().open();
+        } else {
+            alert("Vui lòng chọn một dòng dữ liệu hợp lệ để chỉnh sửa!");
+        }
+    }
+    // FIX: deleteItem - fallback Id/IdList
+    function deleteItem(e) {
+        e.preventDefault();
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+        var row = $(e.currentTarget).closest("tr");
+        var dataItem = grid.dataItem(row);
+        var useId = dataItem.Id > 0 ? dataItem.Id : (dataItem.IdList > 0 ? dataItem.IdList : 0);
+        console.log("UseId for Delete:", useId); // Debug
+        if (useId <= 0) {
+            alert("Vui lòng chọn một dòng dữ liệu hợp lệ để xóa!");
+            return;
+        }
+        var sMessInfor = "[" + (dataItem.ProductCode || "") + " - " + (dataItem.ProductName || "") + "]";
+        var deletedStatuses = [0, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            alert("Cấu hình lãi suất " + sMessInfor + " đã được đánh dấu xóa rồi hoặc đã được phê duyệt. Không thực hiện đánh dấu xóa!");
+            return;
+        }
+        var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa cấu hình lãi suất " + sMessInfor + " không?");
+        if (isConfirm) {
+            kendo.ui.progress(grid.element, true);
+            $.ajax({
+                url: '@Url.Action("CloseCasa", "Noti")',
+                type: "POST",
+                data: JSON.stringify({
+                    id: useId,
+                    documentId: dataItem.DocumentId || null
+                }),
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    kendo.ui.progress(grid.element, false);
+                    console.log("Delete success result:", result);
+                    if (result.success) {
+                        alert("Xóa cấu hình lãi suất " + sMessInfor + " thành công!");
+                        refreshGridCasaRateConfigure();
+                    } else {
+                        alert("Xóa cấu hình lãi suất " + sMessInfor + " thất bại! Lỗi: " + (result.message || "Không xác định"));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    kendo.ui.progress(grid.element, false);
+                    console.error("Delete error:", xhr, status, error);
+                    alert("Xóa cấu hình lãi suất " + sMessInfor + " có lỗi! Chi tiết: " + (xhr.responseText || error));
+                }
+            });
+        } else {
+            alert("Thao tác bị hủy bỏ!");
+        }
+    }
+    // FIX: showApproval - fallback Id/IdList
+       // SỬA: showApproval (cho icon command) - không check select, dùng current filter
+    // function showApproval(e) {
+    //     e.preventDefault();
+    //     var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //     if (mainWindow.data("kendoWindow")) {
+    //         mainWindow.data("kendoWindow").destroy();
+    //     }
+    //     mainWindow.kendoWindow({
+    //         width: "1250px",
+    //         height: "700px",
+    //         title: " Trình duyệt  cấu hình lãi suất CASA",
+    //         content: {
+    //             url: '@Url.Action("ShowApprovalConfig", "Noti")',
+    //             data: { id: dataItem.Id, circularRefNum: dataItem.CircularRefNum , idList: dataItem.IdList , pFlagCall: "1"}
+    //         },
+    //         resizable: false,
+    //         visible: false,
+    //         modal: true,
+    //         close: onCloseCasaRateConfigure,
+    //         actions: ["Close"],
+    //         error: function (e) {
+    //             notification.show({
+    //                 message: "Có lỗi xảy ra: " + e.xhr.statusText,
+    //                 type: "error"
+    //             }, "error");
+    //             mainWindow.data("kendoWindow").close();
+    //         }
+    //     });
+    //     mainWindow.data("kendoWindow").center().open();
+    // }
+    //
+        function showApproval(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + (dataItem.CircularRefNum || "N/A") + "]";
+
+        if (dataItem.Status != 1) {
+        if (dataItem.Status == 0) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã đóng. Không thể trình duyệt!");
+        } else if (dataItem.Status == 2) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đang chờ duyệt. Không thể trình duyệt lại!");
+        } else if (dataItem.Status >= 3) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã được phê duyệt hoặc từ chối. Không thể trình duyệt!");
+        } else {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " không ở trạng thái Tạo lập. Không thể trình duyệt!");
+        }
+        return;
+    }
+
+        // Kiểm tra trạng thái 
+        // if (dataItem.Status == 0) {
+        //     alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã đóng. Không thể trình duyệt!");
+        //     return;
+        // }
+        // if (dataItem.Status >= 2) {
+        //     alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã trình duyệt hoặc đã phê duyệt. Không thể trình duyệt lại!");
+        //     return;
+        // }
+        //   if (dataItem.Status > 1) {
+        //     alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " phải được trình duyệt mới phê duyệt được.");
+        //     return;
+        // }
+
+        
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+
+        var formattedDate = kendo.toString(dataItem.EffectiveDate, "yyyyMMdd");
+
+        mainWindow.kendoWindow({
+            width: "1250px",
+            height: "700px",
+            title: "Trình duyệt thay đổi lãi suất CASA",
+            content: {
+                url: '@Url.Action("ShowApprovalConfig", "Noti")', // Action mở màn hình Trình duyệt CASA
+                // data: {
+                //     id: dataItem.Id,
+                //     circularRefNum: dataItem.CircularRefNum,
+                //     idList: dataItem.IdList,
+                //     pFlagCall: "1"
+                // }
+
+                data: { id: dataItem.Id, circularRefNum: dataItem.CircularRefNum, effectDate: formattedDate , idList: dataItem.IdList  , pFlagCall: "1"}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCasaRateConfigure, //
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+
+        mainWindow.data("kendoWindow").center().open();
+    }
+
+            function submitForAuthorize(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+
+        if (dataItem.Status != 2) {
+        if (dataItem.Status == 0) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã đóng. Không thể phê duyệt!");
+        } else if (dataItem.Status == 1) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đang ở trạng thái Tạo lập. Vui lòng trình duyệt trước khi phê duyệt!");
+        } else if (dataItem.Status >= 3) {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " đã được phê duyệt hoặc từ chối. Không thể phê duyệt lại!");
+        } else {
+            alert("Cấu hình lãi suất CASA theo Quyết định " + sMessInfor + " không ở trạng thái Chờ duyệt. Không thể phê duyệt!");
+        }
+        return;
+    }
+
+
+
+       
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+            var formattedDate = kendo.toString(dataItem.EffectiveDate, "yyyyMMdd");
+
+
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "680px",
+            title: "Phê duyệt thay đổi lãi suất CASA",
+            content: {
+                url: '@Url.Action("ShowAuthorizeScreen", "Noti")',
+                // data: {
+                //     id: dataItem.Id,
+                //     circularRefNum: dataItem.CircularRefNum,  // 
+                //     idList: dataItem.IdList,                   // 
+                //     pFlagCall: "1"
+                // }
+                data: { id: dataItem.Id, circularRefNum: dataItem.CircularRefNum, effectDate: formattedDate , idList: dataItem.IdList  , pFlagCall: "1"}
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCasaRateConfigure,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+
+        mainWindow.data("kendoWindow").center().open();
+    }
+
+    // SỬA: Click btnDocument (toolbar "Tờ trình") - tương tự, không check selectedItem
+    $(document).on('click', '#btnDocument', function (e) {
+        e.preventDefault();
+        // Lấy current filter (không check select nữa)
+        var currentFilter = paramLoadGridData();
+        console.log("Document with filter:", currentFilter);  // Debug
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        mainWindow.kendoWindow({
+            width: "1200px",
+            height: "750px",
+            title: "Tờ trình cấu hình lãi suất CASA",
+            content: {
+                url: '@Url.Action("ShowDocumentConfig", "Noti")',
+                data: {
+                    filter: JSON.stringify(currentFilter),  // Pass filter để load multiple
+                    pFlagCall: "1"
+                }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCasaRateConfigure,
+            actions: ["Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+
+
+
+    function getAssignedImage(Id, PosCode) {
+        var lcId = Id;
+        var lcPosCode = PosCode;
+        return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+    }
+</script>
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+@Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+        <div class="col-md-12">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:50px;padding-top:3px;padding-right:0px;">Đơn vị</label>
+            @(Html.Kendo().ComboBox().Name("PosCode_Find")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { @id = "PosCode_Find", style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;class='form - control';" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:85px;padding-top:3px;padding-right:6px;">ĐGD</label>
+            @(Html.Kendo().ComboBox()
+                .Name("TXNCode_Find")
+                .Filter("contains")
+                .Placeholder("--- Chọn điểm giao dịch ---")
+                .DataTextField("Description")      //
+                .DataValueField("Value")           //
+                .DataSource(source => source
+                .Read(read => read.Action("GetTXNPointOptions", "Noti"))
+                )
+                .HtmlAttributes(new
+                {
+                    style = "background-color:white;width: 150px;padding-left:3px;padding-right: 2px;!important;"
+                })
+                .AutoBind(true)
+                .SelectedIndex(0)  //
+                )
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top:3px;padding-right:6px;">Tên ĐGD</label>
+            @(Html.Kendo().TextBox()
+                .Name("TXNName_Find")
+                .HtmlAttributes(new { placeholder = "Tên điểm giao dịch", style = "background-color:white;width: 180px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
+                .Value("")
+                )
+           
+
+            
+            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top:3px;padding-right:6px;">Ngày GD</label>
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDateBegin_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
+                .Value(DateTime.Today.AddMonths(-1))
+                )
+            <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDateEnd_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Đến ngày cần tìm kiếm" })
+                .Value(DateTime.Today.AddDays(1))
+                )
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnSearchCasaRateConfigure")
+                .Events(ev => ev.Click("onSearchCasaRateConfigure"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:120px; color: blue;padding-left: 0px; ", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất CASA" })
+                .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                .Content(" Tìm kiếm "))
+        </div>
+    </div>
+    <div style="margin-top: 5px;"></div>
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+            @(Html.Kendo().Grid<VBSPOSS.Data.Models.InterestRateConfigMasterView>()
+                .Name("gridMainCasaRate")
+                .Events(e => e.DataBound("onRowBoundCasaRateConfigure"))
+                .Columns(columns =>
+                {
+                    @* columns.Command(command =>
+                    {
+                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetails").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Xem chi tiết",
+                            @class = "btn-view"
+                        });
+                        command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Chỉnh sửa thông tin",
+                            @class = "btn-view-edit"
+                        });
+                        command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Xóa dữ liệu",
+                            @class = "btn-delete"
+                        });
+                        command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorize").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Phê duyệt",
+                            @class = "btn-auth"
+                        });
+                        command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("showApproval").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Trình duyệt",
+                            @class = "btn-approval"
+                        });
+                    }).Width(300).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" }); *@
+                    columns.Bound(c => c.DocumentId).Hidden();
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Bound(c => c.ProductGroupCode).Hidden();
+                    columns.Bound(c => c.ProductGroupName).Hidden();
+                    columns.Bound(c => c.CircularRefNum).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.PosCode).Hidden();
+                   
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.UserId).Hidden();
+                    columns.Bound(c => c.CircularDate).Hidden();
+                    columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(180).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ProductList).Title("Danh sách sản phẩm cấu hình").HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.RecordSerialNo).Hidden();
+                    columns.Bound(c => c.ProductName).Hidden();
+                    columns.Bound(c => c.CurrencyCode).Hidden();
+                    columns.Bound(c => c.AccountTypeCode).Hidden();
+                    columns.Bound(c => c.AccountTypeName).Hidden();
+                    columns.Bound(c => c.AccountSubTypeCode).Hidden();
+                    columns.Bound(c => c.AccountSubTypeName).Hidden();
+                    columns.Bound(c => c.InterestRate).Hidden();
+                    columns.Bound(c => c.PenalRate).Hidden();
+                    columns.Bound(c => c.NewInterestRate).Hidden();
+                    columns.Bound(c => c.TenorSerialNo).Hidden();
+                    columns.Bound(c => c.AmountSlab).Hidden();
+                    columns.Bound(c => c.IntRateType).Hidden();
+                    columns.Bound(c => c.SpreadRate).Hidden();
+                    columns.Bound(c => c.Remark).Hidden();
+                    columns.Bound(c => c.OrtherNotes).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.CallApiTxnStatus).Hidden();
+                    columns.Bound(c => c.CallApiReqRecordSl).Hidden();
+                    columns.Bound(c => c.CallApiResponseCode).Hidden();
+                    columns.Bound(c => c.CallApiResponseMsg).Hidden();
+                    columns.Bound(c => c.CreatedBy).Hidden();
+                    columns.Bound(c => c.CreatedDate).Hidden();
+                    columns.Bound(c => c.ModifiedBy).Hidden();
+                    columns.Bound(c => c.ModifiedDate).Hidden();
+                    columns.Bound(c => c.ApproverBy).Hidden();
+                    columns.Bound(c => c.ApprovalDate).Hidden();
+                    columns.Bound(c => c.DebitCreditFlag).Hidden();
+                    columns.Bound(c => c.AccountTypeList).Hidden();
+
+                    columns.Bound(c => c.StatusDesc)
+                    .Title("Trạng thái")
+                    .Width(150)
+                    .HtmlAttributes(new { style = "text-align: center; font-weight: bold;" });
+                   
+                   @*  columns.Bound(c => c.Status).Title("Trạng thái").Width(150)
+                    .HtmlAttributes(new { style = "text-align: center;" }); *@
+                    //columns.Bound(c => c.Status).Title("Trạng thái").Width(100).ClientTemplate("#= getStatusDesc(Status) #").HtmlAttributes(new { style = "text-align: center;" });
+                })
+                .HtmlAttributes(new { style = "height: 650px;color: navy; border: 1px solid #ddd;" })
+                @* .ToolBar(toolbar =>
+                {
+                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+            
+                    toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "width: 100px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                   // toolbar.Custom().IconClass("k-icon k-i-calendar").Text("Tờ trình").Name("btnDocument").HtmlAttributes(new { id = "btnDocument", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;" });
+                })
+                .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat_CASA.xlsx").AllPages(true)) *@
+                .Editable(editable => editable.Mode(GridEditMode.InLine))
+                .Sortable()
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(false)
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.Id)) 
+                .Events(e => e.RequestEnd("onSaveGridCompletedCasaRateConfigure").Error("error_handlerCasaRateConfigure"))
+                .Read(read => read.Action("LoadInterestRateGridData", "Noti").Data("paramLoadGridData"))
+                .PageSize(50)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+</div>
+<script>
+
+    // function onDataBoundGridMainCasaRate(e) {
+    //     var grid = this;
+    //     var items = grid.dataSource.view(); // Lấy tất cả các dòng hiện tại
+
+    //     items.forEach(function (item) {
+    //         // Tìm dòng tương ứng trong tbody
+    //         var row = grid.tbody.find("tr[data-uid='" + item.uid + "']");
+
+    //         // Cột "Đơn vị" là cột thứ 2 (đếm từ 0: STT = 0, Đơn vị = 1)
+    //         var posCell = row.find("td").eq(1);
+
+    //         // Lấy IdList (chuỗi các Id cách nhau bởi ';') hoặc fallback về Id đơn
+    //         var idList = item.IdList || item.Id.toString();
+
+    //         if (idList && idList.trim() !== "") {
+    //             // Gọi ajax lấy tên POS
+    //             $.ajax({
+    //                 url: '@Url.Action("GetApplyPosListByIds", "Noti")',
+    //                 type: "GET",
+    //                 data: { ids: idList },
+    //                 cache: false, // tránh cache kết quả cũ
+    //                 success: function (posNames) {
+    //                     posCell.text(posNames || "Không có POS áp dụng");
+    //                 },
+    //                 error: function () {
+    //                     posCell.text("Lỗi tải POS");
+    //                 }
+    //             });
+    //         } else {
+    //             posCell.text("Không có POS áp dụng");
+    //         }
+    //     });
+    // }
+
+    // // Bind event dataBound khi document ready
+    // $(document).ready(function () {
+    //     var grid = $("#gridMainCasaRate").data("kendoGrid");
+    //     if (grid) {
+    //         // Gắn hàm vào event dataBound
+    //         grid.bind("dataBound", onDataBoundGridMainCasaRate);
+    //     }
+    // });
+
+
+     function onSaveGridCompletedCasaRateConfigure(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+    function error_handlerCasaRateConfigure(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors); //
+        }
+    }
+    $(document).ready(function () {
+        // $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH QUYẾT ĐỊNH CẤU HÌNH LÃI SUẤT CASA</label>");
+    });
+</script>
