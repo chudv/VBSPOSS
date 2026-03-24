@@ -60,6 +60,9 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("userCreatedDate")]
         public string UserCreatedDate { get; set; }     //Ngày tạo người dùng.Định dạng yyyy-MM-dd
 
+        /// <summary>
+        /// Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
+        /// </summary>
         [JsonProperty("corporateName")]
         public string CorporateName { get; set; }       //Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
 
@@ -78,7 +81,7 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("userFromService")]
         public bool UserFromService { get; set; }      //Không sử dụng, mặc định là false
 
-        [JsonProperty("extraAttributeResponse")]
+        [JsonProperty("extraAttribute")]
         public ExtraAttributeResponse ExtraAttributeResponseViewModel { get; set; }
 
         [JsonProperty("nickName")]
@@ -132,6 +135,9 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("userIdentifierAlias")]
         public string UserIdentifierAlias { get; set; }         //Giá trị là 'All'
 
+        /// <summary>
+        /// Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
+        /// </summary>
         [JsonProperty("userStatus")]
         public int UserStatus { get; set; }                     //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
 
@@ -144,6 +150,9 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("appendRole")]
         public bool AppendRole { get; set; }                //Giá trị là false
 
+        /// <summary>
+        /// Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
+        /// </summary>
         [JsonProperty("lastLoginDate")]
         public string LastLoginDate { get; set; }             //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
 
@@ -201,6 +210,9 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("checkerId")]
         public string CheckerId { get; set; }               //Người duyệt tạo người dùng
 
+        /// <summary>
+        /// Ngày giờ login gần nhất (2026 03 24 031929). Định dạng yyyyMMddHHmmss
+        /// </summary>
         [JsonProperty("currLoginDate")]
         public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
     }
@@ -208,10 +220,10 @@ namespace VBSPOSS.Integration.ViewModel
     public class ServiceStatusResponse
     {
         [JsonProperty("sessionValReq")]
-        public string SessionValReq { get; set; }
+        public bool SessionValReq { get; set; }
 
         [JsonProperty("prevStatus")]
-        public string PrevStatus { get; set; }
+        public int PrevStatus { get; set; }
 
         [JsonProperty("responseAttributes")]
         public JsonElement ResponseAttributes { get; set; }

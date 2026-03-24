@@ -92,6 +92,31 @@ namespace VBSPOSS.ViewModels
     public class ViewUserAPIReposeViewModel
     {
         /// <summary>
+        /// Trạng thái trả về của API. Dù không tìm User truyền vào thì giá trị vẫn là true
+        /// </summary>
+        public bool ServiceStatusResponseSessionValReq { get; set; }
+        
+        /// <summary>
+        /// Cho biết trạng thái trước đó của người dùng. Giá trị mặc định là 0 (Indicates previous status of User)
+        /// </summary>
+        public int ServiceStatusResponsePrevStatus { get; set; }
+
+        /// <summary>
+        /// 0-Thành công; 4654 - Không tìm thấy người dùng
+        /// </summary>
+        public string ServiceStatusResponseResponseCode { get; set; }
+
+        /// <summary>
+        /// Kết quả. Ex: 'ARX-004654: Please Provide correct User ID ' hoặc 'User Information Successfully displayed'
+        /// </summary>
+        public string ServiceStatusResponseResponseMsg { get; set; }
+
+        /// <summary>
+        /// Trạng thái trả ra. true/false
+        /// </summary>
+        public bool ServiceStatusResponseStatus { get; set; }
+
+        /// <summary>
         /// Ngày thay đổi mật khẩu gần nhất. Định dạng yyyy-MM-dd
         /// </summary>
         public string LastPWDChanged { get; set; }
@@ -114,11 +139,15 @@ namespace VBSPOSS.ViewModels
         public string Language { get; set; }        //en_US | vi_VN
 
         public string UserCreatedDate { get; set; }     //Ngày tạo người dùng.Định dạng yyyy-MM-dd
-
+        /// <summary>
+        /// Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
+        /// </summary>
         public string CorporateName { get; set; }       //Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
 
         public string EmailAddress { get; set; }        //Địa chỉ email của người dùng
-
+        /// <summary>
+        /// Phương thức xác thực thứ 2. Giá trị mặc định '0'
+        /// </summary>
         public string AuthsecType { get; set; }         //Phương thức xác thực thứ 2. Giá trị mặc định '0'
 
         public string DOB { get; set; }                 //Ngày sinh của người dùng.Định dạng yyyy-MM-dd
@@ -162,7 +191,10 @@ namespace VBSPOSS.ViewModels
         public string LastName { get; set; }
 
         public string UserIdentifierAlias { get; set; }         //Giá trị là 'All'
-
+        
+        /// <summary>
+        /// Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
+        /// </summary>
         public int UserStatus { get; set; }                     //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
 
         public int SecondaryChoicebasedAuthType { get; set; }   //Giá trị là '0'
@@ -171,6 +203,9 @@ namespace VBSPOSS.ViewModels
 
         public bool AppendRole { get; set; }            //Giá trị là false
 
+        /// <summary>
+        /// Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
+        /// </summary>
         public string LastLoginDate { get; set; }       //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
 
         public string ExpiryDate { get; set; }          //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
@@ -209,6 +244,9 @@ namespace VBSPOSS.ViewModels
 
         public string CheckerId { get; set; }               //Người duyệt tạo người dùng
 
+        /// <summary>
+        /// Ngày giờ login gần nhất (2026 03 24 031929). Định dạng yyyyMMddHHmmss
+        /// </summary>
         public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
     }
 

@@ -241,186 +241,88 @@ namespace VBSPOSS.Services.Implements
                 }
                 if (responseAPIViewUser.ResponseCode == "00000")
                 {
+                    if (responseAPIViewUser.Result[0].ServiceStatusResponseViewModel != null)
+                    {
+                        objUserIDCInfo.ServiceStatusResponseSessionValReq = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.SessionValReq;
+                        objUserIDCInfo.ServiceStatusResponsePrevStatus = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.PrevStatus;
+                        objUserIDCInfo.ServiceStatusResponseResponseCode = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.ResponseCode;
+                        objUserIDCInfo.ServiceStatusResponseResponseMsg = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.ResponseMsg;
+                        if (!string.IsNullOrEmpty(responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.Status))
+                            objUserIDCInfo.ServiceStatusResponseStatus = (responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.Status.Trim() == "true") ? true : false;
+                        else objUserIDCInfo.ServiceStatusResponseStatus = false;
+                    }
+                    objUserIDCInfo.LastPWDChanged = string.IsNullOrEmpty(responseAPIViewUser.Result[0].LastPWDChanged) ? "1900-01-01" : responseAPIViewUser.Result[0].LastPWDChanged;
+                    objUserIDCInfo.PrimaryChoicebasedAuthType = responseAPIViewUser.Result[0].PrimaryChoicebasedAuthType;
+                    objUserIDCInfo.MobileNumber = responseAPIViewUser.Result[0].MobileNumber;
+                    objUserIDCInfo.TranAuthType = responseAPIViewUser.Result[0].TranAuthType;
+                    objUserIDCInfo.ReqNo = responseAPIViewUser.Result[0].ReqNo;
+                    objUserIDCInfo.SelfRegistration = responseAPIViewUser.Result[0].SelfRegistration;
+                    objUserIDCInfo.FromRecord = responseAPIViewUser.Result[0].FromRecord;
+                    objUserIDCInfo.Language = responseAPIViewUser.Result[0].Language;
+                    objUserIDCInfo.UserCreatedDate = responseAPIViewUser.Result[0].UserCreatedDate;
+                    objUserIDCInfo.CorporateName = responseAPIViewUser.Result[0].CorporateName;
+                    objUserIDCInfo.EmailAddress = responseAPIViewUser.Result[0].EmailAddress;
+                    objUserIDCInfo.AuthsecType = responseAPIViewUser.Result[0].AuthsecType;
+                    objUserIDCInfo.DOB = responseAPIViewUser.Result[0].DOB;
+                    objUserIDCInfo.InvalidAttempt = responseAPIViewUser.Result[0].InvalidAttempt;
+                    objUserIDCInfo.UserFromService = responseAPIViewUser.Result[0].UserFromService;
+                    if (responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel != null)
+                    {
+                        objUserIDCInfo.UserRole = responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel.UserRole;
+                        objUserIDCInfo.BranchCode = responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel.BranchCode;
+                    }
+                    else
+                    {
+                        objUserIDCInfo.UserRole = "";
+                        objUserIDCInfo.BranchCode = "";
+                    }
+                    if (!string.IsNullOrEmpty(objUserIDCInfo.BranchCode))
+                        objUserIDCInfo.BranchCode = Convert.ToInt32(objUserIDCInfo.BranchCode.Trim()).ToString("D6");       //string formatted3 = branch.ToString().PadLeft(6, '0');
 
-                    /*
-                      public string LastPWDChanged { get; set; }
+                    objUserIDCInfo.NickName = responseAPIViewUser.Result[0].NickName;
 
-        /// <summary>
-        /// Không sử dụng, mặc định là 0
-        /// </summary>
-        public string PrimaryChoicebasedAuthType { get; set; }
+                    objUserIDCInfo.DefaultBranch = responseAPIViewUser.Result[0].DefaultBranch;
+                    objUserIDCInfo.HpinFlag = responseAPIViewUser.Result[0].HpinFlag;
+                    objUserIDCInfo.ReqNumber = responseAPIViewUser.Result[0].ReqNumber;
+                    objUserIDCInfo.ToRecord = responseAPIViewUser.Result[0].ToRecord;
+                    objUserIDCInfo.AppendEntity = responseAPIViewUser.Result[0].AppendEntity;
+                    objUserIDCInfo.FirstName = responseAPIViewUser.Result[0].FirstName;
+                    objUserIDCInfo.GroupName = responseAPIViewUser.Result[0].GroupName;
+                    objUserIDCInfo.IsWebSealUser = responseAPIViewUser.Result[0].IsWebSealUser;
+                    objUserIDCInfo.EntityList = responseAPIViewUser.Result[0].EntityList;
+                    objUserIDCInfo.UserIdentifierName = responseAPIViewUser.Result[0].UserIdentifierName;
+                    objUserIDCInfo.OperationType = responseAPIViewUser.Result[0].OperationType;
+                    objUserIDCInfo.UserType = responseAPIViewUser.Result[0].UserType;
+                    objUserIDCInfo.EncryptExtraAttrib = responseAPIViewUser.Result[0].EncryptExtraAttrib;
+                    objUserIDCInfo.LastName = responseAPIViewUser.Result[0].LastName;
+                    objUserIDCInfo.UserIdentifierAlias = responseAPIViewUser.Result[0].UserIdentifierAlias;
+                    objUserIDCInfo.UserStatus = responseAPIViewUser.Result[0].UserStatus;
+                    objUserIDCInfo.SecondaryChoicebasedAuthType = responseAPIViewUser.Result[0].SecondaryChoicebasedAuthType;
+                    objUserIDCInfo.PrevStatus = responseAPIViewUser.Result[0].PrevStatus;
+                    objUserIDCInfo.AppendRole = responseAPIViewUser.Result[0].AppendRole;
 
-        public string MobileNumber { get; set; }
+                    objUserIDCInfo.LastLoginDate = string.IsNullOrEmpty(responseAPIViewUser.Result[0].LastLoginDate) ? "1900-01-01" : responseAPIViewUser.Result[0].LastLoginDate;
+                    objUserIDCInfo.ExpiryDate = responseAPIViewUser.Result[0].ExpiryDate;
+                    objUserIDCInfo.CheckerDate = responseAPIViewUser.Result[0].CheckerDate;
+                    objUserIDCInfo.MailIdFlag = responseAPIViewUser.Result[0].MailIdFlag;
+                    objUserIDCInfo.AuthType = responseAPIViewUser.Result[0].AuthType;
+                    objUserIDCInfo.CredInfoEncryptType = responseAPIViewUser.Result[0].CredInfoEncryptType;
+                    objUserIDCInfo.MakerId = responseAPIViewUser.Result[0].MakerId;
+                    objUserIDCInfo.ReqActivity = responseAPIViewUser.Result[0].ReqActivity;
 
-        public string TranAuthType { get; set; }
-
-        public string ReqNo { get; set; }
-
-        public bool SelfRegistration { get; set; }
-
-        public string FromRecord { get; set; }
-
-        public string Language { get; set; }        //en_US | vi_VN
-
-        public string UserCreatedDate { get; set; }     //Ngày tạo người dùng.Định dạng yyyy-MM-dd
-
-        public string CorporateName { get; set; }       //Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
-
-        public string EmailAddress { get; set; }        //Địa chỉ email của người dùng
-
-        public string AuthsecType { get; set; }         //Phương thức xác thực thứ 2. Giá trị mặc định '0'
-
-        public string DOB { get; set; }                 //Ngày sinh của người dùng.Định dạng yyyy-MM-dd
-
-        public string InvalidAttempt { get; set; }      //Số lần đăng nhập sai
-
-        public bool UserFromService { get; set; }      //Không sử dụng, mặc định là false
-
-        public string UserRole { get; set; }        //Nhóm quyền trên IDC(Không bao gồm Lending). Ex: POGD
-
-        public string BranchCode { get; set; }      //Mã POS của người dùng. Ex: 101
-
-        public string NickName { get; set; }      //Tên tài khoản người dùng cần lấy thông tin
-
-        public string DefaultBranch { get; set; }      //Chỉ định chi nhánh mặc định cho người dùng sẽ được tạo. Ex: 'IDCPRODC'
-
-        public int HpinFlag { get; set; }      //Có sử dụng hard PIN không, mặc định là 0
-
-        public int ReqNumber { get; set; }      //Không sử dụng, mặc định là 0
-
-        public int ToRecord { get; set; }      //Không sử dụng, mặc định là 0
-
-        public bool AppendEntity { get; set; }      //Không sử dụng, mặc định là false
-
-        public string FirstName { get; set; }
-
-        public string GroupName { get; set; }               //Nhóm quyền của LMS/ FAMS, COLLATERAL (Trừ phần hệ Core). Ex: IDCROLE,GRPLMSIT,GRPCLMSIT
-
-        public bool IsWebSealUser { get; set; }               //Mặc định là false
-
-        public string EntityList { get; set; }               //Entity quản lý người dùng. Ex: UATVBSP hoặc Bank/IDCPRODC. Ex: 'IDCPRODC'
-
-        public string UserIdentifierName { get; set; }               //Giá trị là mặc định 'All'. Tùy theo lựa chọn có thể là: All/Functional User/Administrator/Retail
-
-        public int OperationType { get; set; }               //Giá trị là -1
-
-        public int UserType { get; set; }               //Loại người dùng (IDL_ARX.TB_ARM_USER_TYPE@VBSPCBSLINK). Giá trị quy ước: 0: Bank; 1: Corporate; 2: Retail
-
-        public bool EncryptExtraAttrib { get; set; }               //Giá trị mặc định false
-
-        public string LastName { get; set; }
-
-        public string UserIdentifierAlias { get; set; }         //Giá trị là 'All'
-
-        public int UserStatus { get; set; }                     //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
-
-        public int SecondaryChoicebasedAuthType { get; set; }   //Giá trị là '0'
-
-        public int PrevStatus { get; set; }             //Trạng thái trước đó của User. Giá trị là -7
-
-        public bool AppendRole { get; set; }            //Giá trị là false
-
-        public string LastLoginDate { get; set; }       //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
-
-        public string ExpiryDate { get; set; }          //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
-
-        public string CheckerDate { get; set; }         //Ngày duyệt tạo người dùng, định dạng yyyy-MM-dd
-
-        /// <summary>
-        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
-        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
-        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
-        ///         '2': Mật khẩu được gửi link vào email của người dùng
-        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
-        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
-        /// </summary>
-        public string MailIdFlag { get; set; }
-
-        /// <summary>
-        /// Phương thức đăng nhập. Giá trị: -1: Super (Áp dụng cho user hệ thống không đăng nhập được);
-        ///                                 1: Native (Bình thường Mật khẩu); 2: LDAP; 3: Safeword; 10: SMS OTP(Citi MFA)
-        /// </summary>
-        public int AuthType { get; set; }
-
-        public int CredInfoEncryptType { get; set; }        //Giá trị là '0'
-
-        public string MakerId { get; set; }                 //Người tạo tài khoản người dùng
-
-        public int ReqActivity { get; set; }        //Giá trị là '0'
-
-        public string MakerDate { get; set; }      //Ngày tạo tài khoản người dùng, định dạng yyyy-MM-dd
-
-        public bool AppendEntityRoleMap { get; set; }       //Giá trị là false
-
-        public string Salt { get; set; }                    //Giá trị là 'dummysalt'
-
-        public string UserId { get; set; }                  //Tài khoản người dùng như trường nickName
-
-        public string CheckerId { get; set; }               //Người duyệt tạo người dùng
-
-        public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
-                     */
-
+                    objUserIDCInfo.MakerDate = responseAPIViewUser.Result[0].MakerDate;
+                    objUserIDCInfo.AppendEntityRoleMap = responseAPIViewUser.Result[0].AppendEntityRoleMap;
+                    objUserIDCInfo.Salt = responseAPIViewUser.Result[0].Salt;
+                    objUserIDCInfo.UserId = responseAPIViewUser.Result[0].UserId;
+                    objUserIDCInfo.CheckerId = responseAPIViewUser.Result[0].CheckerId;
+                    objUserIDCInfo.CurrLoginDate = string.IsNullOrEmpty(responseAPIViewUser.Result[0].CurrLoginDate) ? "1900-01-01" : responseAPIViewUser.Result[0].CurrLoginDate;
                 }
-                //if(responseAPIViewUser.ResponseCode)
-                var objUserInfoByAPI = responseAPIViewUser.Result[0];
-
-                //  public async Task<GenericListRecordJava<ViewUserReposeViewModel>> GetUserIDCInfoByApiViewUser(ViewUserRequestViewModel requestInput)
-                //var _lstProductList = _productService.GetAccountTypes("");
-                //int _id = 1;
-                //for (int i = 0; i < data.Count; i++)
-                //{
-                //    for (int j = 0; j < data[i].TermDetails.Count; j++)
-                //    {
-                //        TideTermViewModel item = new TideTermViewModel();
-                //        item.Id = _id;
-                //        item.TermProductCode = data[i].ProdCode;
-                //        item.TermProductName = data[i].ProdName;
-                //        item.TermAccountTypeCode = data[i].DepositType;
-                //        var product = _lstProductList.FirstOrDefault(p => p.Value == data[i].DepositType);
-
-                //        item.TermAccountTypeName = product == null ? "" : product.Text;
-                //        item.TermAccountSubTypeCode = data[i].DepositSubType;
-                //        item.TermCurrencyCode = data[i].Currency;
-                //        item.TermEffectiveDate = string.IsNullOrEmpty(data[i].EffectDate) ? DateTime.Now : CustConverter.StringToDate(data[i].EffectDate);
-                //        item.TermAmoutSlab = data[i].SlabRange == null ? 0 : Convert.ToDecimal(data[i].SlabRange);
-                //        item.TermSerial = int.Parse(data[i].TermDetails[j].Serial);
-                //        item.TermDesc = data[i].TermDetails[j].TermDesc;
-                //        item.TermValue = int.Parse(data[i].TermDetails[j].TermValue);
-                //        item.TermUnit = data[i].TermDetails[j].TermUnit;
-                //        item.InclusionFlag = data[i].TermDetails[j].InclusionFlag;
-                //        item.TermIntRate = data[i].TermDetails[j].IntRate == null ? 0 : Convert.ToDecimal(data[i].TermDetails[j].IntRate);
-                //        item.TermIntRateNew = data[i].TermDetails[j].IntRate == null ? 0 : Convert.ToDecimal(data[i].TermDetails[j].IntRate);
-
-                //        //Phan them bien do lai suat
-                //        if (posCode == PosValue.HEAD_POS)
-                //        {
-                //            item.MinInterestRateSpread = 0;
-                //            item.MaxInterestRateSpread = 0;
-                //            item.MinTermIntRateNew = item.TermIntRate;
-                //            item.MaxTermIntRateNew = item.TermIntRate;
-                //        }
-                //        else
-                //        {
-                //            var productParameter = _productService.GetProductParameter(ProductGroupCode.ProductGroupCode_Tide, data[i].ProdCode, null);
-                //            item.MinInterestRateSpread = productParameter?.MinInterestRateSpread ?? 0;
-                //            item.MaxInterestRateSpread = productParameter?.MaxInterestRateSpread ?? 0;
-                //            item.MinTermIntRateNew = item.TermIntRate - (productParameter?.MinInterestRateSpread ?? 0);
-                //            item.MaxTermIntRateNew = item.TermIntRate + (productParameter?.MaxInterestRateSpread ?? 0);
-                //        }
-
-                //        result.Add(item);
-                //        _id++;
-                //    }
-                //}
-
-
                 return objUserIDCInfo;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                throw new Exception($"Lỗi khi gọi API lấy danh sách sản phẩm Tide: {ex.Message}", ex);
+                throw new Exception($"Lỗi khi gọi API lấy thông tin người dùng GetUserIDCInfoByApiViewUser('{pUserId}') từ API viewUser. Error: {ex.Message}", ex);
             }
         }
 

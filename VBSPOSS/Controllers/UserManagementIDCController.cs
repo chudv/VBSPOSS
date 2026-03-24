@@ -57,6 +57,9 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
             TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
             //Ví dụ gọi đến lấy thông tin người dùng iDC
+            //
+            var objUserInfo0 = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("CHUV13");
+
             var objUserInfo = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("DUYEN002");
 
             var objUserInfo1 = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("DUYEN002X");
