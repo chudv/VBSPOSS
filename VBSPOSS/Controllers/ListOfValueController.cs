@@ -554,7 +554,6 @@ namespace VBSPOSS.Controllers
             return Json(dataListOfStaffVBSP);
         }
 
-
         public JsonResult GetProductList(string productGroupCode)
         {
             ArrayList data = new ArrayList();
@@ -1322,7 +1321,6 @@ namespace VBSPOSS.Controllers
             return Json(resultData);
         }
 
-
         [HttpGet]
         public JsonResult GetConfigStatusOptions()
         {
@@ -1339,7 +1337,6 @@ namespace VBSPOSS.Controllers
 
             return Json(statuses);
         }
-
     }
 }
 

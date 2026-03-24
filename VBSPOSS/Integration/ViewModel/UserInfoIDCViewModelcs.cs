@@ -27,6 +27,12 @@ namespace VBSPOSS.Integration.ViewModel
     /// </summary>
     public class ViewUserReposeViewModel
     {
+        /// <summary>
+        /// Ngày thay đổi mật khẩu gần nhất. Định dạng yyyy-MM-dd
+        /// </summary>
+        [JsonProperty("lastPWDChanged")]
+        public string LastPWDChanged { get; set; }
+
         [JsonProperty("primaryChoicebasedAuthType")]
         public string PrimaryChoicebasedAuthType { get; set; }
 
@@ -118,7 +124,7 @@ namespace VBSPOSS.Integration.ViewModel
         public int UserType { get; set; }               //Loại người dùng (IDL_ARX.TB_ARM_USER_TYPE@VBSPCBSLINK). Giá trị quy ước: 0: Bank; 1: Corporate; 2: Retail
 
         [JsonProperty("encryptExtraAttrib")]
-        public int EncryptExtraAttrib { get; set; }               //Giá trị mặc định false
+        public bool EncryptExtraAttrib { get; set; }               //Giá trị mặc định false
 
         [JsonProperty("lastName")]
         public string LastName { get; set; }
@@ -132,77 +138,71 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("secondaryChoicebasedAuthType")]
         public int SecondaryChoicebasedAuthType { get; set; }   //Giá trị là '0'
 
+        [JsonProperty("prevStatus")]
+        public int PrevStatus { get; set; }   //Trạng thái trước đó của User. Giá trị là -7
 
-        /*
+        [JsonProperty("appendRole")]
+        public bool AppendRole { get; set; }                //Giá trị là false
 
-prevStatus		Trạng thái trước đó của User. Giá trị là -7
-appendRole		Giá trị là false
-lastLoginDate		Lần cuối cùng login vào hệ thống
-authTypeAttrib	List	Danh sách rỗng
-expiryDate		Ngày hết hiệu lực của người dùng
-checkerDate		Ngày duyệt tạo người dùng
-mailIdFlag		"Cờ xác định cấp mật khẩu cho người dùng. Giá trị:
-     '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
-     '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
-     '2': Mật khẩu được gửi link vào email của người dùng
-     '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
-Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0"
-authType		"Phương thức đăng nhập. Giá trị:
-        -1: Super (Áp dụng cho user hệ thống không đăng nhập được)
-        1: Native (Bình thường Mật khẩu)
-        2: LDAP
-        3: Safeword
-        10: SMS OTP(Citi MFA)"
-credInfoEncryptType		Giá trị là '0'
-makerId		Người tạo tài khoản người dùng
-reqActivity		Giá trị là '0'
-extraAttribs	List	Danh sách rỗng
-makerDate		Ngày tạo tài khoản người dùng
-appendEntityRoleMap		Giá trị là false
-salt		Giá trị là 'dummysalt'
-userId		Tài khoản người dùng như trường nickName
-checkerId		Người duyệt tạo người dùng
-currLoginDate		Ngày giờ login gần nhất
+        [JsonProperty("lastLoginDate")]
+        public string LastLoginDate { get; set; }             //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
 
-         */
+        [JsonProperty("authTypeAttrib")]
+        public JsonElement AuthTypeAttrib { get; set; }      //Danh sách rỗng
+        
+        [JsonProperty("expiryDate")]
+        public string ExpiryDate { get; set; }      //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
 
+        [JsonProperty("checkerDate")]
+        public string CheckerDate { get; set; }      //Ngày duyệt tạo người dùng, định dạng yyyy-MM-dd
 
+        /// <summary>
+        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
+        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+        ///         '2': Mật khẩu được gửi link vào email của người dùng
+        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
+        /// </summary>
+        [JsonProperty("mailIdFlag")]
+        public string MailIdFlag { get; set; }
 
-        [JsonProperty("interestRate")]
-        public string InterestRate { get; set; }
+        /// <summary>
+        /// Phương thức đăng nhập. Giá trị: -1: Super (Áp dụng cho user hệ thống không đăng nhập được);
+        ///                                 1: Native (Bình thường Mật khẩu); 2: LDAP; 3: Safeword; 10: SMS OTP(Citi MFA)
+        /// </summary>
+        [JsonProperty("authType")]
+        public int AuthType { get; set; }
 
-        [JsonProperty("prodCode")]
-        public string ProdCode { get; set; }
+        [JsonProperty("credInfoEncryptType")]
+        public int CredInfoEncryptType { get; set; }        //Giá trị là '0'
 
-        [JsonProperty("debitCreditFlag")]
-        public string DebitCreditFlag { get; set; }
+        [JsonProperty("makerId")]
+        public string MakerId { get; set; }                 //Người tạo tài khoản người dùng
 
-        [JsonProperty("accountType")]
-        public string AccountType { get; set; }
+        [JsonProperty("reqActivity")]
+        public int ReqActivity { get; set; }        //Giá trị là '0'
 
-        [JsonProperty("penalRate")]
-        public string PenalRate { get; set; }
+        [JsonProperty("extraAttribs")]
+        public JsonElement ExtraAttribs { get; set; }      //Danh sách rỗng
 
-        [JsonProperty("posRateExpiryDate")]
-        public string PosRateExpiryDate { get; set; }
+        [JsonProperty("makerDate")]
+        public string MakerDate { get; set; }      //Ngày tạo tài khoản người dùng, định dạng yyyy-MM-dd
 
-        [JsonProperty("posCode")]
-        public string PosCode { get; set; }
+        [JsonProperty("appendEntityRoleMap")]
+        public bool AppendEntityRoleMap { get; set; }       //Giá trị là false
 
-        [JsonProperty("subType")]
-        public string SubType { get; set; }
+        [JsonProperty("salt")]
+        public string Salt { get; set; }                    //Giá trị là 'dummysalt'
 
-        [JsonProperty("currency")]
-        public string Currency { get; set; }
+        [JsonProperty("userId")]
+        public string UserId { get; set; }                  //Tài khoản người dùng như trường nickName
 
-        [JsonProperty("circularRef")]
-        public string CircularRef { get; set; }
+        [JsonProperty("checkerId")]
+        public string CheckerId { get; set; }               //Người duyệt tạo người dùng
 
-        [JsonProperty("effectiveDate")]
-        public string EffectiveDate { get; set; }
-
-        [JsonProperty("circularDate")]
-        public string CircularDate { get; set; }
+        [JsonProperty("currLoginDate")]
+        public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
     }
 
     public class ServiceStatusResponse

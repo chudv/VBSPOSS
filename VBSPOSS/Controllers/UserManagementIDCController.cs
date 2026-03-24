@@ -6,6 +6,7 @@ using VBSPOSS.Extensions;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
+using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Controllers
 {
@@ -28,8 +29,9 @@ namespace VBSPOSS.Controllers
             _context = context;
         }
 
-        public IActionResult IndexUserManagementIDC()
+        public async Task<IActionResult> IndexUserManagementIDC()
         {
+
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData
@@ -54,7 +56,16 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
             TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
+            //Ví dụ gọi đến lấy thông tin người dùng iDC
+            var objUserInfo = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("DUYEN002");
 
+            var objUserInfo1 = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("DUYEN002X");
+
+            if (objUserInfo != null && !string.IsNullOrEmpty(objUserInfo.UserId))
+            {
+                string abc = objUserInfo.UserId;
+            } 
+                //Đợi tý a chạy lên đã
             return View("IndexUserManagementIDC");
         }
     }

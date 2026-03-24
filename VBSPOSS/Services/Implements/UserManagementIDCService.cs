@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection.Emit;
 using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
+using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;
@@ -22,9 +24,9 @@ namespace VBSPOSS.Services.Implements
         private readonly ApplicationDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
-        private readonly ILogger<InterestRateConfigureService> _logger;
+        private readonly ILogger<UserManagementIDCService> _logger;
         public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
-                        ILogger<InterestRateConfigureService> logger)
+                        ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
             _mapper = mapper;
@@ -215,8 +217,212 @@ namespace VBSPOSS.Services.Implements
             return iRetIdUpd;
         }
 
-        //Hàm truy vấn UserId từ Intellect iDC => Trả ra Model tương ứng iDC
+        /// <summary>
+        /// Hàm lấy thông tin người dùng trên iDC qua việc gọi đến API viewUser của ESB đến iDC
+        /// </summary>
+        /// <param name="pUserId">Tên người dùng cần lấy. Ex 'CHUDV13'</param>
+        /// <returns>Thông tin user ánh xạ vào Model ViewUserAPIReposeViewModel</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ViewUserAPIReposeViewModel> GetUserIDCInfoByApiViewUser(string pUserId)
+        {
+            try
+            {
+                ViewUserAPIReposeViewModel objUserIDCInfo = new ViewUserAPIReposeViewModel();
+                if (string.IsNullOrEmpty(pUserId))
+                    return objUserIDCInfo;
+                pUserId = string.IsNullOrEmpty(pUserId) ? "" : pUserId;
+                var _request = new ViewUserRequestViewModel();
+                _request.Ticket = ConstValueAPI.Ticket;
+                _request.UserId = pUserId;
+                var responseAPIViewUser = await _apiInternalEsbService.GetUserIDCInfoByApiViewUser(_request);
+                if (responseAPIViewUser == null || responseAPIViewUser.Result == null || !responseAPIViewUser.Result.Any())
+                {
+                    return new ViewUserAPIReposeViewModel();
+                }
+                if (responseAPIViewUser.ResponseCode == "00000")
+                {
 
+                    /*
+                      public string LastPWDChanged { get; set; }
+
+        /// <summary>
+        /// Không sử dụng, mặc định là 0
+        /// </summary>
+        public string PrimaryChoicebasedAuthType { get; set; }
+
+        public string MobileNumber { get; set; }
+
+        public string TranAuthType { get; set; }
+
+        public string ReqNo { get; set; }
+
+        public bool SelfRegistration { get; set; }
+
+        public string FromRecord { get; set; }
+
+        public string Language { get; set; }        //en_US | vi_VN
+
+        public string UserCreatedDate { get; set; }     //Ngày tạo người dùng.Định dạng yyyy-MM-dd
+
+        public string CorporateName { get; set; }       //Tên công ty dành cho người dùng là doanh nghiệp.Giá trị đang là '0'
+
+        public string EmailAddress { get; set; }        //Địa chỉ email của người dùng
+
+        public string AuthsecType { get; set; }         //Phương thức xác thực thứ 2. Giá trị mặc định '0'
+
+        public string DOB { get; set; }                 //Ngày sinh của người dùng.Định dạng yyyy-MM-dd
+
+        public string InvalidAttempt { get; set; }      //Số lần đăng nhập sai
+
+        public bool UserFromService { get; set; }      //Không sử dụng, mặc định là false
+
+        public string UserRole { get; set; }        //Nhóm quyền trên IDC(Không bao gồm Lending). Ex: POGD
+
+        public string BranchCode { get; set; }      //Mã POS của người dùng. Ex: 101
+
+        public string NickName { get; set; }      //Tên tài khoản người dùng cần lấy thông tin
+
+        public string DefaultBranch { get; set; }      //Chỉ định chi nhánh mặc định cho người dùng sẽ được tạo. Ex: 'IDCPRODC'
+
+        public int HpinFlag { get; set; }      //Có sử dụng hard PIN không, mặc định là 0
+
+        public int ReqNumber { get; set; }      //Không sử dụng, mặc định là 0
+
+        public int ToRecord { get; set; }      //Không sử dụng, mặc định là 0
+
+        public bool AppendEntity { get; set; }      //Không sử dụng, mặc định là false
+
+        public string FirstName { get; set; }
+
+        public string GroupName { get; set; }               //Nhóm quyền của LMS/ FAMS, COLLATERAL (Trừ phần hệ Core). Ex: IDCROLE,GRPLMSIT,GRPCLMSIT
+
+        public bool IsWebSealUser { get; set; }               //Mặc định là false
+
+        public string EntityList { get; set; }               //Entity quản lý người dùng. Ex: UATVBSP hoặc Bank/IDCPRODC. Ex: 'IDCPRODC'
+
+        public string UserIdentifierName { get; set; }               //Giá trị là mặc định 'All'. Tùy theo lựa chọn có thể là: All/Functional User/Administrator/Retail
+
+        public int OperationType { get; set; }               //Giá trị là -1
+
+        public int UserType { get; set; }               //Loại người dùng (IDL_ARX.TB_ARM_USER_TYPE@VBSPCBSLINK). Giá trị quy ước: 0: Bank; 1: Corporate; 2: Retail
+
+        public bool EncryptExtraAttrib { get; set; }               //Giá trị mặc định false
+
+        public string LastName { get; set; }
+
+        public string UserIdentifierAlias { get; set; }         //Giá trị là 'All'
+
+        public int UserStatus { get; set; }                     //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
+
+        public int SecondaryChoicebasedAuthType { get; set; }   //Giá trị là '0'
+
+        public int PrevStatus { get; set; }             //Trạng thái trước đó của User. Giá trị là -7
+
+        public bool AppendRole { get; set; }            //Giá trị là false
+
+        public string LastLoginDate { get; set; }       //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
+
+        public string ExpiryDate { get; set; }          //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
+
+        public string CheckerDate { get; set; }         //Ngày duyệt tạo người dùng, định dạng yyyy-MM-dd
+
+        /// <summary>
+        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
+        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+        ///         '2': Mật khẩu được gửi link vào email của người dùng
+        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
+        /// </summary>
+        public string MailIdFlag { get; set; }
+
+        /// <summary>
+        /// Phương thức đăng nhập. Giá trị: -1: Super (Áp dụng cho user hệ thống không đăng nhập được);
+        ///                                 1: Native (Bình thường Mật khẩu); 2: LDAP; 3: Safeword; 10: SMS OTP(Citi MFA)
+        /// </summary>
+        public int AuthType { get; set; }
+
+        public int CredInfoEncryptType { get; set; }        //Giá trị là '0'
+
+        public string MakerId { get; set; }                 //Người tạo tài khoản người dùng
+
+        public int ReqActivity { get; set; }        //Giá trị là '0'
+
+        public string MakerDate { get; set; }      //Ngày tạo tài khoản người dùng, định dạng yyyy-MM-dd
+
+        public bool AppendEntityRoleMap { get; set; }       //Giá trị là false
+
+        public string Salt { get; set; }                    //Giá trị là 'dummysalt'
+
+        public string UserId { get; set; }                  //Tài khoản người dùng như trường nickName
+
+        public string CheckerId { get; set; }               //Người duyệt tạo người dùng
+
+        public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
+                     */
+
+                }
+                //if(responseAPIViewUser.ResponseCode)
+                var objUserInfoByAPI = responseAPIViewUser.Result[0];
+
+                //  public async Task<GenericListRecordJava<ViewUserReposeViewModel>> GetUserIDCInfoByApiViewUser(ViewUserRequestViewModel requestInput)
+                //var _lstProductList = _productService.GetAccountTypes("");
+                //int _id = 1;
+                //for (int i = 0; i < data.Count; i++)
+                //{
+                //    for (int j = 0; j < data[i].TermDetails.Count; j++)
+                //    {
+                //        TideTermViewModel item = new TideTermViewModel();
+                //        item.Id = _id;
+                //        item.TermProductCode = data[i].ProdCode;
+                //        item.TermProductName = data[i].ProdName;
+                //        item.TermAccountTypeCode = data[i].DepositType;
+                //        var product = _lstProductList.FirstOrDefault(p => p.Value == data[i].DepositType);
+
+                //        item.TermAccountTypeName = product == null ? "" : product.Text;
+                //        item.TermAccountSubTypeCode = data[i].DepositSubType;
+                //        item.TermCurrencyCode = data[i].Currency;
+                //        item.TermEffectiveDate = string.IsNullOrEmpty(data[i].EffectDate) ? DateTime.Now : CustConverter.StringToDate(data[i].EffectDate);
+                //        item.TermAmoutSlab = data[i].SlabRange == null ? 0 : Convert.ToDecimal(data[i].SlabRange);
+                //        item.TermSerial = int.Parse(data[i].TermDetails[j].Serial);
+                //        item.TermDesc = data[i].TermDetails[j].TermDesc;
+                //        item.TermValue = int.Parse(data[i].TermDetails[j].TermValue);
+                //        item.TermUnit = data[i].TermDetails[j].TermUnit;
+                //        item.InclusionFlag = data[i].TermDetails[j].InclusionFlag;
+                //        item.TermIntRate = data[i].TermDetails[j].IntRate == null ? 0 : Convert.ToDecimal(data[i].TermDetails[j].IntRate);
+                //        item.TermIntRateNew = data[i].TermDetails[j].IntRate == null ? 0 : Convert.ToDecimal(data[i].TermDetails[j].IntRate);
+
+                //        //Phan them bien do lai suat
+                //        if (posCode == PosValue.HEAD_POS)
+                //        {
+                //            item.MinInterestRateSpread = 0;
+                //            item.MaxInterestRateSpread = 0;
+                //            item.MinTermIntRateNew = item.TermIntRate;
+                //            item.MaxTermIntRateNew = item.TermIntRate;
+                //        }
+                //        else
+                //        {
+                //            var productParameter = _productService.GetProductParameter(ProductGroupCode.ProductGroupCode_Tide, data[i].ProdCode, null);
+                //            item.MinInterestRateSpread = productParameter?.MinInterestRateSpread ?? 0;
+                //            item.MaxInterestRateSpread = productParameter?.MaxInterestRateSpread ?? 0;
+                //            item.MinTermIntRateNew = item.TermIntRate - (productParameter?.MinInterestRateSpread ?? 0);
+                //            item.MaxTermIntRateNew = item.TermIntRate + (productParameter?.MaxInterestRateSpread ?? 0);
+                //        }
+
+                //        result.Add(item);
+                //        _id++;
+                //    }
+                //}
+
+
+                return objUserIDCInfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw new Exception($"Lỗi khi gọi API lấy danh sách sản phẩm Tide: {ex.Message}", ex);
+            }
+        }
 
         /*
 {
