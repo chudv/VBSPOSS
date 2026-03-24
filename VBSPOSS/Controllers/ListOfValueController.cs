@@ -713,9 +713,6 @@ namespace VBSPOSS.Controllers
             }
             return Json(data);
         }
-        //return Json(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-
 
         /// <summary>
         /// Hàm lấy danh sách Xã/Phường/Thị trấn hiển thị lên Combobox với Id là Mã Xã/Phường/Thị trấn
