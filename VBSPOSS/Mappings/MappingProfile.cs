@@ -32,6 +32,9 @@ namespace VBSPOSS.Mappings
             CreateMap<UserManagementIDC, UserManagementIDCViewModel>();
             CreateMap<UserManagementIDCViewModel, UserManagementIDC>();
 
+            CreateMap<ListOfTransPoint, ListOfTransPointViewModel>();
+            CreateMap<ListOfTransPointViewModel, ListOfTransPoint>();
+
             CreateMap<PosRepresentative, PosRepresentativeViewModel>()
                .ForMember(dest => dest.MainPosName, opt => opt.MapFrom(src => src.MainPosName))
                .ForMember(dest => dest.PosName, opt => opt.MapFrom(src => src.PosName))

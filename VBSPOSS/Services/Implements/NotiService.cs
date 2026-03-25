@@ -72,9 +72,9 @@ namespace VBSPOSS.Services.Implements
         }
 
         /// <summary>
-        /// Hàm cập nhật dữ liệu (Thêm/Sửa) vào bảng dữ liệu FINLIT_CATEGORY (Thông tin Danh mục đề mục)
+        /// Hàm cập nhật dữ liệu (Thêm/Sửa) vào bảng dữ liệu NOTI_TEMP (Thông tin Danh mục đề mục)
         /// </summary>
-        /// <param name="model">FINLIT_CATEGORY (Thông tin Danh mục Đề mục)</param>
+        /// <param name="model">NOTI_TEMP (Thông tin Danh mục Đề mục)</param>
         /// <param name="pUserName">Tên đăng nhập của người dùng thao tác chức năng</param>
         /// <returns>Id bảng ghi vừa được cập nhật</returns>
         public int UpdateNotiTemp(NotiTempViewModel model, string pUserName)
