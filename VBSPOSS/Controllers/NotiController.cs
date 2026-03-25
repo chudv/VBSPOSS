@@ -48,7 +48,7 @@ namespace VBSPOSS.Controllers
         private readonly IMapper _mapper;
         private readonly IProductService _createConfigService;
         private readonly IProductService _productService;
-
+        private readonly IListOfTransPointService _transpointService;
 
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace VBSPOSS.Controllers
         /// <param name="logger">The logger<see cref="ILogger{ListController}"/>.</param>
         /// <param name="menuService">The menuService<see cref="IPermitService"/>.</param>
         public NotiController(ILogger<BaseController> logger, IWebHostEnvironment hostingEnvironment, INotiService service, IApiNotiGatewayService notiService, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
-            IInterestRateConfigureService interestRateConfigureService,
+            IInterestRateConfigureService interestRateConfigureService, IListOfTransPointService transpointService,
             IMapper mapper,
             IProductService createConfigService,
             IProductService productService) : base(logger, adminService, sessionHelper)
@@ -72,6 +72,7 @@ namespace VBSPOSS.Controllers
             _mapper = mapper;
             _createConfigService = createConfigService;
             _productService = productService;
+            _transpointService = transpointService;
         }
 
         public IActionResult IndexNotiTemplate()
@@ -2103,6 +2104,34 @@ namespace VBSPOSS.Controllers
                 ModelState.AddModelError("ERROR", "Có lỗi xảy ra trong quá trình trình duyệt: " + ex.Message);
                 return Json(new[] { model }.ToDataSourceResult(request, ModelState));
             }
+        }
+
+        public IActionResult LoadTranspointGridData([DataSourceRequest] DataSourceRequest request, string pPosCodeFind, string pTranspointName, string pBeginDateFind, string pEndDateFind)
+        {
+            string sPosCodeFind = "", sTranspointName = "", sPosCode = "";
+            sPosCodeFind = (string.IsNullOrEmpty(pPosCodeFind) || pPosCodeFind == "" || pPosCodeFind == "null") ? "" : pPosCodeFind;
+            sTranspointName = (string.IsNullOrEmpty(pTranspointName) || pTranspointName == "" || pTranspointName == "null") ? "" : pTranspointName;
+            DateTime sBeginDateFind = DateTime.ParseExact(pBeginDateFind, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            DateTime sEndDateFind = DateTime.ParseExact(pEndDateFind, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            int iBeginDate = sBeginDateFind.Day;
+            int iEndDate = sEndDateFind.Day;
+            if (UserPosCode == "" || UserPosCode == "000100" || UserPosCode == "000199")
+            {
+                sPosCode = sPosCodeFind;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(sPosCodeFind) || sPosCodeFind == "0" || sPosCodeFind == "000000")
+                {
+                    string sSQL = $"Select Top 1 IsNull(MainPosCode,'') Code From ListOfPos Where Code = {UserPosCode}";
+                    string sMainPosTMP = _serviceLOV.GetCellValueForQuery(sSQL);
+                    sPosCode = sMainPosTMP;
+                }
+                else sPosCode = sPosCodeFind;
+            }
+
+            var tranpointLists = _transpointService.GetListOfTransPointSearch("", sPosCode, "", "", sTranspointName, iBeginDate, iEndDate,"");
+            return Json(tranpointLists.ToDataSourceResult(request, ModelState));
         }
 
 

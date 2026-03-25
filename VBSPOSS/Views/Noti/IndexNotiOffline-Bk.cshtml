@@ -1,6 +1,5 @@
 ﻿@using Kendo.Mvc
 @using VBSPOSS.Extensions
-@using VBSPOSS.ViewModels
 @using VBSPOSS.Models
 @{
     ViewBag.Title = "THÔNG BÁO LẠI MẬT KHẨU CHO NGƯỜI DÙNG ĐI GIAO DỊCH OFFLINE";
@@ -13,7 +12,7 @@
 <div id="myPopup"></div>
 <div id="notification"></div>
 <style>
-    #gridMainTranspoint div a, table tr, td {
+    #gridMainCasaRate div a, table tr, td {
         font-size: 12px;
     }
 
@@ -23,11 +22,11 @@
         min-width: 20px !important;
     }
 
-    #gridMainTranspoint .k-grid td {
+    #gridMainCasaRate .k-grid td {
         border-right: 1px solid #ddd !important;
     }
 
-    #gridMainTranspoint .k-grid-header th {
+    #gridMainCasaRate .k-grid-header th {
         border-right: 1px solid #ddd !important;
     }
 
@@ -254,29 +253,39 @@
              pUserName: "",
              pFlagWholeBank: 1
          };
-    }
-
-    function paramLoadGridData() {
-        return {
-            pPosCodeFind: $("#PosCode_Find").val(),
-            pTranspointName: $("#TXNName_Find").val(),
-            pBeginDateFind: $("#CircularDateBegin_Find").val(),
-            pEndDateFind: $("#CircularDateEnd_Find").val()
-        };
-    }
+     }
 
     
-        
+        function paramLoadGridData() {
+        var combo = $("#TXNCode_Find").data("kendoComboBox");
+        var statusValue = combo ? combo.value() : null;  // 
+
+        var params = {
+            pProductGroupCode: "CASA",
+            pPosCode: $("#PosCode_Find").val() || "",
+            pCircularRefNum: $("#CircularRefNum_Find").val() || "",
+            pFromEffectiveDate: $("#CircularDateBegin_Find").val() || "",
+            pToEffectiveDate: $("#CircularDateEnd_Find").val() || "",
+            pProductCode: $("#ProductCode_Find").val() || "",
+              searchText: $("#TXNName_Find").val(),
+        //  searchText: $("#ProductCode_Find").val() || "",  // 
+            status: statusValue                          // 
+        };
+
+        console.log("Params gửi lên server:", params);  // 
+
+        return params;
+    }
     function refreshGridCasaRateConfigure() {
-        var grid = $("#gridMainTranspoint").data("kendoGrid");
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
         if (grid != null) {
             grid.dataSource.read();
         }
     }
-    function onSearch(e) {
+    function onSearchCasaRateConfigure(e) {
         refreshGridCasaRateConfigure();
     }
-    function onRowBoundTranspoint(e) {
+    function onRowBoundCasaRateConfigure(e) {
         var rows = e.sender.tbody.children();
         var isRed = true;
 
@@ -334,8 +343,8 @@
 
 
         // Checkbox logic
-        $("#gridMainTranspoint").on("click", ".chkbx", function () {
-            var grid = $("#gridMainTranspoint").data("kendoGrid");
+        $("#gridMainCasaRate").on("click", ".chkbx", function () {
+            var grid = $("#gridMainCasaRate").data("kendoGrid");
             var dataItem = grid.dataItem($(this).closest("tr"));
             var checked = $(this).is(":checked");
             if (checked) {
@@ -349,7 +358,7 @@
             } else {
                 dataItem.set("IsSelected", false);
             }
-            $("#gridMainTranspoint .chkbx").each(function () {
+            $("#gridMainCasaRate .chkbx").each(function () {
                 var rowDataItem = grid.dataItem($(this).closest("tr"));
                 $(this).prop("checked", rowDataItem.IsSelected);
             });
@@ -460,7 +469,7 @@
     // FIX: showEdit - fallback Id/IdList
     function showEdit(e) {
         e.preventDefault();
-        var grid = $("#gridMainTranspoint").data("kendoGrid");
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
         var tr = $(e.currentTarget).closest("tr");
         var dataItem = grid.dataItem(tr);
         var useId = dataItem.Id > 0 ? dataItem.Id : (dataItem.IdList > 0 ? dataItem.IdList : 0);
@@ -498,7 +507,7 @@
     // FIX: deleteItem - fallback Id/IdList
     function deleteItem(e) {
         e.preventDefault();
-        var grid = $("#gridMainTranspoint").data("kendoGrid");
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
         var row = $(e.currentTarget).closest("tr");
         var dataItem = grid.dataItem(row);
         var useId = dataItem.Id > 0 ? dataItem.Id : (dataItem.IdList > 0 ? dataItem.IdList : 0);
@@ -774,9 +783,9 @@
                 .AutoBind(true)
                 .SelectedIndex(0))
 
-            @* <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;">Điểm giao dịch</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:85px;padding-top:3px;padding-right:6px;">ĐGD</label>
             @(Html.Kendo().ComboBox()
-                .Name("TxnCode_Find")
+                .Name("TXNCode_Find")
                 .Filter("contains")
                 .Placeholder("--- Chọn điểm giao dịch ---")
                 .DataTextField("Description")      //
@@ -790,15 +799,17 @@
                 })
                 .AutoBind(true)
                 .SelectedIndex(0)  //
-                ) *@
-            <label class="lbcontrol" style="color: navy;text-align:right;width:130px;padding-top:3px;padding-right:6px;">Điểm giao dịch</label>
+                )
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top:3px;padding-right:6px;">Tên ĐGD</label>
             @(Html.Kendo().TextBox()
                 .Name("TXNName_Find")
                 .HtmlAttributes(new { placeholder = "Tên điểm giao dịch", style = "background-color:white;width: 180px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
                 .Value("")
                 )
- 
-            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top:3px;padding-right:6px;">Ngày giao dịch</label>
+           
+
+            
+            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top:3px;padding-right:6px;">Ngày GD</label>
             @(Html.Kendo().DatePicker()
                 .Name("CircularDateBegin_Find")
                 .Format("dd/MM/yyyy")
@@ -814,8 +825,8 @@
                 )
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
-                .Name("btnSearch")
-                .Events(ev => ev.Click("onSearch"))
+                .Name("btnSearchCasaRateConfigure")
+                .Events(ev => ev.Click("onSearchCasaRateConfigure"))
                 .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:120px; color: blue;padding-left: 0px; ", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất CASA" })
                 .ImageUrl(Url.Content("~/images/tim_kiem.png"))
                 .Content(" Tìm kiếm "))
@@ -824,12 +835,12 @@
     <div style="margin-top: 5px;"></div>
     <div style="color: navy; padding-top: 0px; display:flex;" class="row">
         <div class="col-md-12">
-            @(Html.Kendo().Grid<ListOfTransPointViewModel>()
-                .Name("gridMainTranspoint")
-                .Events(e => e.DataBound("onRowBoundTranspoint"))
+            @(Html.Kendo().Grid<VBSPOSS.Data.Models.InterestRateConfigMasterView>()
+                .Name("gridMainCasaRate")
+                .Events(e => e.DataBound("onRowBoundCasaRateConfigure"))
                 .Columns(columns =>
                 {
-                    columns.Command(command =>
+                    @* columns.Command(command =>
                     {
                         command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetails").HtmlAttributes(new
                         {
@@ -849,63 +860,84 @@
                             title = "Xóa dữ liệu",
                             @class = "btn-delete"
                         });
-                    }).Width(300).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.ProvinceCode).Hidden();
+                        command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorize").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Phê duyệt",
+                            @class = "btn-auth"
+                        });
+                        command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("showApproval").HtmlAttributes(new
+                        {
+                            style = "width: 50px !important; display: inline-block; vertical-align: middle;",
+                            title = "Trình duyệt",
+                            @class = "btn-approval"
+                        });
+                    }).Width(300).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" }); *@
+                    columns.Bound(c => c.DocumentId).Hidden();
+                    columns.Bound(c => c.Id).Hidden();
+                    columns.Bound(c => c.ProductGroupCode).Hidden();
+                    columns.Bound(c => c.ProductGroupName).Hidden();
+                    columns.Bound(c => c.CircularRefNum).Hidden();
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.PosCode).Hidden();
-                    columns.Bound(c => c.DistrictCode).Hidden();
-                    columns.Bound(c => c.DistrictName).Hidden();
-                    columns.Bound(c => c.CommuneCode).Hidden();
-                    columns.Bound(c => c.TimeBegin).Hidden();
-                    columns.Bound(c => c.STT).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.TimeEnd).Hidden();
-                    columns.Bound(c => c.ProvinceName).Title("Tỉnh/Thành phố").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.CommuneName).Title("Xã/Phường").Width(150).HtmlAttributes(new { style = "text-align: left;" });                  
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.TimeBeginNum).Hidden();
-                    columns.Bound(c => c.TimeEndNum).Hidden();
-                    columns.Bound(c => c.VisitDate).Title("Ngày giao dịch").Width(100).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.Times).Title("Giờ giao dịch").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Group(groupCoordinate => groupCoordinate.Title("Tọa độ điểm giao dịch")
-                    .Columns(infoCoordinate =>
-                    {
-                        infoCoordinate.Bound(x => x.Longitude).Title("Kinh độ").Width(40).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCoordinate.Bound(x => x.Latitude).Title("Vĩ độ").Width(40).HtmlAttributes(new { style = "text-align: right;" });
-                     
-                    }));
-                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.Hours).Hidden();
-                    columns.Bound(c => c.Minutes).Hidden();
-                    columns.Bound(c => c.IsInCommune).Hidden();
-                    columns.Bound(c => c.IsInPos).Hidden();
-                    columns.Bound(c => c.IsInterWard).Hidden();
-                    columns.Bound(c => c.InterWardName).Hidden();
-                    columns.Bound(c => c.EffectiveDate).Hidden();
-                    columns.Bound(c => c.TxnLocation).Hidden();
-                    columns.Bound(c => c.AddressDetail).Hidden();
-                    columns.Bound(c => c.AddressCode).Hidden();
-                    columns.Bound(c => c.AddressFull).Hidden();
-                    columns.Bound(c => c.PhoneSupport).Hidden();
-                    columns.Bound(c => c.PhoneSupport01).Hidden();
-                    columns.Bound(c => c.PhoneSupport02).Hidden();
-                    columns.Bound(c => c.Status).Hidden();
+                   
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.UserId).Hidden();
+                    columns.Bound(c => c.CircularDate).Hidden();
+                    columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(180).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ProductList).Title("Danh sách sản phẩm cấu hình").HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.RecordSerialNo).Hidden();
+                    columns.Bound(c => c.ProductName).Hidden();
+                    columns.Bound(c => c.CurrencyCode).Hidden();
+                    columns.Bound(c => c.AccountTypeCode).Hidden();
+                    columns.Bound(c => c.AccountTypeName).Hidden();
+                    columns.Bound(c => c.AccountSubTypeCode).Hidden();
+                    columns.Bound(c => c.AccountSubTypeName).Hidden();
+                    columns.Bound(c => c.InterestRate).Hidden();
+                    columns.Bound(c => c.PenalRate).Hidden();
+                    columns.Bound(c => c.NewInterestRate).Hidden();
+                    columns.Bound(c => c.TenorSerialNo).Hidden();
+                    columns.Bound(c => c.AmountSlab).Hidden();
+                    columns.Bound(c => c.IntRateType).Hidden();
+                    columns.Bound(c => c.SpreadRate).Hidden();
                     columns.Bound(c => c.Remark).Hidden();
+                    columns.Bound(c => c.OrtherNotes).Hidden();
                     columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.CallApiTxnStatus).Hidden();
+                    columns.Bound(c => c.CallApiReqRecordSl).Hidden();
+                    columns.Bound(c => c.CallApiResponseCode).Hidden();
+                    columns.Bound(c => c.CallApiResponseMsg).Hidden();
                     columns.Bound(c => c.CreatedBy).Hidden();
                     columns.Bound(c => c.CreatedDate).Hidden();
                     columns.Bound(c => c.ModifiedBy).Hidden();
                     columns.Bound(c => c.ModifiedDate).Hidden();
                     columns.Bound(c => c.ApproverBy).Hidden();
                     columns.Bound(c => c.ApprovalDate).Hidden();
-                    columns.Bound(c => c.TxnStatus).Title("Trạng thái").Width(150).HtmlAttributes(new { style = "text-align: center; font-weight: bold;" });
+                    columns.Bound(c => c.DebitCreditFlag).Hidden();
+                    columns.Bound(c => c.AccountTypeList).Hidden();
+
+                    columns.Bound(c => c.StatusDesc)
+                    .Title("Trạng thái")
+                    .Width(150)
+                    .HtmlAttributes(new { style = "text-align: center; font-weight: bold;" });
+                   
+                   @*  columns.Bound(c => c.Status).Title("Trạng thái").Width(150)
+                    .HtmlAttributes(new { style = "text-align: center;" }); *@
+                    //columns.Bound(c => c.Status).Title("Trạng thái").Width(100).ClientTemplate("#= getStatusDesc(Status) #").HtmlAttributes(new { style = "text-align: center;" });
                 })
                 .HtmlAttributes(new { style = "height: 650px;color: navy; border: 1px solid #ddd;" })
-                .ToolBar(toolbar =>
+                @* .ToolBar(toolbar =>
                 {
-                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });          
+                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+            
                     toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "width: 100px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                   // toolbar.Custom().IconClass("k-icon k-i-calendar").Text("Tờ trình").Name("btnDocument").HtmlAttributes(new { id = "btnDocument", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;" });
                 })
-                .Excel(excel => excel.FileName("Danh_sach_diem_giao_dich.xlsx").AllPages(true))
+                .Excel(excel => excel.FileName("Danh_sach_cau_hinh_lai_suat_CASA.xlsx").AllPages(true)) *@
                 .Editable(editable => editable.Mode(GridEditMode.InLine))
                 .Sortable()
                 .Scrollable()
@@ -914,9 +946,9 @@
                 .Ajax()
                 .Batch(false)
                 .ServerOperation(false)
-                .Model(model => model.Id(p => p.STT)) 
-                .Events(e => e.RequestEnd("onSaveGridCompleted").Error("error_handler"))
-                .Read(read => read.Action("LoadTranspointGridData", "Noti").Data("paramLoadGridData"))
+                .Model(model => model.Id(p => p.Id)) 
+                .Events(e => e.RequestEnd("onSaveGridCompletedCasaRateConfigure").Error("error_handlerCasaRateConfigure"))
+                .Read(read => read.Action("LoadInterestRateGridData", "Noti").Data("paramLoadGridData"))
                 .PageSize(50)
                 )
                 .Resizable(resize => resize.Columns(true))
@@ -927,7 +959,7 @@
 </div>
 <script>
 
-    // function onDataBoundgridMainTranspoint(e) {
+    // function onDataBoundGridMainCasaRate(e) {
     //     var grid = this;
     //     var items = grid.dataSource.view(); // Lấy tất cả các dòng hiện tại
 
@@ -963,15 +995,15 @@
 
     // // Bind event dataBound khi document ready
     // $(document).ready(function () {
-    //     var grid = $("#gridMainTranspoint").data("kendoGrid");
+    //     var grid = $("#gridMainCasaRate").data("kendoGrid");
     //     if (grid) {
     //         // Gắn hàm vào event dataBound
-    //         grid.bind("dataBound", onDataBoundgridMainTranspoint);
+    //         grid.bind("dataBound", onDataBoundGridMainCasaRate);
     //     }
     // });
 
 
-     function onSaveGridCompleted(e) {
+     function onSaveGridCompletedCasaRateConfigure(e) {
         if (e != null && e.response != null) {
             if (!e.response.Errors) {
                 if (e.type == "create") {
@@ -987,7 +1019,7 @@
             }
         }
     }
-    function error_handler(e) {
+    function error_handlerCasaRateConfigure(e) {
         if (e.errors) {
             var message = "Errors:\n";
             $.each(e.errors, function (key, value) {

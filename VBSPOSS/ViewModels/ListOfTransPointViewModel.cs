@@ -31,7 +31,7 @@ namespace VBSPOSS.ViewModels
 
         public string TxnPointName { get; set; }
         
-        public string VisitDate { get; set; }
+        public int VisitDate { get; set; }
 
         public string Times { get; set; }
         
