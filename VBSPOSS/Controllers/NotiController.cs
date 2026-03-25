@@ -893,47 +893,47 @@ namespace VBSPOSS.Controllers
 
 
 
-        [HttpPost]
-        [Route("SaveCasaRateConfigure")]
-        public async Task<IActionResult> SaveCasaRateConfigure()
-        {
-            string body;
-            using (var reader = new StreamReader(Request.Body))
-            {
-                body = await reader.ReadToEndAsync();
-            }
-            Console.WriteLine($"Received body: {body}");
+        //[HttpPost]
+        //[Route("SaveCasaRateConfigure")]
+        //public async Task<IActionResult> SaveCasaRateConfigure()
+        //{
+        //    string body;
+        //    using (var reader = new StreamReader(Request.Body))
+        //    {
+        //        body = await reader.ReadToEndAsync();
+        //    }
+        //    Console.WriteLine($"Received body: {body}");
 
-            if (string.IsNullOrEmpty(body))
-            {
-                return BadRequest("Request body is empty.");
-            }
+        //    if (string.IsNullOrEmpty(body))
+        //    {
+        //        return BadRequest("Request body is empty.");
+        //    }
 
-            try
-            {
-                var request = System.Text.Json.JsonSerializer.Deserialize<SaveCasaRateConfigureRequest>(body);
-                Console.WriteLine($"Deserialized request: {JsonConvert.SerializeObject(request)}");
-                if (request == null)
-                {
-                    return BadRequest("Failed to deserialize request.");
-                }
+        //    try
+        //    {
+        //        var request = System.Text.Json.JsonSerializer.Deserialize<SaveCasaRateConfigureRequest>(body);
+        //        Console.WriteLine($"Deserialized request: {JsonConvert.SerializeObject(request)}");
+        //        if (request == null)
+        //        {
+        //            return BadRequest("Failed to deserialize request.");
+        //        }
 
-                // 
-                var message = await _interestRateConfigureService.SaveCasaRateConfigureData(request.Model, request.GridItems, UserName, UserPosCode);
-                Console.WriteLine($"Save result: {message}");
-                return Ok(new { Success = true, Message = $"{message}" });
-            }
-            catch (DbUpdateException ex)
-            {
-                Console.WriteLine($"Database error: {ex.Message}, Inner: {ex.InnerException?.Message}, StackTrace: {ex.StackTrace}");
-                return StatusCode(500, $"Lỗi khi lưu vào cơ sở dữ liệu: {ex.InnerException?.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"General error: {ex.Message}, StackTrace: {ex.StackTrace}");
-                return StatusCode(500, $"Lỗi khi lưu dữ liệu: {ex.Message}");
-            }
-        }
+        //        // 
+        //        var message = await _interestRateConfigureService.SaveCasaRateConfigureData(request.Model, request.GridItems, UserName, UserPosCode);
+        //        Console.WriteLine($"Save result: {message}");
+        //        return Ok(new { Success = true, Message = $"{message}" });
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        Console.WriteLine($"Database error: {ex.Message}, Inner: {ex.InnerException?.Message}, StackTrace: {ex.StackTrace}");
+        //        return StatusCode(500, $"Lỗi khi lưu vào cơ sở dữ liệu: {ex.InnerException?.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"General error: {ex.Message}, StackTrace: {ex.StackTrace}");
+        //        return StatusCode(500, $"Lỗi khi lưu dữ liệu: {ex.Message}");
+        //    }
+        //}
 
         // Sửa lại lưu DB Create casa
 

@@ -376,24 +376,118 @@
     }
 
     // Hàm lưu
-    function onSave_CasaRateConfigureForm() {
+    // function onSave_CasaRateConfigureForm() {
+    //     try {
+    //         var grid = $("#casaRateConfigureGrid").data("kendoGrid");
+    //         if (!grid) {
+    //             alert("Lỗi: Không tìm thấy grid!");
+    //             return;
+    //         }
+    //         var decisionNo = $("#CircularRefNum").val().trim();
+    //         if (!decisionNo) {
+    //             alert("Bạn chưa nhập số Quyết định!");
+    //             return;
+    //         }
+    //         var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
+    //         if (!applyPosLst || applyPosLst.length === 0) {
+    //             alert("Vui lòng chọn ít nhất một POS áp dụng!");
+    //             return;
+    //         }
+    //         // Lấy dữ liệu grid
+    //         var gridData = grid.dataSource.data().toJSON().map(item => ({
+    //             Id: 0,
+    //             RateProductCode: item.RateProductCode,
+    //             RateProductName: item.RateProductName,
+    //             RateProductAccountTypeCode: item.RateProductAccountTypeCode,
+    //             RateProductAccountTypeName: item.RateProductAccountTypeName,
+    //             RateProductAccountSubTypeCode: item.RateProductAccountSubTypeCode || "0",
+    //             RateProductCurrencyCode: item.RateProductCurrencyCode || "VND",
+    //             RateProductDebitCreditFlag: item.RateProductDebitCreditFlag || "C",
+    //             RateProductEffectiveDate: item.RateProductEffectiveDate,
+    //             RateProductExpiredDate: item.RateProductExpiredDate,
+    //             RateProductInterestRate: item.RateProductInterestRate,
+    //             RateProductNewInterestRate: item.RateProductNewInterestRate,
+    //             RateProductPenalRate: item.RateProductPenalRate || 0,
+    //             RateProductPosCode: item.RateProductPosCode,
+    //             RateProductAmoutSlab: item.RateProductAmoutSlab || 0,
+
+
+    //                             InterestRateHO: item.InterestRateHO || 0,
+    //     MinInterestRateSpread: item.MinInterestRateSpread || 0,
+    //     MaxInterestRateSpread: item.MaxInterestRateSpread || 0
+    //         }));
+    //         // Lấy dữ liệu form
+    //         var formModel = {
+    //             EffectiveDate: $("#EffectiveDate").data("kendoDatePicker").value(),
+    //             ExpiredDate: $("#ExpiredDate").data("kendoDatePicker").value(),
+    //             CircularDate: $("#CircularDate").data("kendoDatePicker").value(),
+    //             CircularRefNum: $("#CircularRefNum").val(),
+    //             NewInterestRate: $("#NewInterestRate").data("kendoNumericTextBox").value(),
+    //             PenalRate: 0,
+    //             AmoutSlab: 0,
+    //             DebitCreditFlag: "C",
+    //             ApplyPosList: applyPosLst
+    //         };
+    //         var submitData = {
+    //             model: formModel,
+    //             gridItems: gridData
+    //         };
+    //         $.ajax({
+    //             url: '@Url.Action("SaveCasaRateConfigure", "CasaRateConfigure")',
+    //             type: "POST",
+    //             data: JSON.stringify(submitData),
+    //             contentType: "application/json; charset=utf-8",
+    //             headers: {
+    //                 "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+    //             },
+    //             beforeSend: function () {
+    //                 kendo.ui.progress($("#addCasaForm"), true);
+    //             },
+    //             success: function (response) {
+    //                 kendo.ui.progress($("#addCasaForm"), false);
+    //                 if (response.Success) {
+    //                    // alert("Lưu thông tin lãi suất CASA thành công!");
+    //                         alert("Bạn đã tạo thay đổi lãi suất theo quyết định " +  decisionNo + " thành công!");
+    //                     dataChangeCasaRateConfigure = true;
+    //                     mainWindow.data("kendoWindow").close();
+    //                     $("#saveBtn").prop("disabled", true);
+    //                 } else {
+    //                     alert("Lưu thất bại: " + (response.Message || "Unknown error"));
+    //                 }
+    //             },
+    //             error: function (xhr) {
+    //                 kendo.ui.progress($("#addCasaForm"), false);
+    //                 alert("Lỗi server: " + (xhr.responseText || xhr.statusText));
+    //             }
+    //         });
+    //     } catch (error) {
+    //         kendo.ui.progress($("#addCasaForm"), false);
+    //         alert("Lỗi JS: " + error.message);
+    //     }
+    // }
+
+
+        function onSave_CasaRateConfigureForm() {
         try {
             var grid = $("#casaRateConfigureGrid").data("kendoGrid");
             if (!grid) {
                 alert("Lỗi: Không tìm thấy grid!");
                 return;
             }
+
             var decisionNo = $("#CircularRefNum").val().trim();
             if (!decisionNo) {
                 alert("Bạn chưa nhập số Quyết định!");
                 return;
             }
+
             var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
             if (!applyPosLst || applyPosLst.length === 0) {
                 alert("Vui lòng chọn ít nhất một POS áp dụng!");
                 return;
             }
-            // Lấy dữ liệu grid
+
+            // ====================== SỬA PHẦN GRID ======================
             var gridData = grid.dataSource.data().toJSON().map(item => ({
                 Id: 0,
                 RateProductCode: item.RateProductCode,
@@ -403,35 +497,44 @@
                 RateProductAccountSubTypeCode: item.RateProductAccountSubTypeCode || "0",
                 RateProductCurrencyCode: item.RateProductCurrencyCode || "VND",
                 RateProductDebitCreditFlag: item.RateProductDebitCreditFlag || "C",
-                RateProductEffectiveDate: item.RateProductEffectiveDate,
-                RateProductExpiredDate: item.RateProductExpiredDate,
+
+                // Sửa 2 ngày trong grid (nếu cũng bị lệch)
+                RateProductEffectiveDate: item.RateProductEffectiveDate ? getUtcDate(item.RateProductEffectiveDate) : null,
+                RateProductExpiredDate:   item.RateProductExpiredDate   ? getUtcDate(item.RateProductExpiredDate)   : null,
+
                 RateProductInterestRate: item.RateProductInterestRate,
                 RateProductNewInterestRate: item.RateProductNewInterestRate,
                 RateProductPenalRate: item.RateProductPenalRate || 0,
                 RateProductPosCode: item.RateProductPosCode,
                 RateProductAmoutSlab: item.RateProductAmoutSlab || 0,
-
-
-                                InterestRateHO: item.InterestRateHO || 0,
-        MinInterestRateSpread: item.MinInterestRateSpread || 0,
-        MaxInterestRateSpread: item.MaxInterestRateSpread || 0
+                InterestRateHO: item.InterestRateHO || 0,
+                MinInterestRateSpread: item.MinInterestRateSpread || 0,
+                MaxInterestRateSpread: item.MaxInterestRateSpread || 0
             }));
-            // Lấy dữ liệu form
+
+            // ====================== SỬA PHẦN FORM ======================
+            var dpEffective = $("#EffectiveDate").data("kendoDatePicker");
+            var dpExpired   = $("#ExpiredDate").data("kendoDatePicker");
+            var dpCircular  = $("#CircularDate").data("kendoDatePicker");
+
             var formModel = {
-                EffectiveDate: $("#EffectiveDate").data("kendoDatePicker").value(),
-                ExpiredDate: $("#ExpiredDate").data("kendoDatePicker").value(),
-                CircularDate: $("#CircularDate").data("kendoDatePicker").value(),
-                CircularRefNum: $("#CircularRefNum").val(),
+                EffectiveDate: dpEffective.value() ? getUtcDate(dpEffective.value()) : null,
+                ExpiredDate:   dpExpired.value()   ? getUtcDate(dpExpired.value())   : null,
+                CircularDate:  dpCircular.value()  ? getUtcDate(dpCircular.value())  : null,
+
+                CircularRefNum: $("#CircularRefNum").val().trim(),
                 NewInterestRate: $("#NewInterestRate").data("kendoNumericTextBox").value(),
                 PenalRate: 0,
                 AmoutSlab: 0,
                 DebitCreditFlag: "C",
                 ApplyPosList: applyPosLst
             };
+
             var submitData = {
                 model: formModel,
                 gridItems: gridData
             };
+
             $.ajax({
                 url: '@Url.Action("SaveCasaRateConfigure", "CasaRateConfigure")',
                 type: "POST",
@@ -446,8 +549,7 @@
                 success: function (response) {
                     kendo.ui.progress($("#addCasaForm"), false);
                     if (response.Success) {
-                       // alert("Lưu thông tin lãi suất CASA thành công!");
-                            alert("Bạn đã tạo thay đổi lãi suất theo quyết định " +  decisionNo + " thành công!");
+                        alert("Bạn đã tạo thay đổi lãi suất theo quyết định " + decisionNo + " thành công!");
                         dataChangeCasaRateConfigure = true;
                         mainWindow.data("kendoWindow").close();
                         $("#saveBtn").prop("disabled", true);
@@ -465,6 +567,27 @@
             alert("Lỗi JS: " + error.message);
         }
     }
+
+    // ====================== HÀM HỖ TRỢ (đặt ngoài function) ======================
+    function getUtcDate(date) {
+        if (!date) return null;
+        // Chuyển về UTC 00:00:00 để tránh lệch múi giờ Việt Nam
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function onCloseCasaRateConfigure() {
         if (dataChangeCasaRateConfigure == true) {
