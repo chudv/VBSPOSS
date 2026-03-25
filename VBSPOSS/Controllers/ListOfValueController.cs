@@ -37,6 +37,9 @@ namespace VBSPOSS.Controllers
 
         private readonly IInterestRateConfigureService _intRateConfigService;
 
+        private readonly IListOfTransPointService _listOfTransPointService;
+        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ListController"/> class.
         /// </summary>
@@ -46,12 +49,13 @@ namespace VBSPOSS.Controllers
         /// <param name="menuService">The menuService<see cref="IPermitService"/>.</param>
         public ListOfValueController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper, 
                                 IProductService productService, IApiInternalService internalServiceAPI, IInterestRateConfigureService intRateConfigService,
-                                IAdministrationService userService) : base(logger, adminService, sessionHelper)
+                                IAdministrationService userService, IListOfTransPointService listOfTransPointService) : base(logger, adminService, sessionHelper)
         {
             _serviceLOV = serviceLOV;
             _productService = productService;
             _internalServiceAPI = internalServiceAPI;
             _intRateConfigService = intRateConfigService;
+            _listOfTransPointService = listOfTransPointService;
             //_userService = userService;
         }
 
@@ -810,6 +814,52 @@ namespace VBSPOSS.Controllers
                     else if (pFlagTextShow == "8") //Hiển thị [Tên tỉnh - Tên huyện - Tên Xã - Tên thôn] trên danh sách ComBoBox
                         data.Add(new { id = item.SubCommuneCode, value = $"{item.ProvinceName} - {item.DistrictName} - {item.CommuneName} - {item.SubCommuneName}" });
                 }
+            }
+            return Json(data);
+        }
+
+        /// <summary>
+        /// Hàm lấy danh sách điểm giao dịch hiển thị lên Combobox với Id là Mã điểm giao dịch
+        /// </summary>
+        /// <param name="pProvinceCode">Mã tỉnh/thành phố (Không bắt buộc)</param>
+        /// <param name="pCommuneCode">Mã xã/phường/thị trấn (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã POS (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái. Nếu là '' lấy tất</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pTitleChoice">Tiêu đề lựa chọn danh sách</param>
+        /// <param name="pFlagTextShow">Trang thái hiển thị trên Combobox. Giá trị:
+        ///                       1 - Hiển thị duy nhất Tên trên danh sách ComBoBox
+        ///                       2 - Hiển thị [Mã - Tên] trên danh sách ComBoBox
+        ///                       3 - Hiển thị [Mã => Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+        ///                       4 - Hiển thị [Mã => Tên tỉnh - Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+        ///                       5 - Hiển thị [Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+        ///                       6 - Hiển thị [Tên tỉnh - Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+        /// </param>
+        /// <returns>Danh sách điểm giao dịch trên Combobox</returns>
+        public JsonResult GetListOfTransPoint(string pProvinceCode = "", string pPosCode = "", string pCommuneCode = "", string pStatus = "A", string pTxnPointCode = "",
+                            string pTitleChoice = "", string pFlagTextShow = "1")
+        {
+            string sTitleChoice = "";
+            sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Xã/Phường/Thị trấn---" : pTitleChoice;
+            ArrayList data = new ArrayList();
+            var listTransPoints = _listOfTransPointService.GetListOfTransPointSearch(pProvinceCode, pPosCode, pCommuneCode, pTxnPointCode, pStatus);
+
+            if (sTitleChoice != "" && string.IsNullOrEmpty(pTxnPointCode))
+                data.Add(new { id = "", value = sTitleChoice });
+            foreach (ListOfTransPointViewModel item in listTransPoints)
+            {
+                if (pFlagTextShow == "1") //Hiển thị duy nhất Tên trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = item.TxnPointName.Trim() });
+                else if (pFlagTextShow == "2") //Hiển thị [Mã - Tên] trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = $"{item.TxnPointCode} - {item.TxnPointName}" });
+                else if (pFlagTextShow == "3") //Hiển thị [Mã => Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = $"{item.TxnPointCode} => {item.CommuneName} - {item.TxnPointName}" });
+                else if (pFlagTextShow == "4") //Hiển thị [Mã => Tên tỉnh - Tên Xã- Tên điểm giao dịch] trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = $"{item.TxnPointCode} => {item.ProvinceName} - {item.CommuneName} - {item.TxnPointName}" });
+                else if (pFlagTextShow == "5") //Hiển thị [Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = $"{item.CommuneName} - {item.TxnPointName}" });
+                else if (pFlagTextShow == "6") //Hiển thị [Tên tỉnh - Tên Xã - Tên điểm giao dịch] trên danh sách ComBoBox
+                    data.Add(new { id = item.TxnPointCode, value = $"{item.ProvinceName} - {item.CommuneName} - {item.TxnPointName}" });
             }
             return Json(data);
         }

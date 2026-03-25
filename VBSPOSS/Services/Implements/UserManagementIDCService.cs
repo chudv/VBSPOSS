@@ -219,6 +219,7 @@ namespace VBSPOSS.Services.Implements
 
         /// <summary>
         /// Hàm lấy thông tin người dùng trên iDC qua việc gọi đến API viewUser của ESB đến iDC
+        /// Ex: var objUserInfo0 = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("CHUV13");
         /// </summary>
         /// <param name="pUserId">Tên người dùng cần lấy. Ex 'CHUDV13'</param>
         /// <returns>Thông tin user ánh xạ vào Model ViewUserAPIReposeViewModel</returns>
@@ -309,7 +310,6 @@ namespace VBSPOSS.Services.Implements
                     objUserIDCInfo.CredInfoEncryptType = responseAPIViewUser.Result[0].CredInfoEncryptType;
                     objUserIDCInfo.MakerId = responseAPIViewUser.Result[0].MakerId;
                     objUserIDCInfo.ReqActivity = responseAPIViewUser.Result[0].ReqActivity;
-
                     objUserIDCInfo.MakerDate = responseAPIViewUser.Result[0].MakerDate;
                     objUserIDCInfo.AppendEntityRoleMap = responseAPIViewUser.Result[0].AppendEntityRoleMap;
                     objUserIDCInfo.Salt = responseAPIViewUser.Result[0].Salt;

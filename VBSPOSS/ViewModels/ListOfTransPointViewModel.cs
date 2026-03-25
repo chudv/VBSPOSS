@@ -9,7 +9,7 @@ namespace VBSPOSS.ViewModels
 {
     public class ListOfTransPointViewModel
     {
-        public int STT { get; set; }
+        public int OrderNo { get; set; }
 
         public string ProvinceCode { get; set; }
 
