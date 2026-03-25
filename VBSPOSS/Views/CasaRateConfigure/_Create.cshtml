@@ -486,8 +486,7 @@
                 alert("Vui lòng chọn ít nhất một POS áp dụng!");
                 return;
             }
-
-            // ====================== SỬA PHẦN GRID ======================
+//  phần grid
             var gridData = grid.dataSource.data().toJSON().map(item => ({
                 Id: 0,
                 RateProductCode: item.RateProductCode,
@@ -511,8 +510,7 @@
                 MinInterestRateSpread: item.MinInterestRateSpread || 0,
                 MaxInterestRateSpread: item.MaxInterestRateSpread || 0
             }));
-
-            // ====================== SỬA PHẦN FORM ======================
+// form
             var dpEffective = $("#EffectiveDate").data("kendoDatePicker");
             var dpExpired   = $("#ExpiredDate").data("kendoDatePicker");
             var dpCircular  = $("#CircularDate").data("kendoDatePicker");
@@ -568,7 +566,7 @@
         }
     }
 
-    // ====================== HÀM HỖ TRỢ (đặt ngoài function) ======================
+    // hàm hỗ trợ 
     function getUtcDate(date) {
         if (!date) return null;
         // Chuyển về UTC 00:00:00 để tránh lệch múi giờ Việt Nam
