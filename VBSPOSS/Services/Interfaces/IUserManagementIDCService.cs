@@ -25,5 +25,13 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
         /// <exception cref="Exception"></exception>
         Task<long> SaveUserIDCMaster(UserIDCMasterViewModel pUserIDCMasterUpd, string pUserNameUpd, string pFlagCall);
+
+        /// <summary>
+        /// Hàm lấy thông tin người dùng trên iDC qua việc gọi đến API viewUser của ESB đến iDC
+        /// </summary>
+        /// <param name="pUserId">Tên người dùng cần lấy. Ex 'CHUDV13'</param>
+        /// <returns>Thông tin user ánh xạ vào Model ViewUserAPIReposeViewModel</returns>
+        /// <exception cref="Exception"></exception>
+        Task<ViewUserAPIReposeViewModel> GetUserIDCInfoByApiViewUser(string pUserId);
     }
 }

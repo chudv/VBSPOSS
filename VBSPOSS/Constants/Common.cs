@@ -161,7 +161,7 @@ namespace VBSPOSS.Constants
         public const string SourceId = "MB";
         public const string DebitCreditFlagDefault = "C";
         public const string CurrencyValueDefault = "VND";
-        
+        public const string Ticket = "";
     }
 
     public class DepositType

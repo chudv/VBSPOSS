@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection.Emit;
 using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
+using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;
@@ -22,9 +24,9 @@ namespace VBSPOSS.Services.Implements
         private readonly ApplicationDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
-        private readonly ILogger<InterestRateConfigureService> _logger;
+        private readonly ILogger<UserManagementIDCService> _logger;
         public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
-                        ILogger<InterestRateConfigureService> logger)
+                        ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
             _mapper = mapper;
@@ -215,8 +217,114 @@ namespace VBSPOSS.Services.Implements
             return iRetIdUpd;
         }
 
-        //Hàm truy vấn UserId từ Intellect iDC => Trả ra Model tương ứng iDC
+        /// <summary>
+        /// Hàm lấy thông tin người dùng trên iDC qua việc gọi đến API viewUser của ESB đến iDC
+        /// </summary>
+        /// <param name="pUserId">Tên người dùng cần lấy. Ex 'CHUDV13'</param>
+        /// <returns>Thông tin user ánh xạ vào Model ViewUserAPIReposeViewModel</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ViewUserAPIReposeViewModel> GetUserIDCInfoByApiViewUser(string pUserId)
+        {
+            try
+            {
+                ViewUserAPIReposeViewModel objUserIDCInfo = new ViewUserAPIReposeViewModel();
+                if (string.IsNullOrEmpty(pUserId))
+                    return objUserIDCInfo;
+                pUserId = string.IsNullOrEmpty(pUserId) ? "" : pUserId;
+                var _request = new ViewUserRequestViewModel();
+                _request.Ticket = ConstValueAPI.Ticket;
+                _request.UserId = pUserId;
+                var responseAPIViewUser = await _apiInternalEsbService.GetUserIDCInfoByApiViewUser(_request);
+                if (responseAPIViewUser == null || responseAPIViewUser.Result == null || !responseAPIViewUser.Result.Any())
+                {
+                    return new ViewUserAPIReposeViewModel();
+                }
+                if (responseAPIViewUser.ResponseCode == "00000")
+                {
+                    if (responseAPIViewUser.Result[0].ServiceStatusResponseViewModel != null)
+                    {
+                        objUserIDCInfo.ServiceStatusResponseSessionValReq = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.SessionValReq;
+                        objUserIDCInfo.ServiceStatusResponsePrevStatus = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.PrevStatus;
+                        objUserIDCInfo.ServiceStatusResponseResponseCode = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.ResponseCode;
+                        objUserIDCInfo.ServiceStatusResponseResponseMsg = responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.ResponseMsg;
+                        if (!string.IsNullOrEmpty(responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.Status))
+                            objUserIDCInfo.ServiceStatusResponseStatus = (responseAPIViewUser.Result[0].ServiceStatusResponseViewModel.Status.Trim() == "true") ? true : false;
+                        else objUserIDCInfo.ServiceStatusResponseStatus = false;
+                    }
+                    objUserIDCInfo.LastPWDChanged = string.IsNullOrEmpty(responseAPIViewUser.Result[0].LastPWDChanged) ? "1900-01-01" : responseAPIViewUser.Result[0].LastPWDChanged;
+                    objUserIDCInfo.PrimaryChoicebasedAuthType = responseAPIViewUser.Result[0].PrimaryChoicebasedAuthType;
+                    objUserIDCInfo.MobileNumber = responseAPIViewUser.Result[0].MobileNumber;
+                    objUserIDCInfo.TranAuthType = responseAPIViewUser.Result[0].TranAuthType;
+                    objUserIDCInfo.ReqNo = responseAPIViewUser.Result[0].ReqNo;
+                    objUserIDCInfo.SelfRegistration = responseAPIViewUser.Result[0].SelfRegistration;
+                    objUserIDCInfo.FromRecord = responseAPIViewUser.Result[0].FromRecord;
+                    objUserIDCInfo.Language = responseAPIViewUser.Result[0].Language;
+                    objUserIDCInfo.UserCreatedDate = responseAPIViewUser.Result[0].UserCreatedDate;
+                    objUserIDCInfo.CorporateName = responseAPIViewUser.Result[0].CorporateName;
+                    objUserIDCInfo.EmailAddress = responseAPIViewUser.Result[0].EmailAddress;
+                    objUserIDCInfo.AuthsecType = responseAPIViewUser.Result[0].AuthsecType;
+                    objUserIDCInfo.DOB = responseAPIViewUser.Result[0].DOB;
+                    objUserIDCInfo.InvalidAttempt = responseAPIViewUser.Result[0].InvalidAttempt;
+                    objUserIDCInfo.UserFromService = responseAPIViewUser.Result[0].UserFromService;
+                    if (responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel != null)
+                    {
+                        objUserIDCInfo.UserRole = responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel.UserRole;
+                        objUserIDCInfo.BranchCode = responseAPIViewUser.Result[0].ExtraAttributeResponseViewModel.BranchCode;
+                    }
+                    else
+                    {
+                        objUserIDCInfo.UserRole = "";
+                        objUserIDCInfo.BranchCode = "";
+                    }
+                    if (!string.IsNullOrEmpty(objUserIDCInfo.BranchCode))
+                        objUserIDCInfo.BranchCode = Convert.ToInt32(objUserIDCInfo.BranchCode.Trim()).ToString("D6");       //string formatted3 = branch.ToString().PadLeft(6, '0');
 
+                    objUserIDCInfo.NickName = responseAPIViewUser.Result[0].NickName;
+
+                    objUserIDCInfo.DefaultBranch = responseAPIViewUser.Result[0].DefaultBranch;
+                    objUserIDCInfo.HpinFlag = responseAPIViewUser.Result[0].HpinFlag;
+                    objUserIDCInfo.ReqNumber = responseAPIViewUser.Result[0].ReqNumber;
+                    objUserIDCInfo.ToRecord = responseAPIViewUser.Result[0].ToRecord;
+                    objUserIDCInfo.AppendEntity = responseAPIViewUser.Result[0].AppendEntity;
+                    objUserIDCInfo.FirstName = responseAPIViewUser.Result[0].FirstName;
+                    objUserIDCInfo.GroupName = responseAPIViewUser.Result[0].GroupName;
+                    objUserIDCInfo.IsWebSealUser = responseAPIViewUser.Result[0].IsWebSealUser;
+                    objUserIDCInfo.EntityList = responseAPIViewUser.Result[0].EntityList;
+                    objUserIDCInfo.UserIdentifierName = responseAPIViewUser.Result[0].UserIdentifierName;
+                    objUserIDCInfo.OperationType = responseAPIViewUser.Result[0].OperationType;
+                    objUserIDCInfo.UserType = responseAPIViewUser.Result[0].UserType;
+                    objUserIDCInfo.EncryptExtraAttrib = responseAPIViewUser.Result[0].EncryptExtraAttrib;
+                    objUserIDCInfo.LastName = responseAPIViewUser.Result[0].LastName;
+                    objUserIDCInfo.UserIdentifierAlias = responseAPIViewUser.Result[0].UserIdentifierAlias;
+                    objUserIDCInfo.UserStatus = responseAPIViewUser.Result[0].UserStatus;
+                    objUserIDCInfo.SecondaryChoicebasedAuthType = responseAPIViewUser.Result[0].SecondaryChoicebasedAuthType;
+                    objUserIDCInfo.PrevStatus = responseAPIViewUser.Result[0].PrevStatus;
+                    objUserIDCInfo.AppendRole = responseAPIViewUser.Result[0].AppendRole;
+
+                    objUserIDCInfo.LastLoginDate = string.IsNullOrEmpty(responseAPIViewUser.Result[0].LastLoginDate) ? "1900-01-01" : responseAPIViewUser.Result[0].LastLoginDate;
+                    objUserIDCInfo.ExpiryDate = responseAPIViewUser.Result[0].ExpiryDate;
+                    objUserIDCInfo.CheckerDate = responseAPIViewUser.Result[0].CheckerDate;
+                    objUserIDCInfo.MailIdFlag = responseAPIViewUser.Result[0].MailIdFlag;
+                    objUserIDCInfo.AuthType = responseAPIViewUser.Result[0].AuthType;
+                    objUserIDCInfo.CredInfoEncryptType = responseAPIViewUser.Result[0].CredInfoEncryptType;
+                    objUserIDCInfo.MakerId = responseAPIViewUser.Result[0].MakerId;
+                    objUserIDCInfo.ReqActivity = responseAPIViewUser.Result[0].ReqActivity;
+
+                    objUserIDCInfo.MakerDate = responseAPIViewUser.Result[0].MakerDate;
+                    objUserIDCInfo.AppendEntityRoleMap = responseAPIViewUser.Result[0].AppendEntityRoleMap;
+                    objUserIDCInfo.Salt = responseAPIViewUser.Result[0].Salt;
+                    objUserIDCInfo.UserId = responseAPIViewUser.Result[0].UserId;
+                    objUserIDCInfo.CheckerId = responseAPIViewUser.Result[0].CheckerId;
+                    objUserIDCInfo.CurrLoginDate = string.IsNullOrEmpty(responseAPIViewUser.Result[0].CurrLoginDate) ? "1900-01-01" : responseAPIViewUser.Result[0].CurrLoginDate;
+                }
+                return objUserIDCInfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw new Exception($"Lỗi khi gọi API lấy thông tin người dùng GetUserIDCInfoByApiViewUser('{pUserId}') từ API viewUser. Error: {ex.Message}", ex);
+            }
+        }
 
         /*
 {

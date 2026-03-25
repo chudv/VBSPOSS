@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -541,6 +542,148 @@ namespace VBSPOSS.Integration.Implements
                 return GenericStatusListResult.Fail($"An unexpected error occurred: {ex.Message}");
             }
         }
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Hàm lấy thông tin người dùng trên iDC qua API
+        /// Gọi đến API ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/viewUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ví dụ: { "ticket": "", "userId": "DUYEN002" }</param>
+        /// <returns>Thông tin người dùng cần lấy</returns>
+        public async Task<GenericListRecordJava<ViewUserReposeViewModel>> GetUserIDCInfoByApiViewUser(ViewUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting GetUserIDCInfoByApiViewUser with input: {Input}", JsonConvert.SerializeObject(requestInput));
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/viewUser");
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/viewUser", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                ViewUserReposeViewModel result = JsonConvert.DeserializeObject<ViewUserReposeViewModel>(responseContent);
+                if(result==null || string.IsNullOrEmpty(result.UserId))
+                    return GenericListRecordJava<ViewUserReposeViewModel>.Fail($"Không có thông tin người dùng: {requestInput.UserId}");
+                else
+                    return GenericListRecordJava<ViewUserReposeViewModel>.Success(new List<ViewUserReposeViewModel> { result });
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return GenericListRecordJava<ViewUserReposeViewModel>.Fail($"HTTP request failed: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return GenericListRecordJava<ViewUserReposeViewModel>.Fail($"JSON processing failed: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return GenericListRecordJava<ViewUserReposeViewModel>.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        }
+        /*
+        Ví dụ đầu vào và đầu ra của API viewUser
+            {
+                "ticket": "",    
+                "userId": "DUYEN002"
+            }
+        Đầu ra
+            {
+                "lastPWDChanged": "2025-09-26",
+                "primaryChoicebasedAuthType": "0",
+                "serviceStatusResponse": {
+                    "sessionValReq": "true",
+                    "prevStatus": "0",
+                    "responseAttributes": {},
+                    "responseCode": "0",
+                    "responseMsg": "User Information Successfully displayed",
+                    "status": "true"
+                },
+                "mobileNumber": "0983273000",
+                "tranAuthType": "0",
+                "reqNo": "0",
+                "selfRegistration": "false",
+                "fromRecord": "0",
+                "language": "en_US",
+                "userCreatedDate": "2025-09-26",
+                "corporateName": "0",
+                "emailAddress": "th@vbsp.vn",
+                "authsecType": "0",
+                "DOB": "2000-01-01",
+                "invalidAttempt": "0",
+                "userFromService": "false",
+                "extraAttribute": {
+                    "UserRole": "SUPER",
+                    "BranchCode": "4203"
+                },
+                "nickName": "DUYEN002",
+                "defaultBranch": "IDCPRODC",
+                "hpinFlag": "0",
+                "reqNumber": "0",
+                "toRecord": "0",
+                "appendEntity": "false",
+                "firstName": "Hồng",
+                "groupName": "VBSPR",
+                "additionalInfoMap": {},
+                "isWebSealUser": "false",
+                "entityList": "IDCPRODC",
+                "userIdentifierName": "All",
+                "operationType": "-1",
+                "userType": "0",
+                "encryptExtraAttrib": "false",
+                "lastName": "Duyên",
+                "userIdentifierAlias": "All",
+                "userStatus": "2",
+                "secondaryChoicebasedAuthType": "0",
+                "prevStatus": "-7",
+                "appendRole": "false",
+                "lastLoginDate": "20260324031929",
+                "authTypeAttrib": {},
+                "expiryDate": "2050-11-22",
+                "checkerDate": "2025-09-26",
+                "mailIdFlag": "0",
+                "authType": "1",
+                "credInfoEncryptType": "0",
+                "makerId": "SYSTEMADMIN1",
+                "reqActivity": "0",
+                "extraAttribs": {},
+                "makerDate": "2025-09-26",
+                "appendEntityRoleMap": "false",
+                "salt": "dummysalt",
+                "userId": "DUYEN002",
+                "checkerId": "SYSTEMADMIN1",
+                "currLoginDate": "20260324065257"
+            }
+         */
+
+
+
+
+
+
+
+
+
     }
 
 

@@ -15,5 +15,9 @@ namespace VBSPOSS.Integration.Interfaces
         Task<List<NotiTempViewModel>> GetListNotiTempAsync(string pStatus);
 
 
+        Task<GenericResultCode<NotificationDataResponse>?> GetNotificationDataAutoAsync(NotificationSearchRequest request);
+
+        Task<string> UpdateNotiDataList(List<NotificationDataResponse> request);
+
     }
 }

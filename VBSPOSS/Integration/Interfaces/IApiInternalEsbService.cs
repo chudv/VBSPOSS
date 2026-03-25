@@ -70,5 +70,15 @@ namespace VBSPOSS.Integration.Interfaces
         /// <param name="requestInput">Thông tin cấu hình lãi suất</param>
         /// <returns>Kết quả trả về. Ex: {"respRecord": [{"txnStatus": "SUCCESS","reqRecordSl": "1","responseCode": "00000","responseMsg": " "}]}</returns>
         Task<GenericStatusListResult> TideIntRates(TideIntRatesRequestViewModel requestInput);
+
+
+
+        /// <summary>
+        /// Hàm lấy thông tin người dùng trên iDC qua API
+        /// Gọi đến API ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/viewUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ví dụ: { "ticket": "", "userId": "DUYEN002" }</param>
+        /// <returns>Thông tin người dùng cần lấy</returns>
+        Task<GenericListRecordJava<ViewUserReposeViewModel>> GetUserIDCInfoByApiViewUser(ViewUserRequestViewModel requestInput);
     }
 }

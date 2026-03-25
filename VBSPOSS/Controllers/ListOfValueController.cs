@@ -554,7 +554,6 @@ namespace VBSPOSS.Controllers
             return Json(dataListOfStaffVBSP);
         }
 
-
         public JsonResult GetProductList(string productGroupCode)
         {
             ArrayList data = new ArrayList();
@@ -713,9 +712,6 @@ namespace VBSPOSS.Controllers
             }
             return Json(data);
         }
-        //return Json(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-
 
         /// <summary>
         /// Hàm lấy danh sách Xã/Phường/Thị trấn hiển thị lên Combobox với Id là Mã Xã/Phường/Thị trấn
@@ -1325,7 +1321,6 @@ namespace VBSPOSS.Controllers
             return Json(resultData);
         }
 
-
         [HttpGet]
         public JsonResult GetConfigStatusOptions()
         {
@@ -1342,7 +1337,6 @@ namespace VBSPOSS.Controllers
 
             return Json(statuses);
         }
-
     }
 }
 
