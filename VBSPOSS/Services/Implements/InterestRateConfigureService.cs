@@ -2997,6 +2997,9 @@ namespace VBSPOSS.Services.Implements
         //}
 
 
+
+        // Tạm đóng 25/03
+
         //public async Task<int> SaveApprovalDecisionCasa(string userName, List<long> lstId, int rejectFlag, string rejectReason)
         //{
         //    try
@@ -3136,7 +3139,7 @@ namespace VBSPOSS.Services.Implements
 
 
 
-        //Sửa Casa
+        //Sửa cho Casa
         public async Task<int> SaveApprovalDecisionCasa(string userName, List<long> lstId, int rejectFlag, string rejectReason)
         {
             try
@@ -3256,7 +3259,6 @@ namespace VBSPOSS.Services.Implements
                 throw;
             }
         }
-
 
 
 

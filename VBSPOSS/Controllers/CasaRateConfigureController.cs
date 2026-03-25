@@ -224,6 +224,7 @@ namespace VBSPOSS.Controllers
             var model = new AddCasaProductViewModel
             {
                 ProductList = _createConfigService.GetProductList(ProductGroupCode.CASA.Code)
+
                     .Select(p => new Product
                     {
                         ProductCode = p.ProductCode,

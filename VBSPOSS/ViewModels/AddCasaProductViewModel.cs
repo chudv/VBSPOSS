@@ -28,7 +28,13 @@ namespace VBSPOSS.ViewModels
         public string AccountSubTypeCode { get; set; }
         public string CurrencyCode { get; set; } = "VND"; // Mặc định VND
         public string DebitCreditFlag { get; set; } = "Credit"; // Mặc định Dư Có
-        public DateTime? EffectiveDate { get; set; } = DateTime.Now.AddDays(1); // Mặc định 21/08/2025
+       public DateTime? EffectiveDate { get; set; } = DateTime.Now.AddDays(1); // Mặc định 21/08/2025
+
+        //add
+       // public string EffectiveDate { get; set; }     // đổi thành string
+       // public string ExpiredDate { get; set; }       // đổi thành string
+     //   public string CircularDate { get; set; }      // đổi thành string
+
         public decimal InterestRate { get; set; } // Lãi suất hiện tại từ API
         public decimal? NewInterestRate { get; set; } // Lãi suất mới do người dùng nhập
         public DateTime? ExpiredDate { get; set; } // Ngày hết hiệu lực
@@ -71,6 +77,11 @@ namespace VBSPOSS.ViewModels
         public string? RateProductCurrencyCode { get; set; }  // Mặc định VND
         public string RateProductDebitCreditFlag { get; set; }  // Mặc định Dư Có
         public DateTime? RateProductEffectiveDate { get; set; }
+
+        //add
+       // public string RateProductEffectiveDate { get; set; }   // đổi thành string
+      //  public string RateProductExpiredDate { get; set; }     //
+
         public decimal? RateProductInterestRate { get; set; }
         public decimal? RateProductNewInterestRate { get; set; }
         public decimal? RateProductPenalRate { get; set; }
