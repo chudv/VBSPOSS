@@ -41,7 +41,7 @@ namespace VBSPOSS.Data.Models
         public string TxnPointName { get; set; }
         
         [Column("VisitDate")]
-        public string VisitDate { get; set; }
+        public int VisitDate { get; set; }
 
         [Column("Times")]
         public string Times { get; set; }

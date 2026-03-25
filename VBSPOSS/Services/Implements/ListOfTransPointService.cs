@@ -48,8 +48,8 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
-        /// <returns>Danh sách điểm giao dịch</returns>
-        public List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnStatus)
+        /// <returns>Danh sách bản ghi</returns>
+        public List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode,string pTxnPointName, int iVisitDateBegin,int iVisitDateEnd, string pTxnStatus)
         {
             var answer = new List<ListOfTransPointViewModel>();
             try
@@ -60,6 +60,17 @@ namespace VBSPOSS.Services.Implements
                                         && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
                                         && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
                                         && (string.IsNullOrEmpty(pTxnStatus) || w.TxnStatus.Contains(pTxnStatus))
+                                        && (w.VisitDate >= iVisitDateBegin && w.VisitDate <= iVisitDateEnd))
+                                        .Where(delegate (ListOfTransPoint c)
+                                        {
+                                            if (string.IsNullOrEmpty(pTxnPointName)
+                                                || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
+                                                || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                                )
+                                                return true;
+                                            else
+                                                return false;
+                                        }
                                         ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
                 if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
                 {
