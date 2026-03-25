@@ -7,10 +7,10 @@ namespace VBSPOSS.Services.Interfaces
     public interface IListOfTransPointService
     {
         /// <summary>
-        /// Hàm trả về Danh sách danh mục chung theo những điều kiện truyền vào: ListOfTransPoint
+        /// Hàm trả về Danh sách điểm giao dịch theo những điều kiện truyền vào, lấy từ nguồn bảng ListOfTransPoint
         /// </summary>
         /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
-        /// <param name="pPosCode">Mã pos (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
         /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>

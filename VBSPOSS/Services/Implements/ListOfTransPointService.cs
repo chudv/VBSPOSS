@@ -40,10 +40,10 @@ namespace VBSPOSS.Services.Implements
         }
 
         /// <summary>
-        /// Hàm trả về Danh sách danh mục chung theo những điều kiện truyền vào: ListOfTransPoint
+        /// Hàm trả về Danh sách điểm giao dịch theo những điều kiện truyền vào, lấy từ nguồn bảng ListOfTransPoint
         /// </summary>
         /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
-        /// <param name="pPosCode">Mã pos (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
         /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>
@@ -54,10 +54,8 @@ namespace VBSPOSS.Services.Implements
             var answer = new List<ListOfTransPointViewModel>();
             try
             {
-                int iCount = 0;
-                var profileListRoots = _dbContext.ListOfValues.Where(w => w.ParentId == 0).OrderBy(o => o.Code).ToList();
-
-                var profileListTMPs = _dbContext.ListOfTransPoints.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+                int iCountTMP = 0;
+                var listOfTransPointTmp = _dbContext.ListOfTransPoints.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
                                         && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
                                         && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
                                         && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
@@ -74,14 +72,16 @@ namespace VBSPOSS.Services.Implements
                                                 return false;
                                         }
                                         ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
-
-                foreach (var item in profileListTMPs)
+                if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
                 {
-                    iCount++;
-                    ListOfTransPointViewModel objItem = new ListOfTransPointViewModel();
-                    objItem = _mapper.Map<ListOfTransPointViewModel>(item);
-                    objItem.STT = iCount;
-                    answer.Add(objItem);
+                    foreach (var item in listOfTransPointTmp)
+                    {
+                        iCountTMP++;
+                        ListOfTransPointViewModel objItem = new ListOfTransPointViewModel();
+                        objItem = _mapper.Map<ListOfTransPointViewModel>(item);
+                        objItem.OrderNo = iCountTMP;
+                        answer.Add(objItem);
+                    }
                 }
                 return answer;
             }
