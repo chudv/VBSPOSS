@@ -22,6 +22,11 @@ namespace VBSPOSS.Integration.Implements
             _client = httpClientFactory.CreateClient("NotiGatewayClient");
         }
 
+        /// <summary>
+        /// Hàm gọi lấy dữ liệu gửi thông báo sang NotiGateway
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/noti-send-by-type
+        /// </summary>
+        /// <returns>Danh sách bản tin</returns>
         public async Task<string> GetNotiByTypeAsync(string notiType, string sendType)
         {
             try
@@ -49,6 +54,11 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm update bảng dữ liệu Template Noti trong NotiType (NOTI_MSG_TEMPLATE) 
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/update-notimsg-temp
+        /// </summary>
+        /// <returns></returns>
         public async Task<string> UpdateNotiMsgTempAsync(NotiMsgTempRequest request)
         {
             try
@@ -75,6 +85,11 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm lấy danh sách bản ghi Template Noti trong NotiType (NOTI_MSG_TEMPLATE) theo trạng thái. 
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/noti-msg-list-temp
+        /// </summary>
+        /// <returns>Danh sách bản tin</returns>
         public async Task<List<NotiTempViewModel>> GetListNotiTempAsync(string pStatus)
         {
             try

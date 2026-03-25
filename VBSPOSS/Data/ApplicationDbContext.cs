@@ -36,6 +36,7 @@ namespace VBSPOSS.Data
         public virtual DbSet<AttachedFileInfo> AttachedFileInfos { get; set; }
         public virtual DbSet<InterestRateConfigMaster> InterestRateConfigMasters { get; set; }
         public virtual DbSet<InterestRateTermDetail> InterestRateTermDetails { get; set; }
+        public virtual DbSet<ListOfTransPoint> ListOfTransPoints { get; set; }
 
         public virtual DbSet<InterestRateConfigMasterView> InterestRateConfigMasterViews { get; set; }
 
@@ -94,6 +95,9 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<AttachedFileInfo>().ToTable("AttachedFileInfo");
             modelBuilder.Entity<AttachedFileInfo>().HasKey(x => new { x.FileId });
+
+            modelBuilder.Entity<ListOfTransPoint>().ToTable("ListOfTransPoint");
+            modelBuilder.Entity<ListOfTransPoint>().HasKey(x => new { x.ProvinceCode, x.PosCode, x.CommuneCode, x.TxnPointCode, x.EffectiveDate, x.TxnStatus });
 
             modelBuilder.Entity<InterestRateConfigMaster>().ToTable("InterestRateConfigMaster");
             modelBuilder.Entity<InterestRateConfigMaster>().HasKey(x => new { x.Id });

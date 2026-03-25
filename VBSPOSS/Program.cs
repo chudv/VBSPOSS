@@ -60,7 +60,7 @@ builder.Services.AddScoped<IApiInternalEsbService, ApiInternalEsbService>();
 builder.Services.AddScoped<IApiReportGateway, ApiReportGateway>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotiService, NotiService>();
-
+builder.Services.AddScoped<IListOfTransPointService, ListOfTransPointService>();
 
 
 // Cấu hình cookie xác thực
