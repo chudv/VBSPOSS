@@ -361,63 +361,69 @@
         </div>
         <div class="col-md-8">
             @(Html.Kendo().ComboBox().Name("DonVi_KeThua_Cd_TimKiem")
-                        .Filter(FilterType.Contains)
-                        .Placeholder("--- Chọn đơn vị cập nhật người dùng ---")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(
-                        source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViLoad"); }).ServerFiltering(false); })
-                        .Events(v => v.Change("Bind_Ds_CanBo").DataBound("Bind_Ds_CanBo"))
-                        .HtmlAttributes(new { style = "width: 660px !important;color:navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Chọn đơn vị cập nhật người dùng ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(
+                source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViLoad"); }).ServerFiltering(false); })
+                .Events(v => v.Change("Bind_Ds_CanBo").DataBound("Bind_Ds_CanBo"))
+                .HtmlAttributes(new { style = "width: 660px !important;color:navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
         </div>
     </div>
-    <div class="view_form row" >
+    <div class="view_form row">
         <div class="col-md-4">
         </div>
         <div class="col-md-8">
             @(Html.Kendo().ComboBoxFor(m => m.StaffId)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Vui lòng chọn giá trị")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .Events(v => v.Change("LoadDsCanBo_ThanhVien"))
-                        .DataSource(source =>
-                        { source.Read(read => { read.Action("GetStaffs", "RoleManagement").Data("paramUserPosCode"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width:660px !important;color:navy;" })
-                        .Suggest(true)
-                        .AutoBind(false)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Vui lòng chọn giá trị")
+                .DataTextField("value")
+                .DataValueField("id")
+                .Events(v => v.Change("LoadDsCanBo_ThanhVien"))
+                .DataSource(source =>
+                { source.Read(read => { read.Action("GetStaffs", "RoleManagement").Data("paramUserPosCode"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width:660px !important;color:navy;" })
+                .Suggest(true)
+                .AutoBind(false)
+                .SelectedIndex(0)
+                )
         </div>
     </div>
 
     <div class="view_form row">
         <div class="col-md-6">
             <label class="control-label" style="text-align: left; color: navy; padding-top: 3px;">Tên đăng nhập (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px !important;max-width:100% !important;color:navy;" , placeholder = "Nhập tài khoản" })
+            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px !important;max-width:100% !important;color:navy;", placeholder = "Nhập tài khoản" })
 
             <label id="lbl_matkhau" class="control-label" style="text-align: right; padding-right: 3px; padding-top: 3px; ">Mật khẩu (<font color="red">*</font>)</label>
-            
-            @Html.Kendo().TextBoxFor(m => m.Password).HtmlAttributes(new { @id="user_password", @class = "form-control", type = "password", placeholder = "Nhập mật khẩu" ,
-                        style = "width: 130px; !important;max-width:100% !important;color:navy;"})
+
+            @Html.Kendo().TextBoxFor(m => m.Password).HtmlAttributes(new
+                {
+                    @id = "user_password",
+                    @class = "form-control",
+                    type = "password",
+                    placeholder = "Nhập mật khẩu",
+                    style = "width: 130px; !important;max-width:100% !important;color:navy;"
+                })
         </div>
         <div class="col-md-6">
             <label id="lbl_hoten" class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Họ và tên (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.FullName).HtmlAttributes(new { style = "width: 230px; !important;max-width:100% !important;color:navy;", placeholder = "Nhập họ tên"  })
+            @Html.Kendo().TextBoxFor(m => m.FullName).HtmlAttributes(new { style = "width: 230px; !important;max-width:100% !important;color:navy;", placeholder = "Nhập họ tên" })
 
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Giới tính</label>
             @(Html.Kendo().DropDownList()
-                        .Name("Sex")
-                        .DataTextField("Text")
-                        .DataValueField("Value")
-                        .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Nam", Value = "M" }, new SelectListItem() { Text = "Nữ", Value = "F" } })
-                        .SelectedIndex(0)
-                        .HtmlAttributes(new { style = "width: 110px !important; height: 25px; color:navy;" })
-                        )
+                .Name("Sex")
+                .DataTextField("Text")
+                .DataValueField("Value")
+                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Nam", Value = "M" }, new SelectListItem() { Text = "Nữ", Value = "F" } })
+                .SelectedIndex(0)
+                .HtmlAttributes(new { style = "width: 110px !important; height: 25px; color:navy;" })
+                )
         </div>
     </div>
     <div class="view_form row">
@@ -430,33 +436,33 @@
         <div class="col-md-4">
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Đơn vị (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.PosCode)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Đơn vị công tác người dùng")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(
-                        source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViCT"); }).ServerFiltering(false); })
-                        .Events(v => v.Change("Change_DonVi"))
-                        .HtmlAttributes(new { style = "width: 230px !important;color: navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Đơn vị công tác người dùng")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(
+                source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViCT"); }).ServerFiltering(false); })
+                .Events(v => v.Change("Change_DonVi"))
+                .HtmlAttributes(new { style = "width: 230px !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
         </div>
         <div class="col-md-5">
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Phòng/ban (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.DepartmentCode)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Phòng/ban công tác người dùng")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(source =>
-                        { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramPhongBan_Update"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 260px !important;color: navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Phòng/ban công tác người dùng")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source =>
+                { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramPhongBan_Update"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 260px !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
         </div>
     </div>
 
@@ -464,41 +470,41 @@
         <div class="col-md-4">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Chức vụ (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.TitleCode)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Chức vụ người dùng")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(source =>
-                        { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramChucVu_Update"); ; }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 245px !important;color: navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Chức vụ người dùng")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source =>
+                { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramChucVu_Update"); ; }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 245px !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
 
 
         </div>
         <div class="col-md-4">
             <label class="control-label" style="color: navy; padding-right: 3px; padding-top: 3px; ">Trình độ (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.DegreeCode)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Trình độ chuyên môn")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(source =>
-                        { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramDegree_Update"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 180px !important;color: navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Trình độ chuyên môn")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source =>
+                { source.Read(read => { read.Action("GetListMain_ByConditions", "ListOfValue").Data("paramDegree_Update"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 180px !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
         </div>
         <div class="col-md-4">
-            <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Điện thoại</label>         
+            <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Điện thoại</label>
             @(Html.Kendo().MaskedTextBoxFor(m => m.Mobile)
-                        .Mask("0000 000 000") // Định dạng
-                        .HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", style = "width: 200px !important;color: navy;" })
-                        )
+                .Mask("0000 000 000") // Định dạng
+                .HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", style = "width: 200px !important;color: navy;" })
+                )
         </div>
     </div>
 
@@ -510,17 +516,17 @@
         <div class="col-md-7">
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Nhóm người dùng (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.DefaultRole)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("Nhóm quyền")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .DataSource(source =>
-                        { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("paramRole"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 400px !important;color: navy;" })
-                        .Suggest(true)
-                        .AutoBind(true)
-                        .SelectedIndex(0)
-                        )
+                .Filter(FilterType.Contains)
+                .Placeholder("Nhóm quyền")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source =>
+                { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("paramRole"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 400px !important;color: navy;" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0)
+                )
         </div>
     </div>
 
@@ -536,13 +542,13 @@
             @Html.Kendo().TextBoxFor(m => m.IssuedPlace).HtmlAttributes(new { style = "width: 120px !important;color:navy;" })
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Trạng thái (<font color="red">*</font>)</label>
             @(Html.Kendo().DropDownList()
-                        .Name("Status")
-                        .DataTextField("Text")
-                        .DataValueField("Value")
-                        .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
-                        .SelectedIndex(0)
-                        .HtmlAttributes(new { style = "width: 100px !important;color: navy;" })
-                        )
+                .Name("Status")
+                .DataTextField("Text")
+                .DataValueField("Value")
+                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
+                .SelectedIndex(0)
+                .HtmlAttributes(new { style = "width: 100px !important;color: navy;" })
+                )
         </div>
     </div>
 
@@ -550,31 +556,33 @@
     <div class="view_form row">
         <div class="col-md-12 d-flex justify-content-end" style="padding-right:10px;">
 
-        @(Html.Kendo().Button()
-            .Name("btnSave")
-            .Events(v => v.Click("onClick"))
-            .HtmlAttributes(new {
-                type = "submit",
-                style = "margin-right: 10px; width: 87px; height: 25px;font-weight:bold; color: blue;",
-                title = "Lưu thông tin vừa Thêm mới/Sửa đổi"
-            })
-            .ImageUrl(Url.Content("~/images/save.png"))
-            .Content(" Lưu lại")
-        )
+            @(Html.Kendo().Button()
+                .Name("btnSave")
+                .Events(v => v.Click("onClick"))
+                .HtmlAttributes(new
+                {
+                    type = "submit",
+                    style = "margin-right: 10px; width: 87px; height: 25px;font-weight:bold; color: blue;",
+                    title = "Lưu thông tin vừa Thêm mới/Sửa đổi"
+                })
+                .ImageUrl(Url.Content("~/images/save.png"))
+                .Content(" Lưu lại")
+                )
 
-        @(Html.Kendo().Button()
-            .Name("btnExit")
-            .Events(ev => ev.Click("onExit"))
-            .HtmlAttributes(new {
-                type = "button",
-                style = "width: 85px; height: 25px; font-weight:bold; color: blue;",
-                title = "Đóng lại màn hình cập nhật Văn bản, tài liệu"
-            })
-            .ImageUrl(Url.Content("~/images/close_icon.gif"))
-            .Content(" Quay ra")
-        )
+            @(Html.Kendo().Button()
+                .Name("btnExit")
+                .Events(ev => ev.Click("onExit"))
+                .HtmlAttributes(new
+                {
+                    type = "button",
+                    style = "width: 85px; height: 25px; font-weight:bold; color: blue;",
+                    title = "Đóng lại màn hình cập nhật Văn bản, tài liệu"
+                })
+                .ImageUrl(Url.Content("~/images/close_icon.gif"))
+                .Content(" Quay ra")
+                )
 
-    </div>
+        </div>
     </div>
 
 
@@ -623,7 +631,7 @@
             }
 
             $.ajax({
-                url: this.action,   
+                url: this.action,
                 type: this.method,
                 //data: $(this).serialize(),
                 dataType: "json", //change to your own, else read my note above on enabling the JsonValueProviderFactory in MVC

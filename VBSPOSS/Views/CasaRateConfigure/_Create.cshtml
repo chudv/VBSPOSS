@@ -380,6 +380,7 @@
                 DebitCreditFlag: "C",
                 ApplyPosList: applyPosLst
             };
+            alert('EffectiveDate'+$("#EffectiveDate").data("kendoDatePicker").value())
             var submitData = {
                 model: formModel,
                 gridItems: gridData
@@ -760,6 +761,7 @@
                             Ngày hiệu lực <span style="color:red;">*</span>
                         </label>
                         @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "flex: 1;" })
+                      
                     </div>
 
                     <!-- Ngày hết hiệu lực -->

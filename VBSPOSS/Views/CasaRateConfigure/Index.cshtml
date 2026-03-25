@@ -845,12 +845,12 @@
                             title = "Xem chi tiết",
                             @class = "btn-view"
                         });
-                        command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
+                     @*    command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
                         {
                             style = "width: 50px !important; display: inline-block; vertical-align: middle;",
                             title = "Chỉnh sửa thông tin",
                             @class = "btn-view-edit"
-                        });
+                        }); *@
                         command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
                         {
                             style = "width: 50px !important; display: inline-block; vertical-align: middle;",
@@ -882,7 +882,13 @@
                     columns.Bound(c => c.UserId).Hidden();
                     columns.Bound(c => c.CircularDate).Hidden();
                     columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(180).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EffectiveDate)
+                    .Title("Ngày hiệu lực")
+                    .Width(95)
+                    .HtmlAttributes(new { style = "text-align: center;" })
+                    .ClientTemplate("#= kendo.toString(kendo.parseDate(EffectiveDate), 'dd/MM/yyyy') #");
+                    
+                   // columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.ProductList).Title("Danh sách sản phẩm cấu hình").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.RecordSerialNo).Hidden();

@@ -2997,6 +2997,146 @@ namespace VBSPOSS.Services.Implements
         //}
 
 
+        //public async Task<int> SaveApprovalDecisionCasa(string userName, List<long> lstId, int rejectFlag, string rejectReason)
+        //{
+        //    try
+        //    {
+        //        int status = 0;
+        //        if (rejectFlag == 1)
+        //            status = ConfigStatus.REJECTED.Value;
+        //        else
+        //            status = ConfigStatus.AUTHORIZED.Value;
+
+        //        if (!lstId.Any())
+        //            return 0;
+
+        //        CasaIntRatesRequestViewModel requestData = new CasaIntRatesRequestViewModel();
+        //        requestData.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+        //        requestData.BankCircularDate = DateTime.UtcNow.ToString("yyyyMMdd");
+
+        //        InterestRates interestRates = new InterestRates();
+        //        List<RecordInterestRatesViewModel> lstCasaRates = new List<RecordInterestRatesViewModel>();
+
+        //        var records = await _dbContext.InterestRateConfigMasters
+        //                        .Where(x => lstId.Contains(x.Id))
+        //                        .ToListAsync();
+
+        //        string circularRefNum = "";
+
+        //        foreach (var rec in records)
+        //        {
+        //            rec.Status = status;
+        //            rec.Remark = rejectReason;
+        //            rec.ApproverBy = userName;
+        //            rec.ApprovalDate = DateTime.UtcNow;
+        //            circularRefNum = rec.CircularRefNum;
+
+        //            var _lstPosApply = await _dbContext.InterestRatePosApplys
+        //                .Where(x => x.IntRateConfigId == rec.Id)
+        //                .Select(x => x.PosCode)
+        //                .ToListAsync();
+
+        //            if (_lstPosApply != null && _lstPosApply.Count > 0)
+        //            {
+        //                for (int i = 0; i < _lstPosApply.Count; i++)
+        //                {
+        //                    // Không pad AccountType nữa, giữ nguyên như Postman (5 ký tự)
+        //                    string accountType = (rec.AccountTypeCode ?? "").Trim();
+        //                    string accountSubType = (rec.AccountSubTypeCode ?? "1").Trim(); // fallback "1" như Postman
+
+        //                    // Nếu muốn pad lại sau khi test, uncomment dòng dưới
+        //                    // if (accountType.Length != 6) accountType = accountType.PadLeft(6, '0');
+
+        //                    if (string.IsNullOrEmpty(accountSubType))
+        //                    {
+        //                        accountSubType = "1"; // hoặc "0" tùy theo master data
+        //                    }
+
+        //                    // Format lãi suất giống Postman: 2.5 thay vì 2.5000
+        //                    string interestRateStr = rec.NewInterestRate?.ToString("F2") ?? "0.5"; // fallback >0 để test
+        //                    if (interestRateStr == "0.00" || interestRateStr == "0.0") interestRateStr = "0.5";
+
+        //                    string penalRateStr = rec.PenalRate?.ToString("F0") ?? "0"; // "0" như Postman
+
+        //                    RecordInterestRatesViewModel record = new RecordInterestRatesViewModel
+        //                    {
+        //                        RecordSl = rec.RecordSerialNo.ToString(),
+        //                        ProductCode = rec.ProductCode,
+        //                        AccountType = accountType,
+        //                        AccountSubType = accountSubType,
+        //                        CurrencyCode = rec.CurrencyCode,
+        //                        EffectiveDate = DateTime.UtcNow.AddMonths(1).ToString("yyyyMMdd"), // Test ngày gần để tránh lỗi ngày
+        //                        DebitCreditFlag = "C",
+        //                        PosCode = _lstPosApply[i] == PosValue.HEAD_POS ? "3" : _lstPosApply[i], // Thử "3" như Postman
+        //                        PosRateExpiryDate = rec.ExpiryDate?.ToString("yyyyMMdd") ?? "",
+        //                        InterestRate = interestRateStr,
+        //                        PenalRate = penalRateStr
+        //                    };
+
+        //                    lstCasaRates.Add(record);
+        //                }
+        //            }
+        //        }
+
+        //        interestRates.Record = lstCasaRates;
+        //        requestData.InterestRates = interestRates;
+        //        requestData.BankCircularRefNum = circularRefNum;
+
+        //        if (status == ConfigStatus.AUTHORIZED.Value)
+        //        {
+        //            // Log payload để debug
+        //            var jsonPayload = JsonConvert.SerializeObject(requestData, Formatting.Indented);
+        //            _logger.LogInformation("CasaIntRates Payload gửi đi:\n{Payload}", jsonPayload);
+
+        //            var apiResponse = await _apiInternalEsbService.CasaIntRates(requestData);
+
+        //            // Log response chi tiết
+        //            _logger.LogInformation("CasaIntRates Response: TxnStatus={Txn}, Code={Code}, Msg={Msg}, StatusListCount={Count}, StatusList={StatusList}",
+        //                apiResponse?.TxnStatus ?? "null",
+        //                apiResponse?.ResponseCode ?? "null",
+        //                apiResponse?.ResponseMsg ?? "null",
+        //                apiResponse?.StatusList?.Count ?? 0,
+        //                JsonConvert.SerializeObject(apiResponse?.StatusList));
+
+        //            foreach (var rec in records)
+        //            {
+        //                rec.CallApiTxnStatus = apiResponse?.TxnStatus ?? "Unknown";
+        //                rec.CallApiResponseMsg = apiResponse?.ResponseMsg ?? "No message";
+        //                rec.CallApiResponseCode = apiResponse?.ResponseCode ?? "Unknown";
+
+        //                int reqRecordSl = 0;
+        //                if (apiResponse?.StatusList != null && apiResponse.StatusList.Any())
+        //                {
+        //                    var first = apiResponse.StatusList.FirstOrDefault();
+        //                    if (first != null && !string.IsNullOrEmpty(first.ReqRecordSl))
+        //                    {
+        //                        int.TryParse(first.ReqRecordSl, out reqRecordSl);
+        //                    }
+        //                }
+        //                rec.CallApiReqRecordSl = reqRecordSl;
+
+        //                rec.StatusUpdateCore = (apiResponse?.TxnStatus == ResultValueAPI.ResultValue_Status_Success) ? 1 : 0;
+        //            }
+
+        //            var result = await _dbContext.SaveChangesAsync();
+        //            return result > 0 && apiResponse?.TxnStatus == ResultValueAPI.ResultValue_Status_Success ? 1 : 0;
+        //        }
+        //        else
+        //        {
+        //            var result = await _dbContext.SaveChangesAsync();
+        //            return result;
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _logger.LogError(e, "SaveApprovalDecisionCasa error: {Message}", e.Message);
+        //        throw;
+        //    }
+        //}
+
+
+
+        //Sửa Casa
         public async Task<int> SaveApprovalDecisionCasa(string userName, List<long> lstId, int rejectFlag, string rejectReason)
         {
             try
@@ -3007,12 +3147,14 @@ namespace VBSPOSS.Services.Implements
                 else
                     status = ConfigStatus.AUTHORIZED.Value;
 
-                if (!lstId.Any())
-                    return 0;
+                if (!lstId.Any()) return 0;
 
-                CasaIntRatesRequestViewModel requestData = new CasaIntRatesRequestViewModel();
-                requestData.UserId = ConstValueAPI.UserId_Call_ApiIDC;
-                requestData.BankCircularDate = DateTime.UtcNow.ToString("yyyyMMdd");
+                CasaIntRatesRequestViewModel requestData = new CasaIntRatesRequestViewModel
+                {
+                    UserId = ConstValueAPI.UserId_Call_ApiIDC,
+                    BankCircularDate = DateTime.UtcNow.ToString("yyyyMMdd"),
+                    BankCircularRefNum = ""   // sẽ gán sau
+                };
 
                 InterestRates interestRates = new InterestRates();
                 List<RecordInterestRatesViewModel> lstCasaRates = new List<RecordInterestRatesViewModel>();
@@ -3040,34 +3182,27 @@ namespace VBSPOSS.Services.Implements
                     {
                         for (int i = 0; i < _lstPosApply.Count; i++)
                         {
-                            // Không pad AccountType nữa, giữ nguyên như Postman (5 ký tự)
-                            string accountType = (rec.AccountTypeCode ?? "").Trim();
-                            string accountSubType = (rec.AccountSubTypeCode ?? "1").Trim(); // fallback "1" như Postman
+                            // Giữ nguyên format lúc SUCCESS (không pad AccountType, PosCode = "3")
+                            string accountType = (rec.AccountTypeCode ?? "").Trim();        // 5 ký tự như Postman
+                            string accountSubType = string.IsNullOrWhiteSpace(rec.AccountSubTypeCode)
+                                ? "1"
+                                : rec.AccountSubTypeCode.Trim();
 
-                            // Nếu muốn pad lại sau khi test, uncomment dòng dưới
-                            // if (accountType.Length != 6) accountType = accountType.PadLeft(6, '0');
+                            string interestRateStr = rec.NewInterestRate?.ToString("F2") ?? "0.50";
+                            if (interestRateStr == "0.00" || interestRateStr == "0.0") interestRateStr = "0.50";
 
-                            if (string.IsNullOrEmpty(accountSubType))
-                            {
-                                accountSubType = "1"; // hoặc "0" tùy theo master data
-                            }
-
-                            // Format lãi suất giống Postman: 2.5 thay vì 2.5000
-                            string interestRateStr = rec.NewInterestRate?.ToString("F2") ?? "0.5"; // fallback >0 để test
-                            if (interestRateStr == "0.00" || interestRateStr == "0.0") interestRateStr = "0.5";
-
-                            string penalRateStr = rec.PenalRate?.ToString("F0") ?? "0"; // "0" như Postman
+                            string penalRateStr = rec.PenalRate?.ToString("F0") ?? "0";
 
                             RecordInterestRatesViewModel record = new RecordInterestRatesViewModel
                             {
                                 RecordSl = rec.RecordSerialNo.ToString(),
                                 ProductCode = rec.ProductCode,
-                                AccountType = accountType,
+                                AccountType = accountType,                    // KHÔNG pad
                                 AccountSubType = accountSubType,
-                                CurrencyCode = rec.CurrencyCode,
-                                EffectiveDate = DateTime.UtcNow.AddMonths(1).ToString("yyyyMMdd"), // Test ngày gần để tránh lỗi ngày
+                                CurrencyCode = rec.CurrencyCode ?? "VND",
+                                EffectiveDate = DateTime.UtcNow.AddDays(1).ToString("yyyyMMdd"), // giữ ngày mai
                                 DebitCreditFlag = "C",
-                                PosCode = _lstPosApply[i] == PosValue.HEAD_POS ? "3" : _lstPosApply[i], // Thử "3" như Postman
+                                PosCode = _lstPosApply[i] == PosValue.HEAD_POS ? "3" : _lstPosApply[i], // quay lại "3"
                                 PosRateExpiryDate = rec.ExpiryDate?.ToString("yyyyMMdd") ?? "",
                                 InterestRate = interestRateStr,
                                 PenalRate = penalRateStr
@@ -3084,42 +3219,30 @@ namespace VBSPOSS.Services.Implements
 
                 if (status == ConfigStatus.AUTHORIZED.Value)
                 {
-                    // Log payload để debug
                     var jsonPayload = JsonConvert.SerializeObject(requestData, Formatting.Indented);
-                    _logger.LogInformation("CasaIntRates Payload gửi đi:\n{Payload}", jsonPayload);
+                    _logger.LogInformation("=== CASA PAYLOAD GỬI ĐI ===\n{Payload}", jsonPayload);
 
                     var apiResponse = await _apiInternalEsbService.CasaIntRates(requestData);
 
-                    // Log response chi tiết
-                    _logger.LogInformation("CasaIntRates Response: TxnStatus={Txn}, Code={Code}, Msg={Msg}, StatusListCount={Count}, StatusList={StatusList}",
-                        apiResponse?.TxnStatus ?? "null",
-                        apiResponse?.ResponseCode ?? "null",
-                        apiResponse?.ResponseMsg ?? "null",
-                        apiResponse?.StatusList?.Count ?? 0,
-                        JsonConvert.SerializeObject(apiResponse?.StatusList));
+                    _logger.LogInformation("=== CASA RESPONSE === TxnStatus={Txn}, Code={Code}, Msg={Msg}",
+                        apiResponse?.TxnStatus, apiResponse?.ResponseCode, apiResponse?.ResponseMsg);
 
+                    // Cập nhật DB
                     foreach (var rec in records)
                     {
                         rec.CallApiTxnStatus = apiResponse?.TxnStatus ?? "Unknown";
-                        rec.CallApiResponseMsg = apiResponse?.ResponseMsg ?? "No message";
                         rec.CallApiResponseCode = apiResponse?.ResponseCode ?? "Unknown";
+                        rec.CallApiResponseMsg = apiResponse?.ResponseMsg ?? "No message";
+                        rec.CallApiReqRecordSl = 0;
 
-                        int reqRecordSl = 0;
-                        if (apiResponse?.StatusList != null && apiResponse.StatusList.Any())
-                        {
-                            var first = apiResponse.StatusList.FirstOrDefault();
-                            if (first != null && !string.IsNullOrEmpty(first.ReqRecordSl))
-                            {
-                                int.TryParse(first.ReqRecordSl, out reqRecordSl);
-                            }
-                        }
-                        rec.CallApiReqRecordSl = reqRecordSl;
+                        bool isSuccess = apiResponse?.TxnStatus?.Equals("SUCCESS", StringComparison.OrdinalIgnoreCase) == true
+                                      || apiResponse?.ResponseCode == "00000";
 
-                        rec.StatusUpdateCore = (apiResponse?.TxnStatus == ResultValueAPI.ResultValue_Status_Success) ? 1 : 0;
+                        rec.StatusUpdateCore = isSuccess ? 1 : 0;
                     }
 
                     var result = await _dbContext.SaveChangesAsync();
-                    return result > 0 && apiResponse?.TxnStatus == ResultValueAPI.ResultValue_Status_Success ? 1 : 0;
+                    return result > 0 && (apiResponse?.TxnStatus?.Equals("SUCCESS", StringComparison.OrdinalIgnoreCase) == true) ? 1 : 0;
                 }
                 else
                 {
@@ -3129,7 +3252,7 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "SaveApprovalDecisionCasa error: {Message}", e.Message);
+                _logger.LogError(e, "SaveApprovalDecisionCasa error");
                 throw;
             }
         }
