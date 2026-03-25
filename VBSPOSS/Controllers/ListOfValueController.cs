@@ -842,7 +842,7 @@ namespace VBSPOSS.Controllers
             string sTitleChoice = "";
             sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Xã/Phường/Thị trấn---" : pTitleChoice;
             ArrayList data = new ArrayList();
-            var listTransPoints = _listOfTransPointService.GetListOfTransPointSearch(pProvinceCode, pPosCode, pCommuneCode, pTxnPointCode, pStatus);
+            var listTransPoints = _listOfTransPointService.GetListOfTransPointSearch(pProvinceCode, pPosCode, pCommuneCode, pTxnPointCode,"",1,31, pStatus);
 
             if (sTitleChoice != "" && string.IsNullOrEmpty(pTxnPointCode))
                 data.Add(new { id = "", value = sTitleChoice });

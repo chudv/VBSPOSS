@@ -856,7 +856,7 @@
                     columns.Bound(c => c.DistrictName).Hidden();
                     columns.Bound(c => c.CommuneCode).Hidden();
                     columns.Bound(c => c.TimeBegin).Hidden();
-                    columns.Bound(c => c.STT).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TimeEnd).Hidden();
                     columns.Bound(c => c.ProvinceName).Title("Tỉnh/Thành phố").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.CommuneName).Title("Xã/Phường").Width(150).HtmlAttributes(new { style = "text-align: left;" });                  
@@ -914,7 +914,7 @@
                 .Ajax()
                 .Batch(false)
                 .ServerOperation(false)
-                .Model(model => model.Id(p => p.STT)) 
+                .Model(model => model.Id(p => p.OrderNo)) 
                 .Events(e => e.RequestEnd("onSaveGridCompleted").Error("error_handler"))
                 .Read(read => read.Action("LoadTranspointGridData", "Noti").Data("paramLoadGridData"))
                 .PageSize(50)
