@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection.Emit;
+using Telerik.SvgIcons;
 using VBSPOSS.Models;
 
 namespace VBSPOSS.Constants
@@ -171,41 +172,41 @@ namespace VBSPOSS.Constants
         public const string OnTerm = "E"; // Định kỳ
     }   
 
-    /// <summary>
-    /// Chỉ số xác định danh mục gốc: Chức vụ; Phòng ban; Trình độ chuyên mốn;...
-    /// </summary>
-    public static class ParentLovValue
-    {
-        /// <summary>
-        /// Chỉ số xác định Danh mục chức vụ
-        /// </summary>
-        public const int Parent_Title_Id = 14;
+    ///// <summary>
+    ///// Chỉ số xác định danh mục gốc: Chức vụ; Phòng ban; Trình độ chuyên mốn;...
+    ///// </summary>
+    //public static class ParentLovValue
+    //{
+    //    /// <summary>
+    //    /// Chỉ số xác định Danh mục chức vụ
+    //    /// </summary>
+    //    public const int Parent_Title_Id = 14;
         
-        /// <summary>
-        /// Mã xác định Danh mục chức vụ
-        /// </summary>
-        public const string Parent_Title_Code = "1400";
+    //    /// <summary>
+    //    /// Mã xác định Danh mục chức vụ
+    //    /// </summary>
+    //    public const string Parent_Title_Code = "1400";
 
-        /// <summary>
-        /// Chỉ số xác định Danh mục Phòng ban
-        /// </summary>
-        public const int Parent_Department_Id = 15;
+    //    /// <summary>
+    //    /// Chỉ số xác định Danh mục Phòng ban
+    //    /// </summary>
+    //    public const int Parent_Department_Id = 15;
 
-        /// <summary>
-        /// Mã xác định Danh mục Phòng ban
-        /// </summary>
-        public const string Parent_Department_Code = "1500";
+    //    /// <summary>
+    //    /// Mã xác định Danh mục Phòng ban
+    //    /// </summary>
+    //    public const string Parent_Department_Code = "1500";
 
-        /// <summary>
-        /// Chỉ số xác định Danh mục Phòng ban
-        /// </summary>
-        public const int Parent_Degree_Id = 38;
+    //    /// <summary>
+    //    /// Chỉ số xác định Danh mục Phòng ban
+    //    /// </summary>
+    //    public const int Parent_Degree_Id = 38;
 
-        /// <summary>
-        /// Mã xác định Danh mục Phòng ban
-        /// </summary>
-        public const string Parent_Degree_Code = "3800";
-    }
+    //    /// <summary>
+    //    /// Mã xác định Danh mục Phòng ban
+    //    /// </summary>
+    //    public const string Parent_Degree_Code = "3800";
+    //}
 
     /// <summary>
     /// Kỳ hạn: D - Ngày, M - Tháng, Y - Năm
@@ -680,4 +681,38 @@ namespace VBSPOSS.Constants
 
         public const string FORMAT_DATE_TIME_SHORT_UPD = "yyyy-MM-dd";
     }
+
+    /// <summary>
+    /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị:
+    ///     '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+    ///     '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+    ///     '2': Mật khẩu được gửi link vào email của người dùng
+    ///     '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+    /// </summary>
+    public class MailIdFlag
+    {
+        public static ValueConstModel MailIdFlag_DefaultPassword = new ValueConstModel { Value = 0, Code = "0", Description = "Mật khẩu mặc định gồm 4 ký tự đầu của tài khoản người dùng và ngày sinh ddMMyyyy" };
+
+        public static ValueConstModel MailIdFlag_RandomSendEmail = new ValueConstModel { Value = 1, Code = "1", Description = "Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng" };
+
+        public static ValueConstModel MailIdFlag_LinkPassword = new ValueConstModel { Value = 2, Code = "2", Description = "Mật khẩu được gửi qua link vào email của người dùng" };
+
+        public static ValueConstModel MailIdFlag_RandomSendAPI = new ValueConstModel { Value = 4, Code = "4", Description = "Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng" };
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                0 => MailIdFlag_DefaultPassword,
+                1 => MailIdFlag_RandomSendEmail,
+                2 => MailIdFlag_LinkPassword,
+                4 => MailIdFlag_RandomSendAPI,
+                _ => null
+            };
+        }
+
+    }
+
+
+    
 }

@@ -275,7 +275,7 @@ namespace VBSPOSS.Services.Implements
                     objItem.OrderNoAll = iCount;
                     if (!string.IsNullOrEmpty(objItem.CodeOfLovUsed))
                     {
-                        if (item.ParentId == ParentLovValue.Parent_Title_Id || item.ParentId == ParentLovValue.Parent_Department_Id)
+                        if (item.ParentId == ListOfValueParentValue.ParentIdPosition || item.ParentId == ListOfValueParentValue.ParentIdDepartment)
                         {
                             sMaApDung = objItem.CodeOfLovUsed.Replace(",", "; ");
                             objItem.CodeOfLovUsedText = sMaApDung.Replace("1", "Hội sở chính").Replace("2", "Chi nhánh Tỉnh/TP").Replace("3", "VP đại diện").Replace("4", "Phòng giao dịch").Replace("5", "TTCNTT").Replace("6", "Cơ sở đào tạo").Replace("7", "TTĐT").Replace("9", "Sở giao dịch");
@@ -321,7 +321,7 @@ namespace VBSPOSS.Services.Implements
                 answer.OrderNoAll = 1;
                 if (!string.IsNullOrEmpty(answer.CodeOfLovUsed))
                 {
-                    if (answer.ParentId == ParentLovValue.Parent_Title_Id || answer.ParentId == ParentLovValue.Parent_Department_Id)
+                    if (answer.ParentId == ListOfValueParentValue.ParentIdPosition || answer.ParentId == ListOfValueParentValue.ParentIdDepartment)
                     {
                         sMaApDung = answer.CodeOfLovUsed.Replace(",", "; ");
                         answer.CodeOfLovUsedText = sMaApDung.Replace("1", "Hội sở chính").Replace("2", "Chi nhánh Tỉnh/TP").Replace("3", "VP đại diện").Replace("4", "Phòng giao dịch").Replace("5", "TTCNTT").Replace("6", "Cơ sở đào tạo").Replace("7", "TTĐT").Replace("9", "Sở giao dịch");
@@ -365,7 +365,7 @@ namespace VBSPOSS.Services.Implements
                 answer.OrderNoAll = 1;
                 if (!string.IsNullOrEmpty(answer.CodeOfLovUsed))
                 {
-                    if (answer.ParentId == ParentLovValue.Parent_Title_Id || answer.ParentId == ParentLovValue.Parent_Department_Id)
+                    if (answer.ParentId == ListOfValueParentValue.ParentIdPosition || answer.ParentId == ListOfValueParentValue.ParentIdDepartment)
                     {
                         sMaApDung = answer.CodeOfLovUsed.Replace(",", "; ");
                         answer.CodeOfLovUsedText = sMaApDung.Replace("1", "Hội sở chính").Replace("2", "Chi nhánh Tỉnh/TP").Replace("3", "VP đại diện").Replace("4", "Phòng giao dịch").Replace("5", "TTCNTT").Replace("6", "Cơ sở đào tạo").Replace("7", "TTĐT").Replace("9", "Sở giao dịch");
