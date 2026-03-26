@@ -10,6 +10,7 @@ using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
+using VBSPOSS.Integration.Model;
 using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
@@ -326,38 +327,112 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm thực hiện thêm mới tài khoản người dùng Intellect iDC => Gọi đến API addUser thêm mới thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// Ví dụ cách gọi Hàm:
+        ///             AddUserRequestViewModel requestInputAddUser = new AddUserRequestViewModel();
+        ///             requestInputAddUser.Ticket = "";
+        ///             requestInputAddUser.UserId = "CHUDV004";
+        ///             requestInputAddUser.NickName = "CHUDV004";
+        ///             requestInputAddUser.FirstName= "Dương Quyết";
+        ///             requestInputAddUser.LastName = "Văn Chữ";
+        ///             requestInputAddUser.EmailAddress = "chudv2510@gmail.com";
+        ///             requestInputAddUser.MobileNumber = "0908688212";
+        ///             requestInputAddUser.DateOfBirth = "1983-10-25";
+        ///             requestInputAddUser.GroupName = "POGD";
+        ///             requestInputAddUser.EntityList = "IDCPRODC";
+        ///             requestInputAddUser.AuthType = 1;
+        ///             requestInputAddUser.UserType = 1;
+        ///             requestInputAddUser.MailIdFlag = MailIdFlag.MailIdFlag_RandomSendAPI.Value;
+        ///             requestInputAddUser.ExpiryDate = "2050-12-31";
+        ///             AddUserExtraAttributeRequest objAddUserExtraAttribute = new AddUserExtraAttributeRequest();
+        ///             objAddUserExtraAttribute.BranchCode = "2501";
+        ///             objAddUserExtraAttribute.UserRole = "POGD";
+        ///             requestInputAddUser.AddUserExtraAttributeRequestViewModel = objAddUserExtraAttribute;
+        ///             var resultAddUser = _userManagementIDCService.CreateUserIDCByApiAddUser(requestInputAddUser, UserName);
+        /// </summary>
+        /// <param name="requestInput">Thông tin tài khoản người dùng Intellect iDC cần tạo</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
+        /// <returns>Kết quả trả về theo Model AddUserAPIResponseViewModel</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<AddUserAPIResponseViewModel> CreateUserIDCByApiAddUser(AddUserRequestViewModel requestInput, string pUserNameUpd)
+        {
+            int iCountUpdate = 0;
+            long iRetIdUpd = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            AddUserAPIResponseViewModel objResultAddUser = new AddUserAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    var apiResponse = await _apiInternalEsbService.CreateUserIDCByAPIAddUser(requestInput);
+
+                    if (apiResponse != null && apiResponse.ResponseCode == "0")
+                    {
+                        objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        objResultAddUser.PrevStatus = apiResponse.PrevStatus;
+                        if (apiResponse.ResponseAttributes != null)
+                            objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
+                        else objResultAddUser.UserPassword = "";
+                            objResultAddUser.ResponseCode = apiResponse.ResponseCode;
+                        objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
+                        objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                    }
+                    else
+                    {
+                        objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        objResultAddUser.PrevStatus = apiResponse.PrevStatus;
+                        if (apiResponse.ResponseAttributes != null)
+                            objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
+                        else objResultAddUser.UserPassword = "";
+                        objResultAddUser.ResponseCode = apiResponse.ResponseCode;
+                        objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
+                        objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                iRetIdUpd = -1;
+                Console.WriteLine($"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
+                                        $"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultAddUser;
+        }
         /*
-{
-    "ticket": "",    
-"userId": "CHUV13",
-    "nickName": "CHUV13",
-    "firstName": "Dương",
-    "lastName": "Văn Chữ",
-    "emailAddress": "chudv.cctt@gmail.com",
-    "mobileNumber": "0908688212",
-    "DOB": "1983-10-25",
-    "groupName": "IDCROLE,GRPCLMSIT,GRPLMSIT",
-    "entityList": "IDCPRODC",
-    "authType": 1,
-    "userType": 1,
-    "mailIdFlag": 4,
-    "expiryDate": "2060-12-31",
-    "extraAttribute": {
-        "BranchCode": "101",
-        "UserRole": "POGD"
-    }
-}
-{
-    "sessionValReq": "true",
-    "prevStatus": 0,
-    "responseAttributes": {
-        "USR_PASSWD": "7wvgD9PQ"
-    },
-    "responseCode": 0,
-    "responseMsg": "User Successfully Registered",
-    "status": "true"
-}
-         */
+        {
+            "ticket": "",    
+            "userId": "CHUV13",
+            "nickName": "CHUV13",
+            "firstName": "Dương",
+            "lastName": "Văn Chữ",
+            "emailAddress": "chudv.cctt@gmail.com",
+            "mobileNumber": "0908688212",
+            "DOB": "1983-10-25",
+            "groupName": "IDCROLE,GRPCLMSIT,GRPLMSIT",
+            "entityList": "IDCPRODC",
+            "authType": 1,
+            "userType": 1,
+            "mailIdFlag": 4,
+            "expiryDate": "2060-12-31",
+            "extraAttribute": {
+                "BranchCode": "101",
+                "UserRole": "POGD"
+            }
+        }
+        {
+            "sessionValReq": "true",
+            "prevStatus": 0,
+            "responseAttributes": {
+                "USR_PASSWD": "7wvgD9PQ"
+            },
+            "responseCode": 0,
+            "responseMsg": "User Successfully Registered",
+            "status": "true"
+        }
+        */
 
 
 

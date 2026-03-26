@@ -124,7 +124,7 @@ namespace VBSPOSS.Integration.ViewModel
         public int OperationType { get; set; }               //Giá trị là -1
 
         [JsonProperty("userType")]
-        public int UserType { get; set; }               //Loại người dùng (IDL_ARX.TB_ARM_USER_TYPE@VBSPCBSLINK). Giá trị quy ước: 0: Bank; 1: Corporate; 2: Retail
+        public int UserType { get; set; }               //Loại người dùng (IDL_ARX.TB_ARM_USER_TYPE@VBSPCBSLINK). Giá trị quy ước: 1: Bank; 2: Corporate; 3: Retail
 
         [JsonProperty("encryptExtraAttrib")]
         public bool EncryptExtraAttrib { get; set; }               //Giá trị mặc định false
@@ -246,7 +246,115 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("BranchCode")]
         public string BranchCode { get; set; }      //Mã POS của người dùng. Ex: 101
     }
-    
+
+    /// <summary>
+    /// Model cho Request gọi API addUser để gọi API http://10.63.54.51:7003/vbsp/internal/api/v1/addUser. Ví dụ:
+    ///     {
+    ///          "ticket": "",    
+    ///          "userId": "CHUDV001",
+    ///          "nickName": "CHUDV001",
+    ///          "firstName": "Dương",
+    ///          "lastName": "Văn Chữ",
+    ///          "emailAddress": "chudv.cctt@gmail.com",
+    ///          "mobileNumber": "0908688212",
+    ///          "DOB": "1983-10-25",
+    ///          "groupName": "POGD",
+    ///          "entityList": "IDCPRODC",
+    ///          "authType": 1,
+    ///          "userType": 1,
+    ///          "mailIdFlag": 4,
+    ///          "expiryDate": "2060-12-31",
+    ///          "extraAttribute": {
+    ///                 "BranchCode": "2505",
+    ///                 "UserRole": "POGD"
+    ///          }
+    ///      }
+    /// </summary>
+    public class AddUserRequestViewModel
+    {
+        [JsonProperty("ticket")]
+        public string Ticket;
+                
+        [JsonProperty("userId")]
+        public string UserId;
+
+        [JsonProperty("nickName")]
+        public string NickName;
+
+        [JsonProperty("firstName")]
+        public string FirstName;
+
+        [JsonProperty("lastName")]
+        public string LastName;
+
+        [JsonProperty("emailAddress")]
+        public string EmailAddress;
+
+        [JsonProperty("mobileNumber")]
+        public string MobileNumber;
+
+        /// <summary>
+        /// Định dạng ngày sinh: yyyy-MM-dd
+        /// </summary>
+        [JsonProperty("DOB")]
+        public string DateOfBirth;
+
+        [JsonProperty("groupName")]
+        public string GroupName;
+
+        [JsonProperty("entityList")]
+        public string EntityList;
+
+        /// <summary>
+        /// Phương thức đăng nhập. Giá trị:
+        ///         -1: Super(Áp dụng cho user hệ thống không đăng nhập được);
+        ///         1: Native(Bình thường Mật khẩu);
+        ///         2: LDAP;
+        ///         3: Safeword;
+        ///         10: SMS OTP (Citi MFA)
+        /// </summary>
+        [JsonProperty("authType")]
+        public int AuthType;
+
+        /// <summary>
+        /// Loại người dùng: 1: Bank; 2: Corporate; 3: Retail
+        /// </summary>
+        [JsonProperty("userType")]
+        public int UserType;
+
+        /// <summary>
+        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
+        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+        ///         '2': Mật khẩu được gửi link vào email của người dùng
+        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
+        /// </summary>
+        [JsonProperty("mailIdFlag")]
+        public int MailIdFlag;
+
+        /// <summary>
+        /// Ngày hết hiệu lực người dùng. Định dạng yyyy-MM-dd. Giá trị mặc định: 2050-12-31
+        /// </summary>
+        [JsonProperty("expiryDate")]
+        public string ExpiryDate;
+
+        [JsonProperty("extraAttribute")]
+        public AddUserExtraAttributeRequest AddUserExtraAttributeRequestViewModel { get; set; }
+    }
+
+    public class AddUserExtraAttributeRequest
+    {
+        [JsonProperty("BranchCode")]
+        public string BranchCode { get; set; }      //Mã POS của người dùng. Ex: 101
+
+        [JsonProperty("UserRole")]
+        public string UserRole { get; set; }        //Nhóm quyền trên IDC(Không bao gồm Lending). Ex: POGD
+
+    }
+
+
+
 
 
     public class UserInfoIDCViewModelcs

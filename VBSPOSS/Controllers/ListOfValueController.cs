@@ -1409,8 +1409,8 @@ namespace VBSPOSS.Controllers
                 pPosCode = UserPosCode;
             sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "--- Nhóm quyền người dùng ---" : pTitleChoice;
             sCodeApply = _serviceLOV.GetCodeApplyByPosCode(pPosCode, UserGrade);
-            if (sCodeApply == "6")
-                sCodeApply = "4";//Nếu là Cơ sở đào tạo thì cho quyền như PGD
+            if (sCodeApply == CodeOfLovUsed.CodeOfLovUsed_TrainingFacility)
+                sCodeApply = CodeOfLovUsed.CodeOfLovUsed_District;//Nếu là Cơ sở đào tạo thì cho quyền như PGD
 
             ArrayList data = new ArrayList();
             var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", pStatus, 2);
@@ -1462,7 +1462,6 @@ namespace VBSPOSS.Controllers
             }
             return Json(data);
         }
-
 
         /// <summary>
         /// Hàm lấy danh sách danh mục chung ra ComboBox hoặc Muti ListBox có truyền mã POS của người dùng để giới hạn danh mục áp dụng cho đơn vị

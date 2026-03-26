@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Newtonsoft.Json;
 using VBSPOSS.Integration.Model;
 
@@ -248,6 +249,21 @@ namespace VBSPOSS.ViewModels
         /// Ngày giờ login gần nhất (2026 03 24 031929). Định dạng yyyyMMddHHmmss
         /// </summary>
         public string CurrLoginDate { get; set; }           //Ngày giờ login gần nhất (2026 03 24 031929)
+    }
+
+    public class AddUserAPIResponseViewModel
+    {
+        public bool SessionValReq { get; set; }
+
+        public int PrevStatus { get; set; }
+
+        public string UserPassword { get; set; }
+
+        public string ResponseCode { get; set; }
+
+        public string ResponseMsg { get; set; }
+
+        public bool Status { get; set; }
     }
 
 }

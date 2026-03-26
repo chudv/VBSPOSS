@@ -4,6 +4,8 @@ using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers.Interfaces;
+using VBSPOSS.Integration.Model;
+using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
@@ -33,8 +35,6 @@ namespace VBSPOSS.Controllers
         {
             string sessionUser = UserName;
             string posCode = UserPosCode;
-
-
             // Hoặc cách khác qua RouteData
             var controllerFromRoute = RouteData.Values["controller"]?.ToString();
             var actionFromRoute = RouteData.Values["action"]?.ToString();
