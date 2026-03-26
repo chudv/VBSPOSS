@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Net.NetworkInformation;
 using System.Reflection.Emit;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Telerik.SvgIcons;
@@ -40,6 +41,8 @@ namespace VBSPOSS.Controllers
         private readonly IInterestRateConfigureService _intRateConfigService;
 
         private readonly IListOfTransPointService _listOfTransPointService;
+
+        private readonly IUserManagementIDCService _userManagementIDCService;
         
 
         /// <summary>
@@ -51,14 +54,14 @@ namespace VBSPOSS.Controllers
         /// <param name="menuService">The menuService<see cref="IPermitService"/>.</param>
         public ListOfValueController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper, 
                                 IProductService productService, IApiInternalService internalServiceAPI, IInterestRateConfigureService intRateConfigService,
-                                IAdministrationService userService, IListOfTransPointService listOfTransPointService) : base(logger, adminService, sessionHelper)
+                                IAdministrationService userService, IListOfTransPointService listOfTransPointService,IUserManagementIDCService userManagementIDCService) : base(logger, adminService, sessionHelper)
         {
             _serviceLOV = serviceLOV;
             _productService = productService;
             _internalServiceAPI = internalServiceAPI;
             _intRateConfigService = intRateConfigService;
             _listOfTransPointService = listOfTransPointService;
-            //_userService = userService;
+            _userManagementIDCService = userManagementIDCService;
         }
 
         /// <summary>
@@ -443,7 +446,14 @@ namespace VBSPOSS.Controllers
                         listStaffIdExist = listStaffIdExistTmp.Where(w => w.Status != StatusLov.StatusClosed).Select(s => s.StaffId).ToList();
                     listStaffVBSPTemp = listStaffVBSP.Result.Where(w => w.StaffId != "" && !listStaffIdExist.Contains(w.StaffId)).ToList();
                 }
+                //Xử lý loại người dùng đã khởi tạo trong IDC
+                else if(pFlagCall == "2")
+                {
+                    var listStaffIDC = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "").Select(s => s.StaffId).ToHashSet();
+                    listStaffVBSPTemp = listStaffVBSP.Result.Where(s => !listStaffIDC.Contains(s.StaffId)).ToList();
+                }    
                 else listStaffVBSPTemp = listStaffVBSP.Result;
+
                 if (listStaffVBSPTemp != null && listStaffVBSPTemp.Count != 0)
                 {
                     foreach (StaffVbspInforViewModel item in listStaffVBSP.Result)

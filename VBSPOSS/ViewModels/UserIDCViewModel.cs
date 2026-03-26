@@ -86,6 +86,9 @@ namespace VBSPOSS.ViewModels
         public DateTime ModifiedDate { get; set; }
         public string ApproverBy { get; set; }
         public DateTime ApprovalDate { get; set; }
+        public string Genders { get; set; }
+        public string StaffPositionName { get; set; }
+        public string StaffDepartmentName { get; set; }
     }
 
 
