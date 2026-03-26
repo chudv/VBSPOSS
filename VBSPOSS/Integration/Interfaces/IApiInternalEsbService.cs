@@ -80,5 +80,24 @@ namespace VBSPOSS.Integration.Interfaces
         /// <param name="requestInput">Thông tin đầu vào. Ví dụ: { "ticket": "", "userId": "DUYEN002" }</param>
         /// <returns>Thông tin người dùng cần lấy</returns>
         Task<GenericListRecordJava<ViewUserReposeViewModel>> GetUserIDCInfoByApiViewUser(ViewUserRequestViewModel requestInput);
+
+        /// <summary>
+        /// Hàm thực hiện gọi API addUser thêm mới thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin người dùng Intellect iDC cần thêm mới</param>
+        /// <returns>Kết quả trả về. Ex: 
+        /// {
+        ///     "sessionValReq": "true",
+        ///     "prevStatus": 0,
+        ///     "responseAttributes": {
+        ///         "USR_PASSWD": "s5j5SNHw"
+        ///     },
+        ///     "responseCode": 0,
+        ///     "responseMsg": "User Successfully Registered",
+        ///     "status": "true"
+        /// }
+        /// </returns>
+        Task<UserIDCResponseResult> CreateUserIDCByAPIAddUser(AddUserRequestViewModel requestInput);
     }
 }

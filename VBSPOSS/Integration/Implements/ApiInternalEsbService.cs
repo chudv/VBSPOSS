@@ -307,6 +307,7 @@ namespace VBSPOSS.Integration.Implements
                 return GenericStatusListResult.Fail($"An unexpected error occurred: {ex.Message}");
             }
         }
+
         /// <summary>
         /// Hàm thực hiện gọi API tidePenalRates cập nhật thông tin cấu hình lãi suất rút trước hạn Tide vào iDC thông qua API 
         /// http://10.63.54.52:7003/vbsp/internal/api/v1/tidePenalRates
@@ -677,10 +678,111 @@ namespace VBSPOSS.Integration.Implements
          */
 
 
+        /// <summary>
+        /// Hàm thực hiện gọi API addUser thêm mới thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin người dùng Intellect iDC cần thêm mới</param>
+        /// <returns>Kết quả trả về. Ex: 
+        /// {
+        ///     "sessionValReq": "true",
+        ///     "prevStatus": 0,
+        ///     "responseAttributes": {
+        ///         "USR_PASSWD": "s5j5SNHw"
+        ///     },
+        ///     "responseCode": 0,
+        ///     "responseMsg": "User Successfully Registered",
+        ///     "status": "true"
+        /// }
+        /// </returns>
+        public async Task<UserIDCResponseResult> CreateUserIDCByAPIAddUser(AddUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting addUser with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null || requestInput.AddUserExtraAttributeRequestViewModel?.UserRole == null)
+                {
+                    _logger.LogWarning("Invalid input: Thông tin đầu vào hoặc Quyền người dùng trống. Vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data UserRole = {requestInput.AddUserExtraAttributeRequestViewModel?.UserRole}");
+                }
+                if (requestInput == null || requestInput.AddUserExtraAttributeRequestViewModel?.BranchCode == null)
+                {
+                    _logger.LogWarning("Invalid input: Thông tin đầu vào hoặc đơn vị POS người dùng trống. Vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data BranchCode = {requestInput.AddUserExtraAttributeRequestViewModel?.BranchCode}");
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cần tạo không được để trống vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data UserId = {requestInput.UserId}");
+                }
+                if (string.IsNullOrEmpty(requestInput.NickName))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cần tạo không được để trống vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data UserId = {requestInput.NickName}");
+                }
+                if (string.IsNullOrEmpty(requestInput.GroupName))
+                {
+                    _logger.LogWarning("Invalid input: Quyền của người dùng cần tạo không được để trống vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data GroupName = {requestInput.GroupName}");
+                }
+                if (string.IsNullOrEmpty(requestInput.ExpiryDate))
+                {
+                    _logger.LogWarning("Invalid input: Ngày hết hạn của người dùng cần tạo không được để trống vui lòng kiểm tra lại!");
+                    return UserIDCResponseResult.Fail($"Invalid input data ExpiryDate= {requestInput.ExpiryDate}");
+                }
 
+                _logger.LogInformation($"Starting AddUser with UserId: {requestInput.UserId}");
 
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/addUser");
 
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/addUser", content);
 
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultAddUser = JsonConvert.DeserializeObject<UserIDCResponseResult>(responseContent);
+
+                if (resultAddUser != null)
+                {
+                    if (resultAddUser.ResponseCode == "0")
+                        return UserIDCResponseResult.SetSuccess(resultAddUser.SessionValReq, resultAddUser.Status, resultAddUser.ResponseCode, resultAddUser.ResponseMsg, resultAddUser.ResponseAttributes);
+                    else if (resultAddUser.ResponseCode == "4222")
+                        return new UserIDCResponseResult(resultAddUser.SessionValReq, resultAddUser.Status, resultAddUser.ResponseCode, resultAddUser.ResponseMsg, resultAddUser.ResponseAttributes);   //return UserIDCResponseResult.Fail("ARX-004222: Exceeption occurred in registerUserInfo | ARX-004222: Ngoại lệ xảy ra trong hàm registerUserInfo");
+                    else if (resultAddUser.ResponseCode == "101027")
+                        return new UserIDCResponseResult(resultAddUser.SessionValReq, resultAddUser.Status, resultAddUser.ResponseCode, resultAddUser.ResponseMsg, resultAddUser.ResponseAttributes);   //return UserIDCResponseResult.Fail("ARX-001027 :Internal Error occurred.Contact Administrator | ARX-001027: Lỗi nội bộ đã xảy ra. Vui lòng liên hệ với quản trị viên");
+                    else if (resultAddUser.ResponseCode.Contains("4622"))
+                        return new UserIDCResponseResult(resultAddUser.SessionValReq, resultAddUser.Status, resultAddUser.ResponseCode, resultAddUser.ResponseMsg, resultAddUser.ResponseAttributes);
+                        //return UserIDCResponseResult.Fail("ARX-004622: Register User Failed. User Already Exists | ARX-004622: Đăng ký người dùng thất bại. Người dùng đã tồn tại!");
+                    else if (resultAddUser.ResponseCode.Contains("705"))
+                        return new UserIDCResponseResult(resultAddUser.SessionValReq, resultAddUser.Status, resultAddUser.ResponseCode, resultAddUser.ResponseMsg, resultAddUser.ResponseAttributes); //return UserIDCResponseResult.Fail("ARX-000705: Invalid Ticket | ARX-000705: ticket không hợp lệ");
+                    else return UserIDCResponseResult.Fail($"Error: {resultAddUser.ResponseCode} - {resultAddUser.ResponseMsg}");
+                }
+                else return UserIDCResponseResult.Fail("Response null");
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return UserIDCResponseResult.Fail($"HTTP request failed: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return UserIDCResponseResult.Fail($"JSON processing failed: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return UserIDCResponseResult.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        }
 
 
 

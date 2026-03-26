@@ -1,4 +1,5 @@
-﻿using VBSPOSS.ViewModels;
+﻿using VBSPOSS.Integration.ViewModel;
+using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces
 {
@@ -33,5 +34,16 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Thông tin user ánh xạ vào Model ViewUserAPIReposeViewModel</returns>
         /// <exception cref="Exception"></exception>
         Task<ViewUserAPIReposeViewModel> GetUserIDCInfoByApiViewUser(string pUserId);
+
+        /// <summary>
+        /// Hàm thực hiện thêm mới tài khoản người dùng Intellect iDC => Gọi đến API addUser thêm mới thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin tài khoản người dùng Intellect iDC cần tạo</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
+        /// <returns>Kết quả trả về theo Model AddUserAPIResponseViewModel</returns>
+        /// <exception cref="Exception"></exception>
+        Task<AddUserAPIResponseViewModel> CreateUserIDCByApiAddUser(AddUserRequestViewModel requestInput, string pUserNameUpd);
+
     }
 }

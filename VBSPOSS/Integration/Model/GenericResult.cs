@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Text.Json.Serialization;
+using VBSPOSS.Constants;
 using VBSPOSS.Integration.ViewModel;
 
 namespace VBSPOSS.Integration.Model
@@ -342,7 +344,7 @@ namespace VBSPOSS.Integration.Model
         }
     }
 
-    public class SingleOrArrayConverter<T> : JsonConverter
+    public class SingleOrArrayConverter<T> : Newtonsoft.Json.JsonConverter
     {
         public override bool CanConvert(Type objectType) => objectType == typeof(List<T>);
 
@@ -405,4 +407,67 @@ namespace VBSPOSS.Integration.Model
         [JsonProperty("responseMsg")]
         public string ResponseMsg { get; set; }
     }
+
+
+    /*
+        {
+            "sessionValReq": "true",
+            "prevStatus": 0,
+            "responseAttributes": {
+                "USR_PASSWD": "s5j5SNHw"
+            },
+            "responseCode": 0,
+            "responseMsg": "User Successfully Registered",
+            "status": "true"
+        }
+     */
+    public class UserIDCResponseResult
+    {
+        [JsonProperty("sessionValReq")]
+        public string? SessionValReq { get; set; }
+
+        [JsonProperty("prevStatus")]
+        public int PrevStatus { get; set; }
+
+        [JsonProperty("responseAttributes")]
+        public ResponseAttributes? ResponseAttributes { get; set; }
+
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
+
+        [JsonProperty("responseMsg")]
+        public string? ResponseMsg { get; set; }
+
+        [JsonProperty("status")]
+        public string? Status { get; set; }
+
+        public UserIDCResponseResult(string sessionValReq, string status, string responseCode, string responseMsg, ResponseAttributes responseAttributes)
+        {
+            SessionValReq = sessionValReq;
+            ResponseMsg = responseMsg;
+            ResponseCode = responseCode;
+            Status = status;
+            ResponseAttributes = responseAttributes;
+        }
+
+        public static UserIDCResponseResult Fail(string message)
+        {
+            return new UserIDCResponseResult("", ResultValueAPI.ResultValue_Status_Failed, HttpStatusCode.BadRequest.ToString(), message, null);
+        }
+
+        public static UserIDCResponseResult SetSuccess(string sessionValReq, string status, string responseCode, string responseMsg, ResponseAttributes responseAttributes)
+        {
+            return new UserIDCResponseResult(sessionValReq, status, responseCode, responseMsg, responseAttributes);
+        }
+
+       
+    }
+
+    public class ResponseAttributes
+    {
+        [JsonProperty("USR_PASSWD")]//USR_PASSWD
+        public string? UsrPasswd { get; set; }
+    }
+
+
 }
