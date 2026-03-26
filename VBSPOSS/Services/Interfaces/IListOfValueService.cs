@@ -10,6 +10,7 @@ namespace VBSPOSS.Services.Interfaces
         /// Hàm thực hiện trả về danh sách giá trị Trực thuộc để lấy danh sách Phòng ban theo mã POS truyền vào.
         /// </summary>
         /// <param name="pPosCode">Mã Pos truyền vào</param>
+        /// <param name="pUserGrade">Cấp của người dùng gọi. Giá trị: 1 - PGD (PosGrade.SUB_POS); 2 - Chi nhánh (PosGrade.MAIN_POS); 3 - HSC (PosGrade.HEAD_POS)</param>
         /// <returns>Chỉ số xác định trực thuộc với Quy ước: 
         ///                              "1" - Hoi so chinh;
         ///                              "2" - Chi nhanh Tinh/TP;
@@ -19,7 +20,7 @@ namespace VBSPOSS.Services.Interfaces
         ///                              "7" - Trung tam Đao tạo;
         ///                              "9" - Sở giao dịch;
         /// </returns>
-        public string GetCodeApplyByPosCode(string pPosCode);
+        string GetCodeApplyByPosCode(string pPosCode, int pUserGrade = 0);
 
         string ReplaceName_ListMain(string pValueName);
 

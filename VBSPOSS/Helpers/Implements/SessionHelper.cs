@@ -125,6 +125,11 @@ namespace VBSPOSS.Implements.Helpers
             return GetSessionStringValue("USER_PHONE");
         }
 
+        /// <summary>
+        /// Hàm trả về giá trị cấp của người dùng khi đang login vào phần mềm: 1 - PGD (PosGrade.SUB_POS); 2 - Chi nhánh (PosGrade.MAIN_POS); 3 - HSC (PosGrade.HEAD_POS)
+        /// Giá trị lấy từ trường Grade trong bảng [Role] dựav ào quyền của người dùng
+        /// </summary>
+        /// <returns></returns>
         public int GetUserGrade()
         {
             return GetSessionIntValue("USER_GRADE");

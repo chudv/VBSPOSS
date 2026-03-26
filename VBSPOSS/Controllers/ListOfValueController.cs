@@ -1,6 +1,7 @@
 ﻿using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections;
 using System.Net.NetworkInformation;
 using System.Reflection.Emit;
@@ -16,6 +17,7 @@ using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;
 using VBSPOSS.ViewModels;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace VBSPOSS.Controllers
 {
@@ -1080,7 +1082,6 @@ namespace VBSPOSS.Controllers
                 }
             }
             return Json(data);
-
         }
 
         /// <summary>
@@ -1387,6 +1388,137 @@ namespace VBSPOSS.Controllers
 
             return Json(statuses);
         }
+
+        /// <summary>
+        /// Hàm lấy danh sách nhóm quyền người dùng trên Intellect iDC cho ra danh sách ComboBox
+        /// </summary>
+        /// <param name="pPosCode">Mã POS của người dùng đang sử dụng phần mềm. Ex: UserPosCode</param>
+        /// <param name="pStatus">Trạng thái bản ghi (Nếu truyền -1 sẽ lấy tất)</param>
+        /// <param name="pShortName">1 - Hiển thị tên viết tắt; 0 - Hiển thị tên đầy đủ</param>
+        /// <param name="pTitleChoice">Tiêu đề của ComboBox chọn</param>
+        /// <param name="pFlagShow">Cách hiển thị trên Combobox khi chọn. Quy ước:
+        ///             1 - Hiển thị [Tên quyền người dùng hoặc Tên viết tắt quyền người dùng]
+        ///             2 - Hiển thị [Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng]
+        ///             3 - Hiển thị [Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng - Áp dụng cho PGD/Chi nhánh/TTCNTT/TTĐT/HSC]
+        /// </param>
+        /// <returns></returns>
+        public JsonResult GetListRoleOfUserIDC(string pPosCode, int pStatus = 1, string pShortName = "1", string pTitleChoice = "", string pFlagShow = "1")
+        {
+            string sTitleChoice = "", sName = "", sShortName = "", sCodeApply = "", sNameApply = "";
+            if (string.IsNullOrEmpty(pPosCode))
+                pPosCode = UserPosCode;
+            sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "--- Nhóm quyền người dùng ---" : pTitleChoice;
+            sCodeApply = _serviceLOV.GetCodeApplyByPosCode(pPosCode, UserGrade);
+            if (sCodeApply == "6")
+                sCodeApply = "4";//Nếu là Cơ sở đào tạo thì cho quyền như PGD
+
+            ArrayList data = new ArrayList();
+            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", pStatus, 2);
+            var listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
+            if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
+                data.Add(new { id = "", value = sTitleChoice });
+            if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)
+            {
+                foreach (ListOfValueViewModel item in listRoleOfUserIDC)
+                {
+                    sName = item.Name.Trim();
+                    sShortName = item.ShortName.Trim();
+                    if (item.CodeOfLovUsed.Trim().Contains("HSC"))
+                        sNameApply = "HSC";
+                    else if (item.CodeOfLovUsed.Trim().Contains("TTCNTT"))
+                        sNameApply = "TTCNTT";
+                    else if (item.CodeOfLovUsed.Trim().Contains("TTDT"))
+                        sNameApply = "TTĐT";
+                    else if (item.CodeOfLovUsed.Trim().Contains("SGD"))
+                        sNameApply = "SGD";
+                    else if (item.CodeOfLovUsed.Trim().Contains("CN"))
+                        sNameApply = "Chi nhánh";
+                    else if (item.CodeOfLovUsed.Trim().Contains("PGD"))
+                        sNameApply = "PGD hoặc CSĐT";
+                    else sNameApply = "";
+
+                    if (pFlagShow == "1") //Hiển thị: Tên quyền người dùng hoặc Tên viết tắt quyền người dùn
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Code, value = sShortName });
+                        else
+                            data.Add(new { id = item.Code, value = sName });
+                    }
+                    else if (pFlagShow == "2") //Hiển thị: Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sShortName}" });
+                        else
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sName}" });
+                    }
+                    else if (pFlagShow == "3") //Hiển thị: Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng - Áp dụng cho PGD/Chi nhánh/TTCNTT/TTĐT/HSC
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sShortName} - Áp dụng với:  {sNameApply}" });
+                        else
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sName} - Áp dụng với: {sNameApply}" });
+                    }
+                }
+            }
+            return Json(data);
+        }
+
+
+        /// <summary>
+        /// Hàm lấy danh sách danh mục chung ra ComboBox hoặc Muti ListBox có truyền mã POS của người dùng để giới hạn danh mục áp dụng cho đơn vị
+        /// </summary>
+        /// <param name="pPosCode">Mã POS người dùng</param>
+        /// <param name="pParentId">Chỉ số xác định danh mục gốc cần lấy. Ex: ListOfValueParentValue.ParentCodePosition</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất cả truyền vào là -1</param>
+        /// <param name="pShortName">1 - Hiển thị theo tên viết tắt; 0 - Hiển thị theo tên danh mục đầy đủ</param>
+        /// <param name="pTitleChoice">Chuỗi chọn đầu tiền của danh mục</param>
+        /// <param name="pFlagShow">1: Hiển thị Tên danh mục/Tên viết tắt danh mục; 2 - Hiển thị Mã - Tên danh mục/Tên viết tắt danh mục</param>
+        /// <returns></returns>
+        public JsonResult GetListOfValueByCodeOfLovUsed(string pPosCode, string pParentId = "", int pStatus = 0, string pShortName = "1", string pTitleChoice = "", string pFlagShow = "1")
+        {
+            string sTitleChoice = "", sName = "", sShortName = "", sCodeApply = "";
+            int iParentId = 0;
+            if (string.IsNullOrEmpty(pPosCode))
+                pPosCode = UserPosCode;
+            sTitleChoice = (string.IsNullOrEmpty(pTitleChoice)) ? "Chọn danh mục" : pTitleChoice;
+            iParentId = (pParentId == "") ? -1 : Convert.ToInt32(pParentId);
+            sCodeApply = _serviceLOV.GetCodeApplyByPosCode(pPosCode, UserGrade);
+            
+            ArrayList data = new ArrayList();
+            var listOfValueTMP = _serviceLOV.GetListOfValueSearch(iParentId, "", 0, "", "", pStatus, 2);
+            var listOfValueByCodeOfLovUsed = listOfValueTMP.Where(w => w.Code != "" 
+                        && (string.IsNullOrEmpty(sCodeApply) || (w.CodeOfLovUsed.Contains(sCodeApply) || string.IsNullOrEmpty(w.CodeOfLovUsed)))).ToList();
+            
+            if (sTitleChoice != "")
+                data.Add(new { id = "", value = sTitleChoice });
+            if (listOfValueByCodeOfLovUsed != null && listOfValueByCodeOfLovUsed.Count != 0)
+            {
+                foreach (ListOfValueViewModel item in listOfValueByCodeOfLovUsed)
+                {
+                    sName = _serviceLOV.ReplaceName_ListMain(item.Name).Trim();
+                    sShortName = _serviceLOV.ReplaceName_ListMain(item.ShortName).Trim();
+                    if (pFlagShow == "1") //Hiển thị Tên danh mục
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Code, value = sShortName });
+                        else
+                            data.Add(new { id = item.Code, value = sName });
+                    }
+                    else
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sShortName}" });
+                        else
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sName}" });
+                    }
+                }
+            } 
+            return Json(data);
+        }
+
+
+
+
     }
 }
 

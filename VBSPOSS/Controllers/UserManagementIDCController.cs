@@ -31,9 +31,10 @@ namespace VBSPOSS.Controllers
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
-
             string sessionUser = UserName;
             string posCode = UserPosCode;
+
+
             // Hoặc cách khác qua RouteData
             var controllerFromRoute = RouteData.Values["controller"]?.ToString();
             var actionFromRoute = RouteData.Values["action"]?.ToString();
