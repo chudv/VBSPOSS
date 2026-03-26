@@ -71,7 +71,7 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("authsecType")]
         public string AuthsecType { get; set; }         //Phương thức xác thực thứ 2. Giá trị mặc định '0'
-        
+
         [JsonProperty("DOB")]
         public string DOB { get; set; }                 //Ngày sinh của người dùng.Định dạng yyyy-MM-dd
 
@@ -116,7 +116,7 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("entityList")]
         public string EntityList { get; set; }               //Entity quản lý người dùng. Ex: UATVBSP hoặc Bank/IDCPRODC. Ex: 'IDCPRODC'
-        
+
         [JsonProperty("userIdentifierName")]
         public string UserIdentifierName { get; set; }               //Giá trị là mặc định 'All'. Tùy theo lựa chọn có thể là: All/Functional User/Administrator/Retail
 
@@ -158,7 +158,7 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("authTypeAttrib")]
         public JsonElement AuthTypeAttrib { get; set; }      //Danh sách rỗng
-        
+
         [JsonProperty("expiryDate")]
         public string ExpiryDate { get; set; }      //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
 
@@ -237,7 +237,7 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("status")]
         public string Status { get; set; }
     }
-    
+
     public class ExtraAttributeResponse
     {
         [JsonProperty("UserRole")]
@@ -274,7 +274,7 @@ namespace VBSPOSS.Integration.ViewModel
     {
         [JsonProperty("ticket")]
         public string Ticket;
-                
+
         [JsonProperty("userId")]
         public string UserId;
 
@@ -352,6 +352,46 @@ namespace VBSPOSS.Integration.ViewModel
         public string UserRole { get; set; }        //Nhóm quyền trên IDC(Không bao gồm Lending). Ex: POGD
 
     }
+
+    //    //{
+    //    "tellerId": "CHUDV002",
+    //    "tellerRoleAllowed": "0",
+    //    "mkrId": "IDCADMIN"
+    //}
+
+
+    /// <summary>
+    /// Model cho Request gọi API tellerRoleAssign để gọi API gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
+    ///         http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign => Ví dụ:
+    ///     {
+    ///         "tellerId": "CHUDV002",
+    ///         "tellerRoleAllowed": "0",
+    ///         "mkrId": "IDCADMIN"
+    ///     }
+    /// </summary>
+    public class TellerRoleAssignRequestViewModel
+    {
+        /// <summary>
+        /// Tài khoản người dùng trên iDC cần gán/bỏ gán quyền tiền mặt. Ex: 'CHUDV002'
+        /// </summary>
+        [JsonProperty("tellerId")]
+        public string TellerId;
+
+        /// <summary>
+        /// Cờ xác nhận gán hay bỏ quyền tiền mặt cho người dùng (Flag để ghi nhận assign teller role hay không). Giá trị:
+        ///             1: Allow (Gán quyền tiền mặt cho người dùng);
+        ///             0: Block (Gỡ quyền tiền mặt của người dùng);
+        /// </summary>
+        [JsonProperty("tellerRoleAllowed")]
+        public int TellerRoleAllowed;
+
+        /// <summary>
+        /// Tài khoản người thực hiện assign teller role (Thường user hệ thống). Ex: IDCADMIN có thể dùng ConstValueAPI.UserId_Call_ApiIDC
+        /// </summary>
+        [JsonProperty("mkrId")]
+        public string MkrId;
+    }
+
 
 
 

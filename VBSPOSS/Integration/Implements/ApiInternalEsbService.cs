@@ -785,6 +785,102 @@ namespace VBSPOSS.Integration.Implements
         }
 
 
+        /// <summary>
+        /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "tellerId": "CHUDV002",
+        ///         "tellerRoleAllowed": "1",
+        ///         "mkrId": "IDCADMIN"
+        ///     }
+        /// </param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "responseMsg": "API Invocation Success",
+        ///         "responseCode": "00000"
+        ///     }
+        ///     {
+        ///         "txnStatus": "FAILED",
+        ///         "responseMsg": "INVALID TELLER ID",
+        ///         "responseCode": ""
+        ///     }
+        /// </returns>
+        public async Task<TellerRoleAssignResponseResult> ChangeRoleToTransferCashByAPITellerRoleAssign(TellerRoleAssignRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting tellerRoleAssign with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("ChangeRoleToTransferCashByAPITellerRoleAssign failed: RequestInput is null");
+                    return TellerRoleAssignResponseResult.Fail($"ChangeRoleToTransferCashByAPITellerRoleAssign failed: RequestInput is null");
+                }
+                if (string.IsNullOrEmpty(requestInput.TellerId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng thay đổi quyền tiền mặt không được để trống. Vui lòng kiểm tra lại!!");
+                    return TellerRoleAssignResponseResult.Fail($"Invalid input data TellerId = {requestInput.TellerId}");
+                }
+                if (string.IsNullOrEmpty(requestInput.MkrId))
+                {
+                    _logger.LogWarning($"Invalid input: Tài khoản người dùng thực hiện việc thay đổi quyền tiền mặt người dùng {requestInput.TellerId} không được để trống. Vui lòng kiểm tra lại!!");
+                    return TellerRoleAssignResponseResult.Fail($"Invalid input data MkrId = {requestInput.MkrId}");
+                }
+                if (requestInput.TellerRoleAllowed != 0 && requestInput.TellerRoleAllowed != 1)
+                {
+                    _logger.LogWarning($"Invalid input: Giá trị cờ gán/bỏ gán quyền tiền mặt cho người dùng không hợp lệ. Vui lòng kiểm tra lại!!");
+                    return TellerRoleAssignResponseResult.Fail($"Invalid input data TellerRoleAllowed = {requestInput.TellerRoleAllowed.ToString()}");
+                } 
+
+                _logger.LogInformation($"Starting tellerRoleAssign with UserId: {requestInput.TellerId}");
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/tellerRoleAssign");
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/tellerRoleAssign", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultRoleAssign = JsonConvert.DeserializeObject<TellerRoleAssignResponseResult>(responseContent);
+
+                if (resultRoleAssign != null)
+                {
+                    if (resultRoleAssign.ResponseCode == "0" || resultRoleAssign.ResponseCode == "00000")
+                        return new TellerRoleAssignResponseResult(resultRoleAssign.TxnStatus, resultRoleAssign.ResponseCode, resultRoleAssign.ResponseMsg);
+                    else return TellerRoleAssignResponseResult.Fail($"TellerRoleAssign failed: {resultRoleAssign.TxnStatus} - {resultRoleAssign.ResponseCode} - {resultRoleAssign.ResponseMsg}");
+                }
+                else return TellerRoleAssignResponseResult.Fail("TellerRoleAssign Response null");
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return TellerRoleAssignResponseResult.Fail($"HTTP request failed: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return TellerRoleAssignResponseResult.Fail($"JSON processing failed: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return TellerRoleAssignResponseResult.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        }
+
+
+
+
 
     }
 

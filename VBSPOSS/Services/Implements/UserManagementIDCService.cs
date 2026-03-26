@@ -358,8 +358,6 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<AddUserAPIResponseViewModel> CreateUserIDCByApiAddUser(AddUserRequestViewModel requestInput, string pUserNameUpd)
         {
-            int iCountUpdate = 0;
-            long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             AddUserAPIResponseViewModel objResultAddUser = new AddUserAPIResponseViewModel();
             try
@@ -394,7 +392,6 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                iRetIdUpd = -1;
                 Console.WriteLine($"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
                                         $"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
@@ -433,6 +430,70 @@ namespace VBSPOSS.Services.Implements
             "status": "true"
         }
         */
+
+
+        /// <summary>
+        /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "tellerId": "CHUDV002",
+        ///         "tellerRoleAllowed": "1",
+        ///         "mkrId": "IDCADMIN"
+        ///     }
+        /// </param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "responseMsg": "API Invocation Success",
+        ///         "responseCode": "00000"
+        ///     }
+        ///     {
+        ///         "txnStatus": "FAILED",
+        ///         "responseMsg": "INVALID TELLER ID",
+        ///         "responseCode": ""
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<TellerRoleAssignAPIResponseViewModel> ChangeRoleToTransferCashByApiTellerRoleAssign(TellerRoleAssignRequestViewModel requestInput, string pUserNameUpd)
+        {
+            int iCountUpdate = 0;
+            long iRetIdUpd = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            TellerRoleAssignAPIResponseViewModel objResultTellerRoleAssign = new TellerRoleAssignAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.TellerId))
+                {
+                    if (string.IsNullOrEmpty(requestInput.MkrId))
+                        requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+                    var apiResponse = await _apiInternalEsbService.ChangeRoleToTransferCashByAPITellerRoleAssign(requestInput);
+
+                    if (apiResponse == null)
+                    {
+                        objResultTellerRoleAssign.ResponseCode = "";
+                        objResultTellerRoleAssign.ResponseMsg = "Error";
+                        objResultTellerRoleAssign.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                    }
+                    else
+                    {
+                        objResultTellerRoleAssign.ResponseCode = apiResponse.ResponseCode;
+                        objResultTellerRoleAssign.ResponseMsg = apiResponse.ResponseMsg;
+                        objResultTellerRoleAssign.TxnStatus = apiResponse.TxnStatus.Trim();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                iRetIdUpd = -1;
+                Console.WriteLine($"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
+                                        $"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultTellerRoleAssign;
+        }
 
 
 

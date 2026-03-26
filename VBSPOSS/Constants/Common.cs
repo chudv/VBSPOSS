@@ -163,6 +163,7 @@ namespace VBSPOSS.Constants
         public const string DebitCreditFlagDefault = "C";
         public const string CurrencyValueDefault = "VND";
         public const string Ticket = "";
+        public const string EntityList = "IDCPRODC";
     }
 
     public class DepositType
@@ -337,8 +338,13 @@ namespace VBSPOSS.Constants
         /// <summary>
         /// Trạng thái Đóng/Tạm xóa của POS
         /// </summary>
-        public const string StatusClosedPOS = "C";       
+        public const string StatusClosedPOS = "C";
 
+
+        public const string StatusYes = "Y";
+        public const string StatusYesText = "Có";
+        public const string StatusNo = "N";
+        public const string StatusNoText = "Không";
     }
 
     /// <summary>
@@ -605,6 +611,7 @@ namespace VBSPOSS.Constants
         public const string StatusCloseText = "0";
 
         public const string StatusOpenStr = "Hoạt động";
+
         public const string StatusOpenCls = "Không hoạt động";
 
 

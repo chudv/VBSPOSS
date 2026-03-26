@@ -99,5 +99,31 @@ namespace VBSPOSS.Integration.Interfaces
         /// }
         /// </returns>
         Task<UserIDCResponseResult> CreateUserIDCByAPIAddUser(AddUserRequestViewModel requestInput);
+
+
+        /// <summary>
+        /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "tellerId": "CHUDV002",
+        ///         "tellerRoleAllowed": "1",
+        ///         "mkrId": "IDCADMIN"
+        ///     }
+        /// </param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "responseMsg": "API Invocation Success",
+        ///         "responseCode": "00000"
+        ///     }
+        ///     {
+        ///         "txnStatus": "FAILED",
+        ///         "responseMsg": "INVALID TELLER ID",
+        ///         "responseCode": ""
+        ///     }
+        /// </returns>
+        Task<TellerRoleAssignResponseResult> ChangeRoleToTransferCashByAPITellerRoleAssign(TellerRoleAssignRequestViewModel requestInput);
     }
 }

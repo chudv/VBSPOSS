@@ -392,7 +392,6 @@ namespace VBSPOSS.Integration.Model
         }
     }
 
-
     public class StatusRecord
     {
         [JsonProperty("txnStatus")]
@@ -407,7 +406,6 @@ namespace VBSPOSS.Integration.Model
         [JsonProperty("responseMsg")]
         public string ResponseMsg { get; set; }
     }
-
 
     /*
         {
@@ -459,8 +457,6 @@ namespace VBSPOSS.Integration.Model
         {
             return new UserIDCResponseResult(sessionValReq, status, responseCode, responseMsg, responseAttributes);
         }
-
-       
     }
 
     public class ResponseAttributes
@@ -468,6 +464,38 @@ namespace VBSPOSS.Integration.Model
         [JsonProperty("USR_PASSWD")]//USR_PASSWD
         public string? UsrPasswd { get; set; }
     }
+
+
+    /// <summary>
+    /// Kết quả trả ra của API thay đổi quyền người dùng Intellect iDC
+    /// </summary>
+    public class TellerRoleAssignResponseResult
+    {
+        [JsonProperty("txnStatus")]
+        public string TxnStatus { get; set; }
+
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
+
+        [JsonProperty("responseMsg")]
+        public string ResponseMsg { get; set; }
+
+        public TellerRoleAssignResponseResult(string txnStatus, string responseCode, string responseMsg)
+        {
+            TxnStatus = txnStatus;
+            ResponseMsg = responseMsg;
+            ResponseCode = responseCode;
+        }
+
+        public static TellerRoleAssignResponseResult Fail(string message)
+        {
+            return new TellerRoleAssignResponseResult(ResultValueAPI.ResultValue_Status_Failed, "-1", message);
+        }
+    }
+
+
+
+
 
 
 }

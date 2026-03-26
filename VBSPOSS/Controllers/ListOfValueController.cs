@@ -1,6 +1,7 @@
 ﻿using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections;
 using System.Net.NetworkInformation;
@@ -1525,6 +1526,86 @@ namespace VBSPOSS.Controllers
             return Json(data);
         }
 
+        /// <summary>
+        /// Hàm trả ra mảng thông tin liên quan đến nhóm quyền truyền vào xem có quyền tiền mặt hay không?
+        /// </summary>
+        /// <param name="pUserRole">Nhóm quyền. Ex: 'POPGD'</param>
+        /// <param name="pFlagCall">Cờ gọi chưa sử dụng</param>
+        /// <returns>Mảng thông tin trả ra. Ex:
+        ///         UserRole = "POPGD",
+        ///         UserRoleName = "Phó Giám đốc phòng giao dịch",
+        ///         UserRoleShortName = "Phó Giám đốc PGD",
+        ///         RoleToTransferCashValue = "Y",
+        ///         RoleToTransferCashName = "Có",
+        ///         RoleToTransferCashDescription = "Có quyền tiền mặt"
+        ///         RoleOfUnit = "PGD hoặc CSĐT"
+        /// </returns>
+        public async Task<JsonResult> GetRoleToTransferCashByUserRole(string pUserRole, string pFlagCall = "0")
+        {
+            if (string.IsNullOrEmpty(pUserRole))
+                pUserRole = "";
+            ArrayList dataRoleToTransferCash = new ArrayList();
+            var listOfRoles = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+            if (listOfRoles != null && listOfRoles.Count != 0)
+            {
+                var objListOfRole = listOfRoles.Where(w => w.Code == pUserRole).OrderByDescending(o => o.Status).FirstOrDefault();
+                if (objListOfRole != null && !string.IsNullOrEmpty(objListOfRole.Code))
+                {
+                    string sNameApply = "";
+                    if (objListOfRole.CodeOfLovUsed.Trim().Contains("HSC"))
+                        sNameApply = "HSC";
+                    else if (objListOfRole.CodeOfLovUsed.Trim().Contains("TTCNTT"))
+                        sNameApply = "TTCNTT";
+                    else if (objListOfRole.CodeOfLovUsed.Trim().Contains("TTDT"))
+                        sNameApply = "TTĐT";
+                    else if (objListOfRole.CodeOfLovUsed.Trim().Contains("SGD"))
+                        sNameApply = "SGD";
+                    else if (objListOfRole.CodeOfLovUsed.Trim().Contains("CN"))
+                        sNameApply = "Chi nhánh";
+                    else if (objListOfRole.CodeOfLovUsed.Trim().Contains("PGD"))
+                        sNameApply = "PGD hoặc CSĐT";
+                    else sNameApply = "";
+
+                    dataRoleToTransferCash.Add(new
+                    {
+                        UserRole = objListOfRole.Code,
+                        UserRoleName = objListOfRole.Name,
+                        UserRoleShortName = objListOfRole.ShortName,
+                        RoleToTransferCashValue = objListOfRole.LevelCode,
+                        RoleToTransferCashName = (objListOfRole.LevelCode == StatusLov.StatusYes) ? StatusLov.StatusYesText : StatusLov.StatusNoText,
+                        RoleToTransferCashDescription = (objListOfRole.LevelCode == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt",
+                        RoleOfUnit = sNameApply
+                    });
+                }
+                else
+                {
+                    dataRoleToTransferCash.Add(new
+                    {
+                        UserRole = "",
+                        UserRoleName = "",
+                        UserRoleShortName = "",
+                        RoleToTransferCashValue = "",
+                        RoleToTransferCashName = "",
+                        RoleToTransferCashDescription = "",
+                        RoleOfUnit = ""
+                    });
+                }
+            }
+            else
+            {
+                dataRoleToTransferCash.Add(new
+                {
+                    UserRole = "",
+                    UserRoleName = "",
+                    UserRoleShortName = "",
+                    RoleToTransferCashValue = "",
+                    RoleToTransferCashName = "",
+                    RoleToTransferCashDescription = "",
+                    RoleOfUnit = ""
+                });
+            }
+            return Json(dataRoleToTransferCash);
+        }
 
 
 

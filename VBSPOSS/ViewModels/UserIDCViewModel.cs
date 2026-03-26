@@ -269,4 +269,15 @@ namespace VBSPOSS.ViewModels
         public bool Status { get; set; }
     }
 
+    public class TellerRoleAssignAPIResponseViewModel
+    {
+        public string TxnStatus { get; set; }
+
+        public string ResponseCode { get; set; }
+        
+        public string ResponseMsg { get; set; }
+        
+    }
+    
+
 }
