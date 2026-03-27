@@ -507,7 +507,7 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                iRetIdUpd = -1;
+                //iRetIdUpd = -1;
                 Console.WriteLine($"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
                                         $"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
