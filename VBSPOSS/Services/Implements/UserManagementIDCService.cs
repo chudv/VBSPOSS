@@ -366,14 +366,14 @@ namespace VBSPOSS.Services.Implements
                 {
                     var apiResponse = await _apiInternalEsbService.CreateUserIDCByAPIAddUser(requestInput);
 
-                    if (apiResponse != null && apiResponse.ResponseCode == "0")
+                    if (apiResponse != null && (apiResponse.ResponseCode == "0" || apiResponse.ResponseCode == "00000"))
                     {
                         objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultAddUser.PrevStatus = apiResponse.PrevStatus;
                         if (apiResponse.ResponseAttributes != null)
                             objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
                         else objResultAddUser.UserPassword = "";
-                            objResultAddUser.ResponseCode = apiResponse.ResponseCode;
+                        objResultAddUser.ResponseCode = apiResponse.ResponseCode;
                         objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
                         objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                     }
@@ -435,6 +435,18 @@ namespace VBSPOSS.Services.Implements
         /// <summary>
         /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
         /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
+        /// Ví dụ cách gọi:
+        ///             TellerRoleAssignRequestViewModel requestInput = new TellerRoleAssignRequestViewModel();
+        ///             requestInput.TellerId = "CHUDV002";
+        ///             requestInput.TellerRoleAllowed = 1;
+        ///             requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+        ///             var objTellerRoleAssignResult = _userManagementIDCService.ChangeRoleToTransferCashByApiTellerRoleAssign(requestInput, UserName);
+        ///             if (objTellerRoleAssignResult != null && objTellerRoleAssignResult.Result != null)
+        ///             {
+        ///                 if (objTellerRoleAssignResult.Result.ResponseCode == "0" || objTellerRoleAssignResult.Result.ResponseCode == "00000")
+        ///                 {
+        ///                 }
+        ///             } 
         /// </summary>
         /// <param name="requestInput">Thông tin đầu vào. Ex:
         ///     {
@@ -459,8 +471,6 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<TellerRoleAssignAPIResponseViewModel> ChangeRoleToTransferCashByApiTellerRoleAssign(TellerRoleAssignRequestViewModel requestInput, string pUserNameUpd)
         {
-            int iCountUpdate = 0;
-            long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             TellerRoleAssignAPIResponseViewModel objResultTellerRoleAssign = new TellerRoleAssignAPIResponseViewModel();
             try
@@ -487,7 +497,9 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                iRetIdUpd = -1;
+                objResultTellerRoleAssign.ResponseCode = "-1";
+                objResultTellerRoleAssign.ResponseMsg = ex.Message;
+                objResultTellerRoleAssign.TxnStatus = ResultValueAPI.ResultValue_Status_Errored;
                 Console.WriteLine($"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
                                         $"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
