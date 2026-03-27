@@ -579,6 +579,10 @@ namespace VBSPOSS.Integration.Model
         }
     }
 
-
+    public class UpdateNotiResult
+    {
+        public string Code { get; set; }
+        public string Message { get; set; }
+    }
 
 }
