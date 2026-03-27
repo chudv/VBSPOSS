@@ -36,6 +36,20 @@ namespace VBSPOSS.Controllers
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
+            TellerRoleAssignRequestViewModel requestInput = new TellerRoleAssignRequestViewModel();
+            requestInput.TellerId = "CHUDV002";
+            requestInput.TellerRoleAllowed = 1;
+            requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+            var objTellerRoleAssignResult = _userManagementIDCService.ChangeRoleToTransferCashByApiTellerRoleAssign(requestInput, UserName);
+            if (objTellerRoleAssignResult != null && objTellerRoleAssignResult.Result != null)
+            {
+                if (objTellerRoleAssignResult.Result.ResponseCode == "0" || objTellerRoleAssignResult.Result.ResponseCode == "00000")
+                {
+
+                } 
+            } 
+
+
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData
