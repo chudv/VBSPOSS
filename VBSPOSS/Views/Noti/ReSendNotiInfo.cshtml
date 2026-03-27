@@ -1,0 +1,373 @@
+﻿@model IEnumerable<VBSPOSS.Integration.Model.NotificationDataResponse>
+
+<style>
+    #gridMainCasaRate div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainCasaRate .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridMainCasaRate .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-auth.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-approval.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+    /* .k-picker-wrap .k-input { */
+    /*     padding-right: 5px; */
+    /* } */
+
+    /* .k-picker-wrap .k-select { */
+    /*     margin-left: 2px; */
+    /*     width: 30px; */
+    /* } */
+
+    #StaredDate_From_TimKiem {
+        width: 50px !important;
+    }
+
+    #StaredDate_End_TimKiem {
+        width: 50px !important;
+    }
+
+    #Search_Panel {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px; /* Khoảng cách giữa các button, có thể điều chỉnh */
+    }
+
+    .status-red {
+        color: red !important;
+    }
+    /* * {
+                            font-family: 'tahoma', sans-serif;
+                            font-size: 12px;
+                        } */
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+    /* .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button { */
+    /*     /*background: none !important;*/ */
+    /*     border: none; */
+    /*     padding: 0 !important; */
+    /*     font: inherit; */
+    /*     cursor: pointer; */
+    /* } */
+    .red {
+        color: red;
+    }
+    /*#MainGrid .k-grid-header .k-header {
+                                background-color: ButtonFace;
+                            }
+                                */
+    /*.k-grid-header, .k-grid-header .k-header {
+                                background-color: #ca8f5c;
+                                color: navy;
+                            }*/
+    /* .k-grid .k-grid-header .k-header .k-link { */
+    /*     height: auto; */
+    /*     font-weight: bold !important; */
+    /*     color: blue; */
+    /*     font-size: 11px; */
+    /* } */
+
+    /* .k-grid td { */
+    /*     border-width: 0 0 0px 1px; */
+    /*     vertical-align: middle; */
+    /*     color: navy; */
+    /* } */
+
+    /* .k-grid .k-grid-header .k-header { */
+    /*     overflow: visible !important; */
+    /*     white-space: normal !important; */
+    /*     vertical-align: middle; */
+    /*     text-align: center; */
+    /*     font-weight: bold !important; */
+    /*     color: navy; */
+    /*     font-size: 11px; */
+    /* } */
+
+    /* .k-dropdown .k-dropdown-wrap { */
+    /*     height: 21px; */
+    /* } */
+
+    /* .col-md-1, .col-md-2, .col-md-5, .col-md-6, .col-md-7 { */
+    /*     padding-right: 0px; */
+    /*     padding-left: 0px; */
+    /*     vertical-align: middle; */
+    /* } */
+
+    /* .k-grid .k-button-icontext .k-icon { */
+    /*     margin: 0; */
+    /*     vertical-align: middle; */
+    /* } */
+    /* changes default width of the button */
+    /* .k-grid tbody .k-button { */
+    /*     min-width: 18px; */
+    /*     width: 18px; */
+    /* } */
+
+    /* .row-banner { */
+    /*     display: inline-flex; */
+    /*     padding: 3px; */
+    /* } */
+
+    /* .k-icon { */
+    /*     font-size: 15px; */
+    /* } */
+
+    /* .row { */
+    /*     display: inline-flex; */
+    /*     padding: 3px; */
+    /* } */
+
+    #gridMainCasaConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+    /* .col-md-12 { */
+    /*     padding-right: 0px; */
+    /*     padding-left: 0px; */
+    /*     align-items: center !important; */
+    /* } */
+
+    /* .k-checkbox-label, .k-radio-label { */
+    /*     padding-top: 0px !important; */
+    /*     padding-left: 12px; */
+    /* } */
+
+    /* Container */
+    .action-group {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    /* Nút chính */
+    .btn-primary-custom {
+        background-color: #0d6efd;
+        color: #fff;
+        border: 1px solid #0d6efd;
+        padding: 6px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        /* Hover */
+        .btn-primary-custom:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+
+    /* Nút phụ */
+    .btn-secondary-custom {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ced4da;
+        padding: 6px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        /* Hover */
+        .btn-secondary-custom:hover {
+            background-color: #e2e6ea;
+        }
+
+        /* Focus đẹp */
+        .btn-primary-custom:focus,
+        .btn-secondary-custom:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.2);
+        }
+</style>
+
+
+
+@Html.Hidden("pNotiType", TempData["pNotiType"])
+@Html.Hidden("pPosCode", TempData["pPosCode"])
+@Html.Hidden("pTransPoint", TempData["pTransPoint"])
+@Html.Hidden("pTransDate", TempData["pTransDate"])
+
+<div style="padding:15px; background:#fff; border-radius:6px;">
+
+    <h6 class="m-0 text-primary fw-bold text-center">
+        📋 DANH SÁCH NGƯỜI DÙNG NHẬN LẠI THÔNG BÁO ĐI GDX
+    </h6>
+
+    @(Html.Kendo().Grid<VBSPOSS.Integration.Model.NotificationDataResponse>()
+        .Name("gridResendNoti")
+        .BindTo(Model)
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.posCode).Title("Ma PGD").Width(120);
+            columns.Bound(c => c.posName).Title("Tên PGD").Width(180);
+            columns.Bound(c => c.d1).Title("Mã điểm iao dịch");
+            columns.Bound(c => c.d2).Title("UserName");
+            columns.Bound(c => c.d3).Title("Mật khẩu");
+            columns.Bound(c => c.d15).Title("Nhóm quyền");
+           @*  columns.Bound(c => c.status).Title("Status").Width(100)
+            .HtmlAttributes(new { style = "text-align:center;" }); *@
+        })
+
+        .Selectable(s => s.Mode(GridSelectionMode.Multiple))
+
+        // 🔥 QUAN TRỌNG
+        @* .Scrollable() *@
+        //.Pageable()
+        //.DataSource(...)
+
+        .Sortable()
+        )
+
+    <!-- Buttons -->
+    <div class="action-group">
+        <button class="btn-primary-custom" onclick="onUpdateNoti()">
+            ✔ Cập nhật
+        </button>
+
+        <button class="btn-secondary-custom" onclick="onCancelNoti()">
+            ✖ Hủy bỏ
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function onUpdateNoti() {
+
+        var pNotiType = $("#pNotiType").val();
+        var pPosCode = $("#pPosCode").val();
+        var pTransPoint = $("#pTransPoint").val();
+        var pTransDate = $("#pTransDate").val();
+
+        $.ajax({
+            url: '@Url.Action("UpdateNoti", "Noti")',
+            type: 'POST',
+            data: {
+                notiType: pNotiType,
+                posCode: pPosCode,
+                transPoint: pTransPoint,
+                transDate: pTransDate
+            },
+            success: function (res) {
+                if (res.Code === "00") {
+                    alert(res.Message);
+
+                    var wnd = $(".k-window-content").data("kendoWindow");
+                    if (wnd) wnd.close();
+
+                    var parentGrid = $("#gridMain").data("kendoGrid");
+                    if (parentGrid) parentGrid.dataSource.read();
+                    else location.reload();
+
+                } else {
+                    alert(res.Message); 
+                }
+            },
+            error: function () {
+                alert("Có lỗi xảy ra!");
+            }
+        });
+    }
+
+    function onCancelNoti() {
+        // Nếu mở bằng Kendo Window
+        var wnd = $(".k-window-content").data("kendoWindow");
+        if (wnd) {
+            wnd.close();
+            return;
+        }
+
+        // Nếu là page thường
+        window.history.back();
+    }
+</script>

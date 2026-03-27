@@ -279,13 +279,14 @@
            // alert('aaaa');
             var circularRefNum = $("#CircularRefNum").val();
             var listId = $("#IdList").val();
-           
+            var formattedDate = kendo.toString($("#CircularDate").data("kendoDatePicker").value(), "yyyyMMdd");
+
           //  alert(circularRefNum);
            // alert(listId);
             $.ajax({
                 url: '/Report/GenerateToTrinh_Casa',  // <-- 
                 type: 'POST',
-                data: { listId: listId, circularRefNum: circularRefNum },
+                data: { listId: listId, circularRefNum: circularRefNum, circularDate: formattedDate },
                 xhrFields: {
                     responseType: 'blob'
                 },
