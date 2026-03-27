@@ -75,8 +75,16 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-
-        public async Task<string> GetTTLSTIDE01(string listId, string circularRefNum)
+        /// <summary>
+        /// In báo cáo qua API Report Gateway - Tờ trình cấu hình lãi suất sản phẩm tiền gửi có kỳ hạn
+        /// </summary>
+        /// <param name="listId">Danh sách Id</param>
+        /// <param name="circularRefNum">Số quyết định</param>
+        /// <param name="circularDate">Ngày quyết định yyyyMMdd</param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> GetTTLSTIDE01(string listId, string circularRefNum, string circularDate)
         {
             try
             {
@@ -94,7 +102,8 @@ namespace VBSPOSS.Services.Implements
 
                 List<Parameter> parameters = new List<Parameter>();
                 parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{listId}" });
-                parameters.Add(new Parameter() { ParaName = "CircularRefNum", ParaType = "string", ParaValue = $"{circularRefNum}" });               
+                parameters.Add(new Parameter() { ParaName = "CircularRefNum", ParaType = "string", ParaValue = $"{circularRefNum}" });
+                parameters.Add(new Parameter() { ParaName = "CircularDate", ParaType = "string", ParaValue = $"{circularDate}" });
                 _reportInput.Parameters = new List<Parameter>(parameters);
 
                 GenericResultReportGateway<ReportResultDto> _response = _apiReportGateway.GetReport(_reportInput);
@@ -120,7 +129,7 @@ namespace VBSPOSS.Services.Implements
 
 
         // thêm 
-        public async Task<string> GetTTLS_CASA_01(string listId, string circularRefNum)
+        public async Task<string> GetTTLS_CASA_01(string listId, string circularRefNum,string circularDate)
         {
             try
             {
@@ -138,6 +147,7 @@ namespace VBSPOSS.Services.Implements
                 List<Parameter> parameters = new List<Parameter>();
                 parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{listId}" });
                 parameters.Add(new Parameter() { ParaName = "CircularRefNum", ParaType = "string", ParaValue = $"{circularRefNum}" });
+                parameters.Add(new Parameter() { ParaName = "CircularDate", ParaType = "string", ParaValue = $"{circularDate}" });
                 _reportInput.Parameters = new List<Parameter>(parameters);
 
                 GenericResultReportGateway<ReportResultDto> _response = _apiReportGateway.GetReport(_reportInput);
@@ -168,7 +178,7 @@ namespace VBSPOSS.Services.Implements
         /// <returns>File báo cáo trả về</returns>
         /// <exception cref="CustomException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<string> GetDepositPenalIntRateConfig(string pListId, string pCircularRefNum)
+        public async Task<string> GetDepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate)
         {
             try
             {
@@ -187,6 +197,7 @@ namespace VBSPOSS.Services.Implements
                 List<Parameter> parameters = new List<Parameter>();
                 parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{pListId}" });
                 parameters.Add(new Parameter() { ParaName = "CircularRefNum", ParaType = "string", ParaValue = $"{pCircularRefNum}" });
+                parameters.Add(new Parameter() { ParaName = "CircularDate", ParaType = "string", ParaValue = $"{circularDate}" });
                 objReportInput.Parameters = new List<Parameter>(parameters);
 
                 GenericResultReportGateway<ReportResultDto> _response = _apiReportGateway.GetReport(objReportInput);
