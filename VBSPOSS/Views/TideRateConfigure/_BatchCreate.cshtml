@@ -83,6 +83,15 @@
         color: red;
         font-size: 18px;
     }
+
+    #grdDepositTermGrid .row-selected-custom {
+        background-color: #d9edf7 !important;
+    }
+
+
+    #grdProductGrid .row-selected-custom {
+        background-color: #d9edf7 !important;
+    }
 </style>
 
 <script>
@@ -137,23 +146,45 @@
 
     function paraTideConfigureBatchGridData() {
         var grid = $("#grdProductGrid").data("kendoGrid");
-        var selectedRows = grid.select();
         var productCodes = [];
 
-        selectedRows.each(function () {
-            var dataItem = grid.dataItem(this);
+        // Lấy theo checkbox đã chọn
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+
             productCodes.push(dataItem.AccountTypeCode);
         });
 
-        //alert(productCodes.length);
-
         return {
-            accountTypes: productCodes.join(","),
+            accountTypes: productCodes.join(","), // "A,B,C"
             posCode: $("#PosCode").val(),
             effectiveDate: $("#EffectiveDate").val(),
             sourceFlag: $("#SourceFlag").val()
         };
     }
+
+    // function paraTideConfigureBatchGridData() {
+    //     var grid = $("#grdProductGrid").data("kendoGrid");
+    //     var selectedRows = grid.select();
+    //     var productCodes = [];
+
+    //     selectedRows.each(function () {
+    //         var dataItem = grid.dataItem(this);
+    //         productCodes.push(dataItem.AccountTypeCode);
+    //     });
+
+    //     //alert(productCodes.length);
+
+    //     return {
+    //         accountTypes: productCodes.join(","),
+    //         posCode: $("#PosCode").val(),
+    //         effectiveDate: $("#EffectiveDate").val(),
+    //         sourceFlag: $("#SourceFlag").val()
+    //     };
+    // }
 
     // Hàm xử lý khi thay đổi ProductCode
     function onProductChange() {
@@ -559,16 +590,100 @@
     }
 
 
+    // function onSave_TideRateConfigureTemp() {
+    //     console.log("onSave_TideRateConfigureTemp triggered");
+    //     try {
+
+    //         var grid = $("#grdDepositTermGrid").data("kendoGrid");
+    //         var selectedRows = grid.select();
+    //         var selectedItems = [];
+
+    //         selectedRows.each(function () {
+    //             var dataItem = grid.dataItem(this);
+
+    //             selectedItems.push({
+    //                 Id: dataItem.Id,
+    //                 TermUnitCode: dataItem.TermUnitCode,
+    //                 TermValue: dataItem.TermValue,
+    //                 InclusionFlag: dataItem.InclusionFlag
+    //             });
+    //         });
+
+    //         var interestRate = parseFloat( $("#NewInterestRate").val());
+    //         var beforeTermInterestRate = parseFloat( $("#BeforeTermNewInterestRate").val());
+    //         var partialInterestRate = parseFloat( $("#PartialNewInterestRate").val());
+    //         var depositType = $("#DepositType").val();
+
+    //         if (interestRate == null ) {
+    //             console.error("Bạn chưa nhập lãi suất");
+    //             alert('Bạn chưa nhập lãi suất');
+    //             return;
+    //         }
+
+    //         //alert(selectedItems.length);
+
+    //         if (selectedItems.length ===0) {
+    //             alert('Bạn chưa chọn kỳ hạn!');
+    //             return;
+    //         }
+
+    //         // Combine form and grid data
+    //         var submitData = {
+    //             depositTerms: selectedItems,
+    //             interestRate: interestRate,
+    //             beforeTermInterestRate: beforeTermInterestRate,
+    //            partialInterestRate: partialInterestRate,
+    //            depositType: depositType
+    //         };
+    //         console.log("Submit data:", submitData);
+
+    //         // Send AJAX request
+    //         $.ajax({
+    //             url: '@Url.Action("SaveTideRateTemp", "TideRateConfigure")',
+    //             type: "POST",
+    //             data: JSON.stringify(submitData),
+    //             contentType: "application/json; charset=utf-8",
+    //             headers: {
+    //                 "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+    //             },
+    //             success: function (response) {
+    //                 console.log("Save successful:", response);
+    //                 //alert(response.Message);
+    //                 $("#SourceFlag").val("1");
+    //                 //grid.dataSource.read(); // Refresh grid
+    //                 //updatedCells = []; // Clear highlighted cells
+    //                 //dataChange = true;
+    //                 resetDepositTermGrid();
+    //                 onLoadData_TideRateConfigure();
+    //             },
+    //             error: function (xhr, status, error) {
+    //                 console.error("Save failed:", error, xhr.responseText);
+    //                 alert((xhr.responseText || error));
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.error("Error in onSave_TideRateConfigureForm:", error);
+    //         alert("Lỗi: " + error.message);
+    //     }
+    // }
     function onSave_TideRateConfigureTemp() {
         console.log("onSave_TideRateConfigureTemp triggered");
-        try {
 
+        try {
             var grid = $("#grdDepositTermGrid").data("kendoGrid");
-            var selectedRows = grid.select();
             var selectedItems = [];
 
-            selectedRows.each(function () {
-                var dataItem = grid.dataItem(this);
+            if (!grid) {
+                alert("Không tìm thấy lưới kỳ hạn.");
+                return;
+            }
+
+            // Lấy các dòng được chọn theo checkbox
+            grid.tbody.find(".depTermCheckSelect:checked").each(function () {
+                var row = $(this).closest("tr");
+                var dataItem = grid.dataItem(row);
+
+                if (!dataItem) return;
 
                 selectedItems.push({
                     Id: dataItem.Id,
@@ -578,35 +693,32 @@
                 });
             });
 
-            var interestRate = parseFloat( $("#NewInterestRate").val());
-            var beforeTermInterestRate = parseFloat( $("#BeforeTermNewInterestRate").val());
-            var partialInterestRate = parseFloat( $("#PartialNewInterestRate").val());
+            var interestRate = kendo.parseFloat($("#NewInterestRate").val());
+            var beforeTermInterestRate = kendo.parseFloat($("#BeforeTermNewInterestRate").val());
+            var partialInterestRate = kendo.parseFloat($("#PartialNewInterestRate").val());
             var depositType = $("#DepositType").val();
 
-            if (interestRate == null ) {
+            if (interestRate == null || isNaN(interestRate)) {
                 console.error("Bạn chưa nhập lãi suất");
-                alert('Bạn chưa nhập lãi suất');
+                alert("Bạn chưa nhập lãi suất");
                 return;
             }
 
-            //alert(selectedItems.length);
-
-            if (selectedItems.length ===0) {
-                alert('Bạn chưa chọn kỳ hạn!');
+            if (selectedItems.length === 0) {
+                alert("Bạn chưa chọn kỳ hạn!");
                 return;
             }
 
-            // Combine form and grid data
             var submitData = {
                 depositTerms: selectedItems,
                 interestRate: interestRate,
                 beforeTermInterestRate: beforeTermInterestRate,
-               partialInterestRate: partialInterestRate,
-               depositType: depositType
+                partialInterestRate: partialInterestRate,
+                depositType: depositType
             };
+
             console.log("Submit data:", submitData);
 
-            // Send AJAX request
             $.ajax({
                 url: '@Url.Action("SaveTideRateTemp", "TideRateConfigure")',
                 type: "POST",
@@ -617,24 +729,24 @@
                 },
                 success: function (response) {
                     console.log("Save successful:", response);
-                    alert(response.Message);
+
                     $("#SourceFlag").val("1");
-                    //grid.dataSource.read(); // Refresh grid
-                    //updatedCells = []; // Clear highlighted cells
-                    //dataChange = true;
+
+                    //resetDepositTermGrid();
                     onLoadData_TideRateConfigure();
+
+                    resetDepositTermGrid();
                 },
                 error: function (xhr, status, error) {
                     console.error("Save failed:", error, xhr.responseText);
-                    alert((xhr.responseText || error));
+                    alert(xhr.responseText || error || "Có lỗi xảy ra khi lưu dữ liệu.");
                 }
             });
         } catch (error) {
-            console.error("Error in onSave_TideRateConfigureForm:", error);
+            console.error("Error in onSave_TideRateConfigureTemp:", error);
             alert("Lỗi: " + error.message);
         }
     }
-
 
     function paramDonViQL() {
         return {
@@ -648,129 +760,312 @@
         };
     }
 
+    // function onProductGridDataBound(e) {
+
+    //     //$("#chkSelectAll").prop("checked", false);
+
+    //     var grid = this;
+
+    //     // Bắt sự kiện change của tất cả checkbox
+    //     grid.tbody.find(".depProductCheckSelect").off("change").on("change", function (ev) {
+    //         var row = $(this).closest("tr");
+    //         if ($(this).is(":checked")) {
+    //             grid.select(row); // tick = chọn row
+    //         } else {
+    //             grid.clearSelection(); // bỏ chọn tất cả
+    //             // tick lại các checkbox đang checked
+    //             grid.tbody.find(".chkSelect:checked").each(function () {
+    //                 grid.select($(this).closest("tr"));
+    //             });
+    //         }
+    //         updateSelectedProducts(grid);
+    //         ev.stopPropagation(); // ngăn click row
+    //     });
+
+    //     // Khi click row, đồng bộ checkbox
+    //     grid.tbody.find("tr").off("click").on("click", function (e) {
+    //         if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
+    //         var row = $(this);
+    //         var checkbox = row.find(".depProductCheckSelect");
+    //         var isSelected = row.hasClass("k-state-selected");
+    //         checkbox.prop("checked", isSelected);
+    //         updateSelectedProducts(grid);
+    //     });
+
+    //     updateSelectedProducts(grid); // cập nhật lần đầu
+    // }
+
     function onProductGridDataBound(e) {
+        var grid = e.sender;
 
-        //$("#chkSelectAll").prop("checked", false);
+        // Sự kiện chọn từng checkbox
+        grid.tbody.find(".depProductCheckSelect")
+            .off("change.depProduct")
+            .on("change.depProduct", function (ev) {
+                ev.stopPropagation();
 
-        var grid = this;
+                var $checkbox = $(this);
+                var $row = $checkbox.closest("tr");
 
-        // Bắt sự kiện change của tất cả checkbox
-        grid.tbody.find(".chkSelect").off("change").on("change", function (ev) {
-            var row = $(this).closest("tr");
-            if ($(this).is(":checked")) {
-                grid.select(row); // tick = chọn row
-            } else {
-                grid.clearSelection(); // bỏ chọn tất cả
-                // tick lại các checkbox đang checked
-                grid.tbody.find(".chkSelect:checked").each(function () {
-                    grid.select($(this).closest("tr"));
-                });
-            }
-            updateSelectedProducts(grid);
-            ev.stopPropagation(); // ngăn click row
+                $row.toggleClass("row-selected-custom", $checkbox.is(":checked"));
+
+                updateSelectedProducts();
+            });
+
+        // Click vào row thì toggle checkbox
+        grid.tbody.find("tr")
+            .off("click.depProduct")
+            .on("click.depProduct", function (ev) {
+                if ($(ev.target).is("input:checkbox")) return;
+
+                var $row = $(this);
+                var $checkbox = $row.find(".depProductCheckSelect");
+
+                if ($checkbox.length === 0 || $checkbox.is(":disabled")) return;
+
+                $checkbox.prop("checked", !$checkbox.is(":checked"));
+                $row.toggleClass("row-selected-custom", $checkbox.is(":checked"));
+
+                updateSelectedProducts();
+            });
+
+        // Checkbox header chọn tất cả
+        $("#chkSelectAllProducts")
+            .off("change.depProduct")
+            .on("change.depProduct", function (ev) {
+                ev.stopPropagation();
+
+                var isChecked = $(this).is(":checked");
+
+                grid.tbody.find(".depProductCheckSelect").prop("checked", isChecked);
+                grid.tbody.find("tr").toggleClass("row-selected-custom", isChecked);
+
+                updateSelectedProducts();
+            });
+
+        // Đồng bộ lại giao diện sau databound
+        grid.tbody.find("tr").each(function () {
+            var $row = $(this);
+            var isChecked = $row.find(".depProductCheckSelect").is(":checked");
+            $row.toggleClass("row-selected-custom", isChecked);
         });
 
-        // Khi click row, đồng bộ checkbox
-        grid.tbody.find("tr").off("click").on("click", function (e) {
-            if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
-            var row = $(this);
-            var checkbox = row.find(".chkSelect");
-            var isSelected = row.hasClass("k-state-selected");
-            checkbox.prop("checked", isSelected);
-            updateSelectedProducts(grid);
-        });
-
-        updateSelectedProducts(grid); // cập nhật lần đầu
+        updateSelectedProducts();
     }
 
-    function updateSelectedProducts(grid) {
-        var selectedRows = grid.select();
+    // function updateSelectedProducts(grid) {
+    //     var selectedRows = grid.select();
+    //     var productCodes = [];
+
+    //     selectedRows.each(function () {
+    //         var dataItem = grid.dataItem(this);
+    //         productCodes.push(dataItem.AccountTypeCode);
+    //     });
+
+
+
+    //     if (productCodes.length === 0) {
+    //         // Khi chưa chọn gì → hiển thị tổng số sản phẩm
+    //         $("#selectedProducts").text("Tổng số sản phẩm: " + grid.dataSource.total());
+    //     } else {
+    //         // Khi đã chọn → hiển thị danh sách product code
+    //         $("#selectedProducts").text("Sản phẩm đã chọn: " + productCodes.join(", "));
+
+    //           var total = $("#grdProductGrid tbody .chkSelect").length;
+    // //     var checked = $("#grdProductGrid tbody .chkSelect:checked").length;
+
+    //      $("#chkSelectAll").prop("checked", total > 0 && total === productCodes.length);
+    //     }
+
+
+
+    // }
+    function updateSelectedProducts() {
+        var grid = $("#grdProductGrid").data("kendoGrid");
         var productCodes = [];
 
-        selectedRows.each(function () {
-            var dataItem = grid.dataItem(this);
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+
             productCodes.push(dataItem.AccountTypeCode);
         });
 
-
-
         if (productCodes.length === 0) {
-            // Khi chưa chọn gì → hiển thị tổng số sản phẩm
             $("#selectedProducts").text("Tổng số sản phẩm: " + grid.dataSource.total());
         } else {
-            // Khi đã chọn → hiển thị danh sách product code
             $("#selectedProducts").text("Sản phẩm đã chọn: " + productCodes.join(", "));
-
-              var total = $("#grdProductGrid tbody .chkSelect").length;
-    //     var checked = $("#grdProductGrid tbody .chkSelect:checked").length;
-
-         $("#chkSelectAll").prop("checked", total > 0 && total === productCodes.length);
         }
 
+        var total = grid.tbody.find(".depProductCheckSelect").length;
+        var checked = grid.tbody.find(".depProductCheckSelect:checked").length;
 
-
+        $("#chkSelectAllProducts").prop("checked", total > 0 && total === checked);
     }
 
-
-    function updateSelectedTerms(grid) {
-        var selectedRows = grid.select();
+    function updateSelectedTerms() {
+        var grid = $("#grdDepositTermGrid").data("kendoGrid");
         var termCodes = [];
 
         var txtSoThangGui = $("#DepositTermUnit").data("kendoNumericTextBox");
-
         var defaultTermValue = 0;
-        selectedRows.each(function () {
-            var dataItem = grid.dataItem(this);
+
+        // Lấy tất cả checkbox đã check
+        $("#grdDepositTermGrid tbody .depTermCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+
+            // Ghép mã kỳ hạn
             termCodes.push(dataItem.TermValue + dataItem.TermUnitCode);
-            if (defaultTermValue ===0 || defaultTermValue > dataItem.MinTermValue) {
-                txtSoThangGui.value(dataItem.MinTermValue); 
-                txtSoThangGui.trigger("change"); 
+
+            // Lấy MinTermValue nhỏ nhất
+            if (defaultTermValue === 0 || defaultTermValue > dataItem.MinTermValue) {
                 defaultTermValue = dataItem.MinTermValue;
             }
-            
         });
 
+        // Set giá trị nhỏ nhất vào NumericTextBox
+        if (defaultTermValue > 0 && txtSoThangGui) {
+            txtSoThangGui.value(defaultTermValue);
+            txtSoThangGui.trigger("change");
+        }
+
+        // Hiển thị text
         if (termCodes.length === 0) {
-            // Khi chưa chọn gì → hiển thị tổng số sản phẩm
             $("#selectedTerms").text("Tổng số kỳ hạn: " + grid.dataSource.total());
         } else {
-            // Khi đã chọn → hiển thị danh sách product code
             $("#selectedTerms").text("Kỳ hạn đã chọn: " + termCodes.join(", "));
         }
     }
 
+    // function updateSelectedTerms(grid) {
+    //     var selectedRows = grid.select();
+    //     var termCodes = [];
+
+    //     var txtSoThangGui = $("#DepositTermUnit").data("kendoNumericTextBox");
+
+    //     var defaultTermValue = 0;
+    //     selectedRows.each(function () {
+    //         var dataItem = grid.dataItem(this);
+    //         termCodes.push(dataItem.TermValue + dataItem.TermUnitCode);
+    //         if (defaultTermValue ===0 || defaultTermValue > dataItem.MinTermValue) {
+    //             txtSoThangGui.value(dataItem.MinTermValue); 
+    //             txtSoThangGui.trigger("change"); 
+    //             defaultTermValue = dataItem.MinTermValue;
+    //         }
+            
+    //     });
+
+    //     if (termCodes.length === 0) {
+    //         // Khi chưa chọn gì → hiển thị tổng số sản phẩm
+    //         $("#selectedTerms").text("Tổng số kỳ hạn: " + grid.dataSource.total());
+    //     } else {
+    //         // Khi đã chọn → hiển thị danh sách product code
+    //         $("#selectedTerms").text("Kỳ hạn đã chọn: " + termCodes.join(", "));
+    //     }
+    // }
 
     function onDepositTermGridDataBound(e) {
-        var grid = this;
+        var grid = e.sender;
 
-        // Bắt sự kiện change của tất cả checkbox
-        grid.tbody.find(".chkSelect").off("change").on("change", function (ev) {
-            var row = $(this).closest("tr");
-            if ($(this).is(":checked")) {
-                grid.select(row); // tick = chọn row
-            } else {
-                grid.clearSelection(); // bỏ chọn tất cả
-                // tick lại các checkbox đang checked
-                grid.tbody.find(".chkSelect:checked").each(function () {
-                    grid.select($(this).closest("tr"));
-                });
-            }
-            ev.stopPropagation(); // ngăn click row
-            updateSelectedTerms(grid);
+        // Change checkbox: chỉ cho phép chọn 1
+        grid.tbody.find(".depTermCheckSelect")
+            .off("change.depTerm")
+            .on("change.depTerm", function (ev) {
+                ev.stopPropagation();
+
+                var $currentCheckbox = $(this);
+                var $currentRow = $currentCheckbox.closest("tr");
+
+                if ($currentCheckbox.is(":checked")) {
+                    // Bỏ chọn toàn bộ checkbox khác
+                    grid.tbody.find(".depTermCheckSelect").not($currentCheckbox).prop("checked", false);
+
+                    // Bỏ highlight toàn bộ row khác
+                    grid.tbody.find("tr").not($currentRow).removeClass("row-selected-custom");
+
+                    // Highlight row hiện tại
+                    $currentRow.addClass("row-selected-custom");
+                } else {
+                    // Nếu bỏ check chính nó thì bỏ highlight
+                    $currentRow.removeClass("row-selected-custom");
+                }
+
+                updateSelectedTerms();
+            });
+
+        // Click row => toggle checkbox như radio
+        grid.tbody.find("tr")
+            .off("click.depTerm")
+            .on("click.depTerm", function (ev) {
+                if ($(ev.target).is("input:checkbox")) return;
+
+                var $row = $(this);
+                var $checkbox = $row.find(".depTermCheckSelect");
+
+                if ($checkbox.length === 0 || $checkbox.is(":disabled")) return;
+
+                // Nếu chưa chọn thì chọn nó và bỏ chọn các dòng khác
+                if (!$checkbox.is(":checked")) {
+                    grid.tbody.find(".depTermCheckSelect").prop("checked", false);
+                    grid.tbody.find("tr").removeClass("row-selected-custom");
+
+                    $checkbox.prop("checked", true);
+                    $row.addClass("row-selected-custom");
+                } else {
+                    // Nếu muốn click lại để bỏ chọn thì giữ đoạn này
+                    $checkbox.prop("checked", false);
+                    $row.removeClass("row-selected-custom");
+                }
+
+                updateSelectedTerms();
+            });
+
+        // Khôi phục highlight theo checkbox hiện tại
+        grid.tbody.find("tr").each(function () {
+            var $row = $(this);
+            var isChecked = $row.find(".depTermCheckSelect").is(":checked");
+            $row.toggleClass("row-selected-custom", isChecked);
         });
 
-        // Khi click row, đồng bộ checkbox
-        grid.tbody.find("tr").off("click").on("click", function (e) {
-            if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
-            var row = $(this);
-            var checkbox = row.find(".chkSelect");
-            var isSelected = row.hasClass("k-state-selected");
-            checkbox.prop("checked", isSelected);
-            updateSelectedTerms(grid);
-        });
-
-        updateSelectedTerms(grid);
+        updateSelectedTerms();
     }
+
+    // function onDepositTermGridDataBound(e) {
+    //     var grid = this;
+
+    //     // Bắt sự kiện change của tất cả checkbox
+    //     grid.tbody.find(".depTermCheckSelect").off("change").on("change", function (ev) {
+    //         var row = $(this).closest("tr");
+    //         if ($(this).is(":checked")) {
+    //             grid.select(row); // tick = chọn row
+    //         } else {
+    //             grid.clearSelection(); // bỏ chọn tất cả
+    //             // tick lại các checkbox đang checked
+    //             grid.tbody.find(".depTermCheckSelect:checked").each(function () {
+    //                 grid.select($(this).closest("tr"));
+    //             });
+    //         }
+    //         ev.stopPropagation(); // ngăn click row
+    //         updateSelectedTerms();
+    //     });
+
+    //     // Khi click row, đồng bộ checkbox
+    //     grid.tbody.find("tr").off("click").on("click", function (e) {
+    //         if ($(e.target).is("input:checkbox")) return; // bỏ qua nếu click checkbox
+    //         var row = $(this);
+    //         var checkbox = row.find(".depTermCheckSelect");
+    //         var isSelected = row.hasClass("k-state-selected");
+    //         checkbox.prop("checked", isSelected);
+    //         updateSelectedTerms();
+    //     });
+
+    //     updateSelectedTerms();
+    // }
 
     function onNewInterestRateChanged(e) {
         var txtLsTraSau = $("#NewInterestRate").data("kendoNumericTextBox");
@@ -822,6 +1117,30 @@
         const effective = (Math.pow(1 + lsTraSauTyLe / 12 * soThangGui, 1 / soThangGui) - 1) * 12 * 100;
 
         return Math.floor(effective * 100) / 100 ; //Number(effective.toFixed(2));
+    }
+
+
+
+    function resetDepositTermGrid() {
+        var grid = $("#grdDepositTermGrid").data("kendoGrid");
+
+        if (!grid) return;
+
+        // 1. Bỏ check toàn bộ checkbox
+        grid.tbody.find(".depTermCheckSelect").prop("checked", false);
+
+        // 2. Bỏ highlight tất cả row
+        grid.tbody.find("tr").removeClass("row-selected-custom");
+
+        // 3. Reset textbox (nếu có dùng)
+        var txtSoThangGui = $("#DepositTermUnit").data("kendoNumericTextBox");
+        if (txtSoThangGui) {
+            txtSoThangGui.value(1);
+            txtSoThangGui.trigger("change");
+        }
+
+        // 4. Reset text hiển thị
+        $("#selectedTerms").text("Tổng số kỳ hạn: " + grid.dataSource.total());
     }
 </script>
 
@@ -875,8 +1194,7 @@
                         .Name("grdProductGrid")
                         .Columns(columns =>
                         {
-
-                            columns.Template("<input type='checkbox' class='chkSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAll' />")
+                            columns.Template("<input type='checkbox' class='depProductCheckSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAllProducts' />")
                             .Title("")
                             .Width(50)
                             .HeaderHtmlAttributes(new { style = "text-align:center;" })
@@ -886,7 +1204,7 @@
                             columns.Bound(c => c.AccountTypeName).Title("Tên loại TK").Width(200).HtmlAttributes(new { style = "text-align: left;" });
                         })
                         //.ToolBar(toolbar => toolbar.Create())
-                        .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
+                        //.Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
                         .Editable(editable => editable.Mode(GridEditMode.InLine))
                         //.Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
                         .HtmlAttributes(new { style = "height: 150px; width: 100%;" })
@@ -1049,7 +1367,7 @@
                 source => { source.Read(read => { read.Action("GetInclusionFlagList", "ListOfValue"); }).ServerFiltering(false); })
                 .HtmlAttributes(new { id = "InclusionFlag", style = "width: 100%; color: navy;", required = "required" })
                 .Suggest(true)
-                .SelectedIndex(0)
+                .SelectedIndex(1)
                 .AutoBind(true)
                 )
         </div>
@@ -1066,7 +1384,7 @@
                         .Columns(columns =>
                         {
 
-                            columns.Template("<input type='checkbox' class='chkSelect' />")
+                            columns.Template("<input type='checkbox' class='depTermCheckSelect' />")
                             .Title("")
                             .Width(50)
                             .HeaderHtmlAttributes(new { style = "text-align:center;" })
@@ -1081,7 +1399,7 @@
                             columns.Bound(c => c.MinTermValue).Hidden();
                         })
                         //.ToolBar(toolbar => toolbar.Create())
-                        .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
+                        //.Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
                         .Editable(editable => editable.Mode(GridEditMode.InLine))
                         //.Events(events => events.Edit("onEdit_TideRateConfigureGrid").Save("onSave_TideRateConfigureGrid"))
                         .HtmlAttributes(new { style = "height: 150px; width: 100%;" })
@@ -1234,28 +1552,28 @@
     }
 
 
-    $(document).on("change", "#chkSelectAll", function () {
-        var isChecked = $(this).is(":checked");
-        var grid = $("#grdProductGrid").data("kendoGrid");
+    // $(document).on("change", "#chkSelectAll", function () {
+    //     var isChecked = $(this).is(":checked");
+    //     var grid = $("#grdProductGrid").data("kendoGrid");
 
-        // Clear selection trước (tránh chọn chồng)
-        grid.clearSelection();
+    //     // Clear selection trước (tránh chọn chồng)
+    //     grid.clearSelection();
 
-        $("#grdProductGrid tbody tr").each(function () {
-            var $row = $(this);
-            var $chk = $row.find(".chkSelect");
+    //     $("#grdProductGrid tbody tr").each(function () {
+    //         var $row = $(this);
+    //         var $chk = $row.find(".chkSelect");
 
-            if (isChecked) {
-                $chk.prop("checked", true);
-                grid.select($row);     // SELECT ROW
-            } else {
-                $chk.prop("checked", false);
-                // grid.clearSelection() đã xử lý
-            }
-        });
+    //         if (isChecked) {
+    //             $chk.prop("checked", true);
+    //             grid.select($row);     // SELECT ROW
+    //         } else {
+    //             $chk.prop("checked", false);
+    //             // grid.clearSelection() đã xử lý
+    //         }
+    //     });
 
-        updateSelectedProducts(grid);
-    });
+    //     updateSelectedProducts(grid);
+    // });
 
 
     // $(document).on("change", "#grdProductGrid .chkSelect", function () {
