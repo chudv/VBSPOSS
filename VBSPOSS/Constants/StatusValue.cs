@@ -139,5 +139,7 @@ namespace VBSPOSS.Constants
         public const string ResultValue_Status_Success = "Success";
 
         public const string ResultValue_Status_Failed = "Failed";
+
+        public const string ResultValue_Status_Errored = "Error";
     }
 }

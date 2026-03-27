@@ -493,9 +493,96 @@ namespace VBSPOSS.Integration.Model
         }
     }
 
+    /// <summary>
+    /// Model thông tin trả ra khi gọi API Khóa/Mở khóa cho tài khoản người dùng Intellect iDC. Ex:
+    ///      {
+    ///          "emailAddress": "th@vbsp.vn",
+    ///          "mobileNumber": "0983273000",
+    ///          "enabled_by": "MOBILE",
+    ///          "userId": "DUYEN002",
+    ///          "enabled_at": "2026-03-27T10:40:31+00:00",
+    ///          "responseCode": 0,
+    ///          "responseMsg": "Enable User Done Successfully"
+    ///      }
+    ///      {
+    ///         "sessionValReq": "true",
+    ///         "prevStatus": 0,
+    ///         "responseAttributes": {},
+    ///         "responseCode": 735,
+    ///         "responseMsg": "User is already enabled.",
+    ///         "status": "true"
+    ///     }
+    /// </summary>
+    public class ChangeUserStatusResponseResult
+    {
+        [JsonProperty("sessionValReq")]
+        public string? SessionValReq { get; set; }
 
+        [JsonProperty("prevStatus")]
+        public int? PrevStatus { get; set; }
 
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
 
+        [JsonProperty("responseMsg")]
+        public string? ResponseMsg { get; set; }
 
+        [JsonProperty("status")]
+        public string? Status { get; set; }
+
+        [JsonProperty("emailAddress")]
+        public string? EmailAddress { get; set; }
+
+        [JsonProperty("mobileNumber")]
+        public string? MobileNumber { get; set; }
+
+        [JsonProperty("userId")]
+        public string? UserId { get; set; }
+
+        [JsonProperty("enabled_at")]
+        public string? EnabledAt { get; set; }
+
+        [JsonProperty("enabled_by")]
+        public string? EnabledBy { get; set; }
+
+        [JsonProperty("disabled_at")]
+        public string? DisabledAt { get; set; }
+
+        [JsonProperty("disabled_by")]
+        public string? DisabledBy { get; set; }
+
+        [JsonProperty("statusCode")]
+        public string? StatusCode { get; set; }
+
+        public ChangeUserStatusResponseResult(string sessionValReq, int prevStatus, string responseCode, string responseMsg, string status, string emailAddress, string mobileNumber, 
+                                string userId, string enabledAt, string enabledBy, string disabledAt, string disabledBy, string statusCode)
+        {
+            SessionValReq = sessionValReq;
+            PrevStatus = prevStatus;
+            ResponseCode = responseCode;
+            ResponseMsg = responseMsg;
+            Status = status;
+            EmailAddress = emailAddress;
+            MobileNumber = mobileNumber;
+            UserId = userId;
+            EnabledAt = enabledAt;
+            EnabledBy = enabledBy;
+            DisabledAt = disabledAt;
+            DisabledBy = disabledBy;
+            StatusCode = statusCode;
+        }
+
+        public static ChangeUserStatusResponseResult Fail(string sessionValReq, int prevStatus, string responseCode, string message, string status, string emailAddress, string mobileNumber,
+                                string userId, string enabledAt, string enabledBy, string disabledAt, string disabledBy, string statusCode)
+        {
+            return new ChangeUserStatusResponseResult("false", -1, "-1", message, "false", "", "", "", "", "", "", "", ResultValueAPI.ResultValue_Status_Failed);
+        }
+    }
+
+    public class UpdateNotiResult
+    {
+        public string Code { get; set; }
+        public string Message { get; set; }
+    }
 
 }

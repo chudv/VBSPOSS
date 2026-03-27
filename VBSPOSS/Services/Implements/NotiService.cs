@@ -243,5 +243,70 @@ namespace VBSPOSS.Services.Implements
                 return "2";
             }
         }
+
+        public async Task<string> ReSendNotiUserOffline(string notiType, string posCode, string transPoint, string transDate)
+        {
+            string answer = "";
+            try
+            {
+                var result = await _notiService.GetNotificationDataUserOffline("USER_OFFLINE", "002730", "TXN0273003");
+                if (result?.Result != null && result.Result.Any())
+                {
+                    // 1. Gọi API update noti
+                    var updateResult = await _notiService.UpdateNotiDataList(result.Result);
+
+                    _logger.LogInformation("UpdateNotiDataList result: {@UpdateResult}", updateResult);
+
+                    // 2. Check business code
+                    if (updateResult != null && updateResult.Code == "00")
+                    {
+                        //_logger.LogInformation("UpdateNotiDataList thành công, bắt đầu insert DB");
+
+                        var entities = new List<UserOfflineSendOTTHist>();
+
+                        foreach (var item in result.Result)
+                        {
+                            var transDate1 = DateTime.ParseExact(item.d6, "yyyyMMdd", null);
+
+                            var entity = new UserOfflineSendOTTHist
+                            {
+                                PosCode = item.posCode,
+                                PosName = item.posName,
+                                CommuneCode = "TBC",
+                                CommuneName = "TBC",
+                                TxnPointCode = item.d1,
+                                TxnPointName = "TBC",
+                                TransDate = transDate1,
+                                UserIdOffline = "TBC",
+                                PassWord = "TBC",
+                                RoleCode = "TBC",
+                                MobileNo = "TBC",
+                                EmailId = "TBC",
+                                Status = 1, // Done
+                                Remark = "Inserted from Noti",
+                                CreatedBy = "SYSTEM",
+                                CreatedDate = DateTime.Now
+                            };
+
+                            entities.Add(entity);
+                        }
+
+                        await _dbContext.ListUserOfflineSendOTTHists.AddRangeAsync(entities);
+                        await _dbContext.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        _logger.LogWarning("UpdateNotiDataList thất bại: {Code} - {Message}",
+                        updateResult?.Code, updateResult?.Message);
+                    }
+                }
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi xóa tài khoản người dùng: {ex.Message}");
+                return "2";
+            }
+        }
     }
 }

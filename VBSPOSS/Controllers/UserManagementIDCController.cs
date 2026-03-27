@@ -36,6 +36,19 @@ namespace VBSPOSS.Controllers
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
+
+            //public async Task<ChangeUserStatusAPIResponseViewModel> ChangeUserStatusByApiEnableUser(ViewUserRequestViewModel requestInput, string pUserNameUpd)
+            ViewUserRequestViewModel requestInput = new ViewUserRequestViewModel();
+            requestInput.UserId = "CHUDV002";
+            requestInput.Ticket = ConstValueAPI.UserId_Call_ApiIDC;
+            var objEnableUserResult = _userManagementIDCService.ChangeUserStatusByApiDisableUser(requestInput, UserName);
+            if (objEnableUserResult != null && objEnableUserResult.Result != null)
+            {
+                if (objEnableUserResult.Result.ResponseCode == "0" || objEnableUserResult.Result.ResponseCode == "00000")
+                {
+                }
+            }
+
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData

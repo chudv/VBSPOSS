@@ -100,7 +100,6 @@ namespace VBSPOSS.Integration.Interfaces
         /// </returns>
         Task<UserIDCResponseResult> CreateUserIDCByAPIAddUser(AddUserRequestViewModel requestInput);
 
-
         /// <summary>
         /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
         /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
@@ -125,5 +124,60 @@ namespace VBSPOSS.Integration.Interfaces
         ///     }
         /// </returns>
         Task<TellerRoleAssignResponseResult> ChangeRoleToTransferCashByAPITellerRoleAssign(TellerRoleAssignRequestViewModel requestInput);
+
+        /// <summary>
+        /// Hàm thực hiện Mở/Kích hoạt lại tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/enableUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "enabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "enabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Enable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already enabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        Task<ChangeUserStatusResponseResult> ChangeUserStatusByAPIEnableUser(ViewUserRequestViewModel requestInput);
+
+        /// <summary>
+        /// Hàm thực hiện Đóng/Khóa tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/disableUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "disabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "disabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Disable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already disabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        Task<ChangeUserStatusResponseResult> ChangeUserStatusByAPIDisableUser(ViewUserRequestViewModel requestInput);
+
+
+
     }
 }

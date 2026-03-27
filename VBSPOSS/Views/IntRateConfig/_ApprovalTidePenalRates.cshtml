@@ -319,6 +319,7 @@
     @Html.HiddenFor(m => m.EffectiveDate, new { @Value = Model == null ? DateTime.Now : Model.EffectiveDate })
     @Html.HiddenFor(m => m.ExpiredDate, new { @Value = Model == null ? DateTime.MinValue : Model.ExpiredDate })
     @Html.HiddenFor(m => m.CircularDate, new { @Value = Model == null ? DateTime.MinValue : Model.CircularDate })
+    @Html.Hidden("CircularDateReportParam", Model?.CircularDate.ToString("yyyyMMdd"), new { id = "CircularDateReportParam" })
     @Html.HiddenFor(m => m.InterestRateNew, new { @Value = Model == null ? 0 : Model.InterestRateNew })
     @Html.HiddenFor(m => m.PenalIntRate, new { @Value = Model == null ? 0 : Model.PenalIntRate })
     @Html.HiddenFor(m => m.ProductList, new { @Value = Model == null ? "" : Model.ProductList })
@@ -520,10 +521,12 @@
     $("#btnPrintReport").click(function () {
         var lcCircularRefNum = $("#CircularRefNum").val();
         var lcListId = $("#IdList").val();
+        var reportDate = $("#CircularDateReportParam").val();
+
         $.ajax({
             url: '/Report/GenerateFileReport_DepositPenalIntRateConfig',
             type: 'POST',
-            data: { pListId: lcListId, pCircularRefNum: lcCircularRefNum },
+            data: { pListId: lcListId, pCircularRefNum: lcCircularRefNum, circularDate: reportDate },
             xhrFields: {
                 responseType: 'blob'   // BẮT BUỘC
             },

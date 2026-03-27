@@ -16,5 +16,7 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<string> DeleteNotiTemp(string pNotiTemp, string pStatus);
 
+        Task<string> ReSendNotiUserOffline(string notiType, string posCode, string transPoint, string transDate);
+
     }
 }

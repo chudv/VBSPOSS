@@ -377,14 +377,14 @@ namespace VBSPOSS.Services.Implements
                 {
                     var apiResponse = await _apiInternalEsbService.CreateUserIDCByAPIAddUser(requestInput);
 
-                    if (apiResponse != null && apiResponse.ResponseCode == "0")
+                    if (apiResponse != null && (apiResponse.ResponseCode == "0" || apiResponse.ResponseCode == "00000"))
                     {
                         objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultAddUser.PrevStatus = apiResponse.PrevStatus;
                         if (apiResponse.ResponseAttributes != null)
                             objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
                         else objResultAddUser.UserPassword = "";
-                            objResultAddUser.ResponseCode = apiResponse.ResponseCode;
+                        objResultAddUser.ResponseCode = apiResponse.ResponseCode;
                         objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
                         objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                     }
@@ -404,7 +404,7 @@ namespace VBSPOSS.Services.Implements
             catch (Exception ex)
             {
                 Console.WriteLine($"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
-                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
+                throw new Exception($"Lỗi gọi hàm tạo tài khoản người dùng Intellect iDC " +
                                         $"CreateUserIDCByApiAddUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
             }
             return objResultAddUser;
@@ -442,10 +442,21 @@ namespace VBSPOSS.Services.Implements
         }
         */
 
-
         /// <summary>
         /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
         /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
+        /// Ví dụ cách gọi:
+        ///             TellerRoleAssignRequestViewModel requestInput = new TellerRoleAssignRequestViewModel();
+        ///             requestInput.TellerId = "CHUDV002";
+        ///             requestInput.TellerRoleAllowed = 1;
+        ///             requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+        ///             var objTellerRoleAssignResult = _userManagementIDCService.ChangeRoleToTransferCashByApiTellerRoleAssign(requestInput, UserName);
+        ///             if (objTellerRoleAssignResult != null && objTellerRoleAssignResult.Result != null)
+        ///             {
+        ///                 if (objTellerRoleAssignResult.Result.ResponseCode == "0" || objTellerRoleAssignResult.Result.ResponseCode == "00000")
+        ///                 {
+        ///                 }
+        ///             } 
         /// </summary>
         /// <param name="requestInput">Thông tin đầu vào. Ex:
         ///     {
@@ -470,8 +481,6 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<TellerRoleAssignAPIResponseViewModel> ChangeRoleToTransferCashByApiTellerRoleAssign(TellerRoleAssignRequestViewModel requestInput, string pUserNameUpd)
         {
-            int iCountUpdate = 0;
-            long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             TellerRoleAssignAPIResponseViewModel objResultTellerRoleAssign = new TellerRoleAssignAPIResponseViewModel();
             try
@@ -505,6 +514,218 @@ namespace VBSPOSS.Services.Implements
             }
             return objResultTellerRoleAssign;
         }
+
+        /// <summary>
+        /// Hàm thực hiện Mở/Kích hoạt lại tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/enableUser
+        /// Ví dụ cách sử dụng:
+        ///     ViewUserRequestViewModel requestInput = new ViewUserRequestViewModel();
+        ///     requestInput.UserId = "CHUDV002";
+        ///     requestInput.Ticket = ConstValueAPI.UserId_Call_ApiIDC;
+        ///     var objEnableUserResult = _userManagementIDCService.ChangeUserStatusByApiEnableUser(requestInput, UserName);
+        ///     if (objEnableUserResult != null && objEnableUserResult.Result != null)
+        ///     {
+        ///         if (objEnableUserResult.Result.ResponseCode == "0" || objEnableUserResult.Result.ResponseCode == "00000")
+        ///         {
+        ///         }
+        ///     }
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "enabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "enabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Enable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already enabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ChangeUserStatusAPIResponseViewModel> ChangeUserStatusByApiEnableUser(ViewUserRequestViewModel requestInput, string pUserNameUpd)
+        {
+            DateTime dCurrentDateTmp = DateTime.Now;
+            ChangeUserStatusAPIResponseViewModel objResultChangeUserStatus = new ChangeUserStatusAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    if (string.IsNullOrEmpty(requestInput.Ticket))
+                        requestInput.Ticket = ConstValueAPI.Ticket;
+                    var apiResponse = await _apiInternalEsbService.ChangeUserStatusByAPIEnableUser(requestInput);
+                    if (apiResponse == null)
+                    {
+                        objResultChangeUserStatus.SessionValReq = false;
+                        objResultChangeUserStatus.PrevStatus = 0;
+                        objResultChangeUserStatus.ResponseCode = "-1";
+                        objResultChangeUserStatus.ResponseMsg = "Null";
+                        objResultChangeUserStatus.Status = false;
+                        objResultChangeUserStatus.EmailAddress = "";
+                        objResultChangeUserStatus.MobileNumber = "";
+                        objResultChangeUserStatus.UserId = "";
+                        objResultChangeUserStatus.EnabledAt = "";
+                        objResultChangeUserStatus.EnabledBy = "";
+                        objResultChangeUserStatus.DisabledAt = "";
+                        objResultChangeUserStatus.DisabledBy = "";
+                        objResultChangeUserStatus.StatusCode = ResultValueAPI.ResultValue_Status_Failed;
+                    }
+                    else
+                    {
+                        objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        objResultChangeUserStatus.PrevStatus = apiResponse.PrevStatus ?? 0;
+                        objResultChangeUserStatus.ResponseCode = apiResponse.ResponseCode;
+                        objResultChangeUserStatus.ResponseMsg = apiResponse.ResponseMsg;
+                        objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        objResultChangeUserStatus.EmailAddress = apiResponse.EmailAddress ?? "";
+                        objResultChangeUserStatus.MobileNumber = apiResponse.MobileNumber ?? "";
+                        objResultChangeUserStatus.UserId = apiResponse.UserId ?? "";
+                        objResultChangeUserStatus.EnabledAt = apiResponse.EnabledAt ?? "";
+                        objResultChangeUserStatus.EnabledBy = apiResponse.EnabledBy ?? "";
+                        objResultChangeUserStatus.DisabledAt = apiResponse.DisabledAt ?? "";
+                        objResultChangeUserStatus.DisabledBy = apiResponse.DisabledBy ?? "";
+                        objResultChangeUserStatus.StatusCode = apiResponse.StatusCode ?? ResultValueAPI.ResultValue_Status_Success;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                objResultChangeUserStatus.SessionValReq = false;
+                objResultChangeUserStatus.PrevStatus = 0;
+                objResultChangeUserStatus.ResponseCode = "-1";
+                objResultChangeUserStatus.ResponseMsg = ex.Message;
+                objResultChangeUserStatus.Status = false;
+                objResultChangeUserStatus.EmailAddress = "";
+                objResultChangeUserStatus.MobileNumber = "";
+                objResultChangeUserStatus.UserId = "";
+                objResultChangeUserStatus.EnabledAt = "";
+                objResultChangeUserStatus.EnabledBy = "";
+                objResultChangeUserStatus.DisabledAt = "";
+                objResultChangeUserStatus.DisabledBy = "";
+                objResultChangeUserStatus.StatusCode = ResultValueAPI.ResultValue_Status_Errored;
+
+                Console.WriteLine($"ChangeUserStatusByApiEnableUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm mở/kích hoạt tài khoản người dùng Intellect iDC " +
+                                        $"ChangeUserStatusByApiEnableUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultChangeUserStatus;
+        }
+
+        /// <summary>
+        /// Hàm thực hiện Đóng/Khóa tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/disableUser
+        /// Ví dụ cách sử dụng:
+        ///     ViewUserRequestViewModel requestInput = new ViewUserRequestViewModel();
+        ///     requestInput.UserId = "CHUDV002";
+        ///     requestInput.Ticket = ConstValueAPI.UserId_Call_ApiIDC;
+        ///     var objDisableUserResult = _userManagementIDCService.ChangeUserStatusByApiDisableUser(requestInput, UserName);
+        ///     if (objDisableUserResult != null && objDisableUserResult.Result != null)
+        ///     {
+        ///         if (objDisableUserResult.Result.ResponseCode == "0" || objDisableUserResult.Result.ResponseCode == "00000")
+        ///         {
+        ///         }
+        ///     }
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "disabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "disabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Disable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already disabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ChangeUserStatusAPIResponseViewModel> ChangeUserStatusByApiDisableUser(ViewUserRequestViewModel requestInput, string pUserNameUpd)
+        {
+            DateTime dCurrentDateTmp = DateTime.Now;
+            ChangeUserStatusAPIResponseViewModel objResultChangeUserStatus = new ChangeUserStatusAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    if (string.IsNullOrEmpty(requestInput.Ticket))
+                        requestInput.Ticket = ConstValueAPI.Ticket;
+                    var apiResponse = await _apiInternalEsbService.ChangeUserStatusByAPIDisableUser(requestInput);
+                    if (apiResponse == null)
+                    {
+                        objResultChangeUserStatus.SessionValReq = false;
+                        objResultChangeUserStatus.PrevStatus = 0;
+                        objResultChangeUserStatus.ResponseCode = "-1";
+                        objResultChangeUserStatus.ResponseMsg = "Null";
+                        objResultChangeUserStatus.Status = false;
+                        objResultChangeUserStatus.EmailAddress = "";
+                        objResultChangeUserStatus.MobileNumber = "";
+                        objResultChangeUserStatus.UserId = "";
+                        objResultChangeUserStatus.EnabledAt = "";
+                        objResultChangeUserStatus.EnabledBy = "";
+                        objResultChangeUserStatus.DisabledAt = "";
+                        objResultChangeUserStatus.DisabledBy = "";
+                        objResultChangeUserStatus.StatusCode = ResultValueAPI.ResultValue_Status_Failed;
+                    }
+                    else
+                    {
+                        objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        objResultChangeUserStatus.PrevStatus = apiResponse.PrevStatus ?? 0;
+                        objResultChangeUserStatus.ResponseCode = apiResponse.ResponseCode;
+                        objResultChangeUserStatus.ResponseMsg = apiResponse.ResponseMsg;
+                        objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        objResultChangeUserStatus.EmailAddress = apiResponse.EmailAddress ?? "";
+                        objResultChangeUserStatus.MobileNumber = apiResponse.MobileNumber ?? "";
+                        objResultChangeUserStatus.UserId = apiResponse.UserId ?? "";
+                        objResultChangeUserStatus.EnabledAt = apiResponse.EnabledAt ?? "";
+                        objResultChangeUserStatus.EnabledBy = apiResponse.EnabledBy ?? "";
+                        objResultChangeUserStatus.DisabledAt = apiResponse.DisabledAt ?? "";
+                        objResultChangeUserStatus.DisabledBy = apiResponse.DisabledBy ?? "";
+                        objResultChangeUserStatus.StatusCode = apiResponse.StatusCode ?? ResultValueAPI.ResultValue_Status_Success;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                objResultChangeUserStatus.SessionValReq = false;
+                objResultChangeUserStatus.PrevStatus = 0;
+                objResultChangeUserStatus.ResponseCode = "-1";
+                objResultChangeUserStatus.ResponseMsg = ex.Message;
+                objResultChangeUserStatus.Status = false;
+                objResultChangeUserStatus.EmailAddress = "";
+                objResultChangeUserStatus.MobileNumber = "";
+                objResultChangeUserStatus.UserId = "";
+                objResultChangeUserStatus.EnabledAt = "";
+                objResultChangeUserStatus.EnabledBy = "";
+                objResultChangeUserStatus.DisabledAt = "";
+                objResultChangeUserStatus.DisabledBy = "";
+                objResultChangeUserStatus.StatusCode = ResultValueAPI.ResultValue_Status_Errored;
+
+                Console.WriteLine($"ChangeUserStatusByApiDisableUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm đóng/khóa tài khoản người dùng Intellect iDC " +
+                                        $"ChangeUserStatusByApiDisableUser('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultChangeUserStatus;
+        }
+
+
 
         /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
