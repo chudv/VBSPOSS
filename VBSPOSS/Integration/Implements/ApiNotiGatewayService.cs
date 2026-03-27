@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-
+using VBSPOSS.Data;
+using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.ViewModels;
@@ -14,12 +16,15 @@ namespace VBSPOSS.Integration.Implements
     {
         private readonly HttpClient _client;
         private readonly ILogger<ApiNotiGatewayService> _logger;
+        private readonly ApplicationDbContext _dbContext;
 
         public ApiNotiGatewayService(IHttpClientFactory httpClientFactory,
+            ApplicationDbContext dbContext,
             ILogger<ApiNotiGatewayService> logger)
         {
             _logger = logger;
             _client = httpClientFactory.CreateClient("NotiGatewayClient");
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -242,19 +247,23 @@ namespace VBSPOSS.Integration.Implements
         }
 
 
-        public async Task<string> UpdateNotiDataList(List<NotificationDataResponse> request)
+        public async Task<UpdateNotiResult> UpdateNotiDataList(List<NotificationDataResponse> request)
         {
             try
             {
+                if (request == null || !request.Any())
+                    throw new ArgumentException("request không được null hoặc rỗng");
+
                 var url = "api/v1/update-notification-data";
 
-                // Serialize request thành JSON
+                // Serialize request
                 var json = System.Text.Json.JsonSerializer.Serialize(request);
-                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 _logger.LogInformation("Calling Noti API: {Url} with body: {Body}", url, json);
 
                 var response = await _client.PostAsync(url, content);
+
                 var responseText = await response.Content.ReadAsStringAsync();
 
                 _logger.LogInformation("StatusCode: {StatusCode}", (int)response.StatusCode);
@@ -262,7 +271,28 @@ namespace VBSPOSS.Integration.Implements
 
                 response.EnsureSuccessStatusCode();
 
-                return responseText;
+                // ===== DESERIALIZE =====
+                var result = System.Text.Json.JsonSerializer.Deserialize<UpdateNotiResult>(
+                    responseText,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (result == null)
+                    throw new Exception("Không parse được response từ Noti API");
+
+                return result;
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                _logger.LogError(ex, "Lỗi parse JSON từ Noti API");
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Lỗi HTTP khi gọi Noti API");
+                throw;
             }
             catch (Exception ex)
             {
@@ -271,5 +301,158 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
+
+        public async Task<GenericResultCode<List<NotificationDataResponse>?>> GetNotificationDataUserOffline(string notiType, string posCode, string transPoint)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(notiType))
+                    throw new ArgumentException("notiType không được để trống");
+
+                if (string.IsNullOrWhiteSpace(posCode))
+                    throw new ArgumentException("posCode không được để trống");
+
+                if (string.IsNullOrWhiteSpace(transPoint))
+                    throw new ArgumentException("transPoint không được để trống");
+
+
+                var url = $"/api/v1/get-list-notification-data-user-offline" +
+                          $"?notiType={Uri.EscapeDataString(notiType)}" +
+                          $"&posCode={Uri.EscapeDataString(posCode)}" +
+                          $"&transPoint={Uri.EscapeDataString(transPoint)}";
+
+                _logger.LogInformation("Calling API: {Url}", url);
+
+                var response = await _client.GetAsync(url);
+
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                var result = System.Text.Json.JsonSerializer.Deserialize<GenericResultCode<List<NotificationDataResponse>?>>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gọi API GetNotificationDataUserOffline");
+                throw;
+            }
+        }
+
+        public async Task<UpdateNotiResult> UpdateNotiDataOffline(string notiType, string posCode, string transPoint, string transDate, string username="USERNULL")
+        {
+            try
+            {
+                var result = await GetNotificationDataUserOffline(notiType, posCode, transPoint);
+                var data = result?.Result;
+
+                if (data == null)
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "01",
+                        Message = "Không có dữ liệu để xử lý"
+                    };
+                }
+
+                if (!(data is IEnumerable<NotificationDataResponse>))
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "02",
+                        Message = "Dữ liệu trả về không đúng định dạng"
+                    };
+                }
+
+                if (!data.Any())
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "03",
+                        Message = "Danh sách dữ liệu trống"
+                    };
+                }
+
+                foreach (var item in data)
+                {
+                    item.status = "0";
+                }
+
+                var updateResponse =  UpdateNotiDataList(data);
+
+                if (updateResponse == null || updateResponse.Result == null)
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "04",
+                        Message = "Không nhận được phản hồi từ hệ thống cập nhật"
+                    };
+                }
+                if (updateResponse.Result.Code != "00")
+                {
+                    _logger.LogError($"Update thất bại. Code: {updateResponse.Result.Code}, Msg: {updateResponse.Result.Message}");
+
+                    return new UpdateNotiResult
+                    {
+                        Code = updateResponse.Result.Code,
+                        Message = "Cập nhật thất bại: " + updateResponse.Result.Message
+                    };
+                }
+
+
+                _logger.LogInformation("UpdateNotiDataList thành công");
+                var entities = new List<UserOfflineSendOTTHist>();
+
+                foreach (var item in result.Result)
+                {
+                    var transDateTXN = DateTime.ParseExact(item.d6, "yyyyMMdd", null);
+                    var dateNow = DateTime.Now;
+
+                    var entity = new UserOfflineSendOTTHist
+                    {
+                        PosCode = item.posCode,
+                        PosName = item.posName,
+                        //CommuneCode = item.,
+                        //CommuneName = "TBC",
+                        TxnPointCode = item.d1,
+                        //TxnPointName = "TBC",
+                        TransDate = transDateTXN,
+                        UserIdOffline = item.d2,
+                        PassWord = item.d3,
+                        RoleCode = item.d5,
+                        MobileNo = item.mobileNo,
+                        EmailId = item.email,
+                        Status = 1, // Done
+                        Remark = "Inserted from Noti",
+                        CreatedBy = "SYSTEM",
+                        CreatedDate = dateNow
+                    };
+
+                    entities.Add(entity);
+                }
+
+                await _dbContext.ListUserOfflineSendOTTHists.AddRangeAsync(entities);
+                await _dbContext.SaveChangesAsync();
+
+                return new UpdateNotiResult
+                {
+                    Code = "00",
+                    Message = "Cập nhật và lưu dữ liệu thành công"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi UpdateNotiDataOffline");
+
+                return new UpdateNotiResult
+                {
+                    Code = "99",
+                    Message = "Lỗi hệ thống: " + ex.Message
+                };
+            }
+        }
     }
 }
