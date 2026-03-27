@@ -720,6 +720,45 @@ namespace VBSPOSS.Constants
 
     }
 
+    /// <summary>
+    /// Cờ xác định phân loại chức năng. Giá trị:
+    /// </summary>
+    public class FunctionTypeFlag
+    {
+        public static ValueConstModel FunctionTypeFlag_ADDNEW_USER = new ValueConstModel { Value = 1, Code = "ADDNEW_USER", Description = "Thêm mới người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_ResetPassword = new ValueConstModel { Value = 2, Code = "RESET_PASSWORD", Description = "Thay đổi mật khẩu người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_ENABLE_USER = new ValueConstModel { Value = 3, Code = "ENABLE_USER", Description = "Mở lại người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_DISABLE_USER = new ValueConstModel { Value = 4, Code = "DISABLE_USER", Description = "Khóa người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_MODIFY_USER = new ValueConstModel { Value = 5, Code = "MODIFY_USER", Description = "Thay đổi thông tin người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_CHANGE_POS = new ValueConstModel { Value = 6, Code = "CHANGE_POS", Description = "Thay đổi Pos người dùng" };
+
+        public static ValueConstModel FunctionTypeFlag_CHANGE_ROLE = new ValueConstModel { Value = 7, Code = "CHANGE_ROLE", Description = "Thay đổi quyền người dùng" };
+
+
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                1 => FunctionTypeFlag_ADDNEW_USER,
+                2 => FunctionTypeFlag_ResetPassword,
+                3 => FunctionTypeFlag_ENABLE_USER,
+                4 => FunctionTypeFlag_DISABLE_USER,
+                5 => FunctionTypeFlag_MODIFY_USER,
+                6 => FunctionTypeFlag_CHANGE_POS,
+                7 => FunctionTypeFlag_CHANGE_ROLE,
+
+                _ => null
+            };
+        }
+
+    }
+
 
     
 }

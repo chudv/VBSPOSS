@@ -29,11 +29,11 @@ namespace VBSPOSS.Models
         public DateTime ExpiryDate { get; set; }
         public string Ticket { get; set; }
         public string Remark { get; set; }
-        public string TiOrtherNotescket { get; set; }
+        public string OrtherNotes { get; set; }
         public int Status { get; set; }
         public int StatusUpdateCore { get; set; }
         public bool? SessionValReq { get; set; }
-        public string PrevStatus { get; set; }
+        public int PrevStatus { get; set; }
         public string ResponseAttributes { get; set; }
         public string CallApiStatus { get; set; }
         public int CallApiReqRecordSl { get; set; }
@@ -45,6 +45,7 @@ namespace VBSPOSS.Models
         public DateTime? ModifiedDate { get; set; }
         public string? ApproverBy { get; set; }
         public DateTime? ApprovalDate { get; set; }
+        public DateTime? EffectiveDate { get; set; }
     }
 
 
@@ -83,5 +84,6 @@ namespace VBSPOSS.Models
         public DateTime ModifiedDate { get; set; }
         public string ApproverBy { get; set; }
         public DateTime ApprovalDate { get; set; }
+        public DateTime? EffectiveDate { get; set; }
     }
 }

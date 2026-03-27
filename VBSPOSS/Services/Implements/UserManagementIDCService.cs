@@ -56,12 +56,11 @@ namespace VBSPOSS.Services.Implements
                 List<UserIDCMasterViewModel> listUserIDCMasters = new List<UserIDCMasterViewModel>();
                 List<UserIDCMasterViewModel> listUserIDCMasters01 = new List<UserIDCMasterViewModel>();
 
-                var listUserIDCMasterTemp = _dbContext.UserIDCMasters.Where(w => w.UserId != ""
+                var listUserIDCMasterTemp = _dbContext.UserIDCMasters.Where(w => w.Id == pId || (pId == 0
                         && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode))
                         && (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
-                        && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)
-                        && (pId == 0 || w.Id == pId))
+                        && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserIDCMaster c)
                         {
                             if (string.IsNullOrEmpty(pFullName)
@@ -105,7 +104,7 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<long> SaveUserIDCMaster(UserIDCMasterViewModel pUserIDCMasterUpd, string pUserNameUpd, string pFlagCall)
         {
-            int iCountUpdate = 0;
+            int iCountUpdate = 0, iCountManagerUpd = 0;
             long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             try
@@ -167,20 +166,28 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.StaffCode = pUserIDCMasterUpd.StaffCode;
                             objUserIDCMasterUpdNew.UserId = pUserIDCMasterUpd.UserId;
                             objUserIDCMasterUpdNew.NickName = pUserIDCMasterUpd.NickName;
-                            objUserIDCMasterUpdNew.FirstName = pUserIDCMasterUpd.FirstName;
-                            objUserIDCMasterUpdNew.LastName = pUserIDCMasterUpd.LastName;
-                            objUserIDCMasterUpdNew.FullName = $"{objUserIDCMasterUpdNew.FirstName.Trim()} {objUserIDCMasterUpdNew.LastName.Trim()}";
-
+                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FullName;
+                            if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.FullName))
+                            {
+                                var partName= pUserIDCMasterUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                if (partName.Length > 0)
+                                {
+                                    objUserIDCMasterUpdNew.FirstName = partName[0];
+                                    objUserIDCMasterUpdNew.LastName = string.Join(" ", partName.Skip(1));
+                                }
+                            }
                             objUserIDCMasterUpdNew.EmailAddress = pUserIDCMasterUpd.EmailAddress;
                             objUserIDCMasterUpdNew.MobileNumber = pUserIDCMasterUpd.MobileNumber;
                             objUserIDCMasterUpdNew.DateOfBirth = pUserIDCMasterUpd.DateOfBirth.Date;
                             objUserIDCMasterUpdNew.GroupName = pUserIDCMasterUpd.GroupName;
                             objUserIDCMasterUpdNew.EntityList = pUserIDCMasterUpd.EntityList;
-                            objUserIDCMasterUpdNew.AuthType = pUserIDCMasterUpd.AuthType;
-
-                            objUserIDCMasterUpdNew.UserType = pUserIDCMasterUpd.UserType;
-                            objUserIDCMasterUpdNew.MailIdFlag = pUserIDCMasterUpd.MailIdFlag;
-                            objUserIDCMasterUpdNew.AuthsecType = pUserIDCMasterUpd.AuthsecType;
+                            objUserIDCMasterUpdNew.AuthType = pFlagCall;
+                            objUserIDCMasterUpdNew.UserType = pFlagCall;
+                            if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.RoleToTransferCashValue))
+                            {
+                                objUserIDCMasterUpdNew.MailIdFlag = (pUserIDCMasterUpd.RoleToTransferCashValue == StatusLov.StatusYes)? MailIdFlag.MailIdFlag_RandomSendAPI.Code : MailIdFlag.MailIdFlag_DefaultPassword.Code;
+                                objUserIDCMasterUpdNew.AuthsecType = (pUserIDCMasterUpd.RoleToTransferCashValue == StatusLov.StatusYes)? "17" : "0";
+                            }
                             objUserIDCMasterUpdNew.ExtraAttributeUserRole = pUserIDCMasterUpd.ExtraAttributeUserRole;
                             objUserIDCMasterUpdNew.ExtraAttributeBranchCode = pUserIDCMasterUpd.ExtraAttributeBranchCode;
                             objUserIDCMasterUpdNew.ExpiryDate = pUserIDCMasterUpd.ExpiryDate.Date;
@@ -193,16 +200,20 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserIDCMasterUpdNew.ApproverBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ApprovalDate = dCurrentDateTmp;
-
                             _dbContext.UserIDCMasters.Add(objUserIDCMasterUpdNew);
-                            int iSaveChanges = _dbContext.SaveChanges();
-                            if (iSaveChanges > 0)
+                            //Thêm mới ở bảng UserManagementIDC
+                            UserManagementIDCViewModel objUserManagementIDC = new UserManagementIDCViewModel();
+                            objUserManagementIDC = _mapper.Map<UserManagementIDCViewModel>(objUserIDCMasterUpdNew);
+                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall);
+                            if (pSaveUserManagementIDC > 0)
                             {
-                                iCountUpdate++;
-                                iRetIdUpd = objUserIDCMasterUpdNew.Id;
-                            }
-
-
+                                int iSaveChanges = _dbContext.SaveChanges();
+                                if (iSaveChanges > 0)
+                                {
+                                    iCountUpdate++;
+                                    iRetIdUpd = objUserIDCMasterUpdNew.Id;
+                                }
+                            }    
                         }
                         #endregion
                     }
@@ -493,6 +504,91 @@ namespace VBSPOSS.Services.Implements
                                         $"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
             }
             return objResultTellerRoleAssign;
+        }
+
+        /// <summary>
+        /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
+        /// </summary>
+        /// <param name="pUserManagementUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện</param>
+        /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
+        /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall)
+        {
+            int iCountUpdate = 0;
+            long iRetIdUpd = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            try
+            {
+                if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
+                {
+                    if (pFlagCall == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                    {
+                        #region --- Cập nhật thêm mới thông tin ---
+                        UserManagementIDC objUserManagementUpdNew = new UserManagementIDC();
+                        objUserManagementUpdNew.Id = 0;
+                        objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                        objUserManagementUpdNew.PosCode = pUserManagementUpd.PosCode;
+                        objUserManagementUpdNew.PosName = pUserManagementUpd.PosName;
+                        objUserManagementUpdNew.StaffId = pUserManagementUpd.StaffId;
+                        objUserManagementUpdNew.StaffCode = pUserManagementUpd.StaffCode;
+                        objUserManagementUpdNew.UserId = pUserManagementUpd.UserId;
+                        objUserManagementUpdNew.NickName = pUserManagementUpd.NickName;
+                        objUserManagementUpdNew.FirstName = pUserManagementUpd.FirstName;
+                        objUserManagementUpdNew.LastName = pUserManagementUpd.LastName;
+                        objUserManagementUpdNew.EmailAddress = pUserManagementUpd.EmailAddress;
+                        objUserManagementUpdNew.MobileNumber = pUserManagementUpd.MobileNumber;
+                        objUserManagementUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
+                        objUserManagementUpdNew.GroupName = pUserManagementUpd.GroupName;
+                        objUserManagementUpdNew.EntityList = pUserManagementUpd.EntityList;
+                        objUserManagementUpdNew.AuthType = pUserManagementUpd.AuthType;
+                        objUserManagementUpdNew.UserType = pUserManagementUpd.UserType;
+                        objUserManagementUpdNew.MailIdFlag = pUserManagementUpd.MailIdFlag;
+                        objUserManagementUpdNew.AuthsecType = pUserManagementUpd.AuthsecType;
+                        objUserManagementUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
+                        objUserManagementUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
+                        objUserManagementUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
+                        objUserManagementUpdNew.Remark = pUserManagementUpd.Remark;
+                        objUserManagementUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
+                        objUserManagementUpdNew.Ticket = "";//Xử lý khi gọi API
+                        objUserManagementUpdNew.Status = pUserManagementUpd.Status;
+                        objUserManagementUpdNew.StatusUpdateCore = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.SessionValReq = true; //Xử lý khi gọi API
+                        objUserManagementUpdNew.PrevStatus = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.ResponseAttributes = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiStatus = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiReqRecordSl = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiResponseCode = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiResponseMsg = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                        objUserManagementUpdNew.CreatedDate = dCurrentDateTmp; 
+                        objUserManagementUpdNew.ModifiedBy = "";
+                        objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementUpdNew.ApproverBy = "";
+                        objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+
+                        _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
+                        int iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementUpdNew.Id;
+                        }
+
+
+                        #endregion
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                iRetIdUpd = -1;
+                Console.WriteLine($"SaveUserIDCMaster('{pUserManagementUpd.UserId}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
+                                        $"SaveUserIDCMaster('{pUserManagementUpd.UserId}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}", ex);
+            }
+            return iRetIdUpd;
         }
 
 
