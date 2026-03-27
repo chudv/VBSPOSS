@@ -276,8 +276,35 @@ namespace VBSPOSS.ViewModels
         public string ResponseCode { get; set; }
         
         public string ResponseMsg { get; set; }
-        
     }
-    
+
+    public class ChangeUserStatusAPIResponseViewModel
+    {
+        public bool SessionValReq { get; set; }
+        public int PrevStatus { get; set; }
+
+        public string ResponseCode { get; set; }
+
+        public string ResponseMsg { get; set; }
+
+        public bool Status { get; set; }
+
+        public string EmailAddress { get; set; }
+
+        public string MobileNumber { get; set; }
+
+        public string UserId { get; set; }
+
+        public string EnabledAt { get; set; }
+
+        public string EnabledBy { get; set; }
+
+        public string DisabledAt { get; set; }
+
+        public string DisabledBy { get; set; }
+
+        public string StatusCode { get; set; }
+    }
+
 
 }

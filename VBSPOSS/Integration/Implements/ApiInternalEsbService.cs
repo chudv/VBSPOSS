@@ -677,7 +677,6 @@ namespace VBSPOSS.Integration.Implements
             }
          */
 
-
         /// <summary>
         /// Hàm thực hiện gọi API addUser thêm mới thông tin người dùng vào Intellect iDC
         /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
@@ -784,7 +783,6 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
-
         /// <summary>
         /// Hàm thực hiện gọi API tellerRoleAssign gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
         /// http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign
@@ -878,8 +876,195 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm thực hiện Mở/Kích hoạt lại tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/enableUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "enabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "enabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Enable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already enabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        public async Task<ChangeUserStatusResponseResult> ChangeUserStatusByAPIEnableUser(ViewUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting enableUser with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("ChangeUserStatusByAPIEnableUser failed: RequestInput is null");
+                    return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Request input is null", "false", "", "", "", "", "", "", "", "");
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cần kích hoạt/mở lại không được để trống. Vui lòng kiểm tra lại!!");
+                    return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+                }
+                _logger.LogInformation($"Starting enableUser with UserId: {requestInput.UserId}");
 
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/enableUser");
 
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/enableUser", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultEnableUser = JsonConvert.DeserializeObject<ChangeUserStatusResponseResult>(responseContent);
+
+                if (resultEnableUser != null)
+                {
+                    if (resultEnableUser.ResponseCode == "0" || resultEnableUser.ResponseCode == "00000")
+                        return new ChangeUserStatusResponseResult(resultEnableUser.SessionValReq ?? "true",
+                                                                  resultEnableUser.PrevStatus ?? 0, resultEnableUser.ResponseCode, resultEnableUser.ResponseMsg,
+                                                                  resultEnableUser.Status ?? "true", resultEnableUser.EmailAddress ?? "",
+                                                                  resultEnableUser.MobileNumber ?? "", resultEnableUser.UserId ?? "",
+                                                                  resultEnableUser.EnabledAt ?? "", resultEnableUser.EnabledBy ?? "",
+                                                                  resultEnableUser.DisabledAt ?? "", resultEnableUser.DisabledBy ?? "",
+                                                                  resultEnableUser.StatusCode ?? ResultValueAPI.ResultValue_Status_Success);
+                    else return new ChangeUserStatusResponseResult(resultEnableUser.SessionValReq ?? "true",
+                                                                  resultEnableUser.PrevStatus ?? 0, resultEnableUser.ResponseCode, resultEnableUser.ResponseMsg,
+                                                                  resultEnableUser.Status ?? "true", resultEnableUser.EmailAddress ?? "",
+                                                                  resultEnableUser.MobileNumber ?? "", resultEnableUser.UserId ?? "",
+                                                                  resultEnableUser.EnabledAt ?? "", resultEnableUser.EnabledBy ?? "",
+                                                                  resultEnableUser.DisabledAt ?? "", resultEnableUser.DisabledBy ?? "",
+                                                                  resultEnableUser.StatusCode ?? ResultValueAPI.ResultValue_Status_Failed);
+                }
+                else return ChangeUserStatusResponseResult.Fail("false", 0, "-1", "EnableUser Response null", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"HTTP request failed: {ex.Message}", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"An unexpected error occurred: {ex.Message}", "false", "", "", "", "", "", "", "", "");
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện Đóng/Khóa tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/disableUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        ///     {
+        ///         "emailAddress": "chudv2510@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "disabled_at": "2026-03-27T10:06:40+00:00",
+        ///         "disabled_by": "MOBILE",
+        ///         "userId": "CHUDV002",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Disable User Done Successfully"
+        ///     }
+        /// Kết quả không thành công:
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "responseCode": 735,
+        ///         "responseMsg": "User is already disabled.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        public async Task<ChangeUserStatusResponseResult> ChangeUserStatusByAPIDisableUser(ViewUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting disableUser with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("ChangeUserStatusByAPIDisableUser failed: RequestInput is null");
+                    return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Request input is null", "false", "", "", "", "", "", "", "", "");
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cần kích hoạt/mở lại không được để trống. Vui lòng kiểm tra lại!!");
+                    return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+                }
+                _logger.LogInformation($"Starting disableUser with UserId: {requestInput.UserId}");
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/disableUser");
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/disableUser", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultDisableUser = JsonConvert.DeserializeObject<ChangeUserStatusResponseResult>(responseContent);
+
+                if (resultDisableUser != null)
+                {
+                    if (resultDisableUser.ResponseCode == "0" || resultDisableUser.ResponseCode == "00000")
+                        return new ChangeUserStatusResponseResult(resultDisableUser.SessionValReq ?? "true",
+                                                                  resultDisableUser.PrevStatus ?? 0, resultDisableUser.ResponseCode, resultDisableUser.ResponseMsg,
+                                                                  resultDisableUser.Status ?? "true", resultDisableUser.EmailAddress ?? "",
+                                                                  resultDisableUser.MobileNumber ?? "", resultDisableUser.UserId ?? "",
+                                                                  resultDisableUser.EnabledAt ?? "", resultDisableUser.EnabledBy ?? "",
+                                                                  resultDisableUser.DisabledAt ?? "", resultDisableUser.DisabledBy ?? "",
+                                                                  resultDisableUser.StatusCode ?? ResultValueAPI.ResultValue_Status_Success);
+                    else return new ChangeUserStatusResponseResult(resultDisableUser.SessionValReq ?? "true",
+                                                                  resultDisableUser.PrevStatus ?? 0, resultDisableUser.ResponseCode, resultDisableUser.ResponseMsg,
+                                                                  resultDisableUser.Status ?? "true", resultDisableUser.EmailAddress ?? "",
+                                                                  resultDisableUser.MobileNumber ?? "", resultDisableUser.UserId ?? "",
+                                                                  resultDisableUser.EnabledAt ?? "", resultDisableUser.EnabledBy ?? "",
+                                                                  resultDisableUser.DisabledAt ?? "", resultDisableUser.DisabledBy ?? "",
+                                                                  resultDisableUser.StatusCode ?? ResultValueAPI.ResultValue_Status_Failed);
+                }
+                else return ChangeUserStatusResponseResult.Fail("false", 0, "-1", "DisableUser Response null", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"HTTP request failed: {ex.Message}", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"An unexpected error occurred: {ex.Message}", "false", "", "", "", "", "", "", "", "");
+            }
+        }
 
 
     }

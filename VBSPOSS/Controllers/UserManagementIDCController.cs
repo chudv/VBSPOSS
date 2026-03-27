@@ -36,19 +36,18 @@ namespace VBSPOSS.Controllers
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
-            TellerRoleAssignRequestViewModel requestInput = new TellerRoleAssignRequestViewModel();
-            requestInput.TellerId = "CHUDV002";
-            requestInput.TellerRoleAllowed = 1;
-            requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
-            var objTellerRoleAssignResult = _userManagementIDCService.ChangeRoleToTransferCashByApiTellerRoleAssign(requestInput, UserName);
-            if (objTellerRoleAssignResult != null && objTellerRoleAssignResult.Result != null)
+
+            //public async Task<ChangeUserStatusAPIResponseViewModel> ChangeUserStatusByApiEnableUser(ViewUserRequestViewModel requestInput, string pUserNameUpd)
+            ViewUserRequestViewModel requestInput = new ViewUserRequestViewModel();
+            requestInput.UserId = "CHUDV002";
+            requestInput.Ticket = ConstValueAPI.UserId_Call_ApiIDC;
+            var objEnableUserResult = _userManagementIDCService.ChangeUserStatusByApiDisableUser(requestInput, UserName);
+            if (objEnableUserResult != null && objEnableUserResult.Result != null)
             {
-                if (objTellerRoleAssignResult.Result.ResponseCode == "0" || objTellerRoleAssignResult.Result.ResponseCode == "00000")
+                if (objEnableUserResult.Result.ResponseCode == "0" || objEnableUserResult.Result.ResponseCode == "00000")
                 {
-
-                } 
-            } 
-
+                }
+            }
 
             string sessionUser = UserName;
             string posCode = UserPosCode;
