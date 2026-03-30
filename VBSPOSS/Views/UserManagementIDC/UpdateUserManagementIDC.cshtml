@@ -81,14 +81,26 @@
         }
     }
 
+    var roleLists;
     function Change_RoleOfUserIDC() {
-
-        if (isEditMode) return;
-
-        var staffIdReload = $("#StaffId").data("kendoComboBox");
-        if (staffIdReload != null) {
-            staffIdReload.dataSource.read();
+        var objGroupId = $("#GroupName").data("kendoComboBox");
+        if (objGroupId != null) {
+            $.ajax({
+                type: "GET",
+                data: {
+                    pUserRole: objGroupId.value()
+                },
+                url: "../ListOfValue/GetRoleToTransferCashByUserRole",
+                success: function (data) {
+                    roleLists = data;
+                    if (roleLists != null && roleLists.length != 0) {
+                        $("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
+                        $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
+                    }
+                }
+            });
         }
+
     }
 
     var staffLists;
@@ -117,6 +129,7 @@
                             $("#StaffPosCode").val(staffLists[0].StaffPosCode);
                             $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
                             $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
+                            $("#FullName").val(staffLists[0].StaffName);
                         }
                     }
                 });
@@ -242,12 +255,12 @@
 
 <form asp-controller="UserManagementIDC" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
     @Html.Hidden("FlagCallView", TempData["FlagCall"])
-@*     @Html.HiddenFor(m => m.PosName, new { @Value = Model == null ? "" : Model.PosName })
- *@    @*     @Html.HiddenFor(m => m.Genders, new { @Value = Model == null ? "" : Model.Genders })   *@
-@*     @Html.HiddenFor(m => m.StaffDepartmentCode, new { @Value = Model == null ? "" : Model.StaffDepartmentCode })
-    @Html.HiddenFor(m => m.StaffPositionCode, new { @Value = Model == null ? "" : Model.StaffPositionCode })
-    @Html.HiddenFor(m => m.StaffPosCode, new { @Value = Model == null ? "" : Model.StaffPosCode })
- *@    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
+    @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
+    @Html.HiddenFor(m => m.UserId, new { @Value = Model == null ? "" : Model.UserId })
+    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
+    @Html.HiddenFor(m => m.FullName, new { @Value = Model == null ? "" : Model.FullName })
+
+    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "SỬA ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "THÊM MỚI NGƯỜI DÙNG IDC")
     </div>
     <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
@@ -320,7 +333,7 @@
             </div>
         </div>
 
-        <div class="row" style="padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
+        <div class="row" style="margin-bottom: 15px; padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Nhóm quyền</label>
                 @(Html.Kendo().ComboBoxFor(m => m.GroupName)
@@ -335,18 +348,37 @@
                                 .Suggest(true)
                                 .AutoBind(true)
                                 .SelectedIndex(0))
-                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
-                @(Html.Kendo().DropDownListFor(m => m.Status)
-                                .DataTextField("Text")
-                                .DataValueField("Value")
-                                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tạo lập (Mở)", Value = "1" }, new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" } })
-                                .HtmlAttributes(new { style = "color: blue;width: 180px !important;max-width: 100% !important;" })
-                                .Events(e => e.Change("Change_Status"))
-                                .SelectedIndex(0))
+                
+                <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt </label>
+                @Html.Kendo().TextBoxFor(m => m.RoleToTransferCashDescription).HtmlAttributes(new { @readonly = "readonly", style = " width: 400px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
 
-                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px;">Ngày hết hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").Value("31/12/2060").HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+              
 
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 15px;padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left;padding-top:3px;">Ngày hiệu lực</label>
+                @Html.Kendo().DatePickerFor(m => m.EffectDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+                <label class="lbcontrol" style="width: 180px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px;">Ngày hết hiệu lực</label>
+                @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").Value(new DateTime(2060, 12, 31)).HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
+                @(Html.Kendo().ComboBoxFor(m => m.Status)
+                    .Filter(FilterType.Contains)
+                    .Placeholder("--- Trạng thái ---")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .BindTo(new List<SelectListItem>() {
+                        new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" },
+                        new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" }
+                    })
+                    .Suggest(true)
+                    .AutoBind(true)
+                    .HtmlAttributes(new { style = "width: 230px; color: blue;",})
+                    .Events(e => e.Change("Change_Status"))
+                    .SelectedIndex(0))
             </div>
         </div>
 
@@ -387,13 +419,8 @@
                 $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
             }
 
-            var birthdayPicker = $("#DateOfBirth").data("kendoDatePicker");
-            if (birthdayPicker && birthdayPicker.value()) {
-                $("#DateOfBirth").val(kendo.toString(birthdayPicker.value(), "yyyy-MM-dd"));
-            } else {
-                $("#DateOfBirth").val("");
-            }
-
+            $("#UserId").val($("#StaffCode").val());
+            $("#NickName").val($("#StaffCode").val());
             var form = this;
             var posCode = $("#PosCode").val();
 

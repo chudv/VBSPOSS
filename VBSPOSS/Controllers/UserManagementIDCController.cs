@@ -94,7 +94,7 @@ namespace VBSPOSS.Controllers
                 pUserId = "";
             string sNameView = "";
             var listStaffVBSP = (_userManagementIDCService.GetListUserIDCMasters(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
-            if (pFlagCall == "1" && listStaffVBSP == null)
+            if (pFlagCall == "1")
             {
                 objPosUserIDCMaster.Id = 0;
                 objPosUserIDCMaster.OrderNo = 0;
@@ -121,7 +121,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.ExpiryDate = DateTime.Now;
                 objPosUserIDCMaster.Remark = "";
                 objPosUserIDCMaster.OrtherNotes = "";
-                objPosUserIDCMaster.Status = 0;
+                objPosUserIDCMaster.Status = 1;
                 objPosUserIDCMaster.StatusText = "";               
                 objPosUserIDCMaster.CreatedBy = "";
                 objPosUserIDCMaster.CreatedDate = DateTime.Now;

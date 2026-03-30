@@ -30,9 +30,11 @@ namespace VBSPOSS.ViewModels
         public string AuthsecType { get; set; }
         public string ExtraAttributeUserRole { get; set; }
         public string ExtraAttributeBranchCode { get; set; }
+        public DateTime EffectDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Ticket { get; set; }
         public string Remark { get; set; }
+        public string OrtherNotes { get; set; }
         public string TiOrtherNotescket { get; set; }
         public int Status { get; set; }
         public string StatusText { get; set; }            //Thêm
@@ -78,6 +80,7 @@ namespace VBSPOSS.ViewModels
         public string AuthsecType { get; set; }
         public string ExtraAttributeUserRole { get; set; }
         public string ExtraAttributeBranchCode { get; set; }
+        public DateTime EffectDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Remark { get; set; }
         public string OrtherNotes { get; set; }
@@ -92,6 +95,8 @@ namespace VBSPOSS.ViewModels
         public string Genders { get; set; }
         public string StaffPositionName { get; set; }
         public string StaffDepartmentName { get; set; }
+        public string RoleToTransferCashDescription { get; set; }
+        public string RoleToTransferCashValue { get; set; }
     }
 
 

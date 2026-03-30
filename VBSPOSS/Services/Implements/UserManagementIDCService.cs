@@ -56,12 +56,11 @@ namespace VBSPOSS.Services.Implements
                 List<UserIDCMasterViewModel> listUserIDCMasters = new List<UserIDCMasterViewModel>();
                 List<UserIDCMasterViewModel> listUserIDCMasters01 = new List<UserIDCMasterViewModel>();
 
-                var listUserIDCMasterTemp = _dbContext.UserIDCMasters.Where(w => w.UserId != ""
+                var listUserIDCMasterTemp = _dbContext.UserIDCMasters.Where(w => w.Id == pId || (pId == 0
                         && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode))
                         && (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
-                        && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)
-                        && (pId == 0 || w.Id == pId))
+                        && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserIDCMaster c)
                         {
                             if (string.IsNullOrEmpty(pFullName)
@@ -105,7 +104,7 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<long> SaveUserIDCMaster(UserIDCMasterViewModel pUserIDCMasterUpd, string pUserNameUpd, string pFlagCall)
         {
-            int iCountUpdate = 0;
+            int iCountUpdate = 0, iCountManagerUpd = 0;
             long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             try
@@ -167,20 +166,28 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.StaffCode = pUserIDCMasterUpd.StaffCode;
                             objUserIDCMasterUpdNew.UserId = pUserIDCMasterUpd.UserId;
                             objUserIDCMasterUpdNew.NickName = pUserIDCMasterUpd.NickName;
-                            objUserIDCMasterUpdNew.FirstName = pUserIDCMasterUpd.FirstName;
-                            objUserIDCMasterUpdNew.LastName = pUserIDCMasterUpd.LastName;
-                            objUserIDCMasterUpdNew.FullName = $"{objUserIDCMasterUpdNew.FirstName.Trim()} {objUserIDCMasterUpdNew.LastName.Trim()}";
-
+                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FullName;
+                            if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.FullName))
+                            {
+                                var partName= pUserIDCMasterUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                if (partName.Length > 0)
+                                {
+                                    objUserIDCMasterUpdNew.FirstName = partName[0];
+                                    objUserIDCMasterUpdNew.LastName = string.Join(" ", partName.Skip(1));
+                                }
+                            }
                             objUserIDCMasterUpdNew.EmailAddress = pUserIDCMasterUpd.EmailAddress;
                             objUserIDCMasterUpdNew.MobileNumber = pUserIDCMasterUpd.MobileNumber;
                             objUserIDCMasterUpdNew.DateOfBirth = pUserIDCMasterUpd.DateOfBirth.Date;
                             objUserIDCMasterUpdNew.GroupName = pUserIDCMasterUpd.GroupName;
                             objUserIDCMasterUpdNew.EntityList = pUserIDCMasterUpd.EntityList;
-                            objUserIDCMasterUpdNew.AuthType = pUserIDCMasterUpd.AuthType;
-
-                            objUserIDCMasterUpdNew.UserType = pUserIDCMasterUpd.UserType;
-                            objUserIDCMasterUpdNew.MailIdFlag = pUserIDCMasterUpd.MailIdFlag;
-                            objUserIDCMasterUpdNew.AuthsecType = pUserIDCMasterUpd.AuthsecType;
+                            objUserIDCMasterUpdNew.AuthType = pFlagCall;
+                            objUserIDCMasterUpdNew.UserType = pFlagCall;
+                            if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.RoleToTransferCashValue))
+                            {
+                                objUserIDCMasterUpdNew.MailIdFlag = (pUserIDCMasterUpd.RoleToTransferCashValue == StatusLov.StatusYes)? MailIdFlag.MailIdFlag_RandomSendAPI.Code : MailIdFlag.MailIdFlag_DefaultPassword.Code;
+                                objUserIDCMasterUpdNew.AuthsecType = (pUserIDCMasterUpd.RoleToTransferCashValue == StatusLov.StatusYes)? "17" : "0";
+                            }
                             objUserIDCMasterUpdNew.ExtraAttributeUserRole = pUserIDCMasterUpd.ExtraAttributeUserRole;
                             objUserIDCMasterUpdNew.ExtraAttributeBranchCode = pUserIDCMasterUpd.ExtraAttributeBranchCode;
                             objUserIDCMasterUpdNew.ExpiryDate = pUserIDCMasterUpd.ExpiryDate.Date;
@@ -193,16 +200,20 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserIDCMasterUpdNew.ApproverBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ApprovalDate = dCurrentDateTmp;
-
                             _dbContext.UserIDCMasters.Add(objUserIDCMasterUpdNew);
-                            int iSaveChanges = _dbContext.SaveChanges();
-                            if (iSaveChanges > 0)
+                            //Thêm mới ở bảng UserManagementIDC
+                            UserManagementIDCViewModel objUserManagementIDC = new UserManagementIDCViewModel();
+                            objUserManagementIDC = _mapper.Map<UserManagementIDCViewModel>(objUserIDCMasterUpdNew);
+                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall);
+                            if (pSaveUserManagementIDC > 0)
                             {
-                                iCountUpdate++;
-                                iRetIdUpd = objUserIDCMasterUpdNew.Id;
-                            }
-
-
+                                int iSaveChanges = _dbContext.SaveChanges();
+                                if (iSaveChanges > 0)
+                                {
+                                    iCountUpdate++;
+                                    iRetIdUpd = objUserIDCMasterUpdNew.Id;
+                                }
+                            }    
                         }
                         #endregion
                     }
@@ -496,11 +507,9 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                objResultTellerRoleAssign.ResponseCode = "-1";
-                objResultTellerRoleAssign.ResponseMsg = ex.Message;
-                objResultTellerRoleAssign.TxnStatus = ResultValueAPI.ResultValue_Status_Errored;
+                //iRetIdUpd = -1;
                 Console.WriteLine($"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}");
-                throw new Exception($"Lỗi gọi hàm gán hoặc bỏ gán quyền tiền mặt " +
+                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
                                         $"ChangeRoleToTransferCashByApiTellerRoleAssign('{requestInput.TellerId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
             }
             return objResultTellerRoleAssign;

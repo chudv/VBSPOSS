@@ -71,32 +71,13 @@ namespace VBSPOSS.Services.Interfaces
         /// </returns>
         /// <exception cref="Exception"></exception>
         Task<TellerRoleAssignAPIResponseViewModel> ChangeRoleToTransferCashByApiTellerRoleAssign(TellerRoleAssignRequestViewModel requestInput, string pUserNameUpd);
-
         /// <summary>
-        /// Hàm thực hiện Mở/Kích hoạt lại tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/enableUser
+        /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
         /// </summary>
-        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
-        /// <param name="pUserNameUpd">Người dùng thực hiện trên HTVH</param>
-        /// <returns>Kết quả trả về. Ex:
-        ///     {
-        ///         "emailAddress": "chudv2510@gmail.com",
-        ///         "mobileNumber": "0908688212",
-        ///         "enabled_by": "MOBILE",
-        ///         "userId": "CHUDV002",
-        ///         "enabled_at": "2026-03-27T10:06:40+00:00",
-        ///         "responseCode": 0,
-        ///         "responseMsg": "Enable User Done Successfully"
-        ///     }
-        /// Kết quả không thành công:
-        ///     {
-        ///         "sessionValReq": "true",
-        ///         "prevStatus": 0,
-        ///         "responseAttributes": {},
-        ///         "responseCode": 735,
-        ///         "responseMsg": "User is already enabled.",
-        ///         "status": "true"
-        ///     }
-        /// </returns>
+        /// <param name="pUserManagementUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện</param>
+        /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
+        /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
         /// <exception cref="Exception"></exception>
         Task<ChangeInforUserIDCAPIResponseViewModel> ChangeUserStatusByApiEnableUser(ViewUserRequestViewModel requestInput, string pUserNameUpd);
 
@@ -229,8 +210,6 @@ namespace VBSPOSS.Services.Interfaces
         /// </returns>
         /// <exception cref="Exception"></exception>
         Task<ChangeInforUserIDCAPIResponseViewModel> ModifyUserByApiModifyUser(ModifyUserRequestViewModel requestInput, string pUserNameUpd);
-
-
 
     }
 }
