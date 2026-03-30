@@ -229,6 +229,9 @@ namespace VBSPOSS.Services.Implements
             return iRetIdUpd;
         }
 
+
+
+
         /// <summary>
         /// Hàm lấy thông tin người dùng trên iDC qua việc gọi đến API viewUser của ESB đến iDC
         /// Ex: var objUserInfo0 = await _userManagementIDCService.GetUserIDCInfoByApiViewUser("CHUV13");
@@ -949,7 +952,7 @@ namespace VBSPOSS.Services.Implements
                         objResultModifyUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                         objResultModifyUser.EmailAddress = apiResponse.EmailAddress ?? "";
                         objResultModifyUser.MobileNumber = apiResponse.MobileNumber ?? "";
-                        objResultModifyUser.UserId = ""
+                        objResultModifyUser.UserId = "";
                         objResultModifyUser.EnabledAt = "";
                         objResultModifyUser.EnabledBy = "";
                         objResultModifyUser.DisabledAt = "";
