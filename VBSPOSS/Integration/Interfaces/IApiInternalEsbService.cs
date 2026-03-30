@@ -177,7 +177,80 @@ namespace VBSPOSS.Integration.Interfaces
         /// </returns>
         Task<ChangeUserStatusResponseResult> ChangeUserStatusByAPIDisableUser(ViewUserRequestViewModel requestInput);
 
+        /// <summary>
+        /// Hàm thực hiện cấp lại mật khẩu tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/resetUserPw
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu thành công
+        ///     {
+        ///         "emailAddress": "chudv.cctt@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "reset_by": "SYSTEMADMIN2",
+        ///         "userId": "CHUV12",
+        ///         "reset_at": "2026-01-14T21:55:10+00:00",
+        ///         "mail_flag": "0",
+        ///         "responseCode": "0",
+        ///         "responseMsg": "Password Reset Successful"
+        ///     }
+        /// Nếu không thành công
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": "0",
+        ///         "responseAttributes": { },
+        ///         "responseCode": "5317",
+        ///         "responseMsg": "ARX-005317: User does not exist.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        Task<ResetUserPasswordResponseResult> ResetUserPasswordByAPIResetUserPw(ViewUserRequestViewModel requestInput);
 
-
+        /// <summary>
+        /// Hàm thực hiện gọi API modifyUser thay đổi thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin người dùng Intellect iDC cần thay đổi thông tin 
+        ///     {
+        ///         "ticket": "{{access_token}}",
+        ///         "userId": "CHUDV99",
+        ///         "firstName": "Dương Văn",
+        ///         "lastName": "Chữ",
+        ///         "groupName": "POPGD",
+        ///         "entityList": "IDCPRODC",
+        ///         "mobileNumber": "0908688212",
+        ///         "emailAddress": "chudv.2510@gmail.com",
+        ///         "expiryDate": "2045-10-25",
+        ///         "DOB": "1983-10-25",
+        ///         "mailIdFlag": 1,
+        ///         "language": "vi_VN",
+        ///         "extraAttribute": {
+        ///             "BranchCode": "2505",
+        ///             "UserRole": "POPGD"
+        ///         }
+        ///     }
+        /// </param>
+        /// <returns>Kết quả trả về. Ex: 
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "mobileNumber": "0908688212",
+        ///         "posCode": "2505",
+        ///         "userRole": "POPGD",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Modify User Done Successfully",
+        ///         "status": "true"
+        ///     }
+        /// --Hoặc nếu sửa tiếp POS thì trả ra như sau:
+        ///     {
+        ///         "mobileNumber": "0908688212",
+        ///         "posCode": "2502",
+        ///         "userRole": "POPGD",
+        ///         "status": "true",
+        ///         "responseMsg": " BranchCode Modify Done Successfully",
+        ///         "responseCode": 0
+        ///     }
+        /// </returns>
+        Task<ModifyUserIDCResponseResult> ModifyUserIDCByAPIModifyUser(ModifyUserRequestViewModel requestInput);
     }
 }

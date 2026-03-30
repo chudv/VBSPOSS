@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Newtonsoft.Json;
+using VBSPOSS.Constants;
 using VBSPOSS.Integration.Model;
 
 namespace VBSPOSS.ViewModels
@@ -66,6 +67,7 @@ namespace VBSPOSS.ViewModels
         public string LastName { get; set; }
         public string FullName { get; set; }
         public string EmailAddress { get; set; }
+
         public string MobileNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string GroupName { get; set; }
@@ -277,10 +279,14 @@ namespace VBSPOSS.ViewModels
         
         public string ResponseMsg { get; set; }
     }
-
-    public class ChangeUserStatusAPIResponseViewModel
+    
+    /// <summary>
+    /// Sử dụng cho Hàm: Đóng/Mở người dùng; Cấp lại mật khẩu; Thay đổi mật khẩu; Thay đổi thông tin người dùng Intellect iDC
+    /// </summary>
+    public class ChangeInforUserIDCAPIResponseViewModel
     {
         public bool SessionValReq { get; set; }
+
         public int PrevStatus { get; set; }
 
         public string ResponseCode { get; set; }
@@ -303,8 +309,20 @@ namespace VBSPOSS.ViewModels
 
         public string DisabledBy { get; set; }
 
+        public string ResetBy { get; set; }
+        
+        public string ResetAt { get; set; }
+        
+        public string MailFlag { get; set; }
+
         public string StatusCode { get; set; }
+
+        public string PosCode { get; set; }
+        
+        public string UserRole { get; set; }
     }
+
+
 
 
 }

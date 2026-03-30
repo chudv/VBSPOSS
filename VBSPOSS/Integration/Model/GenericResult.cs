@@ -572,12 +572,195 @@ namespace VBSPOSS.Integration.Model
             StatusCode = statusCode;
         }
 
-        public static ChangeUserStatusResponseResult Fail(string sessionValReq, int prevStatus, string responseCode, string message, string status, string emailAddress, string mobileNumber,
-                                string userId, string enabledAt, string enabledBy, string disabledAt, string disabledBy, string statusCode)
+        public static ChangeUserStatusResponseResult Fail(string sessionValReq, int prevStatus, string responseCode, string message, string status, string emailAddress,
+                                string mobileNumber, string userId, string enabledAt, string enabledBy, string disabledAt, string disabledBy, string statusCode)
         {
             return new ChangeUserStatusResponseResult("false", -1, "-1", message, "false", "", "", "", "", "", "", "", ResultValueAPI.ResultValue_Status_Failed);
         }
     }
+
+    /// <summary>
+    /// Model thông tin trả ra khi gọi API đặt lại mật khẩu cho tài khoản người dùng Intellect iDC. Ex:
+    ///     {
+    ///         "emailAddress": "chudv.cctt@gmail.com",
+    ///         "mobileNumber": "0908688212",
+    ///         "reset_by": "SYSTEMADMIN2",
+    ///         "userId": "CHUV12",
+    ///         "reset_at": "2026-01-14T21:55:10+00:00",
+    ///         "mail_flag": "0",
+    ///         "responseCode": "0",
+    ///         "responseMsg": "Password Reset Successful"
+    ///     }
+    /// Nếu không thành công
+    ///     {
+    ///         "sessionValReq": "true",
+    ///         "prevStatus": "0",
+    ///         "responseAttributes": { },
+    ///         "responseCode": "5317",
+    ///         "responseMsg": "ARX-005317: User does not exist.",
+    ///         "status": "true"
+    ///     }
+    /// </summary>
+    public class ResetUserPasswordResponseResult
+    {
+        [JsonProperty("emailAddress")]
+        public string? EmailAddress { get; set; }
+
+        [JsonProperty("mobileNumber")]
+        public string? MobileNumber { get; set; }
+
+        [JsonProperty("reset_by")]
+        public string? ResetBy { get; set; }
+
+        [JsonProperty("reset_at")]
+        public string? ResetAt { get; set; }
+
+        [JsonProperty("userId")]
+        public string? UserId { get; set; }
+
+        [JsonProperty("mail_flag")]
+        public string? MailFlag { get; set; }
+
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
+
+        [JsonProperty("responseMsg")]
+        public string? ResponseMsg { get; set; }
+
+        [JsonProperty("sessionValReq")]
+        public string? SessionValReq { get; set; }
+
+        [JsonProperty("prevStatus")]
+        public int? PrevStatus { get; set; }
+
+        [JsonProperty("status")]
+        public string? Status { get; set; }
+
+        [JsonProperty("responseAttributes")]
+        public ResponseAttributes? ResponseAttributes { get; set; }
+
+        [JsonProperty("statusCode")]
+        public string? StatusCode { get; set; }
+
+        public ResetUserPasswordResponseResult(string sessionValReq, int prevStatus, string responseCode, string responseMsg, string status, string emailAddress, string mobileNumber,
+                                string userId, string resetAt, string resetBy, string mailFlag, ResponseAttributes responseAttributes, string statusCode)
+        {
+            SessionValReq = sessionValReq;
+            PrevStatus = prevStatus;
+            ResponseCode = responseCode;
+            ResponseMsg = responseMsg;
+            Status = status;
+            EmailAddress = emailAddress;
+            MobileNumber = mobileNumber;
+            UserId = userId;
+            ResetAt = resetAt;
+            ResetBy = resetBy;
+            StatusCode = statusCode;
+            MailFlag = mailFlag;
+            ResponseAttributes = responseAttributes;
+        }
+
+        public static ResetUserPasswordResponseResult Fail(string sessionValReq, int prevStatus, string responseCode, string message, string status, string emailAddress,
+                                string mobileNumber, string userId, string resetAt, string resetBy, string mailFlag, ResponseAttributes responseAttributes, string statusCode)
+        {
+            return new ResetUserPasswordResponseResult("false", -1, "-1", message, "false", "", "", "", "", "", "", null, ResultValueAPI.ResultValue_Status_Failed);
+        }
+    }
+
+
+
+
+    /// <summary>
+    /// Model thông tin trả ra khi gọi API thay đổi thông tin tài khoản người dùng Intellect iDC. Ex:
+    ///     {
+    ///         "sessionValReq": "true",
+    ///         "prevStatus": 0,
+    ///         "responseAttributes": {},
+    ///         "mobileNumber": "0908688212",
+    ///         "posCode": "2505",
+    ///         "userRole": "POPGD",
+    ///         "responseCode": 0,
+    ///         "responseMsg": "Modify User Done Successfully",
+    ///         "status": "true"
+    ///     }
+    /// --Hoặc nếu sửa tiếp POS thì trả ra như sau:
+    ///     {
+    ///         "mobileNumber": "0908688212",
+    ///         "posCode": "2502",
+    ///         "userRole": "POPGD",
+    ///         "status": "true",
+    ///         "responseMsg": " BranchCode Modify Done Successfully",
+    ///         "responseCode": 0
+    ///     }
+    /// Không thành công:
+    ///     {
+    ///         "sessionValReq": "true",
+    ///         "prevStatus": "0",
+    ///         "responseAttributes": { },
+    ///         "responseCode": "5317",
+    ///         "responseMsg": "ARX-005317: User does not exist.",
+    ///         "status": "true"
+    ///     }
+    /// </summary>
+    public class ModifyUserIDCResponseResult
+    {
+        [JsonProperty("sessionValReq")]
+        public string? SessionValReq { get; set; }
+
+        [JsonProperty("prevStatus")]
+        public int? PrevStatus { get; set; }
+
+        [JsonProperty("responseAttributes")]
+        public ResponseAttributes? ResponseAttributes { get; set; }
+
+        [JsonProperty("status")]
+        public string? Status { get; set; }
+
+        [JsonProperty("mobileNumber")]
+        public string? MobileNumber { get; set; }
+
+        [JsonProperty("emailAddress")]
+        public string? EmailAddress { get; set; }
+
+        [JsonProperty("posCode")]
+        public string? PosCode { get; set; }
+
+        [JsonProperty("userRole")]
+        public string? UserRole { get; set; }
+
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
+
+        [JsonProperty("responseMsg")]
+        public string? ResponseMsg { get; set; }
+
+        [JsonProperty("statusCode")]
+        public string? StatusCode { get; set; }
+
+        public ModifyUserIDCResponseResult(string sessionValReq, int prevStatus, ResponseAttributes responseAttributes, string status, string mobileNumber, string emailAddress,
+                                               string posCode, string userRole,string responseCode, string responseMsg,  string statusCode)
+        {
+            SessionValReq = sessionValReq;
+            PrevStatus = prevStatus;
+            ResponseAttributes = responseAttributes;
+            Status = status;
+            MobileNumber = mobileNumber;
+            EmailAddress = emailAddress;
+            PosCode = posCode;
+            UserRole = userRole;
+            ResponseCode = responseCode;
+            ResponseMsg = responseMsg;
+            StatusCode = statusCode;
+        }
+
+        public static ModifyUserIDCResponseResult Fail(string sessionValReq, int prevStatus, ResponseAttributes responseAttributes, string status, string mobileNumber, string emailAddress,
+                                               string posCode, string userRole, string responseCode, string message, string statusCode)
+        {
+            return new ModifyUserIDCResponseResult("false", -1, null, "false", "", "", "", "", "-1", message, ResultValueAPI.ResultValue_Status_Failed);
+        }
+    }
+
+
 
     public class UpdateNotiResult
     {

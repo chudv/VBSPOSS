@@ -353,13 +353,6 @@ namespace VBSPOSS.Integration.ViewModel
 
     }
 
-    //    //{
-    //    "tellerId": "CHUDV002",
-    //    "tellerRoleAllowed": "0",
-    //    "mkrId": "IDCADMIN"
-    //}
-
-
     /// <summary>
     /// Model cho Request gọi API tellerRoleAssign để gọi API gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
     ///         http://10.63.54.51:7003/vbsp/internal/api/v1/tellerRoleAssign => Ví dụ:
@@ -393,8 +386,105 @@ namespace VBSPOSS.Integration.ViewModel
     }
 
 
+    /// <summary>
+    /// Model cho Request gọi API modifyUser để gọi API http://10.63.54.51:7003/vbsp/internal/api/v1/modifyUser. Ví dụ:
+    /// {
+    ///     "ticket": "{{access_token}}",
+    ///     "userId": "CHUDV99",
+    ///     "firstName": "Dương Văn",
+    ///     "lastName": "Chữ",
+    ///     "groupName": "POPGD",
+    ///     "entityList": "IDCPRODC",
+    ///     "mobileNumber": "0908688212",
+    ///     "emailAddress": "chudv.2510@gmail.com",
+    ///     "expiryDate": "2045-10-25",
+    ///     "DOB": "1983-10-25",
+    ///     "mailIdFlag": 1,
+    ///     "language": "vi_VN",
+    ///     "extraAttribute": {
+    ///         "BranchCode": "2505",
+    ///         "UserRole": "POPGD"
+    ///     }
+    /// }
+    /// {
+    ///     "sessionValReq": "true",
+    ///     "prevStatus": 0,
+    ///     "responseAttributes": { },
+    ///     "mobileNumber": "0908688212",
+    ///     "posCode": "2505",
+    ///     "userRole": "POPGD",
+    ///     "responseCode": 0,
+    ///     "responseMsg": "Modify User Done Successfully",
+    ///     "status": "true"
+    /// }
+    /// --Hoặc nếu sửa tiếp POS thì trả ra như sau:
+    /// {
+    ///     "mobileNumber": "0908688212",
+    ///     "posCode": "2502",
+    ///     "userRole": "POPGD",
+    ///     "status": "true",
+    ///     "responseMsg": " BranchCode Modify Done Successfully",
+    ///     "responseCode": 0
+    /// }
+    /// </summary>
+    public class ModifyUserRequestViewModel
+    {
+        [JsonProperty("ticket")]
+        public string Ticket;
 
+        [JsonProperty("userId")]
+        public string UserId;
 
+        [JsonProperty("nickName")]
+        public string NickName;
+
+        [JsonProperty("firstName")]
+        public string FirstName;
+
+        [JsonProperty("lastName")]
+        public string LastName;
+
+        [JsonProperty("groupName")]
+        public string GroupName;
+
+        [JsonProperty("entityList")]
+        public string EntityList;
+
+        [JsonProperty("mobileNumber")]
+        public string MobileNumber;
+
+        [JsonProperty("emailAddress")]
+        public string EmailAddress;
+
+        /// <summary>
+        /// Ngày hết hiệu lực người dùng. Định dạng yyyy-MM-dd. Giá trị mặc định: 2050-12-31
+        /// </summary>
+        [JsonProperty("expiryDate")]
+        public string ExpiryDate;
+
+        /// <summary>
+        /// Định dạng ngày sinh: yyyy-MM-dd
+        /// </summary>
+        [JsonProperty("DOB")]
+        public string DateOfBirth;
+
+        /// <summary>
+        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
+        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+        ///         '2': Mật khẩu được gửi link vào email của người dùng
+        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
+        /// </summary>
+        [JsonProperty("mailIdFlag")]
+        public int MailIdFlag;
+
+        [JsonProperty("language")]
+        public string Language;
+
+        [JsonProperty("extraAttribute")]
+        public AddUserExtraAttributeRequest AddUserExtraAttributeRequestViewModel { get; set; }
+    }
 
 
     public class UserInfoIDCViewModelcs

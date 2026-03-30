@@ -2,8 +2,10 @@
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using VBSPOSS.Constants;
@@ -962,7 +964,7 @@ namespace VBSPOSS.Integration.Implements
             catch (JsonException ex)
             {
                 // Handle JSON serialization/deserialization errors
-                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"JSON processing failed: {ex.Message}", "false", "", "", "", "", "", "", "", "");
             }
             catch (Exception ex)
             {
@@ -1057,7 +1059,7 @@ namespace VBSPOSS.Integration.Implements
             catch (JsonException ex)
             {
                 // Handle JSON serialization/deserialization errors
-                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "", "", "");
+                return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"JSON processing failed: {ex.Message}", "false", "", "", "", "", "", "", "", "");
             }
             catch (Exception ex)
             {
@@ -1065,6 +1067,296 @@ namespace VBSPOSS.Integration.Implements
                 return ChangeUserStatusResponseResult.Fail("false", 0, "-1", $"An unexpected error occurred: {ex.Message}", "false", "", "", "", "", "", "", "", "");
             }
         }
+
+        /// <summary>
+        /// Hàm thực hiện cấp lại mật khẩu tài khoản ngươi dùng Intellect iDC. Gọi đến API của ESB: http://10.63.54.51:7003/vbsp/internal/api/v1/resetUserPw
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào có UserId và Ticket (Để trống)</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu thành công
+        ///     {
+        ///         "emailAddress": "chudv.cctt@gmail.com",
+        ///         "mobileNumber": "0908688212",
+        ///         "reset_by": "SYSTEMADMIN2",
+        ///         "userId": "CHUV12",
+        ///         "reset_at": "2026-01-14T21:55:10+00:00",
+        ///         "mail_flag": "0",
+        ///         "responseCode": "0",
+        ///         "responseMsg": "Password Reset Successful"
+        ///     }
+        /// Nếu không thành công
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": "0",
+        ///         "responseAttributes": { },
+        ///         "responseCode": "5317",
+        ///         "responseMsg": "ARX-005317: User does not exist.",
+        ///         "status": "true"
+        ///     }
+        /// </returns>
+        public async Task<ResetUserPasswordResponseResult> ResetUserPasswordByAPIResetUserPw(ViewUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting resetUserPw with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("ResetUserPasswordByAPIResetUserPw failed: RequestInput is null");
+                    return ResetUserPasswordResponseResult.Fail("false", 0, "-1", $"Request input is null", "false", "", "", "", "", "", "",
+                                                                 null, ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cấp lại mật khẩu không được để trống. Vui lòng kiểm tra lại!!");
+                    return ResetUserPasswordResponseResult.Fail("false", 0, "-1", $"Invalid input data UserId = {requestInput.UserId}", "false", "", "", "", "", "", "",
+                                                                 null, ResultValueAPI.ResultValue_Status_Failed);
+                }
+                _logger.LogInformation($"Starting resetUserPw with UserId: {requestInput.UserId}");
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/resetUserPw");
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/resetUserPw", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultResetUserPw = JsonConvert.DeserializeObject<ResetUserPasswordResponseResult>(responseContent);
+
+                if (resultResetUserPw != null)
+                {
+                    if (resultResetUserPw.ResponseCode == "0" || resultResetUserPw.ResponseCode == "00000")
+                        return new ResetUserPasswordResponseResult(resultResetUserPw.SessionValReq ?? "true",
+                                                                  resultResetUserPw.PrevStatus ?? 0, resultResetUserPw.ResponseCode, resultResetUserPw.ResponseMsg,
+                                                                  resultResetUserPw.Status ?? "true", resultResetUserPw.EmailAddress ?? "",
+                                                                  resultResetUserPw.MobileNumber ?? "", resultResetUserPw.UserId ?? "",
+                                                                  resultResetUserPw.ResetAt ?? "", resultResetUserPw.ResetBy ?? "",
+                                                                  resultResetUserPw.MailFlag ?? "", resultResetUserPw.ResponseAttributes ?? null,
+                                                                  resultResetUserPw.StatusCode ?? ResultValueAPI.ResultValue_Status_Success);
+                    else 
+                        return new ResetUserPasswordResponseResult(resultResetUserPw.SessionValReq ?? "true",
+                                                                  resultResetUserPw.PrevStatus ?? 0, resultResetUserPw.ResponseCode, resultResetUserPw.ResponseMsg,
+                                                                  resultResetUserPw.Status ?? "true", resultResetUserPw.EmailAddress ?? "",
+                                                                  resultResetUserPw.MobileNumber ?? "", resultResetUserPw.UserId ?? "",
+                                                                  resultResetUserPw.ResetAt ?? "", resultResetUserPw.ResetBy ?? "",
+                                                                  resultResetUserPw.MailFlag ?? "", resultResetUserPw.ResponseAttributes ?? null,
+                                                                  resultResetUserPw.StatusCode ?? ResultValueAPI.ResultValue_Status_Failed);
+                }
+                else return ResetUserPasswordResponseResult.Fail("false", 0, "-1", "ResetUserPw Response null", "false", "", "", "", "", "", "",
+                                                                 null, ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return ResetUserPasswordResponseResult.Fail("false", 0, "-1", $"HTTP request failed: {ex.Message}", "false", "", "", "", "", "", "",
+                                                              null, ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return ResetUserPasswordResponseResult.Fail("false", 0, "-1", $"JSON processing failed: {ex.Message}", "false", "", "", "", "", "", "",
+                                                              null, ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return ResetUserPasswordResponseResult.Fail("false", 0, "-1", $"An unexpected error occurred: {ex.Message}", "false", "", "", "", "", "", "",
+                                                              null, ResultValueAPI.ResultValue_Status_Failed);
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện gọi API modifyUser thay đổi thông tin người dùng vào Intellect iDC
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/addUser
+        /// </summary>
+        /// <param name="requestInput">Thông tin người dùng Intellect iDC cần thay đổi thông tin 
+        ///     {
+        ///         "ticket": "{{access_token}}",
+        ///         "userId": "CHUDV99",
+        ///         "firstName": "Dương Văn",
+        ///         "lastName": "Chữ",
+        ///         "groupName": "POPGD",
+        ///         "entityList": "IDCPRODC",
+        ///         "mobileNumber": "0908688212",
+        ///         "emailAddress": "chudv.2510@gmail.com",
+        ///         "expiryDate": "2045-10-25",
+        ///         "DOB": "1983-10-25",
+        ///         "mailIdFlag": 1,
+        ///         "language": "vi_VN",
+        ///         "extraAttribute": {
+        ///             "BranchCode": "2505",
+        ///             "UserRole": "POPGD"
+        ///         }
+        ///     }
+        /// </param>
+        /// <returns>Kết quả trả về. Ex: 
+        ///     {
+        ///         "sessionValReq": "true",
+        ///         "prevStatus": 0,
+        ///         "responseAttributes": {},
+        ///         "mobileNumber": "0908688212",
+        ///         "posCode": "2505",
+        ///         "userRole": "POPGD",
+        ///         "responseCode": 0,
+        ///         "responseMsg": "Modify User Done Successfully",
+        ///         "status": "true"
+        ///     }
+        /// --Hoặc nếu sửa tiếp POS thì trả ra như sau:
+        ///     {
+        ///         "mobileNumber": "0908688212",
+        ///         "posCode": "2502",
+        ///         "userRole": "POPGD",
+        ///         "status": "true",
+        ///         "responseMsg": " BranchCode Modify Done Successfully",
+        ///         "responseCode": 0
+        ///     }
+        /// </returns>
+        public async Task<ModifyUserIDCResponseResult> ModifyUserIDCByAPIModifyUser(ModifyUserRequestViewModel requestInput)
+        {
+            try
+            {
+                _logger.LogInformation("Starting modifyUser with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("ModifyUserIDCByAPIModifyUser failed: RequestInput is null");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"ModifyUserIDCByAPIModifyUser failed: RequestInput is null", 
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data UserId = {requestInput.UserId}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.AddUserExtraAttributeRequestViewModel?.UserRole))
+                {
+                    _logger.LogWarning("Invalid input: Quyền người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data UserRole = {requestInput.AddUserExtraAttributeRequestViewModel?.UserRole}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.AddUserExtraAttributeRequestViewModel?.BranchCode))
+                {
+                    _logger.LogWarning("Invalid input: Mã đơn vị (BranchCode) người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data BranchCode = {requestInput.AddUserExtraAttributeRequestViewModel?.BranchCode}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.GroupName))
+                {
+                    _logger.LogWarning("Invalid input: Quyền người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data UserRole = {requestInput.GroupName}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.FirstName))
+                {
+                    _logger.LogWarning("Invalid input: Họ của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data FirstName = {requestInput.FirstName}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.LastName))
+                {
+                    _logger.LogWarning("Invalid input: Họ đệm và tên của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data LastName = {requestInput.LastName}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.MobileNumber))
+                {
+                    _logger.LogWarning("Invalid input: Số điện thoại của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data MobileNumber = {requestInput.MobileNumber}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.EmailAddress))
+                {
+                    _logger.LogWarning("Invalid input: Địa chỉ email của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data EmailAddress = {requestInput.EmailAddress}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.ExpiryDate))
+                {
+                    _logger.LogWarning("Invalid input: Ngày hết hạn của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data ExpiryDate = {requestInput.ExpiryDate}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                if (string.IsNullOrEmpty(requestInput.DateOfBirth))
+                {
+                    _logger.LogWarning("Invalid input: Ngày sinh của người dùng cần thay đổi thông tin không được để trống. Vui lòng kiểm tra lại!!");
+                    return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Invalid input data DOB = {requestInput.DateOfBirth}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+                }
+                _logger.LogInformation($"Starting ModifyUser with UserId: {requestInput.UserId}");
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/modifyUser");
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/modifyUser", content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultModifyUser = JsonConvert.DeserializeObject<ModifyUserIDCResponseResult>(responseContent);
+
+                if (resultModifyUser != null)
+                {
+                    if (resultModifyUser.ResponseCode == "0")
+                        return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                        resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                        resultModifyUser.ResponseCode, resultModifyUser.ResponseMsg, ResultValueAPI.ResultValue_Status_Success);
+                    else if (resultModifyUser.ResponseCode == "999509" || resultModifyUser.ResponseCode == "705" || resultModifyUser.ResponseCode == "000705")
+                        return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                        resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                        resultModifyUser.ResponseCode, $"{resultModifyUser.ResponseMsg} (Có thể Ticket không hợp lệ)", ResultValueAPI.ResultValue_Status_Failed);
+                    else if (resultModifyUser.ResponseCode == "5317" || resultModifyUser.ResponseCode == "005317")
+                        return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                        resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                        resultModifyUser.ResponseCode, $"{resultModifyUser.ResponseMsg} (Người dùng không tồn tại)", ResultValueAPI.ResultValue_Status_Failed);
+                    else if (resultModifyUser.ResponseCode == "4638" || resultModifyUser.ResponseCode.EndsWith("4638"))
+                        return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                        resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                        resultModifyUser.ResponseCode, $"{resultModifyUser.ResponseMsg} (Không tìm thấy người dùng cần thay đổi thông tin)", ResultValueAPI.ResultValue_Status_Failed);
+                    else if (resultModifyUser.ResponseCode == "4616" || resultModifyUser.ResponseCode.EndsWith("4616"))
+                        return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                        resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                        resultModifyUser.ResponseCode, $"{resultModifyUser.ResponseMsg} (Thay đổi thông tin không thành công)", ResultValueAPI.ResultValue_Status_Failed);
+                    else return new ModifyUserIDCResponseResult(resultModifyUser.SessionValReq, resultModifyUser.PrevStatus ?? 0, resultModifyUser.ResponseAttributes,
+                                       resultModifyUser.Status, resultModifyUser.MobileNumber, resultModifyUser.EmailAddress, resultModifyUser.PosCode, resultModifyUser.UserRole,
+                                       resultModifyUser.ResponseCode, $"{resultModifyUser.ResponseMsg}", ResultValueAPI.ResultValue_Status_Failed);
+                }
+                else return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"Response null", ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"HTTP request failed: {ex.Message}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"JSON processing failed: {ex.Message}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return ModifyUserIDCResponseResult.Fail("false", -1, null, "false", "", "", "", "", "-1", $"An unexpected error occurred: {ex.Message}",
+                                                            ResultValueAPI.ResultValue_Status_Failed);
+            }
+        }
+
+
 
 
     }
