@@ -229,6 +229,89 @@ namespace VBSPOSS.Services.Implements
             return iRetIdUpd;
         }
 
+        /// <summary>
+        /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
+        /// </summary>
+        /// <param name="pUserManagementUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện</param>
+        /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
+        /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall)
+        {
+            int iCountUpdate = 0;
+            long iRetIdUpd = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            try
+            {
+                if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
+                {
+                    if (pFlagCall == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                    {
+                        #region --- Cập nhật thêm mới thông tin ---
+                        UserManagementIDC objUserManagementUpdNew = new UserManagementIDC();
+                        objUserManagementUpdNew.Id = 0;
+                        objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                        objUserManagementUpdNew.PosCode = pUserManagementUpd.PosCode;
+                        objUserManagementUpdNew.PosName = pUserManagementUpd.PosName;
+                        objUserManagementUpdNew.StaffId = pUserManagementUpd.StaffId;
+                        objUserManagementUpdNew.StaffCode = pUserManagementUpd.StaffCode;
+                        objUserManagementUpdNew.UserId = pUserManagementUpd.UserId;
+                        objUserManagementUpdNew.NickName = pUserManagementUpd.NickName;
+                        objUserManagementUpdNew.FirstName = pUserManagementUpd.FirstName;
+                        objUserManagementUpdNew.LastName = pUserManagementUpd.LastName;
+                        objUserManagementUpdNew.EmailAddress = pUserManagementUpd.EmailAddress;
+                        objUserManagementUpdNew.MobileNumber = pUserManagementUpd.MobileNumber;
+                        objUserManagementUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
+                        objUserManagementUpdNew.GroupName = pUserManagementUpd.GroupName;
+                        objUserManagementUpdNew.EntityList = pUserManagementUpd.EntityList;
+                        objUserManagementUpdNew.AuthType = pUserManagementUpd.AuthType;
+                        objUserManagementUpdNew.UserType = pUserManagementUpd.UserType;
+                        objUserManagementUpdNew.MailIdFlag = pUserManagementUpd.MailIdFlag;
+                        objUserManagementUpdNew.AuthsecType = pUserManagementUpd.AuthsecType;
+                        objUserManagementUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
+                        objUserManagementUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
+                        objUserManagementUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
+                        objUserManagementUpdNew.Remark = pUserManagementUpd.Remark;
+                        objUserManagementUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
+                        objUserManagementUpdNew.Ticket = "";//Xử lý khi gọi API
+                        objUserManagementUpdNew.Status = pUserManagementUpd.Status;
+                        objUserManagementUpdNew.StatusUpdateCore = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.SessionValReq = true; //Xử lý khi gọi API
+                        objUserManagementUpdNew.PrevStatus = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.ResponseAttributes = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiStatus = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiReqRecordSl = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiResponseCode = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CallApiResponseMsg = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                        objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
+                        objUserManagementUpdNew.ModifiedBy = "";
+                        objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementUpdNew.ApproverBy = "";
+                        objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+
+                        _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
+                        int iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementUpdNew.Id;
+                        }
+                        #endregion
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                iRetIdUpd = -1;
+                Console.WriteLine($"SaveUserIDCMaster('{pUserManagementUpd.UserId}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật thông tin cấu hình lãi suất " +
+                                        $"SaveUserIDCMaster('{pUserManagementUpd.UserId}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}", ex);
+            }
+            return iRetIdUpd;
+        }
+
 
 
 
