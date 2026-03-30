@@ -51,5 +51,21 @@
         public string? ottContent { get; set; }
         public string? emailContent { get; set; }
         public string? messageContent { get; set; }
+
+        // ===== bổ sung =====
+
+        public string? status2 { get; set; }
+        public string? errorCode2 { get; set; }
+        public string? errorMessage2 { get; set; }
+        public DateTime? sendTime2 { get; set; }
+
+        public string? status3 { get; set; }
+        public string? errorCode3 { get; set; }
+        public string? errorMessage3 { get; set; }
+        public DateTime? sendTime3 { get; set; }
+
+        public int? resendTimes { get; set; }
+        public int? resendTimes2 { get; set; }
+        public int? resendTimes3 { get; set; }
     }
 }

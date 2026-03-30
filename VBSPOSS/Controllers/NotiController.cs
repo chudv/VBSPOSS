@@ -561,7 +561,7 @@ namespace VBSPOSS.Controllers
             return await _interestRateConfigureService.GetApplyPosListByIdsAsync(lstIds);
         }
 
-        public async Task<ActionResult> ResendNotiInfo(string pNotiType, string pPosCode, string pTransPoint, string pTransDate)
+        public async Task<ActionResult> ResendNotiInfo(string pNotiType, string pPosCode, string pTransPoint, string pTransDate, string pTxnPointName)
         {
             var result = await _notiService.GetNotificationDataUserOffline(pNotiType, pPosCode, pTransPoint);
             var data = result.Result;
@@ -576,13 +576,14 @@ namespace VBSPOSS.Controllers
             TempData["pPosCode"] = pPosCode;
             TempData["pTransPoint"] = pTransPoint;
             TempData["pTransDate"] = pTransDate;
+            TempData["pTxnPointName"] = pTxnPointName;
             return PartialView("ReSendNotiInfo", result.Result); 
         }
 
         [HttpPost]
         public async Task<ActionResult> UpdateNoti(string notiType, string posCode, string transPoint, string transDate)
         {
-            var result = await _notiService.UpdateNotiDataOffline(notiType, posCode, transPoint, transDate,"");
+            var result = await _notiService.UpdateNotiDataOffline(notiType, posCode, transPoint, transDate,UserName);
 
             return Json(result);
         }

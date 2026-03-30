@@ -342,10 +342,18 @@ namespace VBSPOSS.Integration.Implements
             }
         }
 
-        public async Task<UpdateNotiResult> UpdateNotiDataOffline(string notiType, string posCode, string transPoint, string transDate, string username="USERNULL")
+        /// <summary>
+        /// Hàm lấy danh Cập nhật thông tin gửi thông báo người dùng đi GDX
+        /// </summary>
+        /// <param name="notiType">Loại thông báo ( bắt buộc)</param>
+        /// <param name="posCode">Mã POS ( bắt buộc)</param>
+        /// <param name="transPoint">Điểm giao dịch</param>
+        /// <returns>Kết quả cập nhật</returns>
+        public async Task<UpdateNotiResult> UpdateNotiDataOffline(string notiType, string posCode, string transPoint, string transDate, string username)
         {
             try
             {
+                username = username ?? "USERNULL";
                 var result = await GetNotificationDataUserOffline(notiType, posCode, transPoint);
                 var data = result?.Result;
 
@@ -379,6 +387,11 @@ namespace VBSPOSS.Integration.Implements
                 foreach (var item in data)
                 {
                     item.status = "0";
+                    item.resendTimes = 0;
+                    item.status2 = "0";
+                    item.resendTimes2 = 0;
+                    item.status3 = "0";
+                    item.resendTimes3 = 0;
                 }
 
                 var updateResponse =  UpdateNotiDataList(data);
@@ -415,10 +428,10 @@ namespace VBSPOSS.Integration.Implements
                     {
                         PosCode = item.posCode,
                         PosName = item.posName,
-                        //CommuneCode = item.,
-                        //CommuneName = "TBC",
+                        CommuneCode = transPoint,
+                        CommuneName = transPoint,
                         TxnPointCode = item.d1,
-                        //TxnPointName = "TBC",
+                        TxnPointName = transPoint,
                         TransDate = transDateTXN,
                         UserIdOffline = item.d2,
                         PassWord = item.d3,
@@ -427,7 +440,7 @@ namespace VBSPOSS.Integration.Implements
                         EmailId = item.email,
                         Status = 1, // Done
                         Remark = "Inserted from Noti",
-                        CreatedBy = "SYSTEM",
+                        CreatedBy = username,
                         CreatedDate = dateNow
                     };
 

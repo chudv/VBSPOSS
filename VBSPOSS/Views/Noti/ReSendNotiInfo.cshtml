@@ -272,7 +272,8 @@
 
 
 
-@Html.Hidden("pNotiType", TempData["pNotiType"])
+@Html.Hidden("pTxnPointName", TempData["pTxnPointName"])
+@Html.Hidden("pNotiType", TempData["pNotiType"]) 
 @Html.Hidden("pPosCode", TempData["pPosCode"])
 @Html.Hidden("pTransPoint", TempData["pTransPoint"])
 @Html.Hidden("pTransDate", TempData["pTransDate"])
@@ -280,7 +281,7 @@
 <div style="padding:15px; background:#fff; border-radius:6px;">
 
     <h6 class="m-0 text-primary fw-bold text-center">
-        📋 DANH SÁCH NGƯỜI DÙNG NHẬN LẠI THÔNG BÁO ĐI GDX
+        📋 DANH SÁCH NGƯỜI DÙNG NHẬN LẠI THÔNG BÁO ĐI GDX @TempData["pTxnPointName"]?.ToString().ToUpper()
     </h6>
 
     @(Html.Kendo().Grid<VBSPOSS.Integration.Model.NotificationDataResponse>()

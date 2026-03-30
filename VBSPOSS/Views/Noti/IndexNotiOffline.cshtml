@@ -277,7 +277,7 @@
 
 
 
-    function showTransDetail(pNotiType, pPosCode, pTransPoint, pTransDate) {
+    function showTransDetail(pNotiType, pPosCode, pTransPoint, pTransDate, pTxnPointName) {
         var pNotiType = pNotiType;
         var pPosCode = pPosCode;
         var pTransPoint = pTransPoint;
@@ -291,7 +291,7 @@
                 width: myWidth, //"1100px",
                 height: myHeight,
                 title: "Yêu cầu gửi lại thông báo",
-                content: { url: "../Noti/ResendNotiInfo", data: { pNotiType: pNotiType, pPosCode: pPosCode, pTransPoint: pTransPoint, pTransDate: pTransDate } },
+                content: { url: "../Noti/ResendNotiInfo", data: { pNotiType: pNotiType, pPosCode: pPosCode, pTransPoint: pTransPoint, pTransDate: pTransDate, pTxnPointName: pTxnPointName } },
                 resizable: true,
                 visible: false,
                 modal: true,
@@ -459,7 +459,7 @@
                     .Width(140)
                     .HtmlAttributes(new { style = "text-align: center;" })
                     .ClientTemplate(
-                    "<a onclick=\"showTransDetail('USER_OFFLINE','#= PosCode #','#= TxnPointCode #','#= VisitDate #')\" " +
+                    "<a onclick=\"showTransDetail('USER_OFFLINE','#= PosCode #','#= TxnPointCode #','#= VisitDate #','#= TxnPointName #')\" " +
                     "title='Yêu cầu gửi lại thông báo' style='cursor:pointer;text-decoration:none;color:green;'>" +
                     "<u>Gửi lại thông báo</u></a>"
                     );
