@@ -281,7 +281,7 @@
 <div style="padding:15px; background:#fff; border-radius:6px;">
 
     <h6 class="m-0 text-primary fw-bold text-center">
-        📋 DANH SÁCH NGƯỜI DÙNG NHẬN LẠI THÔNG BÁO ĐI GDX @TempData["pTxnPointName"]?.ToString().ToUpper()
+        📋 DANH SÁCH NGƯỜI DÙNG ĐI GIAO DỊCH XÃ @TempData["pTxnPointName"]?.ToString().ToUpper() (@TempData["pTransPoint"])
     </h6>
 
     @(Html.Kendo().Grid<VBSPOSS.Integration.Model.NotificationDataResponse>()
@@ -289,34 +289,33 @@
         .BindTo(Model)
         .Columns(columns =>
         {
-            columns.Bound(c => c.posCode).Title("Ma PGD").Width(120);
+            columns.Bound(c => c.posCode).Title("Mã PGD").Width(120);
             columns.Bound(c => c.posName).Title("Tên PGD").Width(180);
-            columns.Bound(c => c.d1).Title("Mã điểm iao dịch");
-            columns.Bound(c => c.d2).Title("UserName");
+            columns.Bound(c => c.d1).Title("Mã điểm giao dịch");
+            columns.Bound(c => c.d2).Title("Mã ggười dùng");
+            columns.Bound(c => c.customerName).Title("Tên người dùng");
             columns.Bound(c => c.d3).Title("Mật khẩu");
-            columns.Bound(c => c.d15).Title("Nhóm quyền");
-           @*  columns.Bound(c => c.status).Title("Status").Width(100)
-            .HtmlAttributes(new { style = "text-align:center;" }); *@
+            columns.Bound(c => c.d5)
+            .Title("Nhóm quyền")
+            .ClientTemplate(
+            "#= d5 == 'TELLER' ? 'Giao dịch viên' :" +
+            " d5 == 'AUTHORIZER' ? 'Kiểm soát viên' :" +
+            " d5 == 'CHIEF_TELLER' ? 'Giao dịch viên chính' :" +
+            " d5 == 'COMMUNE_HEAD' ? 'Tổ trưởng' : d5 #"
+            );
         })
-
         .Selectable(s => s.Mode(GridSelectionMode.Multiple))
-
-        // 🔥 QUAN TRỌNG
-        @* .Scrollable() *@
-        //.Pageable()
-        //.DataSource(...)
-
         .Sortable()
         )
 
     <!-- Buttons -->
     <div class="action-group">
         <button class="btn-primary-custom" onclick="onUpdateNoti()">
-            ✔ Cập nhật
+            ✔ Gửi lại thông báo
         </button>
 
         <button class="btn-secondary-custom" onclick="onCancelNoti()">
-            ✖ Hủy bỏ
+            ✖ Đóng
         </button>
     </div>
 

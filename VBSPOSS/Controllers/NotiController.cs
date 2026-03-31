@@ -477,7 +477,7 @@ namespace VBSPOSS.Controllers
             return View();
         }
 
-        
+
 
         public IActionResult LoadTranspointGridData([DataSourceRequest] DataSourceRequest request, string pPosCodeFind, string pTranspointCode,
             string pTranspointName, string pBeginDateFind, string pEndDateFind)
@@ -504,27 +504,139 @@ namespace VBSPOSS.Controllers
                 }
                 else sPosCode = sPosCodeFind;
             }
+            int index = 1;
+            if (!string.IsNullOrWhiteSpace(sPosCode))
+            {
+                var tranpointLists = _transpointService.GetListOfTransPointSearch("", sPosCode, "", sTranspointCode, sTranspointName, 1, 31, "");
+                var pointActive = new List<ListOfTransPointViewModel>();
+                foreach (var tranpoint in tranpointLists)
+                {
+                    var data = _notiService
+                        .GetNotificationDataUserOffline(NotiDataType.USER_OFFLINE, tranpoint.PosCode, tranpoint.TxnPointCode)
+                        .GetAwaiter().GetResult();
 
-            var tranpointLists = _transpointService.GetListOfTransPointSearch("", sPosCode, "", sTranspointCode, sTranspointName, iBeginDate, iEndDate, "");
-            return Json(tranpointLists.ToDataSourceResult(request, ModelState));
+                    if (data?.Result == null || data.Result.Count() == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!DateTime.TryParseExact(
+                            data.Result[0].d6,
+                            "yyyyMMdd",
+                            null,
+                            System.Globalization.DateTimeStyles.None,
+                            out var visitDate))
+                    {
+                        continue; // skip nếu parse lỗi
+                    }
+
+                    // Check nằm trong khoảng
+                    if (visitDate < sBeginDateFind || visitDate > sEndDateFind)
+                        continue;
+
+                    tranpoint.OrderNo = index;
+                    tranpoint.UserNumer = data.Result.Count;
+                    tranpoint.VisitDateD6 = visitDate.ToString("dd/MM/yyyy");
+
+                    pointActive.Add(tranpoint);
+                    index++;
+                }
+                //order by
+                pointActive = pointActive
+                .OrderByDescending(x => x.VisitDateD6) 
+                .ToList();
+
+                return Json(pointActive.ToDataSourceResult(request, ModelState));
+            }
+            else
+                return Json(new List<ListOfTransPointViewModel>().ToDataSourceResult(request, ModelState));
         }
 
 
         [HttpGet]
         public JsonResult GetTXNPointOptions()
         {
-            var tranpointLists = _transpointService.GetListOfTransPointSearch("", "000301", "", "", "", 1, 31, "");
+
+            var noti = new NotificationDataResponse
+            {
+
+                notiType = "SMS0001",
+                sourceId = "SRC001",
+                businessDate = DateTime.Parse("2026-03-31"),
+
+                posCode = "POS123",
+                posName = "Điểm giao dịch Hà Nội",
+
+                customerId = "CUST001",
+                customerName = "Nguyễn Văn A",
+                mobileNo = "0975177188",
+                email = "quyenk48@vbsp.vn",
+
+                d1 = "data1",
+                d2 = "data2",
+                d3 = "data3",
+                d4 = "data4",
+                d5 = "TELLER",
+                d6 = "20260331",
+                d7 = "data7",
+                d8 = "data8",
+                d9 = "data9",
+                d10 = "data10",
+                d11 = "data11",
+                d12 = "data12",
+                d13 = "data13",
+                d14 = "data14",
+                d15 = "data15",
+                d16 = "data16",
+                d17 = "data17",
+                d18 = "data18",
+                d19 = "data19",
+                d20 = "data20",
+
+                status = "0",
+                errorCode = null,
+                errorMessage = null,
+
+                createdTime = DateTime.Now,
+                createdBy = "system",
+                updatedTime = DateTime.Now,
+                updatedBy = "admin",
+
+                sendTime = DateTime.Now,
+                sendBy = "system",
+                messageId = "MSG123456",
+                sendType = "1/2/3",
+
+              
+
+                status2 = "0",
+
+
+                status3 = "0",
+
+            };
+
+            var result =  _notiService.InsertNotiDataList(new List<NotificationDataResponse> { noti });
+            if(result.Result.Code == "00")
+            {
+                var g = 1;
+            }    
+
+            //var listCommunes = _serviceLOV.GetLovCommuneList("", "", "", "000301", "");
+
+            //var tranpointLists = _transpointService.GetListOfTransPointSearch("", "000301", "", "", "", 1, 31, "");
             var statuses = new List<object>();
             statuses.Add(new { Value = "-1", Description = "Tất cả", Code = "ALL" });
-            foreach (var item in tranpointLists)
-            {
-                statuses.Add(new
-                {
-                    Value = item.TxnPointCode,
-                    Description = item.TxnPointName,
-                    Code = "1"
-                });
-            }
+            statuses.Add(new { Value = "0", Description = "Chưa có dữ liệu", Code = "ALL" });
+            //foreach (var item in listCommunes)
+            //{
+            //    statuses.Add(new
+            //    {
+            //        Value = item.TxnPointCode,
+            //        Description = item.TxnPointName,
+            //        Code = "1"
+            //    });
+            //}
             return Json(statuses);
         }
 
@@ -570,8 +682,6 @@ namespace VBSPOSS.Controllers
             {
                 throw new Exception("DATA NULL");
             }
-
-
             TempData["pNotiType"] = pNotiType;
             TempData["pPosCode"] = pPosCode;
             TempData["pTransPoint"] = pTransPoint;
@@ -584,7 +694,6 @@ namespace VBSPOSS.Controllers
         public async Task<ActionResult> UpdateNoti(string notiType, string posCode, string transPoint, string transDate)
         {
             var result = await _notiService.UpdateNotiDataOffline(notiType, posCode, transPoint, transDate,UserName);
-
             return Json(result);
         }
     }

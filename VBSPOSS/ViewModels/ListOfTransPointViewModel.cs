@@ -92,5 +92,9 @@ namespace VBSPOSS.ViewModels
         public string ApproverBy { get; set; }
 
         public DateTime ApprovalDate { get; set; }
+
+        public int UserNumer { get; set; }
+
+        public string VisitDateD6 { get; set; }
     }
 }

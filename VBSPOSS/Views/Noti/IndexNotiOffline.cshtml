@@ -195,7 +195,7 @@
     function onSearch(e) {
             var posCode = $("#PosCode_Find").data("kendoComboBox").value();
 
-        if (posCode === "000100") {
+        if (posCode === "000100" || posCode === "") {
             alert("Vui lòng chọn đơn vị cấp nhỏ hơn");
             return; 
         }
@@ -298,7 +298,7 @@
                 actions: ["Refresh", "Close"]
             });
             mainWindow.data("kendoWindow").wrapper.css({ height: myHeight, width: myWidth });
-            mainWindow.data("kendoWindow").center().open().title("Thông tin thông báo người dùng đi giao dịch xã");
+            mainWindow.data("kendoWindow").center().open().title("Thông tin người dùng đi giao dịch xã");
         }
         else alert(" Vui lòng kiểm tra lại!");
     }
@@ -414,14 +414,15 @@
                     columns.Bound(c => c.TimeBegin).Hidden();
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TimeEnd).Hidden();
-                    @* columns.Bound(c => c.ProvinceName).Title("Tỉnh/Thành phố").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.CommuneName).Title("Xã/Phường").Width(150).HtmlAttributes(new { style = "text-align: left;" });   *@                
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosCode).Title("Mã PGD").Width(70).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosName).Title("Tên PGD").Width(130).HtmlAttributes(new { style = "text-align: left;" });                  
+                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(100).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.TimeBeginNum).Hidden();
                     columns.Bound(c => c.TimeEndNum).Hidden();
-                    columns.Bound(c => c.VisitDate).Title("Ngày giao dịch").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.VisitDateD6).Title("Ngày giao dịch").Width(100).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.UserNumer).Title("Số cán bộ đi GD").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                     @* columns.Group(groupCoordinate => groupCoordinate.Title("Tọa độ điểm giao dịch")
                     .Columns(infoCoordinate =>
                     {
