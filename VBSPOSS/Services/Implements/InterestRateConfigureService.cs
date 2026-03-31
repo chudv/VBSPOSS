@@ -1926,59 +1926,183 @@ namespace VBSPOSS.Services.Implements
 
 
         // thay đổi phần hiển thị khi chọn Toàn hàng 
-        public async Task<string> SaveCasaRateConfigureData(AddCasaProductViewModel master, List<CasaRateProductViewModel> details, string userId, string userPosCode)
+
+        //public async Task<string> SaveCasaRateConfigureData(AddCasaProductViewModel master, List<CasaRateProductViewModel> details, string userId, string userPosCode)
+        //{
+        //    if (details == null || !details.Any())
+        //        return "Error: Không có dữ liệu chi tiết để lưu.";
+        //    if (master.ApplyPosList == null || !master.ApplyPosList.Any())
+        //        return "Error: Vui lòng chọn ít nhất một POS áp dụng.";
+        //    if (string.IsNullOrWhiteSpace(master.CircularRefNum))
+        //        return "Error: Số Quyết định không được để trống.";
+
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        //    try
+        //    {
+        //        Lấy danh sách AccountType duy nhất từ details
+        //        var lstAccountTypes = details.Select(d => d.RateProductAccountTypeCode).Distinct().ToList();
+        //        long documentId = master.DocumentId ?? await CreateNewDocumentId();
+        //        var effectiveDate = master.EffectiveDate ?? DateTime.Today.AddDays(1);
+
+        //         === PHẦN SỬA: Xác định PosCode và PosName
+        //        string posCodeToSave;
+        //        string posNameToSave;
+
+        //        const string HEAD_OFFICE_CODE = "000100";  // 
+
+
+        //        bool isWholeBankSelected = master.ApplyPosList.Any(p =>
+        //            p != null && (
+        //                string.Equals(p.Trim(), "0", StringComparison.OrdinalIgnoreCase) ||
+        //                string.Equals(p.Trim(), "ALL", StringComparison.OrdinalIgnoreCase) ||
+        //                string.Equals(p.Trim(), PosValue.SYSTEM_WIDE, StringComparison.OrdinalIgnoreCase) ||
+        //                string.Equals(p.Trim(), PosValue.BANK_WIDE, StringComparison.OrdinalIgnoreCase) ||
+        //                string.Equals(p.Trim(), "999999", StringComparison.OrdinalIgnoreCase)
+        //            )
+        //        );
+
+        //        if (isWholeBankSelected)
+        //        {
+        //            posCodeToSave = HEAD_OFFICE_CODE;
+
+        //            Lấy tên chính xác từ bảng ListOfPoss
+        //           var headOffice = _dbContext.ListOfPoss
+        //               .FirstOrDefault(w => w.Code == HEAD_OFFICE_CODE);
+
+        //            posNameToSave = headOffice?.Name ?? "Ngân hàng CSXH";  // fallback nếu không tìm thấy
+        //        }
+        //        else
+        //        {
+        //            Trường hợp chỉ chọn POS cụ thể → lấy POS đầu tiên
+        //            posCodeToSave = master.ApplyPosList.FirstOrDefault()?.Trim() ?? "0";
+        //            var posEntity = _dbContext.ListOfPoss
+        //                .FirstOrDefault(w => w.Code == posCodeToSave);
+
+        //            posNameToSave = posEntity?.Name ?? posCodeToSave;
+        //        }
+
+        //        foreach (var accountTypeCode in lstAccountTypes)
+        //        {
+        //            var detailItem = details.First(d => d.RateProductAccountTypeCode == accountTypeCode);
+
+        //            var accountTypeItem = _dbContext.ListOfProducts
+        //                .FirstOrDefault(w => w.AccountTypeCode == accountTypeCode);
+
+        //            if (accountTypeItem == null)
+        //                continue;
+
+        //            Bổ sung phần validation khi nhập lãi suất
+        //            decimal minInterestRate = detailItem.InterestRateHO - detailItem.MinInterestRateSpread;
+        //            decimal maxInterestRate = detailItem.InterestRateHO + detailItem.MaxInterestRateSpread;
+
+
+        //            if (userPosCode != PosValue.HEAD_POS && (detailItem.RateProductNewInterestRate < minInterestRate || detailItem.RateProductNewInterestRate > maxInterestRate))
+
+        //                if (detailItem.RateProductNewInterestRate < minInterestRate ||
+        //                    detailItem.RateProductNewInterestRate > maxInterestRate)
+        //                {
+        //                    Console.WriteLine($"Lãi suất cấu hình không nằm trong khoảng [{minInterestRate}, {maxInterestRate}]");
+        //                    throw new Exception($"Lãi suất cấu hình không nằm trong khoảng [{minInterestRate}, {maxInterestRate}]");
+        //                }
+
+        //            var configMaster = new InterestRateConfigMaster
+        //            {
+        //                ProductGroupCode = ProductGroupCode.CASA.Code,
+        //                DebitCreditFlag = "C",
+        //                PosCode = posCodeToSave,          // Đã sửa
+        //                PosName = posNameToSave,          // Đã sửa
+        //                ProductCode = accountTypeItem.ProductCode,
+        //                ProductName = accountTypeItem.ProductName,
+        //                AccountTypeCode = accountTypeItem.AccountTypeCode,
+        //                AccountTypeName = accountTypeItem.AccountTypeName,
+        //                AccountSubTypeCode = "0",
+        //                AccountSubTypeName = "0",
+        //                CurrencyCode = "VND",
+        //                InterestRate = detailItem.RateProductInterestRate ?? 0m,
+        //                NewInterestRate = detailItem.RateProductNewInterestRate ?? 0m,
+        //                PenalRate = detailItem.RateProductPenalRate ?? 0m,
+        //                EffectiveDate = effectiveDate,
+        //                ExpiryDate = master.ExpiredDate ?? new DateTime(2050, 12, 31),
+        //                CircularRefNum = master.CircularRefNum.Trim(),
+        //                CircularDate = master.CircularDate,
+        //                AmountSlab = 0m,
+        //                TenorSerialNo = 1,
+        //                IntRateType = "0",
+        //                SpreadRate = 0,
+        //                CreatedBy = userId ?? "System",
+        //                CreatedDate = DateTime.UtcNow,
+        //                Status = 1,
+        //                StatusUpdateCore = 0,
+        //                DocumentId = documentId
+        //            };
+
+        //            _dbContext.InterestRateConfigMasters.Add(configMaster);
+        //            await _dbContext.SaveChangesAsync(); // Lưu để có Id
+
+        //            Lưu tất cả POS áp dụng vào bảng InterestRatePosApply
+        //           var posApplies = master.ApplyPosList.Select(pos => new InterestRatePosApply
+        //           {
+        //               IntRateConfigId = configMaster.Id,
+        //               PosCode = pos.Trim(),
+        //               CreatedBy = userId ?? "System",
+        //               CreatedDate = DateTime.UtcNow,
+        //               Status = 1
+        //           }).ToList();
+
+        //            if (posApplies.Any())
+        //            {
+        //                _dbContext.InterestRatePosApplys.AddRange(posApplies);
+        //            }
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        _logger.LogInformation($"[CASA SAVE SUCCESS] Saved {lstAccountTypes.Count} records, DocumentId: {documentId}");
+        //        return "Success";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        _logger.LogError(ex, "[CASA SAVE ERROR]");
+        //        return $"Error: {ex.Message}";
+        //        throw ex;
+        //    }
+        //}
+
+
+        // thay đổi phần Lưu pos chi nhánh
+        public async Task<string> SaveCasaRateConfigureData(AddCasaProductViewModel master,List<CasaRateProductViewModel> details,string userId, string userPosCode)
         {
             if (details == null || !details.Any())
                 return "Error: Không có dữ liệu chi tiết để lưu.";
+
             if (master.ApplyPosList == null || !master.ApplyPosList.Any())
                 return "Error: Vui lòng chọn ít nhất một POS áp dụng.";
+
             if (string.IsNullOrWhiteSpace(master.CircularRefNum))
                 return "Error: Số Quyết định không được để trống.";
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
             try
             {
+
+                // lấy PosCode từ người tạo (userPosCode)
+                if (string.IsNullOrWhiteSpace(userPosCode))
+                    userPosCode = "0"; // fallback
+
+                var posEntity = await _dbContext.ListOfPoss
+                    .FirstOrDefaultAsync(w => w.Code == userPosCode);
+
+                string posCodeToSave = userPosCode.Trim();
+                string posNameToSave = posEntity?.Name ?? "Không xác định";
+
                 // Lấy danh sách AccountType duy nhất từ details
                 var lstAccountTypes = details.Select(d => d.RateProductAccountTypeCode).Distinct().ToList();
+
                 long documentId = master.DocumentId ?? await CreateNewDocumentId();
                 var effectiveDate = master.EffectiveDate ?? DateTime.Today.AddDays(1);
-
-                // === PHẦN SỬA: Xác định PosCode và PosName 
-                string posCodeToSave;
-                string posNameToSave;
-
-                const string HEAD_OFFICE_CODE = "000100";  // 
-
-
-                bool isWholeBankSelected = master.ApplyPosList.Any(p =>
-                    p != null && (
-                        string.Equals(p.Trim(), "0", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.Trim(), "ALL", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.Trim(), PosValue.SYSTEM_WIDE, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.Trim(), PosValue.BANK_WIDE, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.Trim(), "999999", StringComparison.OrdinalIgnoreCase)
-                    )
-                );
-
-                if (isWholeBankSelected)
-                {
-                    posCodeToSave = HEAD_OFFICE_CODE;
-
-                    // Lấy tên chính xác từ bảng ListOfPoss
-                    var headOffice = _dbContext.ListOfPoss
-                        .FirstOrDefault(w => w.Code == HEAD_OFFICE_CODE);
-
-                    posNameToSave = headOffice?.Name ?? "Ngân hàng CSXH";  // fallback nếu không tìm thấy
-                }
-                else
-                {
-                    // Trường hợp chỉ chọn POS cụ thể → lấy POS đầu tiên
-                    posCodeToSave = master.ApplyPosList.FirstOrDefault()?.Trim() ?? "0";
-                    var posEntity = _dbContext.ListOfPoss
-                        .FirstOrDefault(w => w.Code == posCodeToSave);
-
-                    posNameToSave = posEntity?.Name ?? posCodeToSave;
-                }
 
                 foreach (var accountTypeCode in lstAccountTypes)
                 {
@@ -1987,29 +2111,27 @@ namespace VBSPOSS.Services.Implements
                     var accountTypeItem = _dbContext.ListOfProducts
                         .FirstOrDefault(w => w.AccountTypeCode == accountTypeCode);
 
-                    if (accountTypeItem == null)
-                        continue;
+                    if (accountTypeItem == null) continue;
 
-                    // Bổ sung phần validation khi nhập lãi suất
+                    // Validation khoảng lãi suất
                     decimal minInterestRate = detailItem.InterestRateHO - detailItem.MinInterestRateSpread;
                     decimal maxInterestRate = detailItem.InterestRateHO + detailItem.MaxInterestRateSpread;
 
-
-                    if (userPosCode != PosValue.HEAD_POS && (detailItem.RateProductNewInterestRate < minInterestRate || detailItem.RateProductNewInterestRate > maxInterestRate))
-
-                    //if (detailItem.RateProductNewInterestRate < minInterestRate ||
-                    //    detailItem.RateProductNewInterestRate > maxInterestRate)
+                    if (userPosCode != PosValue.HEAD_POS &&
+                        (detailItem.RateProductNewInterestRate < minInterestRate ||
+                         detailItem.RateProductNewInterestRate > maxInterestRate))
                     {
                         Console.WriteLine($"Lãi suất cấu hình không nằm trong khoảng [{minInterestRate}, {maxInterestRate}]");
                         throw new Exception($"Lãi suất cấu hình không nằm trong khoảng [{minInterestRate}, {maxInterestRate}]");
                     }
 
+                    // tạo Master - PosCode luôn là của người tạo
                     var configMaster = new InterestRateConfigMaster
                     {
                         ProductGroupCode = ProductGroupCode.CASA.Code,
                         DebitCreditFlag = "C",
-                        PosCode = posCodeToSave,          // Đã sửa
-                        PosName = posNameToSave,          // Đã sửa
+                        PosCode = posCodeToSave,           //  Pos của người tạo
+                        PosName = posNameToSave,           // ← tên của người tạo
                         ProductCode = accountTypeItem.ProductCode,
                         ProductName = accountTypeItem.ProductName,
                         AccountTypeCode = accountTypeItem.AccountTypeCode,
@@ -2036,9 +2158,9 @@ namespace VBSPOSS.Services.Implements
                     };
 
                     _dbContext.InterestRateConfigMasters.Add(configMaster);
-                    await _dbContext.SaveChangesAsync(); // Lưu để có Id
+                    await _dbContext.SaveChangesAsync(); // Lưu để lấy Id
 
-                    // Lưu tất cả POS áp dụng vào bảng InterestRatePosApply
+                    //  Lưu danh sách POS áp dụng vào bảng quan hệ ( Bang apply)
                     var posApplies = master.ApplyPosList.Select(pos => new InterestRatePosApply
                     {
                         IntRateConfigId = configMaster.Id,
@@ -2057,17 +2179,20 @@ namespace VBSPOSS.Services.Implements
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                _logger.LogInformation($"[CASA SAVE SUCCESS] Saved {lstAccountTypes.Count} records, DocumentId: {documentId}");
+                _logger.LogInformation($"[CASA SAVE SUCCESS] Saved {lstAccountTypes.Count} records, DocumentId: {documentId}, CreatedByPos: {posCodeToSave}");
+
                 return "Success";
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "[CASA SAVE ERROR]");
-                //return $"Error: {ex.Message}";
-                throw ex;
+                throw;
             }
         }
+
+
+
 
 
         public async Task<InterestRateConfigMasterModel> GetCasaByIdAsync(long id)
