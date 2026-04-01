@@ -195,7 +195,7 @@
     function onSearch(e) {
             var posCode = $("#PosCode_Find").data("kendoComboBox").value();
 
-        if (posCode === "000100") {
+        if (posCode === "000100" || posCode === "") {
             alert("Vui lòng chọn đơn vị cấp nhỏ hơn");
             return; 
         }
@@ -298,7 +298,7 @@
                 actions: ["Refresh", "Close"]
             });
             mainWindow.data("kendoWindow").wrapper.css({ height: myHeight, width: myWidth });
-            mainWindow.data("kendoWindow").center().open().title("Thông tin thông báo người dùng đi giao dịch xã");
+            mainWindow.data("kendoWindow").center().open().title("Thông tin người dùng đi giao dịch xã");
         }
         else alert(" Vui lòng kiểm tra lại!");
     }
@@ -325,11 +325,11 @@
                 .Events(e => e.Change("onChangePosCode"))
                 .SelectedIndex(0))
 
-            <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;">Điểm giao dịch</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;">Xã</label>
             @(Html.Kendo().ComboBox()
                 .Name("TxnCode_Find")
                 .Filter("contains")
-                .Placeholder("--- Chọn điểm giao dịch ---")
+                .Placeholder("--- Chọn xã ---")
                 .DataTextField("Description")      //
                 .DataValueField("Value")           //
                 .DataSource(source => source
@@ -356,7 +356,7 @@
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddMonths(-1)) *@
-                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(0))
+                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-1))
                 )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()
@@ -365,7 +365,7 @@
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Đến ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddDays(1)) *@
                 .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
-                .AddMonths(1)
+                .AddMonths(0)
                 .AddDays(-1))
                 )
             &nbsp;&nbsp;
@@ -414,14 +414,15 @@
                     columns.Bound(c => c.TimeBegin).Hidden();
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TimeEnd).Hidden();
-                    @* columns.Bound(c => c.ProvinceName).Title("Tỉnh/Thành phố").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.CommuneName).Title("Xã/Phường").Width(150).HtmlAttributes(new { style = "text-align: left;" });   *@                
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosCode).Title("Mã PGD").Width(70).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosName).Title("Tên PGD").Width(130).HtmlAttributes(new { style = "text-align: left;" });                  
+                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(100).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.TimeBeginNum).Hidden();
                     columns.Bound(c => c.TimeEndNum).Hidden();
-                    columns.Bound(c => c.VisitDate).Title("Ngày giao dịch").Width(100).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.VisitDateD6).Title("Ngày giao dịch").Width(100).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.UserNumer).Title("Số cán bộ đi GD").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                     @* columns.Group(groupCoordinate => groupCoordinate.Title("Tọa độ điểm giao dịch")
                     .Columns(infoCoordinate =>
                     {

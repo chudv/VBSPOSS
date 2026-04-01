@@ -66,6 +66,7 @@ namespace VBSPOSS.Services.Implements
                                             if (string.IsNullOrEmpty(pTxnPointName)
                                                 || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
                                                 || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                                || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
                                                 )
                                                 return true;
                                             else

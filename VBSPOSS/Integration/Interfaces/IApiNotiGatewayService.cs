@@ -22,5 +22,7 @@ namespace VBSPOSS.Integration.Interfaces
         Task<GenericResultCode<List<NotificationDataResponse>?>> GetNotificationDataUserOffline(string notiType, string posCode, string transPoint);
 
         Task<UpdateNotiResult> UpdateNotiDataOffline(string notiType, string posCode, string transPoint, string transDate, string username);
+        
+        Task<UpdateNotiResult> InsertNotiDataList(List<NotificationDataResponse> request);
     }
 }
