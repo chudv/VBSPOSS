@@ -325,11 +325,11 @@
                 .Events(e => e.Change("onChangePosCode"))
                 .SelectedIndex(0))
 
-            <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;">Điểm giao dịch</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;">Xã</label>
             @(Html.Kendo().ComboBox()
                 .Name("TxnCode_Find")
                 .Filter("contains")
-                .Placeholder("--- Chọn điểm giao dịch ---")
+                .Placeholder("--- Chọn xã ---")
                 .DataTextField("Description")      //
                 .DataValueField("Value")           //
                 .DataSource(source => source
@@ -356,7 +356,7 @@
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddMonths(-1)) *@
-                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(0))
+                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-1))
                 )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()
@@ -365,7 +365,7 @@
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Đến ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddDays(1)) *@
                 .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
-                .AddMonths(1)
+                .AddMonths(0)
                 .AddDays(-1))
                 )
             &nbsp;&nbsp;

@@ -310,11 +310,11 @@
 
     <!-- Buttons -->
     <div class="action-group">
-        <button class="btn-primary-custom" onclick="onUpdateNoti()">
+        <button type="button" class="btn-primary-custom" onclick="onUpdateNoti()">
             ✔ Gửi lại thông báo
         </button>
 
-        <button class="btn-secondary-custom" onclick="onCancelNoti()">
+        <button type="button" class="btn-secondary-custom" onclick="onCancelNoti()">
             ✖ Đóng
         </button>
     </div>
@@ -345,9 +345,9 @@
                     var wnd = $(".k-window-content").data("kendoWindow");
                     if (wnd) wnd.close();
 
-                    var parentGrid = $("#gridMain").data("kendoGrid");
-                    if (parentGrid) parentGrid.dataSource.read();
-                    else location.reload();
+                    // var parentGrid = $("#gridMain").data("kendoGrid");
+                    // if (parentGrid) parentGrid.dataSource.read();
+                    // else location.reload();
 
                 } else {
                     alert(res.Message); 
