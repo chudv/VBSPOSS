@@ -86,4 +86,21 @@ namespace VBSPOSS.Models
         public DateTime ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
     }
+
+    public class UserIDCApproval
+    {
+        public string STT { get; set; }
+        public int TT_Dong { get; set; }
+        public int KieuIn { get; set; }
+        public string MaDonVi { get; set; }
+        public int SoLgTrinh_ThemMoi { get; set; }
+        public int SoLgTrinh_Matkhau { get; set; }
+        public int SoLgTrinh_MoKhoa { get; set; }
+        public int SoLgTrinh_Khoa { get; set; }
+        public int SoLgTrinh_Edit { get; set; }
+        public int SoLgTrinh_ChangePos { get; set; }
+        public int SoLgTrinh_ChangeRole { get; set; }
+        public string TenChiNhanh { get; set; }            //Thêm
+        public string KhoangThoiGian { get; set; }
+    }
 }

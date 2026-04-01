@@ -86,7 +86,7 @@ namespace VBSPOSS.Services.Implements
                     sResultVal = "6";
                 else
                 {
-                    string sSQL = string.Format($"Select Top 1 X.MaSoCN Code From ChiNhanh X Where X.MaSo = '{pPosCode}' Order By X.TrangThai Desc");
+                    string sSQL = string.Format($"Select Top 1 X.MainPosCode Code From ListOfPos X Where X.Code = '{pPosCode}' Order By X.Status Desc");
                     var detailPosCode = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
                     if (detailPosCode != null)
                     {

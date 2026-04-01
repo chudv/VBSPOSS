@@ -8,6 +8,7 @@ namespace VBSPOSS.ViewModels
 {
     public class UserManagementIDCViewModel
     {
+        public int OrderNo { get; set; }
         public long Id { get; set; }
         public string FunctionType { get; set; }
         public string PosCode { get; set; }
@@ -97,6 +98,9 @@ namespace VBSPOSS.ViewModels
         public string StaffDepartmentName { get; set; }
         public string RoleToTransferCashDescription { get; set; }
         public string RoleToTransferCashValue { get; set; }
+        public string GroupNameDetail { get; set; }
+        public string RoleToTransferCashDescriptionDetail { get; set; }
+        public string RoleToTransferCashName { get; set; }
     }
 
 
@@ -327,7 +331,20 @@ namespace VBSPOSS.ViewModels
         public string UserRole { get; set; }
     }
 
-
-
-
+    public class UserIDCApprovalViewModel
+    {
+        public string STT { get; set; }
+        public int TT_Dong { get; set; }
+        public int KieuIn { get; set; }
+        public string MaDonVi { get; set; }
+        public int SoLgTrinh_ThemMoi { get; set; }
+        public int SoLgTrinh_Matkhau { get; set; }
+        public int SoLgTrinh_MoKhoa { get; set; }
+        public int SoLgTrinh_Khoa { get; set; }
+        public int SoLgTrinh_Edit { get; set; }
+        public int SoLgTrinh_ChangePos { get; set; }
+        public int SoLgTrinh_ChangeRole { get; set; }
+        public string TenChiNhanh { get; set; }            //Thêm
+        public string KhoangThoiGian { get; set; }
+    }
 }

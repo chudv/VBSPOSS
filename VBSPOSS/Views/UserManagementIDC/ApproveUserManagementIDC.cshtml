@@ -1,14 +1,10 @@
-﻿@using Kendo.Mvc
+﻿@model VBSPOSS.ViewModels.UserIDCMasterViewModel
 
-@{
-    ViewData["Title"] = "CẤU HÌNH THÔNG TIN NGƯỜI DÙNG IDC";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
 
-<div id="myPopup"></div>
+<div id="myPopupApproval"></div>
 
 <style>
-    #gridMainIDC div a, table tr, td {
+    #gridMainIDCApproval div a, table tr, td {
         font-size: 12px;
     }
 
@@ -18,11 +14,11 @@
         min-width: 20px !important;
     }
 
-    #gridMainIDC .k-grid td {
+    #gridMainIDCApproval .k-grid td {
         border-right: 1px solid #ddd !important;
     }
 
-    #gridMainIDC .k-grid-header th {
+    #gridMainIDCApproval .k-grid-header th {
         border-right: 1px solid #ddd !important;
     }
 
@@ -117,12 +113,12 @@
 
 </style>
 <script>
-    var mainWindow = $("#myPopup");
+    var mainWindowApproval = $("#myPopupApproval");
 </script>
 
 <script>
 
-    function paramLoadListBranchFind() {
+    function paramLoadListBranchApprovalFind() {
         return {
             pFlagCondi: "5",
             pStatus: "O",
@@ -134,7 +130,7 @@
             pFlagWholeBank: 1
         };
     }
-    function paramLoadListStaffFind() {
+    function paramLoadListStaffApprovalFind() {
         return {
             pPosCode: $("#MainPosCode_Find").val(),
             pTitleChoice: "",
@@ -142,28 +138,28 @@
         };
     }
 
-    function paramLoadGridData() {
+    function paramLoadGridDataApproval() {
         return {
             pPosCode: $("#MainPosCode_Find").val(),
             pFromEffectiveDate: "",
             pToEffectiveDate: "",
             pFullName: $("#StaffName_Find").val(),
-            pStatus: $("#Status_Find").val()
+            pStatus: $("#StatusApproval_Find").val()
         };
     }
 
-    function refreshGridIDC() {
-        var grid = $("#gridMainIDC").data("kendoGrid");
+    function refreshGridIDCApproval() {
+        var grid = $("#gridMainIDCApproval").data("kendoGrid");
         if (grid != null) {
             grid.dataSource.read();
         }
     }
 
-    function onSearchTidePenalRate(e) {
-        refreshGridIDC();
+    function onSearchApprovalTest(e) {
+        refreshGridIDCApproval();
     }
 
-    function onRowBoundIDC(e) {
+    function onRowBoundIDCApproval(e) {
         var rows = e.sender.tbody.children();
         var isRed = true;
         for (var j = 0; j < rows.length; j++) {
@@ -184,10 +180,10 @@
     {
         e.preventDefault();
         var pPosCode = $("#MainPosCode_Find").val();
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
+        if (mainWindowApproval.data("kendoWindow")) {
+            mainWindowApproval.data("kendoWindow").destroy();
         }
-        mainWindow.kendoWindow({
+        mainWindowApproval.kendoWindow({
             width: "1024px",
             height: "500px",
             title: "Thêm mới cấu hình thông tin người dùng IDC",
@@ -202,21 +198,21 @@
             actions: ["Refresh", "Close"],
             error: function (e) {
                 notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
-            mainWindow.data("kendoWindow").close();
+            mainWindowApproval.data("kendoWindow").close();
             }
         });
-        mainWindow.data("kendoWindow").center().open();
+        mainWindowApproval.data("kendoWindow").center().open();
     });
 
     function onClose() {
         if (dataChange == true) {
-            refreshGridIDC();
+            refreshGridIDCApproval();
             dataChange = false;
         }
     }
 
     function doCompleteWindow() {
-        mainWindow.data("kendoWindow").close();
+        mainWindowApproval.data("kendoWindow").close();
     }
 
     function deleteItem(e) {
@@ -235,7 +231,7 @@
                     success: function (resultVal) {
                         if (resultVal == "1") {
                             alert("Bạn đã xóa thành công thông tin thành viên " + sMessInfor + "!");
-                            refreshGridIDC();
+                            refreshGridIDCApproval();
                         }
                         else alert("Đánh dấu xóa thông tin thành viên " + sMessInfor + " thất bại!");
                     },
@@ -281,7 +277,7 @@
         else
         {
             var sFlagCall = $("#EventFlag_EditTemp").val();
-            mainWindow.kendoWindow({
+            mainWindowApproval.kendoWindow({
                 width: "1024px",
                 height: "500px",
                 title: "Chỉnh sửa thông tin người dùng IDC",
@@ -295,8 +291,8 @@
                 close: onClose,
                 actions: ["Refresh", "Close"]
             });
-            mainWindow.data("kendoWindow").wrapper.css({ height: 500, width: 1024 });
-            mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa thông tin người dùng IDC");
+            mainWindowApproval.data("kendoWindow").wrapper.css({ height: 500, width: 1024 });
+            mainWindowApproval.data("kendoWindow").center().open().title("Chỉnh sửa thông tin người dùng IDC");
         }
     }
 
@@ -322,11 +318,11 @@
             }
             return;
         }
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
+        if (mainWindowApproval.data("kendoWindow")) {
+            mainWindowApproval.data("kendoWindow").destroy();
         }
         var sFlagCall = $("#EventFlag_ApprovalTemp").val();
-        mainWindow.kendoWindow({
+        mainWindowApproval.kendoWindow({
             width: "1050px",
             height: "750px",
             title: "Trình duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
@@ -344,20 +340,20 @@
                     message: "Có lỗi xảy ra: " + e.xhr.statusText,
                     type: "error"
                 }, "error");
-                mainWindow.data("kendoWindow").close();
+                mainWindowApproval.data("kendoWindow").close();
             }
         });
-        mainWindow.data("kendoWindow").center().open();
+        mainWindowApproval.data("kendoWindow").center().open();
     }
 
     function showDetailTidePenalRate(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
+        if (mainWindowApproval.data("kendoWindow")) {
+            mainWindowApproval.data("kendoWindow").destroy();
         }
         var sFlagCall = $("#EventFlag_ViewTemp").val();
-        mainWindow.kendoWindow({
+        mainWindowApproval.kendoWindow({
             width: "1050px",
             height: "750px",
             title: "Xem chi tiết thông tin Quyết định cấu hình lãi suất rút trước hạn tiền gửi CKH",
@@ -375,33 +371,33 @@
                     message: "Có lỗi xảy ra: " + e.xhr.statusText,
                     type: "error"
                 }, "error");
-                mainWindow.data("kendoWindow").close();
+                mainWindowApproval.data("kendoWindow").close();
             }
         });
-        mainWindow.data("kendoWindow").center().open();
+        mainWindowApproval.data("kendoWindow").center().open();
 
     }
 </script>
 
 
-@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@* @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
 @Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
-<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+ *@<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
     <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
 
         <div class="col-md-12">
             <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top:3px;padding-right:0px;padding-left:5px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
-            @(Html.Kendo().ComboBox().Name("MainPosCode_Find")
+            @(Html.Kendo().ComboBoxFor(m=>m.PosCode)
                         .Filter(FilterType.Contains)
                         .Placeholder("--- Đơn vị ---")
                         .DataTextField("value")
                         .DataValueField("id")
                         .Events(e => e.Change("Change_PosCode"))
                         .ClearButton(false)
-                        .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                        .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchApprovalFind"); }).ServerFiltering(false); })
                         .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                         .Suggest(true)
                         .AutoBind(true)
@@ -413,7 +409,7 @@
                         .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
 
             <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
-            @(Html.Kendo().DropDownList().Name("Status_Find")
+            @(Html.Kendo().DropDownList().Name("StatusApproval_Find")
                         .DataTextField("Text")
                         .DataValueField("Value")
                         .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" }, new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
@@ -423,8 +419,8 @@
 
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
-                        .Name("btnSearchTidePenalRate")
-                        .Events(ev => ev.Click("onSearchTidePenalRate"))
+                        .Name("btnSearchApproval")
+                        .Events(ev => ev.Click("onSearchApprovalTest"))
                         .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất rút trước hạn TG CKH" })
                         .ImageUrl(Url.Content("~/images/tim_kiem.png"))
                         .Content(" Tìm kiếm "))
@@ -435,8 +431,8 @@
     <div style="color: navy; padding-top: 0px; display:flex;" class="row">
         <div class="col-md-12">
             @(Html.Kendo().Grid<VBSPOSS.ViewModels.UserManagementIDCViewModel>()
-                        .Name("gridMainIDC")
-                        .Events(e => e.DataBound("onRowBoundIDC"))
+                        .Name("gridMainIDCApproval")
+                        .Events(e => e.DataBound("onRowBoundIDCApproval"))
                         .Columns(columns =>
                         {
                             columns.Command(command =>
@@ -526,7 +522,7 @@
                         .ServerOperation(false)
                         .Model(model => model.Id(p => p.Id))
                         .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                        .Read(read => read.Action("LoadGridData_UserIDCMaster", "UserManagementIDC").Data("paramLoadGridData"))
+                        .Read(read => read.Action("LoadGridData_UserIDCMaster", "UserManagementIDC").Data("paramLoadGridDataApproval"))
                         .PageSize(100)
                         )
                         .Resizable(resize => resize.Columns(true))

@@ -1,10 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Reflection.Emit;
-using AutoMapper;
+﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Data;
+using System.Linq;
+using System.Reflection.Emit;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
@@ -239,13 +242,14 @@ namespace VBSPOSS.Services.Implements
         /// <exception cref="Exception"></exception>
         public async Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall)
         {
-            int iCountUpdate = 0;
+            int iCountUpdate = 0, iSaveChanges = 0;
             long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             try
             {
                 if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
                 {
+                    var objUserManagementIDCsUpdNew = _dbContext.UserManagementIDCs.Where(m => m.Id == pUserManagementUpd.Id && m.UserId == pUserManagementUpd.UserId).FirstOrDefault();
                     if (pFlagCall == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                     {
                         #region --- Cập nhật thêm mới thông tin ---
@@ -292,13 +296,23 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
 
                         _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
-                        int iSaveChanges = _dbContext.SaveChanges();
+                        iSaveChanges = _dbContext.SaveChanges();
                         if (iSaveChanges > 0)
                         {
                             iCountUpdate++;
                             iRetIdUpd = objUserManagementUpdNew.Id;
                         }
                         #endregion
+                    }
+                    else if(pFlagCall == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
+                    {
+                        objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptCN);
+                        objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd; 
+                        objUserManagementIDCsUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementIDCsUpdNew.ApproverBy = pUserNameUpd; 
+                        objUserManagementIDCsUpdNew.ApprovalDate = dCurrentDateTmp;
+                        _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
+                        iSaveChanges = _dbContext.SaveChanges();
                     }
                 }
             }
@@ -1077,5 +1091,43 @@ namespace VBSPOSS.Services.Implements
             return objResultModifyUser;
         }
 
+        /// <summary>
+        /// Hàm lấy danh sách Trình duyệt người dùng IDC
+        /// </summary>
+        /// <returns></returns>
+        public List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai)
+        {
+            var answer = new List<UserIDCApprovalViewModel>();
+            try
+            {
+                SqlParameter paramNgayHLBatDau = new SqlParameter("@pNgayHLBatDau", SqlDbType.VarChar);
+                paramNgayHLBatDau.Value = pNgayHLBatDau;
+                SqlParameter paramNgayHLKetThuc = new SqlParameter("@pNgayHLKetThuc", SqlDbType.VarChar);
+                paramNgayHLKetThuc.Value = pNgayHLKetThuc;
+                SqlParameter paramDonViTrinhKT = new SqlParameter("@pDonVi", SqlDbType.VarChar);
+                paramDonViTrinhKT.Value = pDonVi;
+                SqlParameter paramFlagCall = new SqlParameter("@pFlagCall", SqlDbType.Int);
+                paramFlagCall.Value = pFlagCall;
+                SqlParameter paramTrangThai = new SqlParameter("@pTrangThai", SqlDbType.VarChar);
+                paramTrangThai.Value = pTrangThai;
+                var pApprovalTongHops = _dbContext.UserIDCApprovals.FromSqlRaw($"exec [dbo].[UserIDCApproval_GetSearch] @pNgayHLBatDau,@pNgayHLKetThuc,@pDonVi,@pFlagCall,@pTrangThai", paramNgayHLBatDau, paramNgayHLKetThuc, paramDonViTrinhKT, paramFlagCall,paramTrangThai).ToList();
+                if(pApprovalTongHops != null)
+                {
+                    if (pFlagCall == 1)
+                        pApprovalTongHops = pApprovalTongHops.Where(w=>w.MaDonVi != "").ToList();
+                    foreach (var item in pApprovalTongHops)
+                    {
+                        UserIDCApprovalViewModel objItem = new UserIDCApprovalViewModel();
+                        objItem = _mapper.Map<UserIDCApprovalViewModel>(item);
+                        answer.Add(objItem);
+                    }
+                }       
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

@@ -55,6 +55,9 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
 
+        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -210,6 +213,12 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<PosRepresentative>().ToTable("PosRepresentative");
             modelBuilder.Entity<PosRepresentative>().HasKey(x => new { x.Id });
+
+            modelBuilder.Entity<UserIDCApproval>(eb =>
+            {
+                eb.HasNoKey();
+                eb.ToView("UserIDCApprovals");
+            });
         }
     }
 }

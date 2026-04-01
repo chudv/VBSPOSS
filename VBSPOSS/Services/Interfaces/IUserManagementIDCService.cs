@@ -210,6 +210,7 @@ namespace VBSPOSS.Services.Interfaces
         /// </returns>
         /// <exception cref="Exception"></exception>
         Task<ChangeInforUserIDCAPIResponseViewModel> ModifyUserByApiModifyUser(ModifyUserRequestViewModel requestInput, string pUserNameUpd);
+        List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai);
 
     }
 }
