@@ -1425,7 +1425,9 @@ namespace VBSPOSS.Controllers
 
             ArrayList data = new ArrayList();
             var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", pStatus, 2);
-            var listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
+            var listRoleOfUserIDC = listRoleOfUserIDCTmp;
+            if(sCodeApply != "1")
+                listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
             if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
                 data.Add(new { id = "", value = sTitleChoice });
             if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)

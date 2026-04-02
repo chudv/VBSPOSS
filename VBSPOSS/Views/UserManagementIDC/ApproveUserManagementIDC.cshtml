@@ -1,4 +1,4 @@
-﻿@model VBSPOSS.ViewModels.UserIDCMasterViewModel
+﻿@model VBSPOSS.ViewModels.UserManagementIDCViewModel
 
 
 <div id="myPopupApproval"></div>
@@ -323,9 +323,9 @@
         }
         var sFlagCall = $("#EventFlag_ApprovalTemp").val();
         mainWindowApproval.kendoWindow({
-            width: "1050px",
-            height: "750px",
-            title: "Trình duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            width: "1000px",
+            height: "450px",
+            title: "Trình duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
                 data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2" }
@@ -334,7 +334,7 @@
             visible: false,
             modal: true,
             close: onClose,
-            actions: ["Close"],
+            actions: ["Refresh","Close"],
             error: function (e) {
                 notification.show({
                     message: "Có lỗi xảy ra: " + e.xhr.statusText,
@@ -437,23 +437,17 @@
                         {
                             columns.Command(command =>
                             {
-                                command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
+                                command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
                                 {
-                                    @class = "btn-view-edit",
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                                    title = "Chỉnh sửa thông tin người dùng IDC"
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                                    title = "Trình duyệt người dùng IDC",
+                                    @class = "btn-approval"
                                 });
                                 command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
                                     title = "Xóa người dùng IDC",
                                     @class = "btn-delete"
-                                });
-                                command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
-                                {
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                                    title = "Trình duyệt người dùng IDC",
-                                    @class = "btn-approval"
                                 });
                                 command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTidePenalRate").HtmlAttributes(new
                                 {
@@ -464,13 +458,14 @@
                             }).Width(120).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.UserId).Title("Tài khoản").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.FullName).Title("Họ tên").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.DateOfBirth).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.MobileNumber).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.EffectDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.StatusText).Title("Trạng thái").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.Id).Hidden();
@@ -522,11 +517,11 @@
                         .ServerOperation(false)
                         .Model(model => model.Id(p => p.Id))
                         .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                        .Read(read => read.Action("LoadGridData_UserIDCMaster", "UserManagementIDC").Data("paramLoadGridDataApproval"))
+                        .Read(read => read.Action("LoadGridData_UserIDCManagement", "UserManagementIDC").Data("paramLoadGridDataApproval"))
                         .PageSize(100)
                         )
                         .Resizable(resize => resize.Columns(true))
-                        .AutoBind(false)
+                        .AutoBind(true)
                         )
         </div>
     </div>

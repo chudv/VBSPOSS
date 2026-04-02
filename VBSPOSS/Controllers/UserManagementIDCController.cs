@@ -163,13 +163,13 @@ namespace VBSPOSS.Controllers
         /// <returns>Danh sách người đại diện các đơn vị</returns>
         public ActionResult ShowUpdateUserManagementIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName)
         {
-            UserIDCMasterViewModel objPosUserIDCMaster = new UserIDCMasterViewModel();
+            UserManagementIDCViewModel objPosUserIDCMaster = new UserManagementIDCViewModel();
             if (string.IsNullOrEmpty(pPosCode))
                 pPosCode = "";
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCMasters(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
             if (pFlagCall == "1")
             {
                 objPosUserIDCMaster.Id = 0;
@@ -237,8 +237,17 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.CreatedDate = listStaffVBSP.CreatedDate;
                 objPosUserIDCMaster.ModifiedBy = listStaffVBSP.ModifiedBy;
                 objPosUserIDCMaster.ModifiedDate = listStaffVBSP.ModifiedDate;
+                objPosUserIDCMaster.FunctionTypeName = listStaffVBSP.FunctionTypeName;
+                objPosUserIDCMaster.EffectiveDate = listStaffVBSP.EffectiveDate;
+                objPosUserIDCMaster.FunctionType = listStaffVBSP.FunctionType;
             }
-            sNameView = (pFlagCall == "1")?"UpdateUserManagementIDC":"DetailUserManagementIDC";
+            sNameView = (pFlagCall == "1")?"UpdateUserManagementIDC":"AuthorizeUserManagementIDC";
+            if(pFlagCall== "1" || pFlagCall == "2")
+                sNameView = "UpdateUserManagementIDC";
+            else if(pFlagCall == "8")
+                sNameView = "AuthorizeUserManagementIDC";
+            else
+                sNameView = "DetailUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
             return PartialView(sNameView, objPosUserIDCMaster);
@@ -248,7 +257,7 @@ namespace VBSPOSS.Controllers
         /// Hàm thực hiện lưu thông tin người dùng IDC
         /// </summary>
         [AcceptVerbs("Post")]
-        public async Task<IActionResult> SaveUpdate([DataSourceRequest] DataSourceRequest request, UserIDCMasterViewModel objUserIDC, string pFlagCall, string pButtonType)
+        public async Task<IActionResult> SaveUpdate([DataSourceRequest] DataSourceRequest request, UserManagementIDCViewModel objUserIDC, string pFlagCall, string pButtonType)
         {
             try
             {
@@ -283,8 +292,8 @@ namespace VBSPOSS.Controllers
                                 prop.SetValue(objUserIDC, 0);
                         }
                     }
-                    long iVal = await _userManagementIDCService.SaveUserIDCMaster(objUserIDC, UserName, pFlagCall);
-                    result = (iVal > 0) ? "1" : "0";
+                    long iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall,pButtonType);
+                    result = (iVal > 0) ? "0" : "99";
                 }
                 return new JsonResult(result);
             }
@@ -331,85 +340,49 @@ namespace VBSPOSS.Controllers
         /// <returns>Danh sách người đại diện các đơn vị</returns>
         public ActionResult ShowApprovalUserIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName)
         {
-            UserIDCMasterViewModel objPosUserIDCMaster = new UserIDCMasterViewModel();
+            UserManagementIDCViewModel objPosUserIDCManagement = new UserManagementIDCViewModel();
+            
             if (string.IsNullOrEmpty(pPosCode))
                 pPosCode = "";
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCMasters(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
-            if (pFlagCall == "1")
-            {
-                objPosUserIDCMaster.Id = 0;
-                objPosUserIDCMaster.OrderNo = 0;
-                objPosUserIDCMaster.PosCode = "";
-                objPosUserIDCMaster.PosName = "";
-                objPosUserIDCMaster.StaffId = "";
-                objPosUserIDCMaster.StaffCode = "";
-                objPosUserIDCMaster.UserId = "";
-                objPosUserIDCMaster.NickName = "";
-                objPosUserIDCMaster.FirstName = "";
-                objPosUserIDCMaster.LastName = "";
-                objPosUserIDCMaster.FullName = "";
-                objPosUserIDCMaster.EmailAddress = "";
-                objPosUserIDCMaster.MobileNumber = "";
-                objPosUserIDCMaster.DateOfBirth = DateTime.Now;
-                objPosUserIDCMaster.GroupName = "";
-                objPosUserIDCMaster.EntityList = "";
-                objPosUserIDCMaster.AuthType = "";
-                objPosUserIDCMaster.UserType = "";
-                objPosUserIDCMaster.MailIdFlag = "";
-                objPosUserIDCMaster.AuthsecType = "";
-                objPosUserIDCMaster.ExtraAttributeUserRole = "";
-                objPosUserIDCMaster.ExtraAttributeBranchCode = "";
-                objPosUserIDCMaster.ExpiryDate = DateTime.Now;
-                objPosUserIDCMaster.Remark = "";
-                objPosUserIDCMaster.OrtherNotes = "";
-                objPosUserIDCMaster.Status = 1;
-                objPosUserIDCMaster.StatusText = "";               
-                objPosUserIDCMaster.CreatedBy = "";
-                objPosUserIDCMaster.CreatedDate = DateTime.Now;
-                objPosUserIDCMaster.ModifiedBy = "";
-                objPosUserIDCMaster.ModifiedDate = DateTime.Now;
-            }
-            else
-            {
-                objPosUserIDCMaster.Id = listStaffVBSP.Id;
-                objPosUserIDCMaster.OrderNo = listStaffVBSP.OrderNo;         
-                objPosUserIDCMaster.PosCode = listStaffVBSP.PosCode;
-                objPosUserIDCMaster.PosName = listStaffVBSP.PosName;
-                objPosUserIDCMaster.StaffId = listStaffVBSP.StaffId;
-                objPosUserIDCMaster.StaffCode = listStaffVBSP.StaffCode;
-                objPosUserIDCMaster.UserId = listStaffVBSP.UserId;
-                objPosUserIDCMaster.NickName = listStaffVBSP.NickName;
-                objPosUserIDCMaster.FirstName = listStaffVBSP.FirstName;
-                objPosUserIDCMaster.LastName = listStaffVBSP.LastName;
-                objPosUserIDCMaster.FullName = listStaffVBSP.FullName;
-                objPosUserIDCMaster.EmailAddress = listStaffVBSP.EmailAddress;
-                objPosUserIDCMaster.MobileNumber = listStaffVBSP.MobileNumber; 
-                objPosUserIDCMaster.DateOfBirth = listStaffVBSP.DateOfBirth;
-                objPosUserIDCMaster.GroupName = listStaffVBSP.GroupName;
-                objPosUserIDCMaster.EntityList = listStaffVBSP.EntityList;
-                objPosUserIDCMaster.AuthType = listStaffVBSP.AuthType;
-                objPosUserIDCMaster.UserType = listStaffVBSP.UserType;
-                objPosUserIDCMaster.MailIdFlag = listStaffVBSP.MailIdFlag;
-                objPosUserIDCMaster.AuthsecType = listStaffVBSP.AuthsecType;
-                objPosUserIDCMaster.ExtraAttributeUserRole = listStaffVBSP.ExtraAttributeUserRole;
-                objPosUserIDCMaster.ExtraAttributeBranchCode = listStaffVBSP.ExtraAttributeBranchCode;
-                objPosUserIDCMaster.ExpiryDate = listStaffVBSP.ExpiryDate;
-                objPosUserIDCMaster.Remark = listStaffVBSP.Remark;
-                objPosUserIDCMaster.OrtherNotes = listStaffVBSP.OrtherNotes;
-                objPosUserIDCMaster.Status = listStaffVBSP.Status;
-                objPosUserIDCMaster.StatusText = listStaffVBSP.StatusText;
-                objPosUserIDCMaster.CreatedBy = listStaffVBSP.CreatedBy;
-                objPosUserIDCMaster.CreatedDate = listStaffVBSP.CreatedDate;
-                objPosUserIDCMaster.ModifiedBy = listStaffVBSP.ModifiedBy;
-                objPosUserIDCMaster.ModifiedDate = listStaffVBSP.ModifiedDate;
-            }
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
             sNameView = (pFlagCall == "1")?"ApproveUserManagementIDC":"ApproveUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
-            return PartialView(sNameView, objPosUserIDCMaster);
+            objPosUserIDCManagement.PosCode = pPosCode;
+            return PartialView(sNameView, objPosUserIDCManagement);
+        }
+
+        /// <summary>
+        /// Hàm lấy danh sách lên lưới dữ liệu Danh sách người dùng IDC
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Mã đơn vị</param>
+        /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
+        /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
+        /// <returns>Danh sách người đại diện các đơn vị</returns>
+        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFromEffectiveDate, string pToEffectiveDate, string pUserId, int pStatus,string pFullName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pPosCode))
+                    pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
+                if (string.IsNullOrEmpty(pUserId))
+                    pUserId = "";
+                if (string.IsNullOrEmpty(pFullName))
+                    pFullName = "";
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "");
+
+                return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                WriteLog(LogType.ERROR, ex.Message);
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+            }
         }
     }
 }

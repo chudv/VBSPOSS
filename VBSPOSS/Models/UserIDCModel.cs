@@ -5,6 +5,7 @@ namespace VBSPOSS.Models
 {
     public class UserManagementIDC
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string FunctionType { get; set; }
         public string PosCode { get; set; }

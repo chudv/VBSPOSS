@@ -284,8 +284,8 @@
                 height: "500px",
                 title: "Chỉnh sửa thông tin người dùng IDC",
                 content: {
-                    url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                    data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2" }
+                    url: '@Url.Action("ShowApprovalUserIDC", "UserManagementIDC")',
+                    data: { pPosCode: dataItem.MaDonVi, pUserId: "", pFlagCall: "2" }
                 },
                 resizable: false,
                 visible: false,
@@ -327,16 +327,16 @@
         mainWindow.kendoWindow({
             width: "1050px",
             height: "750px",
-            title: "Trình duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            title: "Trình duyệt thay đổi thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowApprovalUserIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2" }
+                data: { pPosCode: dataItem.MaDonVi, pUserId: "", pFlagCall: "2" }
             },
             resizable: false,
             visible: false,
             modal: true,
             close: onClose,
-            actions: ["Close"],
+            actions: ["Refresh", "Close"],
             error: function (e) {
                 notification.show({
                     message: "Có lỗi xảy ra: " + e.xhr.statusText,
@@ -440,11 +440,11 @@
                         {
                             columns.Command(command =>
                             {
-                                command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApproval").HtmlAttributes(new
+                                command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("submitForApproval").HtmlAttributes(new
                                 {
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                                    title = "Trình duyệt người dùng IDC",
-                                    @class = "btn-approval"
+                                    @class = "btn-view-edit",
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                                    title = "Trình duyệt thông tin người dùng IDC"
                                 });
                                 command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailApprove").HtmlAttributes(new
                                 {
@@ -466,6 +466,7 @@
                             columns.Bound(c => c.SoLgTrinh_ChangeRole).Title("Đổi quyền").Width(90).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.KieuIn).Hidden();
                             columns.Bound(c => c.TT_Dong).Hidden();
+                            columns.Bound(c => c.MaDonVi).Hidden();
                         })
                         .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
                         .ToolBar(toolbar =>

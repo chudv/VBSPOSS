@@ -407,7 +407,7 @@
                         .AutoBind(true)
                         .SelectedIndex(0))
 
-            <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người dùng IDC</label>
             @(Html.Kendo().TextBox().Name("StaffName_Find")
                         .Placeholder("Nhập tên hoặc mã cán bộ")
                         .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
@@ -453,12 +453,6 @@
                                     title = "Xóa người dùng IDC",
                                     @class = "btn-delete"
                                 });
-                                command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
-                                {
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                                    title = "Trình duyệt người dùng IDC",
-                                    @class = "btn-approval"
-                                });
                                 command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTidePenalRate").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
@@ -468,13 +462,14 @@
                             }).Width(120).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.UserId).Title("Tài khoản").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.FullName).Title("Họ tên").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.DateOfBirth).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.MobileNumber).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.EffectDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.StatusText).Title("Trạng thái").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.Id).Hidden();
@@ -526,7 +521,7 @@
                         .ServerOperation(false)
                         .Model(model => model.Id(p => p.Id))
                         .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                        .Read(read => read.Action("LoadGridData_UserIDCMaster", "UserManagementIDC").Data("paramLoadGridData"))
+                        .Read(read => read.Action("LoadGridData_UserIDCManagement", "UserManagementIDC").Data("paramLoadGridData"))
                         .PageSize(100)
                         )
                         .Resizable(resize => resize.Columns(true))

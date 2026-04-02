@@ -31,7 +31,7 @@ namespace VBSPOSS.ViewModels
         public string AuthsecType { get; set; }
         public string ExtraAttributeUserRole { get; set; }
         public string ExtraAttributeBranchCode { get; set; }
-        public DateTime EffectDate { get; set; }
+        public DateTime? EffectiveDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Ticket { get; set; }
         public string Remark { get; set; }
@@ -53,6 +53,13 @@ namespace VBSPOSS.ViewModels
         public DateTime ModifiedDate { get; set; }
         public string ApproverBy { get; set; }
         public DateTime ApprovalDate { get; set; }
+        public string FunctionTypeName { get; set; }
+        public string RoleToTransferCashDescription { get; set; }
+        public string RoleToTransferCashValue { get; set; }
+        public string GroupNameDetail { get; set; }
+        public string RoleToTransferCashDescriptionDetail { get; set; }
+        public string RoleToTransferCashName { get; set; }
+
     }
 
 
