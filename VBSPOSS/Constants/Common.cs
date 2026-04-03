@@ -53,6 +53,10 @@ namespace VBSPOSS.Constants
         /// </summary>
         public static ValueConstModel EventFlag_View = new ValueConstModel { Value = 6, Code = "VIEW", Description = "Xem chi tiết" };
 
+                /// <summary>
+        /// Sự kiện gọi phê duyệt: EventFlag_View = new ValueConstModel { Value = 6, Code = "VIEW", Description = "Xem chi tiết" };
+        /// </summary>
+        public static ValueConstModel EventFlag_EditIDC = new ValueConstModel { Value = 7, Code = "EDITIDC", Description = "Yêu cầu chỉnh sửa trên IDC" };
 
         public static ValueConstModel GetByValue(int value)
         {
@@ -65,6 +69,7 @@ namespace VBSPOSS.Constants
                 4 => EventFlag_Approval,
                 5 => EventFlag_Authorize,
                 6 => EventFlag_View,
+                7 => EventFlag_EditIDC,
                 _ => null
             };
         }
@@ -741,6 +746,7 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_APPROVAL = new ValueConstModel { Value = 8, Code = "APPROVAL", Description = "Trình duyệt/Phê duyệt" };
 
+        public static ValueConstModel FunctionTypeFlag_EDIT = new ValueConstModel { Value = 10, Code = "EDIT", Description = "Chỉnh sửa thông tin người dùng IDC" };
 
 
 
@@ -757,6 +763,19 @@ namespace VBSPOSS.Constants
                 7 => FunctionTypeFlag_CHANGE_ROLE,
 
                 _ => null
+            };
+        }
+
+        public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            {
+                FunctionTypeFlag_ResetPassword,
+                FunctionTypeFlag_ENABLE_USER,
+                FunctionTypeFlag_DISABLE_USER,
+                FunctionTypeFlag_MODIFY_USER,
+                FunctionTypeFlag_CHANGE_POS,
+                FunctionTypeFlag_CHANGE_ROLE
             };
         }
 

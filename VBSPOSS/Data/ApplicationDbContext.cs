@@ -55,8 +55,9 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
 
-        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; }
+        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; } 
 
+        public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -219,6 +220,9 @@ namespace VBSPOSS.Data
                 eb.HasNoKey();
                 eb.ToView("UserIDCApprovals");
             });
+
+            modelBuilder.Entity<UserIDCRestrictionAllowedDays>().ToTable("UserIDCRestrictionAllowedDays");
+            modelBuilder.Entity<UserIDCRestrictionAllowedDays>().HasNoKey();
         }
     }
 }

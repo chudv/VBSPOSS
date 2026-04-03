@@ -104,4 +104,57 @@ namespace VBSPOSS.Models
         public string TenChiNhanh { get; set; }            //Thêm
         public string KhoangThoiGian { get; set; }
     }
+
+    public class UserIDCRestrictionAllowedDays
+    {
+        public long UserMasterId { get; set; }
+    
+        public string UserId { get; set; }
+    
+        public int LoginRestrict { get; set; }
+    
+        public int SameTimeForAllDays { get; set; }
+    
+        public int RestrictionType { get; set; }
+    
+        public int AllowedDays { get; set; }
+    
+        public string StartRestriction { get; set; }
+    
+        public string EndRestriction { get; set; }
+    
+        public string Remark { get; set; }
+    
+        public string OrtherNotes { get; set; }
+    
+        public int Status { get; set; }
+    
+        public int? StatusUpdateCore { get; set; }
+    
+        public bool? SessionValReq { get; set; }
+    
+        public int? PrevStatus { get; set; }
+    
+        public string ResponseAttributes { get; set; }
+    
+        public string CallApiStatus { get; set; }
+    
+        public int CallApiReqRecordSl { get; set; }
+    
+        public string CallApiResponseCode { get; set; }
+    
+        public string CallApiResponseMsg { get; set; }
+    
+        public string CreatedBy { get; set; }
+    
+        public DateTime CreatedDate { get; set; }
+    
+        public string ModifiedBy { get; set; }
+    
+        public DateTime ModifiedDate { get; set; }
+    
+        public string ApproverBy { get; set; }
+    
+        public DateTime ApprovalDate { get; set; }
+    }
 }

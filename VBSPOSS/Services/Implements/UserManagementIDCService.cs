@@ -250,12 +250,11 @@ namespace VBSPOSS.Services.Implements
                 if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
                 {
                     var objUserManagementIDCsUpdNew = _dbContext.UserManagementIDCs.Where(m => m.Id == pUserManagementUpd.Id && m.UserId == pUserManagementUpd.UserId).FirstOrDefault();
-                    if (pFlagCall == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                    if (!string.IsNullOrEmpty(pButtonType))
                     {
                         #region --- Cập nhật thêm mới thông tin ---
                         UserManagementIDC objUserManagementUpdNew = new UserManagementIDC();
-                        objUserManagementUpdNew.Id = 0;
-                        objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                        objUserManagementUpdNew.Id = 0;                
                         objUserManagementUpdNew.PosCode = pUserManagementUpd.PosCode;
                         objUserManagementUpdNew.PosName = pUserManagementUpd.PosName;
                         objUserManagementUpdNew.StaffId = pUserManagementUpd.StaffId;
@@ -276,13 +275,11 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
                         objUserManagementUpdNew.GroupName = pUserManagementUpd.GroupName;
                         objUserManagementUpdNew.EntityList = pUserManagementUpd.EntityList;
-                        objUserManagementUpdNew.AuthType = pFlagCall;
-                        objUserManagementUpdNew.UserType = pFlagCall;
                         if (!string.IsNullOrWhiteSpace(pUserManagementUpd.RoleToTransferCashValue))
-                            {
-                                objUserManagementUpdNew.MailIdFlag = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? MailIdFlag.MailIdFlag_RandomSendAPI.Code : MailIdFlag.MailIdFlag_DefaultPassword.Code;
-                                objUserManagementUpdNew.AuthsecType = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? "17" : "0";
-                            }
+                        {
+                            objUserManagementUpdNew.MailIdFlag = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? MailIdFlag.MailIdFlag_RandomSendAPI.Code : MailIdFlag.MailIdFlag_DefaultPassword.Code;
+                            objUserManagementUpdNew.AuthsecType = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? "17" : "0";
+                        }
                         objUserManagementUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
                         objUserManagementUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
                         objUserManagementUpdNew.EffectiveDate = pUserManagementUpd.EffectiveDate;
@@ -299,12 +296,30 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.CallApiReqRecordSl = 0; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseCode = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseMsg = ""; //Xử lý khi gọi API
-                        objUserManagementUpdNew.CreatedBy = pUserNameUpd;
-                        objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
-                        objUserManagementUpdNew.ModifiedBy = "";
-                        objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
-                        objUserManagementUpdNew.ApproverBy = "";
-                        objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+                        if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                        {
+                            objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                            objUserManagementUpdNew.AuthType = pButtonType;
+                            objUserManagementUpdNew.UserType = pButtonType;
+                            objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                            objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ModifiedBy = "";
+                            objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ApproverBy = "";
+                            objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+                        }
+                        else
+                        {
+                            objUserManagementUpdNew.FunctionType = pUserManagementUpd.FunctionType;
+                            objUserManagementUpdNew.AuthType = pUserManagementUpd.AuthType;
+                            objUserManagementUpdNew.UserType = pUserManagementUpd.UserType;
+                            objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                            objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ModifiedBy = pUserNameUpd;
+                            objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ApproverBy = pUserManagementUpd.ApproverBy;
+                            objUserManagementUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
+                        }
 
                         _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
                         iSaveChanges = _dbContext.SaveChanges();
@@ -315,7 +330,60 @@ namespace VBSPOSS.Services.Implements
                         }
                         #endregion
                     }
-                    else if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
+
+                    else if(objUserManagementIDCsUpdNew != null && pFlagCall == EventFlag.EventFlag_Edit.Value.ToString())
+                    {
+                        objUserManagementIDCsUpdNew.Id = pUserManagementUpd.Id;
+                        objUserManagementIDCsUpdNew.FunctionType = pUserManagementUpd.FunctionType;
+                        objUserManagementIDCsUpdNew.PosCode = pUserManagementUpd.PosCode;
+                        objUserManagementIDCsUpdNew.PosName = pUserManagementUpd.PosName;
+                        objUserManagementIDCsUpdNew.StaffId = pUserManagementUpd.StaffId;
+                        objUserManagementIDCsUpdNew.StaffCode = pUserManagementUpd.StaffCode;
+                        objUserManagementIDCsUpdNew.UserId = pUserManagementUpd.UserId;
+                        objUserManagementIDCsUpdNew.FirstName = pUserManagementUpd.FirstName;
+                        objUserManagementIDCsUpdNew.LastName = pUserManagementUpd.LastName;
+                        objUserManagementIDCsUpdNew.NickName = pUserManagementUpd.NickName;
+                        objUserManagementIDCsUpdNew.EmailAddress = pUserManagementUpd.EmailAddress;
+                        objUserManagementIDCsUpdNew.MobileNumber = pUserManagementUpd.MobileNumber;
+                        objUserManagementIDCsUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
+                        objUserManagementIDCsUpdNew.GroupName = pUserManagementUpd.GroupName;
+                        objUserManagementIDCsUpdNew.EntityList = pUserManagementUpd.EntityList;
+                        objUserManagementIDCsUpdNew.AuthType = pUserManagementUpd.AuthType;
+                        objUserManagementIDCsUpdNew.UserType = pUserManagementUpd.UserType;
+                        objUserManagementIDCsUpdNew.MailIdFlag = pUserManagementUpd.MailIdFlag;
+                        objUserManagementIDCsUpdNew.AuthsecType = pUserManagementUpd.AuthsecType;                        
+                        objUserManagementIDCsUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
+                        objUserManagementIDCsUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
+                        objUserManagementIDCsUpdNew.EffectiveDate = pUserManagementUpd.EffectiveDate;
+                        objUserManagementIDCsUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
+                        objUserManagementIDCsUpdNew.Remark = pUserManagementUpd.Remark;
+                        objUserManagementIDCsUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
+                        objUserManagementIDCsUpdNew.Ticket = pUserManagementUpd.Ticket;
+                        objUserManagementIDCsUpdNew.Status = pUserManagementUpd.Status;
+                        objUserManagementIDCsUpdNew.StatusUpdateCore = pUserManagementUpd.StatusUpdateCore; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.SessionValReq = pUserManagementUpd.SessionValReq; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.PrevStatus = pUserManagementUpd.PrevStatus; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.ResponseAttributes = pUserManagementUpd.ResponseAttributes; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiStatus = pUserManagementUpd.CallApiStatus; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiReqRecordSl = pUserManagementUpd.CallApiReqRecordSl; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiResponseCode = pUserManagementUpd.CallApiResponseCode; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiResponseMsg = pUserManagementUpd.CallApiResponseMsg; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CreatedBy = pUserManagementUpd.CreatedBy;
+                        objUserManagementIDCsUpdNew.CreatedDate = pUserManagementUpd.CreatedDate;
+                        objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd;
+                        objUserManagementIDCsUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementIDCsUpdNew.ApproverBy = pUserManagementUpd.ApproverBy;
+                        objUserManagementIDCsUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
+                        _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
+                        iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                        }
+                    }
+
+                    else if(objUserManagementIDCsUpdNew != null && pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
                     {
                         objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptCN);
                         objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd; 
@@ -324,6 +392,11 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementIDCsUpdNew.ApprovalDate = dCurrentDateTmp;
                         _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
                         iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                        }
                     }
                 }
             }

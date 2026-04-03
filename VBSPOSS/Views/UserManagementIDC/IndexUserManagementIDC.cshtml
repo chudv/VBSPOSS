@@ -115,6 +115,14 @@
         border: none;
     }
 
+    .k-grid .btn-EditIDC.k-button {
+        background: url('../images/sua_doi.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
 </style>
 <script>
     var mainWindow = $("#myPopup");
@@ -193,7 +201,7 @@
             title: "Thêm mới cấu hình thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: pPosCode, pStaffId: "", pFlagCall: "1" }
+                data: { pPosCode: pPosCode, pStaffId: "", pButtonType: "1" }
             },
             resizable: true,
             visible: false,
@@ -287,7 +295,7 @@
                 title: "Chỉnh sửa thông tin người dùng IDC",
                 content: {
                     url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                    data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2" }
+                    data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2", pButtonType: "" }
                 },
                 resizable: false,
                 visible: false,
@@ -332,7 +340,7 @@
             title: "Trình duyệt cấu hình lãi suất rút trước hạn tiền gửi CKH",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2" }
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10" }
             },
             resizable: false,
             visible: false,
@@ -380,6 +388,56 @@
         });
         mainWindow.data("kendoWindow").center().open();
 
+    }
+
+    function showEditIDC(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var grid = $("#gridMainIDC").data("kendoGrid");
+        // Kiểm tra trạng thái trước khi trình duyệt
+        var deletedStatuses = [0, 2, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+            }
+            else if (dataItem.Status == 2) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 3) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "450px",
+            title: "Yêu cầu chỉnh sửa thông tin người dùng IDC",
+            content: {
+                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10" }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onClose,
+            actions: ["Refresh","Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
     }
 </script>
 
@@ -459,7 +517,13 @@
                                     title = "Xem chi tiết",
                                     @class = "btn-view"
                                 });
-                            }).Width(120).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                                command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
+                                {
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                                    title = "Yêu cầu chỉnh sửa người dùng",
+                                    @class = "btn-EditIDC"
+                                });
+                            }).Width(150).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });

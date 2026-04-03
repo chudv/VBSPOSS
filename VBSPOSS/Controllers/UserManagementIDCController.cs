@@ -161,7 +161,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
         /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult ShowUpdateUserManagementIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName)
+        public ActionResult ShowUpdateUserManagementIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName, string pButtonType)
         {
             UserManagementIDCViewModel objPosUserIDCMaster = new UserManagementIDCViewModel();
             if (string.IsNullOrEmpty(pPosCode))
@@ -170,7 +170,7 @@ namespace VBSPOSS.Controllers
                 pUserId = "";
             string sNameView = "";
             var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
-            if (pFlagCall == "1")
+            if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
                 objPosUserIDCMaster.Id = 0;
                 objPosUserIDCMaster.OrderNo = 0;
@@ -195,6 +195,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.ExtraAttributeUserRole = "";
                 objPosUserIDCMaster.ExtraAttributeBranchCode = "";
                 objPosUserIDCMaster.ExpiryDate = DateTime.Now;
+                objPosUserIDCMaster.EffectiveDate = DateTime.Now;
                 objPosUserIDCMaster.Remark = "";
                 objPosUserIDCMaster.OrtherNotes = "";
                 objPosUserIDCMaster.Status = 1;
@@ -241,15 +242,18 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.EffectiveDate = listStaffVBSP.EffectiveDate;
                 objPosUserIDCMaster.FunctionType = listStaffVBSP.FunctionType;
             }
-            sNameView = (pFlagCall == "1")?"UpdateUserManagementIDC":"AuthorizeUserManagementIDC";
-            if(pFlagCall== "1" || pFlagCall == "2")
+            if(string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                 sNameView = "UpdateUserManagementIDC";
-            else if(pFlagCall == "8")
+            else if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
                 sNameView = "AuthorizeUserManagementIDC";
             else
+            {
+                ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
                 sNameView = "DetailUserManagementIDC";
+            }    
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
+            TempData["ButtonType"] = pButtonType;
             return PartialView(sNameView, objPosUserIDCMaster);
         }
 

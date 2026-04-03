@@ -1,4 +1,6 @@
 ﻿@model VBSPOSS.ViewModels.UserManagementIDCViewModel
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
 
 <div id="mySppLocality"></div>
 
@@ -20,7 +22,7 @@
         color: navy !important;
     }
 
-    #EffectDate, #ExpiryDate {
+    #EffectiveDate, #ExpiryDate {
         width: 50px !important;
         max-width: 100% !important;
         font-family: Tahoma;
@@ -28,6 +30,9 @@
         padding-right: 2px;
     }
 
+    .hidden-block {
+        display: none !important;
+    }
 </style>
 
 <script>
@@ -81,14 +86,38 @@
         }
     }
 
+    function Change_FunctionType() {
+        var lcFunctionType = $("#FunctionType").val();
+        if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER") {
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "MODIFY_USER"){
+            $("#divPosCode").hide();
+            $("#divModify").show();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_POS"){
+            $("#divPosCode").show();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_ROLE"){
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").show();
+        }
+    }
+
     var roleLists;
     function Change_RoleOfUserIDC() {
-        var objGroupId = $("#GroupName").data("kendoComboBox");
+        var objGroupId = $("#GroupName").val();
         if (objGroupId != null) {
             $.ajax({
                 type: "GET",
                 data: {
-                    pUserRole: objGroupId.value()
+                    pUserRole: objGroupId
                 },
                 url: "../ListOfValue/GetRoleToTransferCashByUserRole",
                 success: function (data) {
@@ -97,7 +126,8 @@
                         //$("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
                         $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
                         $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
-                        //$("#UserRoleName").val(roleLists[0].UserRoleName);
+                        
+                        $("#UserRoleNameChange").val(roleLists[0].UserRoleName);
                     }
                 }
             });
@@ -107,12 +137,12 @@
 
     //Hàm dùng khi khởi động màn hình
     function Change_RoleOfUserIDCStart() {
-        var objGroupId = $("#GroupName").data("kendoComboBox");
+        var objGroupId = $("#GroupName").val();
         if (objGroupId != null) {
             $.ajax({
                 type: "GET",
                 data: {
-                    pUserRole: objGroupId.value()
+                    pUserRole: objGroupId
                 },
                 url: "../ListOfValue/GetRoleToTransferCashByUserRole",
                 success: function (data) {
@@ -121,7 +151,7 @@
                         $("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
                         $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
                         $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
-                        $("#UserRoleName").val(roleLists[0].UserRoleName);
+                        $("#UserRoleName").val(roleLists[0].UserRole + " - " + roleLists[0].UserRoleName);
                     }
                 }
             });
@@ -145,7 +175,7 @@
                         $("#StaffCode").val(staffLists[0].StaffCode);
                         $("#Genders").val(staffLists[0].GenderText);
                         $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
-                        $("#PosName").val(staffLists[0].StaffPosName);
+                        $("#PosNameIDC").val(staffLists[0].StaffPosName);
                         $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
                         $("#StaffPositionName").val(staffLists[0].StaffPositionName);
                         $("#MobileNumberEdit").val($("#MobileNumber").val());
@@ -154,13 +184,16 @@
                         $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
                         $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
                         $("#FullName").val(staffLists[0].StaffName);
+                        $("#MobileNumberIDC").val(staffLists[0].StaffMobileNo);
+                        $("#EmailAddressIDC").val(staffLists[0].StaffEmail);
+                        $("#PosCodeNew").val($("#PosCode").val());
                     }
                 }
             });
         }
     }
 
-    function onCloseUpdate(ev) {
+    function onCloseDetail(ev) {
         mainWindow.data("kendoWindow").close();
     }
 
@@ -185,7 +218,8 @@
         }
     }
 
-    function onClick(e) {
+    var lcButton = "";
+    function onClickDetail(e) {
         var lcPosCode = $("#PosCode").val();
         var lcStaffId = $("#StaffCode").val();
         if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
@@ -213,49 +247,45 @@
             }
         }
     }
-
-    function onClickApproval(e) {
-        var lcButton = "2";
-        var lcPosCode = $("#PosCode").val();
-        var lcStaffId = $("#StaffCode").val();
-        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
-            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#PosCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcStaffId == null || lcStaffId == "") {
-            alert('Cán bộ được phân giao quản lý địa bàn không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#StaffCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        var effectPicker = new Date();
-        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
-        if (effectPicker && expirePicker) {
-            var dEffectDate = effectPicker.value();
-            var dExpiryDate = expirePicker.value();
-            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
-                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
-                $('#ExpiryDate').focus();
-                e.preventDefault();
-                return false;
-            }
-        }
-    }
-
 </script>
 
 <form asp-controller="UserManagementIDC" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
     <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
     @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
     @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
-@*     @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
- *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
+    @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+    @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
+    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.FirstName, new { @Value = Model == null ? "" : Model.FirstName })
+    @Html.HiddenFor(m => m.LastName, new { @Value = Model == null ? "" : Model.LastName })
+    @Html.HiddenFor(m => m.EntityList, new { @Value = Model == null ? "" : Model.EntityList })
+    @Html.HiddenFor(m => m.AuthType, new { @Value = Model == null ? "" : Model.AuthType })
+    @Html.HiddenFor(m => m.UserType, new { @Value = Model == null ? "" : Model.UserType })
+    @Html.HiddenFor(m => m.MailIdFlag, new { @Value = Model == null ? "" : Model.MailIdFlag })
+    @Html.HiddenFor(m => m.AuthsecType, new { @Value = Model == null ? "" : Model.AuthsecType })
+    @Html.HiddenFor(m => m.ExtraAttributeUserRole, new { @Value = Model == null ? "" : Model.ExtraAttributeUserRole })
+    @Html.HiddenFor(m => m.ExtraAttributeBranchCode, new { @Value = Model == null ? "" : Model.ExtraAttributeBranchCode })
+    @Html.HiddenFor(m => m.Ticket, new { @Value = Model == null ? "" : Model.Ticket })
+    @Html.HiddenFor(m => m.OrtherNotes, new { @Value = Model == null ? "" : Model.OrtherNotes })
+    @Html.HiddenFor(m => m.StatusUpdateCore, new { @Value = Model == null ? 0 : Model.StatusUpdateCore })
+    @Html.HiddenFor(m => m.SessionValReq, new { @Value = Model == null ? true : Model.SessionValReq })
+    @Html.HiddenFor(m => m.PrevStatus, new { @Value = Model == null ? 0 : Model.PrevStatus })
+    @Html.HiddenFor(m => m.ResponseAttributes, new { @Value = Model == null ? "" : Model.ResponseAttributes })
+    @Html.HiddenFor(m => m.CallApiStatus, new { @Value = Model == null ? "" : Model.CallApiStatus })
+    @Html.HiddenFor(m => m.CallApiReqRecordSl, new { @Value = Model == null ? 0 : Model.CallApiReqRecordSl })
+    @Html.HiddenFor(m => m.CallApiResponseCode, new { @Value = Model == null ? "" : Model.CallApiResponseCode })
+    @Html.HiddenFor(m => m.CallApiResponseMsg, new { @Value = Model == null ? "" : Model.CallApiResponseMsg })
+    @Html.HiddenFor(m => m.CreatedBy, new { @Value = Model == null ? "" : Model.CreatedBy })
+    @Html.HiddenFor(m => m.CreatedDate, new { @Value = Model == null ? Model.CreatedDate : Model.CreatedDate })
+    @Html.HiddenFor(m => m.ModifiedBy, new { @Value = Model == null ? "" : Model.ModifiedBy })
+    @Html.HiddenFor(m => m.ModifiedDate, new { @Value = Model == null ? Model.ModifiedDate : Model.ModifiedDate })
+    @Html.HiddenFor(m => m.ApproverBy, new { @Value = Model == null ? "" : Model.ApproverBy })
+    @Html.HiddenFor(m => m.ApprovalDate, new { @Value = Model == null ? Model.ApprovalDate : Model.ApprovalDate })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
 
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
-        @(TempData["FlagCall"]?.ToString() == "2" ? "TRÌNH DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "PHÊ DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC")
+        @(TempData["FlagCall"]?.ToString() == "2" ? "THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "CHI TIẾT THÔNG TIN NGƯỜI DÙNG IDC")
     </div>
     <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
     <div class="align-items-center">
@@ -275,16 +305,13 @@
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;padding-right: 10px!important;">Ngày sinh</label>
-                @Html.TextBoxFor(m => m.DateOfBirth, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                @Html.TextBoxFor(m => m.DateOfBirth, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 120px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:80px;padding-top: 7px;padding-right: 10px!important;">Giới tính</label>
-                @Html.Kendo().TextBox().Name("Genders").HtmlAttributes(new { @readonly = "readonly", style = " width: 60px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("Genders").HtmlAttributes(new { @readonly = "readonly", style = " width: 70px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Điện thoại</label>
-                @Html.Kendo().TextBoxFor(m => m.MobileNumber).HtmlAttributes(new { @readonly = "readonly", style = " width: 85px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:55px;padding-top: 7px;padding-right: 10px!important;">Email</label>
-                @Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { @readonly = "readonly", style = " width: 160px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 10px!important;">Trạng thái</label>
-                @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-
+                @Html.Kendo().TextBox().Name("MobileNumberIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 10px!important;">Email</label>
+                @Html.Kendo().TextBox().Name("EmailAddressIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
 
@@ -292,28 +319,26 @@
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Chức vụ</label>
-                @Html.Kendo().TextBox().Name("StaffPositionName").HtmlAttributes(new { @readonly = "readonly", style = " width: 150px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("StaffPositionName").HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 10px!important;">Phòng ban</label>
-                @Html.Kendo().TextBox().Name("StaffDepartmentName").HtmlAttributes(new { @readonly = "readonly", style = " width: 180px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="color: navy;text-align:center;width:120px;padding-top: 7px;padding-right: 10px!important;">Ngày hiệu lực</label>
-                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
-                <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
-                @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                @Html.Kendo().TextBox().Name("StaffDepartmentName").HtmlAttributes(new { @readonly = "readonly", style = " width: 250px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Trạng thái</label>
+                @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 110px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
 
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Nhóm quyền</label>
-                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 450px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt</label>
-                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 400px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 280px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
 
         <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
-                <label class="lbcontrol" style="color: maroon;text-align:left;width:500px;padding-top: 7px;">Thay đổi thông tin người dùng IDC</label>
+                <label class="lbcontrol" style="color: maroon;text-align:left;width:500px;padding-top: 7px;">Thông tin thay đổi người dùng IDC</label>
             </div>
         </div>
 
@@ -321,13 +346,23 @@
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
-                @Html.Kendo().TextBoxFor(m=>m.FunctionTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 500px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @(Html.Kendo().ComboBoxFor(m => m.FunctionType)
+                                .DataTextField("Description")
+                                .DataValueField("Code")
+                                .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
+                                .Placeholder("Chọn nghiệp vụ yêu cầu")
+                                .HtmlAttributes(new { style = "width: 400px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                                .Filter("contains")
+                                .Events(e => e.Change("Change_FunctionType"))
+                                .SelectedIndex(0))
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
+                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
             </div>
         </div>
 
-        <div class="row" style="margin-bottom: 15px;padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
+        <div id="divPosCode" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="width: 180px;color: navy;text-align:left;">Phòng giao dịch/Hội sở tỉnh</label>
+                <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Đơn vị mới</label>
                 @(Html.Kendo().ComboBoxFor(m => m.PosCode)
                                 .Filter(FilterType.Contains)
                                 .Placeholder("--- Đơn vị ---")
@@ -335,36 +370,26 @@
                                 .DataValueField("id")
                                 .ClearButton(false)
                                 .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 200px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                                 .Events(e => e.Change("Change_PosCode"))
                                 .Suggest(true)
                                 .AutoBind(true)
                                 .SelectedIndex(0))
-                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px;">Số điện thoại</label>
-                @Html.Kendo().TextBox().Name("MobileNumberEdit").HtmlAttributes(new { style = " width: 85px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px;">Email</label>
-                @Html.Kendo().TextBox().Name("EmailEdit").HtmlAttributes(new { style = " width: 150px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-@*                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
- *@@*                 @(Html.Kendo().ComboBoxFor(m => m.Status)
-                    .Filter(FilterType.Contains)
-                    .Placeholder("--- Trạng thái ---")
-                    .DataTextField("Text")
-                    .DataValueField("Value")
-                    .BindTo(new List<SelectListItem>() {
-                        new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" },
-                        new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" }
-                    })
-                    .Suggest(true)
-                    .AutoBind(true)
-                    .HtmlAttributes(new { style = "width: 230px; color: blue;",})
-                    .Events(e => e.Change("Change_Status"))
-                    .SelectedIndex(0))
- *@            </div>
+            </div>
         </div>
 
-        <div class="row" style="margin-bottom: 15px; padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
+        <div id="divModify" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Nhóm quyền</label>
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px;">Số điện thoại</label>
+                @Html.Kendo().TextBoxFor(m => m.MobileNumber).HtmlAttributes(new { placeholder = "Số điện thoại mới", style = " width: 100px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+                <label class="lbcontrol" style="width: 80px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px;">Email</label>
+                @Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { placeholder = "Email mới", style = " width: 610px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
+            </div> 
+        </div>
+
+        <div id="divRole" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Nhóm quyền</label>
                 @(Html.Kendo().ComboBoxFor(m => m.GroupName)
                                 .Filter(FilterType.Contains)
                                 .Placeholder("--- Nhóm quyền ---")
@@ -376,38 +401,31 @@
                                 .Events(e => e.Change("Change_RoleOfUserIDC"))
                                 .Suggest(true)
                                 .AutoBind(true)
-                                .SelectedIndex(0))
-                <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt </label>
-                @Html.Kendo().TextBox().Name("RoleToTransferCashDescriptionDetail").HtmlAttributes(new { @readonly = "readonly", style = " width: 400px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                                .SelectedIndex(0))                
+                <label class="lbcontrol" style="color: navy;text-align:center;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt </label>
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescriptionDetail").HtmlAttributes(new { @readonly = "readonly", style = " width: 210px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
 
-        <div class="row" style="padding-top: 7px; padding-left: 10px; padding-bottom: 0px;">
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="width: 100px; vertical-align: middle;color: navy;text-align:left;">Ghi chú</label>
-                @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "min-height:50px;width:850px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2" })
+                <label class="lbcontrol" style="width: 150px; vertical-align: middle;color: navy;text-align:left;">Ghi chú</label>
+                @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "min-height:30px;width:790px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2", placeholder = "Ghi chú thay đổi" })
             </div>
         </div>
 
-        <div class="row" style="padding-top: 13px; padding-left: 10px; padding-bottom: 0px;">
+        <div class="row" style="padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
-                <label class="control-label" id="lblMessageInfor" style="width: 700px; text-align: left; color: red;"></label>
+                <label class="control-label" id="lblMessageInfor" style="width: 740px; text-align: left; color: red;"></label>
                 &nbsp;&nbsp;
                 @(Html.Kendo().Button()
                                 .Name("btnSave")
-                                .Events(ev => ev.Click("onClick"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin người dùng IDC" })
+                                .Events(ev => ev.Click("onClickDetail"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin phân giao cán bộ phụ trách địa bàn" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Lưu lại"))
                 &nbsp;
-                @(Html.Kendo().Button()
-                                .Name("btnApproval")
-                                .Events(ev => ev.Click("onClickApproval"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
-                                .ImageUrl(Url.Content("~/images/save.png"))
-                                .Content("Trình duyệt"))
-                &nbsp;
-                @(Html.Kendo().Button().Name("btnThoat").Events(ev => ev.Click("onCloseUpdate")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+                @(Html.Kendo().Button().Name("btnThoatDetail").Events(ev => ev.Click("onCloseDetail")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
             </div>
         </div>
 
@@ -431,7 +449,7 @@
             var form = this;
             var posCode = $("#PosCode").val();
             $("#pFlagCall").val($("#FlagCallView").val());
-            $("#pButtonType").val(lcButton);
+            $("#pButtonType").val($("#ButtonTypeView").val());
             submitFormAjax(form);
             return false;
         });
@@ -457,7 +475,7 @@
                 if (result == "0") {
                     alert("Bạn đã cập nhật thành công Thông tin người đại diện!");
                     dataChange = true;
-                    onCloseUpdate();
+                    onCloseDetail();
                 } else {
                     dataChange = false;
                     if (result == "1")
@@ -480,7 +498,27 @@
     $(document).ready(function () {
         Change_RoleOfUserIDCStart();
         LoadStaffInfoDetail();
-        var lcFlagCallView = $("#FlagCallView").val();
+        var lcFunctionType = $("#FunctionType").val();
+        if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER") {
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "MODIFY_USER"){
+            $("#divPosCode").hide();
+            $("#divModify").show();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_POS"){
+            $("#divPosCode").show();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_ROLE"){
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").show();
+        }
     });
 
 </script>

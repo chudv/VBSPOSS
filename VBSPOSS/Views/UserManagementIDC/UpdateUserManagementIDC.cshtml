@@ -178,18 +178,18 @@
             e.preventDefault();
             return false;
         }
-        var effectPicker = new Date();
-        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
-        if (effectPicker && expirePicker) {
-            var dEffectDate = effectPicker.value();
-            var dExpiryDate = expirePicker.value();
-            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
-                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
-                $('#ExpiryDate').focus();
-                e.preventDefault();
-                return false;
-            }
-        }
+        // var effectPicker = new Date();
+        // var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+        // if (effectPicker && expirePicker) {
+        //     var dEffectDate = effectPicker.value();
+        //     var dExpiryDate = expirePicker.value();
+        //     if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
+        //         alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
+        //         $('#ExpiryDate').focus();
+        //         e.preventDefault();
+        //         return false;
+        //     }
+        // }
     }
 
     function setEditMode() {
@@ -258,12 +258,34 @@
 
 <form asp-controller="UserManagementIDC" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
  <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
-    @Html.Hidden("FlagCallView", TempData["FlagCall"])
+    @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
+    @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
     @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
     @Html.HiddenFor(m => m.UserId, new { @Value = Model == null ? "" : Model.UserId })
     @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
     @Html.HiddenFor(m => m.FullName, new { @Value = Model == null ? "" : Model.FullName })
-
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.FirstName, new { @Value = Model == null ? "" : Model.FirstName })
+    @Html.HiddenFor(m => m.LastName, new { @Value = Model == null ? "" : Model.LastName })
+    @Html.HiddenFor(m => m.EntityList, new { @Value = Model == null ? "" : Model.EntityList })
+    @Html.HiddenFor(m => m.AuthType, new { @Value = Model == null ? "" : Model.AuthType })
+    @Html.HiddenFor(m => m.UserType, new { @Value = Model == null ? "" : Model.UserType })
+    @Html.HiddenFor(m => m.MailIdFlag, new { @Value = Model == null ? "" : Model.MailIdFlag })
+    @Html.HiddenFor(m => m.AuthsecType, new { @Value = Model == null ? "" : Model.AuthsecType })
+    @Html.HiddenFor(m => m.ExtraAttributeUserRole, new { @Value = Model == null ? "" : Model.ExtraAttributeUserRole })
+    @Html.HiddenFor(m => m.ExtraAttributeBranchCode, new { @Value = Model == null ? "" : Model.ExtraAttributeBranchCode })
+    @Html.HiddenFor(m => m.Ticket, new { @Value = Model == null ? "" : Model.Ticket })
+    @Html.HiddenFor(m => m.OrtherNotes, new { @Value = Model == null ? "" : Model.OrtherNotes })
+    @Html.HiddenFor(m => m.StatusText, new { @Value = Model == null ? "" : Model.StatusText })
+    @Html.HiddenFor(m => m.StatusUpdateCore, new { @Value = Model == null ? 0 : Model.StatusUpdateCore })
+    @Html.HiddenFor(m => m.SessionValReq, new { @Value = Model == null ? true : Model.SessionValReq })
+    @Html.HiddenFor(m => m.PrevStatus, new { @Value = Model == null ? 0 : Model.PrevStatus })
+    @Html.HiddenFor(m => m.ResponseAttributes, new { @Value = Model == null ? "" : Model.ResponseAttributes })
+    @Html.HiddenFor(m => m.CallApiStatus, new { @Value = Model == null ? "" : Model.CallApiStatus })
+    @Html.HiddenFor(m => m.CallApiReqRecordSl, new { @Value = Model == null ? 0 : Model.CallApiReqRecordSl })
+    @Html.HiddenFor(m => m.CallApiResponseCode, new { @Value = Model == null ? "" : Model.CallApiResponseCode })
+    @Html.HiddenFor(m => m.CallApiResponseMsg, new { @Value = Model == null ? "" : Model.CallApiResponseMsg })
+    @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "SỬA ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "THÊM MỚI NGƯỜI DÙNG IDC")
     </div>
@@ -364,9 +386,9 @@
         <div class="row" style="margin-bottom: 15px;padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left;padding-top:3px;">Ngày hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
                 <label class="lbcontrol" style="width: 180px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px;">Ngày hết hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").Value(new DateTime(2060, 12, 31)).HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+                @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 120px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
 
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
                 @(Html.Kendo().ComboBoxFor(m => m.Status)
@@ -423,7 +445,7 @@
                 $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
             }
             $("#pFlagCall").val($("#FlagCallView").val());
-            $("#pButtonType").val(lcButton);
+            $("#pButtonType").val($("#ButtonTypeView").val());
             $("#UserId").val($("#StaffCode").val());
             $("#NickName").val($("#StaffCode").val());
             var form = this;
@@ -475,7 +497,7 @@
             data: dataString,
             success: function (result) {
                 if (result == "0") {
-                    alert("Bạn đã cập nhật thành công Thông tin người đại diện!");
+                    alert("Bạn đã cập nhật thành công Thông tin người dùng IDC!");
                     dataChange = true;
                     onCloseUpdate();
                 } else {
@@ -500,13 +522,13 @@
     $(document).ready(function () {
         Change_RoleOfUserIDC();
         LoadStaffInfoDetail();
-        var lcFlagCallView = $("#FlagCallView").val();
-        if (lcFlagCallView == "2") {
-            isEditMode = true;
-            setTimeout(function() {
-                setEditMode();
-            }, 300);
-        }
+        // var lcFlagCallView = $("#FlagCallView").val();
+        // if (lcFlagCallView == "2") {
+        //     isEditMode = true;
+        //     setTimeout(function() {
+        //         setEditMode();
+        //     }, 300);
+        // }
     });
 
 </script>
