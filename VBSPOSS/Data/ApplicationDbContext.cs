@@ -25,6 +25,7 @@ namespace VBSPOSS.Data
         public virtual DbSet<Permission> Permissions { get; set; }
         public virtual DbSet<RolePermission> RolePermissions { get; set; }
         public virtual DbSet<ListOfCommune> ListOfCommunes { get; set; }
+        public virtual DbSet<ListOfCommunes> ListOfCommune { get; set; }
 
         public DbSet<TideTermWorking> TideTermWorkings { get; set; }
 
