@@ -47,6 +47,11 @@ namespace VBSPOSS.Models
         public string? ApproverBy { get; set; }
         public DateTime? ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
+
     }
 
 
@@ -86,6 +91,10 @@ namespace VBSPOSS.Models
         public string ApproverBy { get; set; }
         public DateTime ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
     }
 
     public class UserIDCApproval
