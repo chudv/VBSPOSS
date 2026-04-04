@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -65,7 +66,7 @@ namespace VBSPOSS.Integration.Implements
             {
                 return GenericListResultJava<TideIntRateResposeViewModel>.Fail($"HTTP request failed: {ex.Message}");
             }
-            catch (JsonException ex)
+            catch (Newtonsoft.Json.JsonException ex)
             {
                 return GenericListResultJava<TideIntRateResposeViewModel>.Fail($"JSON processing failed: {ex.Message}");
             }
@@ -113,7 +114,7 @@ namespace VBSPOSS.Integration.Implements
                 // Handle HTTP-specific errors (e.g., connection issues)
                 return GenericListRecordJava<CasaIntRateReposeViewModel>.Fail($"HTTP request failed: {ex.Message}");
             }
-            catch (JsonException ex)
+            catch (Newtonsoft.Json.JsonException ex)
             {
                 // Handle JSON serialization/deserialization errors
                 return GenericListRecordJava<CasaIntRateReposeViewModel>.Fail($"JSON processing failed: {ex.Message}");
@@ -735,7 +736,18 @@ namespace VBSPOSS.Integration.Implements
                 _logger.LogInformation($"Starting AddUser with UserId: {requestInput.UserId}");
 
                 // Serialize input object to JSON
-                var json = JsonConvert.SerializeObject(requestInput);
+                requestInput.IpSet = string.IsNullOrEmpty(requestInput.IpSet) ? null : requestInput.IpSet;
+                requestInput.SubType = string.IsNullOrEmpty(requestInput.SubType) ? null : requestInput.SubType;
+                requestInput.RestrictSameTimeForAllDay = string.IsNullOrEmpty(requestInput.RestrictSameTimeForAllDay) ? null : requestInput.RestrictSameTimeForAllDay;
+                if (requestInput.ListRestrictionRequest == null || requestInput.ListRestrictionRequest.Count <= 0)
+                    requestInput.ListRestrictionRequest = null;
+
+                var json = JsonConvert.SerializeObject(requestInput, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
+
+                //var json = JsonConvert.SerializeObject(requestInput);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/addUser");
 
@@ -1290,9 +1302,24 @@ namespace VBSPOSS.Integration.Implements
                                                             ResultValueAPI.ResultValue_Status_Failed);
                 }
                 _logger.LogInformation($"Starting ModifyUser with UserId: {requestInput.UserId}");
+                requestInput.EmailAddress = string.IsNullOrEmpty(requestInput.EmailAddress) ? null : requestInput.EmailAddress;
+                requestInput.Language = string.IsNullOrEmpty(requestInput.Language) ? null : requestInput.Language;
+                requestInput.StartDate = string.IsNullOrEmpty(requestInput.StartDate) ? null : requestInput.StartDate;
+                requestInput.IpSet = string.IsNullOrEmpty(requestInput.IpSet) ? null : requestInput.IpSet;
+                requestInput.SubType = string.IsNullOrEmpty(requestInput.SubType) ? null : requestInput.SubType;
+                requestInput.AuthsecType = string.IsNullOrEmpty(requestInput.AuthsecType) ? null : requestInput.AuthsecType;
+                requestInput.RestrictSameTimeForAllDay = string.IsNullOrEmpty(requestInput.RestrictSameTimeForAllDay) ? null : requestInput.RestrictSameTimeForAllDay;
+                if (requestInput.ListRestrictionRequest == null || requestInput.ListRestrictionRequest.Count <= 0)
+                    requestInput.ListRestrictionRequest = null;
+
+                var json = JsonConvert.SerializeObject(requestInput, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
 
                 // Serialize input object to JSON
-                var json = JsonConvert.SerializeObject(requestInput);
+                //var json = JsonConvert.SerializeObject(requestInput);
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/modifyUser");
 
@@ -1357,7 +1384,144 @@ namespace VBSPOSS.Integration.Implements
         }
 
 
-        //idcPendingTxn/lmsPendingTxn/ViewUserRequestViewModel/PendingTransResponseResult
+        /// <summary>
+        /// Hàm thực hiện gọi API idcPendingTxn/lmsPendingTxn Lấy danh sách giao dịch Pending theo người dùng
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/idcPendingTxn
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/lmsPendingTxn
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "userId": "68510"
+        ///     }
+        ///     Hoặc
+        ///     {
+        ///         "userId": "20047"
+        ///     }
+        /// 
+        /// </param>
+        /// <param name="pApiName">Tên API truyền vào. Nếu trống sẽ lấy cả 2 API vào (EsbApiName.LMSPendingTxn)</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu là idcPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "6",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:46:38"
+        ///             },
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "7",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:47:17"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// Nếu là lmsPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// </returns>
+        public async Task<PendingTransResponseResult> GetPendingTransactionsByAPIPendingTxn(PendingTransRequestViewModel requestInput, string pApiName)
+        {
+            try
+            {
+                _logger.LogInformation("Starting idcPendingTxn/lmsPendingTxn with input: {Input}", JsonConvert.SerializeObject(requestInput));
+                if (requestInput == null)
+                {
+                    _logger.LogWarning("GetPendingTransactionsByAPIPendingTxn failed: RequestInput is null");
+                    return PendingTransResponseResult.Fail($"GetPendingTransactionsByAPIPendingTxn failed: RequestInput is null");
+                }
+                if (string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    _logger.LogWarning("Invalid input: Tài khoản người dùng để lấy danh sách giao dịch chưa hoàn thành (Pending) không được để trống. Vui lòng kiểm tra lại!!");
+                    return PendingTransResponseResult.Fail($"Invalid input data TellerId = {requestInput.UserId}");
+                }
+                if (string.IsNullOrEmpty(pApiName))
+                {
+                    pApiName = EsbApiName.LMSPendingTxn.Code;
+                }
+
+                _logger.LogInformation($"Starting {pApiName} with UserId: {requestInput.UserId}");
+
+                // Serialize input object to JSON
+                var json = JsonConvert.SerializeObject(requestInput);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/" + pApiName);
+
+                // Send POST request
+                var response = await _clientInternalEsb.PostAsync("vbsp/internal/api/v1/" + pApiName, content);
+
+                // Ensure the response is successful
+                response.EnsureSuccessStatusCode();
+
+                // Read and deserialize response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Received response: {ResponseContent}", responseContent);
+
+                var resultPendingTrans = JsonConvert.DeserializeObject<PendingTransResponseResult>(responseContent);
+
+                if (resultPendingTrans != null)
+                {
+                    if (resultPendingTrans.ResponseCode == "0" || resultPendingTrans.ResponseCode == "00000" || resultPendingTrans.ResponseCode == "90000")
+                        return new PendingTransResponseResult(resultPendingTrans.TxnStatus, resultPendingTrans.ResponseCode, resultPendingTrans.ResponseMsg, resultPendingTrans.Records);
+                    else return PendingTransResponseResult.Fail($"{pApiName} failed: {resultPendingTrans.TxnStatus} - {resultPendingTrans.ResponseCode} - {resultPendingTrans.ResponseMsg}");
+                }
+                else return PendingTransResponseResult.Fail($"{pApiName} Response null");
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP-specific errors (e.g., connection issues)
+                return PendingTransResponseResult.Fail($"HTTP request failed: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON serialization/deserialization errors
+                return PendingTransResponseResult.Fail($"JSON processing failed: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle other unexpected errors
+                return PendingTransResponseResult.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        }
+
+
 
     }
 

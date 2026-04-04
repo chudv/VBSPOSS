@@ -361,4 +361,42 @@ namespace VBSPOSS.ViewModels
         public string TenChiNhanh { get; set; }            //Thêm
         public string KhoangThoiGian { get; set; }
     }
+
+    public class PendingTransAPIResponseViewModel
+    {
+        public string TxnStatus { get; set; }
+
+        public string ResponseCode { get; set; }
+
+        public string ResponseMsg { get; set; }
+
+        public List<PendingTransactionInforRecords> Records { get; set; }
+    }
+
+    public class PendingTransactionInforRecords
+    {
+        public string TxnRefNum { get; set; }
+
+        public string MakerDate { get; set; }       //2020-07-31 09:10:05
+
+        public string MakerId { get; set; }
+
+        public string BranchCd { get; set; }
+
+        public string Status { get; set; }
+
+        public string TransDate { get; set; }           //20220120
+
+        public string TxnNarr { get; set; }
+
+        public decimal TransAmount { get; set; }
+
+        public long BatchNum { get; set; }
+
+        public string TransType { get; set; }
+        /// <summary>
+        /// yyyyMMddHHmmss
+        /// </summary>
+        public string TranEntTime { get; set; }
+    }
 }

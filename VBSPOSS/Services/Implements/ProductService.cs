@@ -207,10 +207,30 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-
-        public List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag)
+        /// <summary>
+        /// Hàm lấy danh sách kỳ hạn
+        /// </summary>
+        /// <param name="termType">Loại kỳ hạn: M - Tháng, Q - Quý, Y - Năm</param>
+        /// <param name="termBasis">Hệ số nhân kỳ hạn: 1, 2, 3</param>
+        /// <param name="inclusionFlag">Cờ bao gồm/Không bao gồm</param>
+        /// <param name="depositType">Loại sản phầm: B - đầu kỳ, P - định kỳ, E - Cuối kỳ</param>
+        /// <returns></returns>
+        public List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag, string depositType)
         {
             var list = new List<DepositTermModel>();
+            int depositMaxTermMonth = 36;
+
+            if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
+            {
+                depositMaxTermMonth = 36;
+            }
+
+            if (termBasis <= 0)
+                throw new ArgumentException("termBasis phải > 0");
+
+            //int depositMaxTermNo = depositMaxTermMonth / termBasis;
+            int depositMaxTermNo = (int)Math.Ceiling((double)depositMaxTermMonth / termBasis);
+
             string termUnitDesc = "";
             switch (termType)
             {
@@ -225,7 +245,7 @@ namespace VBSPOSS.Services.Implements
                     break;
             }
 
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i <= depositMaxTermNo; i++)
             {
                 string termDesc = "";
                 int termValue = 0;
@@ -278,7 +298,7 @@ namespace VBSPOSS.Services.Implements
 
                 var model = new DepositTermModel
                 {
-                    Id = i+1,
+                    Id = i + 1,
                     TermCode = i.ToString(),
                     TermDesc = termDesc,
                     TermUnitCode = termType,
@@ -289,7 +309,74 @@ namespace VBSPOSS.Services.Implements
                 };
 
                 list.Add(model);
+
+
+
+
             }
+
+
+            if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
+            {
+                var model = new DepositTermModel
+                {
+                    Id = depositMaxTermNo + 2,
+                    TermCode = (depositMaxTermNo + 1).ToString(),
+                    TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn hoặc bằng 36 Tháng",
+                    TermUnitCode = termType,
+                    TermUnitName = termUnitDesc,
+                    TermValue = 36,
+                    InclusionFlag = inclusionFlag,
+                    MinTermValue = 36
+                };
+
+                list.Add(model);
+            }
+            else
+            {
+                var model = new DepositTermModel
+                {
+                    Id = 37,
+                    TermCode = "37",
+                    TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn 48 Tháng",
+                    TermUnitCode = termType,
+                    TermUnitName = termUnitDesc,
+                    TermValue = 48,
+                    InclusionFlag = inclusionFlag,
+                    MinTermValue = 36
+                };
+
+                list.Add(model);
+
+                model = new DepositTermModel
+                {
+                    Id = 38,
+                    TermCode = "38",
+                    TermDesc = "Lớn hơn hoặc bằng 48 Tháng Và Nhỏ hơn 60 Tháng",
+                    TermUnitCode = termType,
+                    TermUnitName = termUnitDesc,
+                    TermValue = 60,
+                    InclusionFlag = inclusionFlag,
+                    MinTermValue = 48
+                };
+
+                list.Add(model);
+
+                model = new DepositTermModel
+                {
+                    Id = 39,
+                    TermCode = "39",
+                    TermDesc = "Lớn hơn hoặc bằng 60 Tháng Và Nhỏ hơn hoặc bằng 60 Tháng",
+                    TermUnitCode = termType,
+                    TermUnitName = termUnitDesc,
+                    TermValue = 60,
+                    InclusionFlag = inclusionFlag,
+                    MinTermValue = 60
+                };
+
+                list.Add(model);
+            }
+
 
             return list;
         }

@@ -522,11 +522,12 @@
         var lcCircularRefNum = $("#CircularRefNum").val();
         var lcListId = $("#IdList").val();
         var reportDate = $("#CircularDateReportParam").val();
+        var posCode = $("#PosCode").val();
 
         $.ajax({
             url: '/Report/GenerateFileReport_DepositPenalIntRateConfig',
             type: 'POST',
-            data: { pListId: lcListId, pCircularRefNum: lcCircularRefNum, circularDate: reportDate },
+            data: { pListId: lcListId, pCircularRefNum: lcCircularRefNum, circularDate: reportDate, posCode: posCode },
             xhrFields: {
                 responseType: 'blob'   // BẮT BUỘC
             },
