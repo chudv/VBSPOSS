@@ -823,7 +823,7 @@ namespace VBSPOSS.Integration.Model
         /// Transaction amount - Số tiền giao dịch
         /// </summary>
         [JsonProperty("tranAmt")]
-        public decimal TransAmount { get; set; }
+        public decimal? TransAmount { get; set; }
 
         /// <summary>
         /// Transaction batch number - Số lô giao dịch
