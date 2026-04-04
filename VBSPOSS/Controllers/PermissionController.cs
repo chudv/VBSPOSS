@@ -3,6 +3,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VBSPOSS.Constants;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
@@ -43,7 +44,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Create([DataSourceRequest] DataSourceRequest request, Data.Models.Permission model)
+        public ActionResult Create([DataSourceRequest] DataSourceRequest request, Permission model)
         {
             try
             {
@@ -70,7 +71,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Edit([DataSourceRequest] DataSourceRequest request, Data.Models.Permission model)
+        public ActionResult Edit([DataSourceRequest] DataSourceRequest request, Permission model)
         {
             try
             {
@@ -94,7 +95,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Delete([DataSourceRequest] DataSourceRequest request, Data.Models.Permission model)
+        public ActionResult Delete([DataSourceRequest] DataSourceRequest request, Permission model)
         {
             try
             {

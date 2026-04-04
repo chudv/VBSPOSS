@@ -1,7 +1,8 @@
 ﻿@using Kendo.Mvc.UI
+@using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.Extensions
-@using VBSPOSS.ViewModels
 @using VBSPOSS.Models
+@using VBSPOSS.ViewModels
 @{
     ViewBag.Title = "KHAI BÁO CẤU HÌNH SẢN PHẨM TIỀN GỬI / THANH TOÁN";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -298,7 +299,7 @@
     </div>
 </div>
 
-@(Html.Kendo().Grid<VBSPOSS.Data.Models.ProductParametersView>()
+@(Html.Kendo().Grid<ProductParametersView>()
     .Name("gridProductParameter")
 
 

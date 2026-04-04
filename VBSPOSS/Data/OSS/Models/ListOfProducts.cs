@@ -1,4 +1,4 @@
-﻿namespace VBSPOSS.Data.Models
+﻿namespace VBSPOSS.Data.OSS.Models
 {
     public class ListOfProducts
     {
@@ -26,8 +26,8 @@
 
         public decimal InterestRate { get; set; } // Thêm trường InterestRate
 
-        public string? DepositeType { get; set; }
-        public string? ApplyCustomerType { get; set; }
+        public string DepositeType { get; set; }
+        public string ApplyCustomerType { get; set; }
     }
 
 

@@ -1,4 +1,5 @@
-﻿@{
+﻿@using VBSPOSS.Data.OSS.Models
+@{
     ViewBag.Title = "Quản lý nhóm người dùng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -24,7 +25,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        @(Html.Kendo().Grid<VBSPOSS.Data.Models.Role>()
+        @(Html.Kendo().Grid<Role>()
             .Name("MainGrid")
             .Events(e => e.DataBound("onRowBound"))
             .Columns(columns =>

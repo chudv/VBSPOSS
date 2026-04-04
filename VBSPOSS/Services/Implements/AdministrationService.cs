@@ -7,7 +7,7 @@ using System.Data;
 using VBSPOSS.Constants;
 using VBSPOSS.Controllers;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 

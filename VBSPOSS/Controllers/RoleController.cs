@@ -3,7 +3,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;

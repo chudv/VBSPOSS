@@ -1,6 +1,6 @@
 ﻿using VBSPOSS.Constants;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     public class InterestRateConfigMaster
     {
@@ -88,15 +88,15 @@ namespace VBSPOSS.Data.Models
         }
         //  public string StatusDesc { get; set; }
         public int StatusUpdateCore { get; set; }
-        public string? CallApiTxnStatus { get; set; }
+        public string CallApiTxnStatus { get; set; }
         public int? CallApiReqRecordSl { get; set; }
-        public string? CallApiResponseCode { get; set; }
-        public string? CallApiResponseMsg { get; set; }
-        public string? CreatedBy { get; set; }
+        public string CallApiResponseCode { get; set; }
+        public string CallApiResponseMsg { get; set; }
+        public string CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public string? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public string? ApproverBy { get; set; }
+        public string ApproverBy { get; set; }
         public DateTime? ApprovalDate { get; set; }
         public long DocumentId { get; set; }
         public string DebitCreditFlag { get; set; }

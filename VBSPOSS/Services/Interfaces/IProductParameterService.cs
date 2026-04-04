@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.ViewModels; // Giả sử Anh đã tạo các ViewModel ở đây
 
 namespace VBSPOSS.Services.Interfaces

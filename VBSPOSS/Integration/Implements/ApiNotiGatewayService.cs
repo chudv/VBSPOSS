@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.ViewModels;

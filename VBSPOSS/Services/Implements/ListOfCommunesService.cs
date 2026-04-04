@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
 using VBSPOSS.Constants;
 using VBSPOSS.Utils;
+using VBSPOSS.Data.OSS.Models;
 
 namespace VBSPOSS.Services.Implements
 {
@@ -70,7 +70,7 @@ namespace VBSPOSS.Services.Implements
                     return answer;
                 }
 
-                var profileBranchTMPs = _dbContext.ListOfCommune
+                var profileBranchTMPs = _dbContext.ListOfCommunes
                     .Where(w =>
                         (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
                         && (string.IsNullOrEmpty(pDistrictCode) || w.DistrictCode == pDistrictCode)
@@ -104,20 +104,20 @@ namespace VBSPOSS.Services.Implements
             {
                 if (model == null) return false;
 
-                bool exists = _dbContext.ListOfCommune
+                bool exists = _dbContext.ListOfCommunes
                     .Any(w => w.CommuneCode == model.CommuneCode
                            && w.PosCode == model.PosCode);
                 if (exists)
                     throw new InvalidOperationException(
                         $"Xã/Phường có mã '{model.CommuneCode}' đã tồn tại trong POS '{model.PosCode}'.");
 
-                var entity = _mapper.Map<ListOfCommunes>(model);
+                var entity = _mapper.Map<ListOfCommune>(model);
                 entity.CreatedBy = createdBy;
                 entity.CreatedDate = DateTime.Now;
                 entity.ModifiedBy = createdBy;
                 entity.ModifiedDate = DateTime.Now;
 
-                _dbContext.ListOfCommune.Add(entity);
+                _dbContext.ListOfCommunes.Add(entity);
                 _dbContext.SaveChanges();
                 return true;
             }
@@ -137,7 +137,7 @@ namespace VBSPOSS.Services.Implements
             {
                 if (model == null) return false;
 
-                var entity = _dbContext.ListOfCommune
+                var entity = _dbContext.ListOfCommunes
                     .FirstOrDefault(w => w.CommuneCode == model.CommuneCode
                                       && w.PosCode == model.PosCode);
                 if (entity == null)
@@ -167,14 +167,14 @@ namespace VBSPOSS.Services.Implements
             {
                 if (string.IsNullOrEmpty(pCommuneCode)) return false;
 
-                var entity = _dbContext.ListOfCommune
+                var entity = _dbContext.ListOfCommunes
                     .FirstOrDefault(w => w.CommuneCode == pCommuneCode
                                       && w.PosCode == pPosCode);
                 if (entity == null)
                     throw new KeyNotFoundException(
                         $"Không tìm thấy Xã/Phường mã '{pCommuneCode}'.");
 
-                _dbContext.ListOfCommune.Remove(entity);
+                _dbContext.ListOfCommunes.Remove(entity);
                 _dbContext.SaveChanges();
                 return true;
             }

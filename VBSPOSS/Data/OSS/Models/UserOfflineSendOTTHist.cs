@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     public class UserOfflineSendOTTHist
     {
@@ -48,20 +48,20 @@ namespace VBSPOSS.Data.Models
         public int Status { get; set; }
 
         [StringLength(512)]
-        public string? Remark { get; set; }
+        public string Remark { get; set; }
 
         [StringLength(64)]
-        public string? CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
         public DateTime? CreatedDate { get; set; }
 
         [StringLength(64)]
-        public string? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
 
         public DateTime? ModifiedDate { get; set; }
 
         [StringLength(64)]
-        public string? ApproverBy { get; set; }
+        public string ApproverBy { get; set; }
 
         public DateTime? ApprovalDate { get; set; }
     }

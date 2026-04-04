@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Reflection.Metadata;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Services.Implements;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
 using VBSPOSS.Constants;
 using VBSPOSS.Utils;
+using VBSPOSS.Data.OSS.Models;
 
 public class PosRepresentativeService : IPosRepresentativeService
 {

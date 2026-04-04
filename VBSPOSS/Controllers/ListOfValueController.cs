@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.ViewModel;

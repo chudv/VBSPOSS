@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.Services.Interfaces;

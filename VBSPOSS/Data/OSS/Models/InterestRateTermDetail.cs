@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     [Table("InterestRateTermDetail")]
     public class InterestRateTermDetail
@@ -17,7 +17,7 @@ namespace VBSPOSS.Data.Models
         public int Serial { get; set; }
 
         [StringLength(500)]
-        public string? TermDesc { get; set; }
+        public string TermDesc { get; set; }
 
         [Required]
         public int TermValue { get; set; }
@@ -37,7 +37,7 @@ namespace VBSPOSS.Data.Models
         public decimal? IntRateNew { get; set; }
 
         [StringLength(50)]
-        public string? IntRateType { get; set; }
+        public string IntRateType { get; set; }
 
         [Column(TypeName = "decimal(18,6)")]
         public decimal? Spread { get; set; }

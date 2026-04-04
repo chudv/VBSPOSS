@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     #region ---Model ListOfTransPoint - Danh mục điểm giao dịch ---
     public class ListOfTransPoint

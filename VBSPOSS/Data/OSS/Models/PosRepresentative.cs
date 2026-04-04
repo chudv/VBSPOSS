@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     public class PosRepresentative
     {

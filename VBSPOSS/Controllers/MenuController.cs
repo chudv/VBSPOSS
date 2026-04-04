@@ -46,7 +46,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Create([DataSourceRequest] DataSourceRequest request, Data.Models.Menu model)
+        public ActionResult Create([DataSourceRequest] DataSourceRequest request, Data.OSS.Models.Menu model)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Edit([DataSourceRequest] DataSourceRequest request, Data.Models.Menu model)
+        public ActionResult Edit([DataSourceRequest] DataSourceRequest request, Data.OSS.Models.Menu model)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace VBSPOSS.Controllers
 
         [Authorize]
         [AcceptVerbs("Post")]
-        public ActionResult Delete([DataSourceRequest] DataSourceRequest request, Data.Models.Menu model)
+        public ActionResult Delete([DataSourceRequest] DataSourceRequest request, Data.OSS.Models.Menu model)
         {
             try
             {

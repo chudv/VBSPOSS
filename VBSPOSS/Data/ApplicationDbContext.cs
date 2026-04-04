@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 
 namespace VBSPOSS.Data
@@ -25,7 +25,7 @@ namespace VBSPOSS.Data
         public virtual DbSet<Permission> Permissions { get; set; }
         public virtual DbSet<RolePermission> RolePermissions { get; set; }
         public virtual DbSet<ListOfCommune> ListOfCommunes { get; set; }
-        public virtual DbSet<ListOfCommunes> ListOfCommune { get; set; }
+        //public virtual DbSet<ListOfCommunes> ListOfCommune { get; set; }
 
         public DbSet<TideTermWorking> TideTermWorkings { get; set; }
 

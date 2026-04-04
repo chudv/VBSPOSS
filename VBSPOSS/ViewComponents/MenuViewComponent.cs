@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers.Interfaces;
-using VBSPOSS.Services.Interfaces ;
+using VBSPOSS.Services.Interfaces;
 
 namespace VBSPOSS.ViewComponents
 {
