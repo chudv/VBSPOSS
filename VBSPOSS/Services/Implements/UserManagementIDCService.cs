@@ -298,6 +298,9 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.CallApiReqRecordSl = 0; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseCode = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseMsg = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.IpSetCode = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.IpSetDetail = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.RestrictionFlag = 0; //Xử lý khi gọi API
                         if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                         {
                             objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
@@ -309,6 +312,7 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserManagementUpdNew.ApproverBy = "";
                             objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.StartDate = dCurrentDateTmp;
                         }
                         else
                         {
@@ -321,6 +325,7 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserManagementUpdNew.ApproverBy = pUserManagementUpd.ApproverBy;
                             objUserManagementUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
+                            objUserManagementUpdNew.StartDate = pUserManagementUpd.StartDate;
                         }
 
                         _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);

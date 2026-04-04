@@ -58,7 +58,10 @@ namespace VBSPOSS.ViewModels
         public string GroupNameDetail { get; set; }
         public string RoleToTransferCashDescriptionDetail { get; set; }
         public string RoleToTransferCashName { get; set; }
-
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
     }
 
 
@@ -107,6 +110,10 @@ namespace VBSPOSS.ViewModels
         public string GroupNameDetail { get; set; }
         public string RoleToTransferCashDescriptionDetail { get; set; }
         public string RoleToTransferCashName { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
     }
 
 
