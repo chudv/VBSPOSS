@@ -29,13 +29,15 @@ namespace VBSPOSS.Services.Implements
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly ILogger<UserManagementIDCService> _logger;
-        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
+        private readonly IListOfValueService _serviceLOV;
+        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
                         ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
             _mapper = mapper;
             _apiInternalEsbService = apiInternalEsbService;
             _logger = logger;
+            _serviceLOV = serviceLOV;
         }
         /// <summary>
         /// Hàm lấy danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC
@@ -672,7 +674,7 @@ namespace VBSPOSS.Services.Implements
                 if (requestInput != null && !string.IsNullOrEmpty(requestInput.TellerId))
                 {
                     if (string.IsNullOrEmpty(requestInput.MkrId))
-                        requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     var apiResponse = await _apiInternalEsbService.ChangeRoleToTransferCashByAPITellerRoleAssign(requestInput);
 
                     if (apiResponse == null)

@@ -891,7 +891,7 @@ namespace VBSPOSS.Controllers
             if (!string.IsNullOrEmpty(pParentId_TKiem))
             {
                 //Lấy Id danh mục từ mã số danh mục
-                var listObj = _serviceLOV.GetListOfValueByCode(pParentId_TKiem, DefaultValue.StatusClosed);
+                var listObj = _serviceLOV.GetListOfValueByCode(-1, "", pParentId_TKiem, DefaultValue.StatusClosed);
                 if (listObj != null)
                     iParentId = listObj.Id;
                 else iParentId = -1;

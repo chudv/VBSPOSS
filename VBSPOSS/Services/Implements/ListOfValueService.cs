@@ -344,10 +344,12 @@ namespace VBSPOSS.Services.Implements
         /// <summary>
         /// Bản ghi thông tin danh mục theo Mã số danh mục truyền vào
         /// </summary>
+        /// <param name="pParentId">Chỉ số xác định danh mục cha. Nếu lấy tất truyền vào là -1</param>
+        /// <param name="pParentCode">Mã xác định danh mục cha. Nếu lấy tất truyền vào là Rỗng</param>
         /// <param name="pCode">Mã số xác định bản ghi</param>
         /// <param name="pStatus">Trạng thái danh mục (Không bắt buộc). Nếu truyền -1 lấy tất; Nếu truyền 1 lấy danh mục mở</param>
         /// <returns>Bản ghi danh mục trả ra</returns>
-        public ListOfValueViewModel GetListOfValueByCode(string pCode, int pStatus)
+        public ListOfValueViewModel GetListOfValueByCode(int pParentId, string pParentCode, string pCode, int pStatus)
         {
             try
             {
@@ -355,6 +357,8 @@ namespace VBSPOSS.Services.Implements
                 var profileListRoots = _dbContext.ListOfValues.Where(w => w.ParentId == 0).OrderBy(o => o.Id).ToList();
 
                 var profileList = _dbContext.ListOfValues.Where(w => w.Code == pCode
+                                        && (pParentId == -1 || w.ParentId == pParentId)
+                                        && (string.IsNullOrEmpty(pParentCode) || w.ParentCode == pParentCode)
                                         && (pStatus == -1 || w.Status == pStatus)
                                         ).OrderBy(o => o.Code).ThenBy(o => o.ParentCode).ThenBy(o => o.OrderNo).ThenBy(o => o.OrderNoText).ThenBy(o => o.PrintType).FirstOrDefault();
                 if (profileList == null)

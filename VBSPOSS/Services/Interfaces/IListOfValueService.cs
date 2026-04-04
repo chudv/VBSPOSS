@@ -63,10 +63,12 @@ namespace VBSPOSS.Services.Interfaces
         /// <summary>
         /// Bản ghi thông tin danh mục theo Mã số danh mục truyền vào
         /// </summary>
+        /// <param name="pParentId">Chỉ số xác định danh mục cha. Nếu lấy tất truyền vào là -1</param>
+        /// <param name="pParentCode">Mã xác định danh mục cha. Nếu lấy tất truyền vào là Rỗng</param>
         /// <param name="pCode">Mã số xác định bản ghi</param>
         /// <param name="pStatus">Trạng thái danh mục (Không bắt buộc). Nếu truyền -1 lấy tất; Nếu truyền 1 lấy danh mục mở</param>
         /// <returns>Bản ghi danh mục trả ra</returns>
-        ListOfValueViewModel GetListOfValueByCode(string pCode, int pStatus);
+        ListOfValueViewModel GetListOfValueByCode(int pParentId, string pParentCode, string pCode, int pStatus);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục chung

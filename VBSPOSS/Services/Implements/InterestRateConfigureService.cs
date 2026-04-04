@@ -36,15 +36,17 @@ namespace VBSPOSS.Services.Implements
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly IProductService _productService;
+        private readonly IListOfValueService _serviceLOV;
         private readonly ILogger<InterestRateConfigureService> _logger;
-        public InterestRateConfigureService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IProductService productService, ILogger<InterestRateConfigureService> logger)
+        public InterestRateConfigureService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
+                        IProductService productService, ILogger<InterestRateConfigureService> logger, IListOfValueService serviceLOV)
         {
             _dbContext = context;
             _mapper = mapper;
             _apiInternalEsbService = apiInternalEsbService;
             _productService = productService;
             _logger = logger;
-
+            _serviceLOV = serviceLOV;
         }
 
         //public async Task<List<InterestRateConfigMasterModel>> GetInterestRateConfigMasterListAsync(string productGroupCode, string posCode, string productCode,
@@ -811,7 +813,7 @@ namespace VBSPOSS.Services.Implements
                 _request.PosCode = posCode;
                 _request.ProdCode = productCode;
                 _request.EffectDate = _strEffectDate;
-                _request.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                _request.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;.  ConstValueAPI.UserId_Call_ApiIDC;
                 _request.SourceId = ConstValueAPI.SourceId;
                 var response = await _apiInternalEsbService.GetListDepositInterestRate(_request);
                 if (response == null || response.Result == null || !response.Result.Any())
@@ -1054,7 +1056,7 @@ namespace VBSPOSS.Services.Implements
                     PosCode = posCode,
                     ProductCode = productCode,
                     EffectiveDate = _strEffectDate,
-                    UserId = ConstValueAPI.UserId_Call_ApiIDC,
+                    UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}"),
                     DebitCreditFlag = "C",
                     Currency = "VND"
                 };
@@ -1177,15 +1179,13 @@ namespace VBSPOSS.Services.Implements
                 {
                     PosCode = posCode,
                     EffectiveDate = referenceDate.ToString("yyyyMMdd"),
-                    UserId = ConstValueAPI.UserId_Call_ApiIDC,
+                    UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}"),//                    ConstValueAPI.UserId_Call_ApiIDC,
                     DebitCreditFlag = "C",
                     Currency = "VND"
                 };
 
-
                 var listProductParameters = _productService.GetListProductParametersSearch(ProductGroupCode.ProductGroupCode_Casa, "",
                                                                     referenceDate, ConfigStatus.AUTHORIZED.Value);
-
                 int globalIdCounter = 1;
 
                 foreach (var prodCode in productCodes.Distinct())
@@ -2902,7 +2902,9 @@ namespace VBSPOSS.Services.Implements
 
                 //Bổ sung phần gọi api cập nhật vào CoreBanking
                 TideIntRatesRequestViewModel requestData = new TideIntRatesRequestViewModel();
-                requestData.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                requestData.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;
+                _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;
+
                 requestData.BankCircularDate = DateTime.UtcNow.ToString("yyyyMMdd");
 
 
@@ -3279,7 +3281,7 @@ namespace VBSPOSS.Services.Implements
 
                 CasaIntRatesRequestViewModel requestData = new CasaIntRatesRequestViewModel
                 {
-                    UserId = ConstValueAPI.UserId_Call_ApiIDC,
+                    UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}"),
                     BankCircularDate = DateTime.UtcNow.ToString("yyyyMMdd"),
                     BankCircularRefNum = ""   // sẽ gán sau
                 };
@@ -3427,7 +3429,7 @@ namespace VBSPOSS.Services.Implements
                 pProductCode = string.IsNullOrEmpty(pProductCode) ? "0" : pProductCode;
                 string sEffectDate = pEffectDate.ToString(FormatParameters.FORMAT_DATE_INT);
                 DepositPenalIntRateRequestViewModel requestInput = new DepositPenalIntRateRequestViewModel();
-                requestInput.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                requestInput.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                 requestInput.ProductCode = pProductCode;
                 requestInput.CurrencyCode = pCurrencyCode;
                 requestInput.EffDate = sEffectDate;
@@ -3451,7 +3453,7 @@ namespace VBSPOSS.Services.Implements
                 if (pPosCode != PosValue.BANK_WIDE && pPosCode != PosValue.SYSTEM_WIDE)
                 {
                     DepositPenalIntRateRequestViewModel requestInputHO = new DepositPenalIntRateRequestViewModel();
-                    requestInputHO.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                    requestInputHO.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     requestInputHO.ProductCode = pProductCode;
                     requestInputHO.CurrencyCode = pCurrencyCode;
                     requestInputHO.EffDate = sEffectDate;
@@ -3627,7 +3629,7 @@ namespace VBSPOSS.Services.Implements
                     if (pPosCode != PosValue.HEAD_POS && pPosCode != PosValue.BANK_WIDE && pPosCode != PosValue.SYSTEM_WIDE)
                     {
                         DepositPenalIntRateRequestViewModel requestInputHO = new DepositPenalIntRateRequestViewModel();
-                        requestInputHO.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                        requestInputHO.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                         requestInputHO.ProductCode = pProductCode;
                         requestInputHO.CurrencyCode = pCurrencyCode;
                         requestInputHO.EffDate = pFromEffectDate.ToString(FormatParameters.FORMAT_DATE_INT);
@@ -3752,7 +3754,7 @@ namespace VBSPOSS.Services.Implements
                                 objIntRateCofigUpdNew.PosCode = itemUpd.PosCode;
                                 objIntRateCofigUpdNew.PosName = itemUpd.PosName;
                                 objIntRateCofigUpdNew.ProductGroupCode = string.IsNullOrEmpty(itemUpd.ProductGroupCode) ? "" : itemUpd.ProductGroupCode;//ProductGroupCode.ProductGroupCode_DepositPenal
-                                objIntRateCofigUpdNew.UserId = string.IsNullOrEmpty(itemUpd.UserId) ? ConstValueAPI.UserId_Call_ApiIDC : itemUpd.UserId;
+                                objIntRateCofigUpdNew.UserId = string.IsNullOrEmpty(itemUpd.UserId) ? _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}") : itemUpd.UserId;
                                 objIntRateCofigUpdNew.CircularDate = itemUpd.CircularDate.Value.Date;
                                 objIntRateCofigUpdNew.CircularRefNum = itemUpd.CircularRefNum;
                                 objIntRateCofigUpdNew.RecordSerialNo = itemUpd.RecordSerialNo;
@@ -3850,7 +3852,7 @@ namespace VBSPOSS.Services.Implements
                                     objIntRateUpdate.PosCode = itemUpd.PosCode;
                                     objIntRateUpdate.PosName = itemUpd.PosName;
                                     objIntRateUpdate.ProductGroupCode = string.IsNullOrEmpty(itemUpd.ProductGroupCode) ? "" : itemUpd.ProductGroupCode;//ProductGroupCode.ProductGroupCode_DepositPenal
-                                    objIntRateUpdate.UserId = string.IsNullOrEmpty(itemUpd.UserId) ? ConstValueAPI.UserId_Call_ApiIDC : itemUpd.UserId;
+                                    objIntRateUpdate.UserId = string.IsNullOrEmpty(itemUpd.UserId) ? _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}") : itemUpd.UserId;
                                     objIntRateUpdate.CircularDate = itemUpd.CircularDate.Value.Date;
                                     objIntRateUpdate.CircularRefNum = itemUpd.CircularRefNum;
                                     objIntRateUpdate.RecordSerialNo = itemUpd.RecordSerialNo;
@@ -4299,9 +4301,8 @@ namespace VBSPOSS.Services.Implements
                         listRecordTidePenalIntRate.Add(objChildRequestPenalIntRate);
                     }
                     objTidePenalIntRateRequest.RecordTidePenalInterestRateViewModel = listRecordTidePenalIntRate;
-                    objRequestInput.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                    objRequestInput.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     objRequestInput.TidePenalInterestRatesRequestViewModel = objTidePenalIntRateRequest;
-
 
                     if (iStatusAuthorizeOrReject == StatusTrans.Status_Authorized.Value)
                     {

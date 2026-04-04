@@ -163,12 +163,12 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class ConstValueAPI
     {
-        public const string UserId_Call_ApiIDC = "IDCADMIN";
+        //public const string UserId_Call_ApiIDC = "IDCADMIN";
         public const string SourceId = "MB";
         public const string DebitCreditFlagDefault = "C";
         public const string CurrencyValueDefault = "VND";
         public const string Ticket = "";
-        public const string EntityList = "IDCPRODC";
+        //public const string EntityList = "IDCPRODC";
     }
 
     public class DepositType
@@ -622,7 +622,6 @@ namespace VBSPOSS.Constants
 
     }
 
-
     /// <summary>
     /// Mã danh mục cha (ParentCode)
     /// </summary>
@@ -639,12 +638,12 @@ namespace VBSPOSS.Constants
         public const string ParentCodeDepartment = "1500";
 
         /// <summary>
-        /// Id danh mục cha của danh mục Chúc vụ: ParentIdPosition = 14;
+        /// Id danh mục cha của danh mục Chức vụ: ParentIdPosition = 14;
         /// </summary>
         public const int ParentIdPosition = 14;
 
         /// <summary>
-        /// Mã danh mục cha của danh mục Chúc vụ: ParentCodePosition = "1400";
+        /// Mã danh mục cha của danh mục Chức vụ: ParentCodePosition = "1400";
         /// </summary>
         public const string ParentCodePosition = "1400";
 
@@ -659,14 +658,24 @@ namespace VBSPOSS.Constants
         public const string ParentCode_UserRoleIDC = "0100";
 
         /// <summary>
-        /// Id danh mục cha của danh mục Chúc vụ: ParentIdProfessionalQualifications = 38;
+        /// Id danh mục cha của danh mục Trình độ: ParentIdProfessionalQualifications = 38;
         /// </summary>
         public const int ParentIdProfessionalQualifications = 38;
 
         /// <summary>
-        /// Mã danh mục cha của danh mục Chúc vụ: ParentIdProfessionalQualifications = 38;
+        /// Mã danh mục cha của danh mục Trình độ: ParentCodeProfessionalQualifications = "3800";
         /// </summary>
         public const string ParentCodeProfessionalQualifications = "3800";
+
+        /// <summary>
+        /// Id danh mục cha của danh mục Cấu hình một số liên quan tới Intelect: ParentIdConfigIntellectIDC = 2;
+        /// </summary>
+        public const int ParentIdConfigIntellectIDC = 2;
+
+        /// <summary>
+        /// Mã danh mục cha của danh mục Cấu hình một số liên quan tới Intelect: ParentCodeConfigIntellectIDC = "0200";
+        /// </summary>
+        public const string ParentCodeConfigIntellectIDC = "0200";
     }
 
     public static class FormatParameters
