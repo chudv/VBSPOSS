@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using VBSPOSS.Constants;
 using VBSPOSS.Integration.Interfaces;
@@ -66,7 +65,7 @@ namespace VBSPOSS.Integration.Implements
             {
                 return GenericListResultJava<TideIntRateResposeViewModel>.Fail($"HTTP request failed: {ex.Message}");
             }
-            catch (JsonException ex)
+            catch (Newtonsoft.Json.JsonException ex)
             {
                 return GenericListResultJava<TideIntRateResposeViewModel>.Fail($"JSON processing failed: {ex.Message}");
             }
@@ -114,7 +113,7 @@ namespace VBSPOSS.Integration.Implements
                 // Handle HTTP-specific errors (e.g., connection issues)
                 return GenericListRecordJava<CasaIntRateReposeViewModel>.Fail($"HTTP request failed: {ex.Message}");
             }
-            catch (JsonException ex)
+            catch (Newtonsoft.Json.JsonException ex)
             {
                 // Handle JSON serialization/deserialization errors
                 return GenericListRecordJava<CasaIntRateReposeViewModel>.Fail($"JSON processing failed: {ex.Message}");
