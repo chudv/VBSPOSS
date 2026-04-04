@@ -1,5 +1,6 @@
 ﻿@using Kendo.Mvc
 @using Kendo.Mvc.UI
+@using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.Extensions
 @using VBSPOSS.Models
 
@@ -544,7 +545,7 @@
 
     <div style="color: navy; padding-top: 0px; display:flex;" class="row">
         <div class="col-md-12">
-            @(Html.Kendo().Grid<VBSPOSS.Data.Models.InterestRateConfigMasterView>()
+            @(Html.Kendo().Grid<InterestRateConfigMasterView>()
                 .Name("gridMainTidePanelRate")
                 .Events(e => e.DataBound("onRowBoundTidePenalRate"))
                 .Columns(columns =>

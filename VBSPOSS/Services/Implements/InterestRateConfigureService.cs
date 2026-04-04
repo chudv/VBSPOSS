@@ -16,7 +16,7 @@ using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Controllers;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers;
 using VBSPOSS.Integration.Implements;
 using VBSPOSS.Integration.Interfaces;
@@ -27,6 +27,7 @@ using VBSPOSS.Utils;
 using VBSPOSS.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
+using VBSPOSS.Data.OSS.Models;
 
 namespace VBSPOSS.Services.Implements
 {

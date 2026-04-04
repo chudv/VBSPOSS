@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
 using VBSPOSS.Constants;
 using VBSPOSS.Utils;
+using VBSPOSS.Data.OSS.Models;
 
 namespace VBSPOSS.Services.Implements
 {

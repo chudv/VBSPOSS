@@ -25,9 +25,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Lấy chuỗi kết nối
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var iDCConnString = builder.Configuration.GetConnectionString("IntellectIDCConnection") ?? throw new InvalidOperationException("Connection string 'IntellectIDCConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDbContext<MyIdentityDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<IntellectIDCDbContext>(options =>options.UseOracle(iDCConnString));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<MyIdentityDbContext>();

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using VBSPOSS.Constants;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     public class ProductParameter
     {

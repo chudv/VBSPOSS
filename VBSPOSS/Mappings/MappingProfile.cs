@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.ViewModels;

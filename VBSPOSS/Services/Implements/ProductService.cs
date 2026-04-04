@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;

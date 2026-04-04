@@ -1,4 +1,4 @@
-﻿namespace VBSPOSS.Data.Models
+﻿namespace VBSPOSS.Data.OSS.Models
 {
     using System;
     using System.ComponentModel.DataAnnotations;
@@ -26,10 +26,10 @@
         public string Sex { get; set; }
 
         [StringLength(8)]
-        public string? TitleCode { get; set; }
+        public string TitleCode { get; set; }
 
         [StringLength(8)]
-        public string? DepartmentCode { get; set; }
+        public string DepartmentCode { get; set; }
 
         [Required]
         [StringLength(8)]
@@ -53,44 +53,44 @@
         public string IssuedPlace { get; set; }
 
         [StringLength(128)]
-        public string? Mobile { get; set; }
+        public string Mobile { get; set; }
 
         [StringLength(128)]
-        public string? Fax { get; set; }
+        public string Fax { get; set; }
 
         [StringLength(128)]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [StringLength(512)]
-        public string? Address { get; set; }
+        public string Address { get; set; }
 
         [StringLength(512)]
-        public string? Note { get; set; }
+        public string Note { get; set; }
 
         public byte? Status { get; set; }
 
         public byte? NoStaffFlag { get; set; }
 
         [StringLength(512)]
-        public string? NoStaffOrganizationPlace { get; set; }
+        public string NoStaffOrganizationPlace { get; set; }
 
         [StringLength(512)]
-        public string? NoStaffTitle { get; set; }
+        public string NoStaffTitle { get; set; }
 
-        public byte[]? Image { get; set; }
+        public byte[] Image { get; set; }
 
         [StringLength(32)]
-        public string? CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
         public DateTime? CreatedDate { get; set; }
 
         [StringLength(32)]
-        public string? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
 
         public DateTime? ModifiedDate { get; set; }
 
-        public string? TitleDesc { get; set; }  
+        public string TitleDesc { get; set; }  
 
-        public string? DepartmentDesc { get; set; }
+        public string DepartmentDesc { get; set; }
     }
 }

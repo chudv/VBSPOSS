@@ -14,7 +14,7 @@ using System.Security.Policy;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers;
 using VBSPOSS.Helpers.Interfaces;

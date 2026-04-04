@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VBSPOSS.Data.Models
+namespace VBSPOSS.Data.OSS.Models
 {
     #region ---Model ListOfValue - Danh mục chung ---
     public class ListOfValue
@@ -36,10 +36,10 @@ namespace VBSPOSS.Data.Models
         public int Status { get; set; }
 
         [Column("CodeOfLovUsed")]
-        public string? CodeOfLovUsed { get; set; }
+        public string CodeOfLovUsed { get; set; }
 
         [Column("Notes")]
-        public string? Notes { get; set; }
+        public string Notes { get; set; }
 
         [Column("LevelCode")]
         public string LevelCode { get; set; }
@@ -57,13 +57,13 @@ namespace VBSPOSS.Data.Models
         public int CategoryLevel { get; set; }
 
         [Column("CreatedBy")]
-        public string? CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
         [Column("CreatedDate")]
         public DateTime? CreatedDate { get; set; }
 
         [Column("ModifiedBy")]
-        public string? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
 
         [Column("ModifiedDate")]
         public DateTime? ModifiedDate { get; set; }

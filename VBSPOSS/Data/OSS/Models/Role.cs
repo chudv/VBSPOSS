@@ -1,4 +1,4 @@
-﻿namespace VBSPOSS.Data.Models
+﻿namespace VBSPOSS.Data.OSS.Models
 {
     public class Role
     {
@@ -9,9 +9,9 @@
         public int Status { get; set; }
 
         public int GrantType { get; set; }  
-        public string? CreatedBy { get; set; }  
+        public string CreatedBy { get; set; }  
         public DateTime? CreatedDate { get; set; }  
-        public string? ModifiedBy { get; set; } 
+        public string ModifiedBy { get; set; } 
         public DateTime? ModifiedDate { get; set; }   
     }
 }

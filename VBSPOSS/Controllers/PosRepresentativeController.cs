@@ -8,7 +8,7 @@ using System.Net.NetworkInformation;
 using VBSPOSS.Constants;
 using VBSPOSS.Controllers;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Implements.Helpers;

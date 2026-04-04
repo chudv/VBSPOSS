@@ -1,5 +1,6 @@
 ﻿@model VBSPOSS.ViewModels.AddCasaProductViewModel
 @using Kendo.Mvc.UI
+@using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.Extensions
 
 @{
@@ -521,7 +522,7 @@
 
     <!-- Grid file đính kèm -->
     <div class="row" style="padding-top: 10px;">
-        @(Html.Kendo().Grid<VBSPOSS.Data.Models.AttachedFileInfo>()
+        @(Html.Kendo().Grid<AttachedFileInfo>()
             .Name("attachedFilesGrid")
             .Columns(columns =>
             {

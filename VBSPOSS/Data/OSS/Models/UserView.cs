@@ -1,4 +1,4 @@
-﻿namespace VBSPOSS.Data.Models
+﻿namespace VBSPOSS.Data.OSS.Models
 {
     public class UserView
     {
@@ -35,7 +35,7 @@
 
         public string IssuedPlace { get; set; }
 
-        public string? Mobile { get; set; }  
+        public string Mobile { get; set; }  
 
         public string Email { get; set; }   
 
@@ -43,11 +43,11 @@
 
         public string StatusDesc { get; set; }  
 
-        public string? CreatedBy { get;set; }
+        public string CreatedBy { get;set; }
 
         public DateTime? CreatedDate {  get; set; }    
 
-        public string? ModifiedBy { get; set; }  
+        public string ModifiedBy { get; set; }  
 
         public DateTime? ModifiedDate { get; set; }  
 

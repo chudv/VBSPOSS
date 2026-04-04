@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using NuGet.Configuration;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers;

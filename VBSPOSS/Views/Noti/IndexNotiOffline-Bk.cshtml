@@ -1,4 +1,5 @@
 ﻿@using Kendo.Mvc
+@using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.Extensions
 @using VBSPOSS.Models
 @{
@@ -835,7 +836,7 @@
     <div style="margin-top: 5px;"></div>
     <div style="color: navy; padding-top: 0px; display:flex;" class="row">
         <div class="col-md-12">
-            @(Html.Kendo().Grid<VBSPOSS.Data.Models.InterestRateConfigMasterView>()
+            @(Html.Kendo().Grid<InterestRateConfigMasterView>()
                 .Name("gridMainCasaRate")
                 .Events(e => e.DataBound("onRowBoundCasaRateConfigure"))
                 .Columns(columns =>
