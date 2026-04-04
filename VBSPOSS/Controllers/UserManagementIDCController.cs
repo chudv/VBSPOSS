@@ -220,11 +220,11 @@ namespace VBSPOSS.Controllers
                 sNameView = "UpdateUserManagementIDC";
             else if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
                 sNameView = "AuthorizeUserManagementIDC";
-            else
-            {
-                ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
+            else           
                 sNameView = "DetailUserManagementIDC";
-            }    
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
+            ViewBag.MailIdFlags = MailIdFlag.GetAll();
+            ViewBag.AuthSecTypes = AuthSecType.GetAll();
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
             TempData["ButtonType"] = pButtonType;

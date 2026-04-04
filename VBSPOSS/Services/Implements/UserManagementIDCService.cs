@@ -264,11 +264,14 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.UserId = pUserManagementUpd.UserId;
                         if (!string.IsNullOrWhiteSpace(pUserManagementUpd.FullName))
                         {
-                            var partName= pUserManagementUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            var partName = pUserManagementUpd.FullName
+                                .Trim()
+                                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        
                             if (partName.Length > 0)
                             {
-                                objUserManagementUpdNew.FirstName = partName[0];
-                                objUserManagementUpdNew.LastName = string.Join(" ", partName.Skip(1));
+                                objUserManagementUpdNew.LastName = partName[^1];
+                                objUserManagementUpdNew.FirstName = string.Join(" ", partName.Take(partName.Length - 1));
                             }
                         }
                         objUserManagementUpdNew.NickName = pUserManagementUpd.NickName;
@@ -301,6 +304,7 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.IpSetCode = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.IpSetDetail = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.RestrictionFlag = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.SubType = "1";
                         if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                         {
                             objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;

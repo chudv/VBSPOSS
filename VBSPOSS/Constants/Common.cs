@@ -735,6 +735,17 @@ namespace VBSPOSS.Constants
             };
         }
 
+        public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            { 
+                MailIdFlag_DefaultPassword,
+                MailIdFlag_RandomSendEmail,
+                MailIdFlag_LinkPassword,
+                MailIdFlag_RandomSendAPI
+            };
+        }
+
     }
 
     /// <summary>
@@ -798,7 +809,7 @@ namespace VBSPOSS.Constants
         /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Không dùng phương thức xác thực thứ 2: AuthSecType_Single = 0
         /// </summary>
-        public static ValueConstModel AuthSecType_Single = new ValueConstModel { Value = 0, Code = "0", Description = "" };
+        public static ValueConstModel AuthSecType_Single = new ValueConstModel { Value = 0, Code = "0", Description = "None" };
 
         /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Native: AuthSecType_Native = 1
