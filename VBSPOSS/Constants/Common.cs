@@ -163,12 +163,12 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class ConstValueAPI
     {
-        //public const string UserId_Call_ApiIDC = "IDCADMIN";
         public const string SourceId = "MB";
         public const string DebitCreditFlagDefault = "C";
         public const string CurrencyValueDefault = "VND";
         public const string Ticket = "";
-        //public const string EntityList = "IDCPRODC";
+        public const string EntityList_Code = "EntityList";
+        public const string UserId_Call_ApiIDC_Code = "UserIdCallAPIIDC";
     }
 
     public class DepositType
@@ -718,7 +718,10 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel MailIdFlag_LinkPassword = new ValueConstModel { Value = 2, Code = "2", Description = "Mật khẩu được gửi qua link vào email của người dùng" };
 
-        public static ValueConstModel MailIdFlag_RandomSendAPI = new ValueConstModel { Value = 4, Code = "4", Description = "Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng" };
+        /// <summary>
+        /// Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        /// </summary>
+        public static ValueConstModel MailIdFlag_RandomSendAPI = new ValueConstModel { Value = 4, Code = "4", Description = "Được thông báo qua OTT trên ứng dụng QLTDCS cho người dùng" };
 
         public static ValueConstModel GetByValue(int value)
         {
@@ -757,8 +760,6 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_EDIT = new ValueConstModel { Value = 10, Code = "EDIT", Description = "Chỉnh sửa thông tin người dùng IDC" };
 
-
-
         public static ValueConstModel GetByValue(int value)
         {
             return value switch
@@ -787,9 +788,133 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_CHANGE_ROLE
             };
         }
+    }
 
+    /// <summary>
+    /// Phương thức xác thực của người dùng khi đăng nhập vào iDC
+    /// </summary>
+    public class AuthSecType
+    {
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Native: AuthSecType_Native = 1
+        /// </summary>
+        public static ValueConstModel AuthSecType_Native = new ValueConstModel { Value = 1, Code = "1", Description = "Native" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => LDAP: AuthSecType_LDAP = 2
+        /// </summary>
+        public static ValueConstModel AuthSecType_LDAP = new ValueConstModel { Value = 2, Code = "2", Description = "LDAP" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Safeword: AuthSecType_Safeword = 3
+        /// </summary>
+        public static ValueConstModel AuthSecType_Safeword = new ValueConstModel { Value = 3, Code = "3", Description = "Safeword" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => RSA: AuthSecType_RSA = 4
+        /// </summary>
+        public static ValueConstModel AuthSecType_RSA = new ValueConstModel { Value = 4, Code = "4", Description = "RSA" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => SMS OTP: AuthSecType_SMSOTP = 5
+        /// </summary>
+        public static ValueConstModel AuthSecType_SMSOTP = new ValueConstModel { Value = 5, Code = "5", Description = "SMS OTP" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => VASCO Token: AuthSecType_VascoToken = 6
+        /// </summary>
+        public static ValueConstModel AuthSecType_VascoToken = new ValueConstModel { Value = 6, Code = "6", Description = "VASCO Token" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => EMV Card: AuthSecType_EMVCard = 7
+        /// </summary>
+        public static ValueConstModel AuthSecType_EMVCard = new ValueConstModel { Value = 7, Code = "7", Description = "EMV Card" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => VASCO Token for transaction: AuthSecType_VASCOTokenTrans = 8
+        /// </summary>
+        public static ValueConstModel AuthSecType_VASCOTokenTrans = new ValueConstModel { Value = 8, Code = "8", Description = "VASCO Token for transaction" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => SMS OTP for Transaction: AuthSecType_SMSOTPTrans = 9
+        /// </summary>
+        public static ValueConstModel AuthSecType_SMSOTPTrans = new ValueConstModel { Value = 9, Code = "9", Description = "SMS OTP for Transaction" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => USB eToken: AuthSecType_USBEToken = 11
+        /// </summary>
+        public static ValueConstModel AuthSecType_USBEToken = new ValueConstModel { Value = 11, Code = "11", Description = "USB eToken" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => SMS OTP (TIBCO): AuthSecType_SMSOTP_TIBCO = 12
+        /// </summary>
+        public static ValueConstModel AuthSecType_SMSOTP_TIBCO = new ValueConstModel { Value = 12, Code = "12", Description = "SMS OTP (TIBCO)" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Native Transaction: AuthSecType_NativeTrans = 13
+        /// </summary>
+        public static ValueConstModel AuthSecType_NativeTrans = new ValueConstModel { Value = 13, Code = "13", Description = "Native Transaction - Xác thực nội bộ theo phương thức nền tảng tự xử lý)" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Blackshiel - Giải pháp xác thực đa nhân tố của SafeNet (Gemalto/Thales): AuthSecType_Blackshiel = 14
+        /// </summary>
+        public static ValueConstModel AuthSecType_Blackshiel = new ValueConstModel { Value = 14, Code = "14", Description = "Blackshiel - Giải pháp xác thực đa nhân tố của SafeNet (Gemalto/Thales)" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => ARX Security Question: AuthSecType_ARXSecurityQuestion = 16
+        /// </summary>
+        public static ValueConstModel AuthSecType_ARXSecurityQuestion = new ValueConstModel { Value = 16, Code = "16", Description = "ARX Security Question" };
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => ARX OTP (Dùng OTP để đăng nhâp) Hiện được gửi qua QLTDCS: AuthSecType_ARXOTP = 17
+        /// </summary>
+        public static ValueConstModel AuthSecType_ARXOTP = new ValueConstModel { Value = 17, Code = "17", Description = "ARX OTP (Dùng OTP để đăng nhâp)" };
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                1 => AuthSecType_Native,
+                2 => AuthSecType_LDAP,
+                3 => AuthSecType_Safeword,
+                4 => AuthSecType_RSA,
+                5 => AuthSecType_SMSOTP,
+                6 => AuthSecType_VascoToken,
+                7 => AuthSecType_EMVCard,
+                8 => AuthSecType_VASCOTokenTrans,
+                9 => AuthSecType_SMSOTPTrans,
+                11 => AuthSecType_USBEToken,
+                12 => AuthSecType_SMSOTP_TIBCO,
+                13 => AuthSecType_NativeTrans,
+                14 => AuthSecType_Blackshiel,
+                16 => AuthSecType_ARXSecurityQuestion,
+                17 => AuthSecType_ARXOTP,
+                _ => null
+            };
+        }
+
+        public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            {
+                AuthSecType_Native,
+                AuthSecType_LDAP,
+                AuthSecType_Safeword,
+                AuthSecType_RSA,
+                AuthSecType_SMSOTP,
+                AuthSecType_VascoToken,
+                AuthSecType_EMVCard,
+                AuthSecType_VASCOTokenTrans,
+                AuthSecType_SMSOTPTrans,
+                AuthSecType_USBEToken,
+                AuthSecType_SMSOTP_TIBCO,
+                AuthSecType_NativeTrans,
+                AuthSecType_Blackshiel,
+                AuthSecType_ARXSecurityQuestion,
+                AuthSecType_ARXOTP
+            };
+        }
     }
 
 
-    
 }
