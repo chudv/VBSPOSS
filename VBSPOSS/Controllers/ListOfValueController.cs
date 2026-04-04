@@ -201,6 +201,13 @@ namespace VBSPOSS.Controllers
         public JsonResult GetListBranchs(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
         {
+            var data = GetListBranchForData(pFlagCondi, pStatus, pShortName, pTitleChoice, pFlagTextShow, pUserPosCode, pFlagAllBank);
+            return Json(data);
+        }
+
+        private ArrayList GetListBranchForData(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
+                                         string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
+        {
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
             //sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn đơn vị---" : pTitleChoice;
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
@@ -261,9 +268,8 @@ namespace VBSPOSS.Controllers
                     }
                 }
             }
-            return Json(data);
+            return data;
         }
-
 
         public JsonResult GetListBranchForTide(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
@@ -273,10 +279,15 @@ namespace VBSPOSS.Controllers
                 ArrayList data = new ArrayList();
                 data.Add(new { id = "0", value = $"0 - Toàn hàng" });
                 return Json(data);
-            } else
+            } 
+            else
             {
-               return GetListBranchs( pFlagCondi,  pStatus,  pShortName,  pTitleChoice,
-                                         pFlagTextShow,  pUserPosCode,  pFlagAllBank);  
+                ArrayList data = new ArrayList();
+                //data.Add(new { id = "0", value = $"0 - Toàn Chi nhánh" });
+                var lstBranchs = GetListBranchForData( pFlagCondi,  pStatus,  pShortName,  pTitleChoice,
+                                         pFlagTextShow,  pUserPosCode,  pFlagAllBank);
+                data.AddRange(lstBranchs);
+                return Json(data);
             }                
         }
 
