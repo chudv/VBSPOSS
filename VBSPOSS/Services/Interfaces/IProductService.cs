@@ -22,7 +22,7 @@ namespace VBSPOSS.Services.Interfaces
         /// </summary>
         /// <param name="termType">I - Bao gồm, E - Không bao gồm</param>
         /// <returns></returns>
-        List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag);
+        List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag, string depositType);
 
         ProductParameter GetProductParameter(string productGroupCode, string productCode, DateTime? effectedDate);
 

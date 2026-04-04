@@ -1,6 +1,5 @@
 ﻿@model VBSPOSS.ViewModels.TideRateConfigureBatchModel
 @using Kendo.Mvc.UI
-@using VBSPOSS.Data.OSS.Models;
 @using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.ViewModels
 
@@ -131,6 +130,7 @@
             termType: $("#TermType").val(),
             termBasis: $("#TermBasis").val(),
             inclusionFlag: $("#InclusionFlag").val(),
+            depositType: $("#DepositType").val(),
             //sourceFlag: $("#SourceFlag").val(),
         };
     }
@@ -232,11 +232,26 @@
         onLoadData_TideRateConfigure();
     }
 
-    function onLoadProductGrid(){
+    function onDepositTypeChange(){
+        onLoadProductGrid();
+        //Set lại giá trị cho TermBasis
+        var numeric = $("#TermBasis").data("kendoNumericTextBox");
+        var depositType = $("#DepositType").val();
+        if (depositType == "B" || depositType== "P") {
+            numeric.value(3);
+        } else {
+            numeric.value(1);
+        }
+        onLoadTermGrid();
+    }
+
+    function onLoadProductGrid(){        
+        //Tải lại grid productCode sản phẩm
         var grid = $("#grdProductGrid").data("kendoGrid");
         if (grid != null) {
             grid.dataSource.read();
         }
+
     }
 
 
@@ -364,7 +379,7 @@
     //     }
     // }
 
-        function onEdit_TideRateConfigureGrid(e) {
+    function onEdit_TideRateConfigureGrid(e) {
         try {
             var cell = e.container;
             var input = cell.find("input");
@@ -521,10 +536,11 @@
             var formData = $("#addTideRateConfigureBatchForm").serializeArray();
             var formModel = {};
 
+
+            var isSelectAll = $("#selectAllPos").is(":checked");
             var applyPosLst = $("#ApplyPosList").data("kendoMultiSelect").value();
 
-
-            if (applyPosLst == null || applyPosLst.length == 0) {
+            if (!isSelectAll && (!applyPosLst || applyPosLst.length === 0)) {
                 alert('Bạn chưa chọn POS áp dụng');
                 return;
             }
@@ -551,6 +567,10 @@
                 if (field.name === "ApplyPosList" ) {
 
                     formModel[field.name] = applyPosLst;
+                }
+
+                if (field.name === "ApplyAllPosFlag") {
+                    formModel[field.name] = $("#selectAllPos").is(":checked");                    
                 }
             });
             console.log("Form data:", formModel);
@@ -1084,19 +1104,28 @@
             return; // ⛔ dừng xử lý để tránh chia cho 0
         }
 
-        // set vào ô BeforeTermNewInterestRate
-        var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+        if (soThangGui <= 1) {
+            // set vào ô BeforeTermNewInterestRate
+            var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+            beforeTerm.value(lsTraSau);
 
+            // set vào ô PartialNewInterestRate
+            var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");            
+            partial.value(lsTraSau);
+        } else {
+            // set vào ô BeforeTermNewInterestRate
+            var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+            var lsTraSauTyLe = lsTraSau/100;
+            var lsTraTruoc = tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui);
+            beforeTerm.value(lsTraTruoc);
 
-        var lsTraSauTyLe = lsTraSau/100;
-        var lsTraTruoc = tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui);
-        beforeTerm.value(lsTraTruoc);
+            // set vào ô PartialNewInterestRate
+            var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");
+            var lsDinhKy = tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui);
+            partial.value(lsDinhKy);
+        }
 
-        // set vào ô PartialNewInterestRate
-        var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");
-
-        var lsDinhKy = tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui);
-        partial.value(lsDinhKy);
+        
     }
 
     //Hàm tính lãi suất quy đổi sang trả trước
@@ -1162,7 +1191,7 @@
                         .Placeholder("Chọn loại sản phẩm")
                         .DataTextField("value")
                         .DataValueField("id")
-                        .Events(e => e.Change("onLoadProductGrid"))
+                        .Events(e => e.Change("onDepositTypeChange"))
                         .DataSource(
                         source => { source.Read(read => { read.Action("GetDepositTypeList", "ListOfValue"); }).ServerFiltering(false); })
                         .HtmlAttributes(new { id = "DepositType", style = "width: 100%; color: navy;", required = "required" })
@@ -1228,20 +1257,18 @@
 
         <div class="col-md-6">
             <div class="create_form row" style="padding-top: 10px; align-items: center;">
-                <div class="col-md-11">
+                <div class="col-md-2">
                     <div style="display: flex; align-items: center; gap: 3px; width: 100%;">
                       
                         <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                             <label for="ApplyPosList" style="font-weight:bold; color:navy; margin: 0; white-space:nowrap;">
-                                POS áp dụng <span style="color:red;">*</span>
-                            </label>
-                            <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" />
-                            <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
-                              
+                                POS áp dụng <span style="color:red;">*</span>                                                        
                             </label>
                         </div>
-
-                        
+                    </div>
+                </div>
+                 <div class="col-md-10">
+                                            
                         @(Html.Kendo().MultiSelectFor(m => m.ApplyPosList)
                             .Filter(FilterType.Contains)
                             .Placeholder("--- POS áp dụng ---")
@@ -1255,6 +1282,21 @@
                             .HtmlAttributes(new { id = "ApplyPosList", style = "flex: 1; color: navy;" })
                             .AutoBind(true)
                             )
+                    </div>
+                </div>            
+            <div class="create_form row" style="padding-top: 10px; align-items: center;" id="selectAllPosDiv">
+                <div class="col-md-2">
+              
+                </div>
+                <div class="col-md-10">
+                    <div style="display: flex; align-items: center; gap: 3px; width: 100%;">                 
+
+                        @* <input type="checkbox" id="selectAllPos" title="Chọn tất cả POS" style="margin: 0;" /> *@
+                        @Html.CheckBoxFor(m => m.ApplyAllPosFlag, new { id = "selectAllPos", style = "margin: 0;", title = "Chọn tất cả POS" })
+                        <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
+                            Áp dụng toàn Chi nhánh
+                        </label>
+                        
                     </div>
                 </div>
             </div>
@@ -1344,6 +1386,7 @@
                 .HtmlAttributes(new { id = "TermType", style = "width: 100%; color: navy;", required = "required" })
                 .Suggest(true)
                 .AutoBind(true)
+                .SelectedIndex(0)
                 )
         </div>
         <div class="col-md-1">
@@ -1637,14 +1680,25 @@
 
             if (multiSelect) {
                 if (checked) {
-                    var dataSource = multiSelect.dataSource.data();
-                    var allValues = dataSource.map(function(item) { return item.id; });
-                    multiSelect.value(allValues);
+                    // var dataSource = multiSelect.dataSource.data();
+                    // var allValues = dataSource.map(function(item) { return item.id; });
+                    // multiSelect.value(allValues);
+                    // Disable MultiSelect khi chọn "Select All"
+                    multiSelect.enable(false);
+                    multiSelect.value([]);
+
                 } else {
+                    multiSelect.enable(true);
                     multiSelect.value([]);
                 }
             }
         });
+
+        var posGrade = parseInt($("#PosGrade").val());
+        if (posGrade === 3) {
+            $("#selectAllPosDiv").hide();
+        }        
+
     });
 
 </script>

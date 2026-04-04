@@ -814,7 +814,7 @@ namespace VBSPOSS.Services.Implements
                 _request.PosCode = posCode;
                 _request.ProdCode = productCode;
                 _request.EffectDate = _strEffectDate;
-                _request.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;.  ConstValueAPI.UserId_Call_ApiIDC;
+                _request.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') as Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;.  ConstValueAPI.UserId_Call_ApiIDC;
                 _request.SourceId = ConstValueAPI.SourceId;
                 var response = await _apiInternalEsbService.GetListDepositInterestRate(_request);
                 if (response == null || response.Result == null || !response.Result.Any())
@@ -1625,14 +1625,23 @@ namespace VBSPOSS.Services.Implements
 
                     }
 
-                    if (intRateConfigMaster.ApplyPosList != null && intRateConfigMaster.ApplyPosList.Count > 0)
+
+                    //Phần xử lý POS cần điều chỉnh lại cho case chon all POS
+
+                    if (userPosCode == PosValue.HEAD_POS && intRateConfigMaster.ApplyAllPosFlag)
+                    {                        
+                        throw new Exception($"HSC không được cấu hình toàn bộ chi nhánh");
+                    }
+
+                    if (intRateConfigMaster.ApplyAllPosFlag)
                     {
-                        for (int j = 0; j < intRateConfigMaster.ApplyPosList.Count; j++)
+                        var lstPos = _dbContext.ListOfPoss.Where(w => w.MainPosCode == userPosCode).Select(s=> s.Code).ToList();
+                        for (int j = 0; j < lstPos.Count; j++)
                         {
                             var _itemPos = new InterestRatePosApply()
                             {
                                 IntRateConfigId = interestRateConfigMaster.Id,
-                                PosCode = intRateConfigMaster.ApplyPosList[j],
+                                PosCode = lstPos[j],
                                 CreatedBy = userId,
                                 CreatedDate = DateTime.UtcNow,
                                 Status = 1
@@ -1640,6 +1649,26 @@ namespace VBSPOSS.Services.Implements
                             _dbContext.InterestRatePosApplys.Add(_itemPos);
                         }
                     }
+                    else
+                    {
+                        if (intRateConfigMaster.ApplyPosList != null && intRateConfigMaster.ApplyPosList.Count > 0)
+                        {
+                            for (int j = 0; j < intRateConfigMaster.ApplyPosList.Count; j++)
+                            {
+                                var _itemPos = new InterestRatePosApply()
+                                {
+                                    IntRateConfigId = interestRateConfigMaster.Id,
+                                    PosCode = intRateConfigMaster.ApplyPosList[j],
+                                    CreatedBy = userId,
+                                    CreatedDate = DateTime.UtcNow,
+                                    Status = 1
+                                };
+                                _dbContext.InterestRatePosApplys.Add(_itemPos);
+                            }
+                        }
+                    }
+
+                    
 
                 }
 

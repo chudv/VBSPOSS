@@ -14,11 +14,18 @@
         /// <returns></returns>
         /// <exception cref="CustomException"></exception>
         /// <exception cref="Exception"></exception>
-        Task<string> GetTTLSTIDE01(string listId,string circularRefNum, string circularDate);
+        Task<string> GetTTLSTIDE01(string listId,string circularRefNum, string circularDate, string posCode);
 
-      
 
-        Task<string> GetTTLS_CASA_01(string listId, string circularRefNum, string circularDate);
+        /// <summary>
+        /// In báo cáo qua API Report Gateway - Tờ trình cấu hình lãi suất sản phẩm tiền gửi không kỳ hạn (CASA)
+        /// </summary>
+        /// <param name="listId"></param>
+        /// <param name="circularRefNum"></param>
+        /// <param name="circularDate"></param>
+        /// <param name="posCode"></param>
+        /// <returns></returns>
+        Task<string> GetTTLS_CASA_01(string listId, string circularRefNum, string circularDate, string posCode);
 
         /// <summary>
         /// Hàm thực hiện in báo cáo Tờ trình cấu hình lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn
@@ -28,6 +35,6 @@
         /// <returns>File báo cáo trả về</returns>
         /// <exception cref="CustomException"></exception>
         /// <exception cref="Exception"></exception>
-        Task<string> GetDepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate);
+        Task<string> GetDepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate, string posCode);
     }
 }
