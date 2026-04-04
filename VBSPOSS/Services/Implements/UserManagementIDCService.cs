@@ -680,7 +680,7 @@ namespace VBSPOSS.Services.Implements
                 if (requestInput != null && !string.IsNullOrEmpty(requestInput.TellerId))
                 {
                     if (string.IsNullOrEmpty(requestInput.MkrId))
-                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     var apiResponse = await _apiInternalEsbService.ChangeRoleToTransferCashByAPITellerRoleAssign(requestInput);
 
                     if (apiResponse == null)
