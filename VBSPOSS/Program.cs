@@ -13,6 +13,7 @@ using System.Net.Http.Headers;
 using VBSPOSS.Areas.Identity.Data;
 using VBSPOSS.Data;
 using VBSPOSS.Filters;
+using VBSPOSS.Helpers.Implements;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Implements.Helpers;
 using VBSPOSS.Integration.Implements;
@@ -23,13 +24,41 @@ using VBSPOSS.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lấy chuỗi kết nối
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-var iDCConnString = builder.Configuration.GetConnectionString("IntellectIDCConnection") ?? throw new InvalidOperationException("Connection string 'IntellectIDCConnection' not found.");
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
+builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-builder.Services.AddDbContext<MyIdentityDbContext>(options => options.UseSqlServer(connectionString));
-builder.Services.AddDbContext<IntellectIDCDbContext>(options =>options.UseOracle(iDCConnString));
+// Lấy chuỗi kết nối
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+//var iDCConnString = builder.Configuration.GetConnectionString("IntellectIDCConnection") ?? throw new InvalidOperationException("Connection string 'IntellectIDCConnection' not found.");
+
+//builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+{
+    var provider = sp.GetRequiredService<IConnectionStringProvider>();
+    var connStr = provider.GetOSSConnectionString();
+
+    options.UseSqlServer(connStr);
+});
+
+//builder.Services.AddDbContext<MyIdentityDbContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddDbContext<MyIdentityDbContext>((sp, options) =>
+{
+    var provider = sp.GetRequiredService<IConnectionStringProvider>();
+    var connStr = provider.GetOSSConnectionString();
+
+    options.UseSqlServer(connStr);
+});
+//builder.Services.AddDbContext<IntellectIDCDbContext>(options =>options.UseOracle(iDCConnString));
+
+builder.Services.AddDbContext<IntellectIDCDbContext>((sp, options) =>
+{
+    var provider = sp.GetRequiredService<IConnectionStringProvider>();
+    var connStr = provider.GetOracleConnectionString();
+
+    options.UseOracle(connStr);
+});
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<MyIdentityDbContext>();
