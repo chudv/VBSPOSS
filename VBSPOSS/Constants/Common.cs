@@ -796,6 +796,11 @@ namespace VBSPOSS.Constants
     public class AuthSecType
     {
         /// <summary>
+        /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Không dùng phương thức xác thực thứ 2: AuthSecType_Single = 0
+        /// </summary>
+        public static ValueConstModel AuthSecType_Single = new ValueConstModel { Value = 0, Code = "0", Description = "" };
+
+        /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Native: AuthSecType_Native = 1
         /// </summary>
         public static ValueConstModel AuthSecType_Native = new ValueConstModel { Value = 1, Code = "1", Description = "Native" };
@@ -874,6 +879,7 @@ namespace VBSPOSS.Constants
         {
             return value switch
             {
+                0 => AuthSecType_Single,
                 1 => AuthSecType_Native,
                 2 => AuthSecType_LDAP,
                 3 => AuthSecType_Safeword,
@@ -896,7 +902,8 @@ namespace VBSPOSS.Constants
         public static List<ValueConstModel> GetAll()
         {
             return new List<ValueConstModel>
-            {
+            { 
+                AuthSecType_Single,
                 AuthSecType_Native,
                 AuthSecType_LDAP,
                 AuthSecType_Safeword,
