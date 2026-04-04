@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using VBSPOSS.Constants;
 using VBSPOSS.Integration.Interfaces;
@@ -735,7 +736,15 @@ namespace VBSPOSS.Integration.Implements
                 _logger.LogInformation($"Starting AddUser with UserId: {requestInput.UserId}");
 
                 // Serialize input object to JSON
-                var json = JsonConvert.SerializeObject(requestInput);
+
+                requestInput.IpSet = string.IsNullOrEmpty(requestInput.IpSet) ? null : requestInput.IpSet;
+
+                var json = JsonConvert.SerializeObject(requestInput, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
+
+                //var json = JsonConvert.SerializeObject(requestInput);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 _logger.LogDebug("Sending POST request to {Endpoint}", "vbsp/internal/api/v1/addUser");
 

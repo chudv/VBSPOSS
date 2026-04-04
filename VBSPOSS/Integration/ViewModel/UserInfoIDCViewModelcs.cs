@@ -341,6 +341,9 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("extraAttribute")]
         public AddUserExtraAttributeRequest AddUserExtraAttributeRequestViewModel { get; set; }
+
+        [JsonProperty("ipSet")]
+        public string IpSet;
     }
 
     public class AddUserExtraAttributeRequest
