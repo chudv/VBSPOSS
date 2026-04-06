@@ -95,13 +95,18 @@
         position: { top: 20, right: 20 },
         autoHideAfter: 5000
     }).data("kendoNotification");
+    
     var mainWindow = $("#myPopup");
 
     function paramLoadGridData() {
         return {
             productGroupCode: $("#ProductGroup_Find").val() || "",
             productCode: $("#ProductCode_Find").val() || "",
-            effectDate: $("#EffectDate_Find").val() || ""
+          //  effectDate: $("#EffectDate_Find").val() || ""
+            effectDateBegin: $("#EffectDateBegin_Find").val() || "",   // Từ ngày
+        effectDateEnd: $("#EffectDateEnd_Find").val() || ""        // Đến ngày
+
+
         };
     }
 
@@ -279,18 +284,33 @@
             .Name("ProductCode_Find")
             .HtmlAttributes(new { placeholder = "Nhập mã SP", style = "width: 150px;" })
             )
-        <label style="color: navy; margin-left: 20px;">Ngày hiệu lực:</label>
+        <!-- Phần Ngày hiệu lực -->
+        <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top:3px; padding-right:6px; margin-left: 20px;">
+            Ngày hiệu lực
+        </label>
         @(Html.Kendo().DatePicker()
-            .Name("EffectDate_Find")
+            .Name("EffectDateBegin_Find")
             .Format("dd/MM/yyyy")
-            .HtmlAttributes(new { style = "width: 150px;" })
+            .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Từ ngày" })
+            .Value(DateTime.Today.AddMonths(-1))
             )
+        <span style="color: #ca8f5c; padding: 0 8px;">&nbsp;-&nbsp;</span>
+        @(Html.Kendo().DatePicker()
+            .Name("EffectDateEnd_Find")
+            .Format("dd/MM/yyyy")
+            .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Đến ngày" })
+            .Value(DateTime.Today.AddDays(1))
+            )
+
         @(Html.Kendo().Button()
             .Name("btnSearch")
             .Content("Tìm kiếm")
             .Events(e => e.Click("onSearch"))
             .HtmlAttributes(new { @class = "k-button k-primary", style = "margin-left: 10px;" })
             )
+
+
+      
        @*  @(Html.Kendo().Button()
             .Name("btnCreate")
             .Content("Thêm mới")

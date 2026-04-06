@@ -88,33 +88,77 @@ namespace VBSPOSS.Controllers
 
 
         //Load màn Index
+    //    [HttpPost]
+    //    public async Task<ActionResult> LoadProductParametersGrid([DataSourceRequest] DataSourceRequest request,
+    //string productGroupCode = null, string productCode = null, string effectDate = null)
+    //    {
+    //        try
+    //        {
+    //            DateTime? filterDate = null;
+    //            if (!string.IsNullOrEmpty(effectDate) && DateTime.TryParseExact(effectDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+    //            {
+    //                filterDate = parsed;
+    //            }
+
+    //            var list = await _service.GetProductParametersViewListAsync(
+    //                productGroupCode,
+    //                productCode,
+    //                filterDate
+    //            );
+
+    //            // KHÔNG cần Select tạo mới object nữa
+    //            // StatusDesc đã tự tính trong model
+    //            return Json(list.ToDataSourceResult(request));
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            return Json(new { Errors = "Lỗi khi tải dữ liệu: " + ex.Message });
+    //        }
+    //    }
+
+
         [HttpPost]
         public async Task<ActionResult> LoadProductParametersGrid([DataSourceRequest] DataSourceRequest request,
-    string productGroupCode = null, string productCode = null, string effectDate = null)
+    string productGroupCode = null,
+    string productCode = null,
+    string effectDateBegin = null,   // Từ ngày
+    string effectDateEnd = null)     // Đến ngày
         {
             try
             {
-                DateTime? filterDate = null;
-                if (!string.IsNullOrEmpty(effectDate) && DateTime.TryParseExact(effectDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+                DateTime? fromDate = null;
+                DateTime? toDate = null;
+
+              
+                if (!string.IsNullOrEmpty(effectDateBegin)
+                    && DateTime.TryParseExact(effectDateBegin, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFrom))
                 {
-                    filterDate = parsed;
+                    fromDate = parsedFrom.Date;
+                }
+
+                // Đến ngày
+                if (!string.IsNullOrEmpty(effectDateEnd)
+                    && DateTime.TryParseExact(effectDateEnd, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTo))
+                {
+                    toDate = parsedTo.Date;
                 }
 
                 var list = await _service.GetProductParametersViewListAsync(
                     productGroupCode,
                     productCode,
-                    filterDate
+                    fromDate,
+                    toDate
                 );
 
-                // KHÔNG cần Select tạo mới object nữa
-                // StatusDesc đã tự tính trong model
                 return Json(list.ToDataSourceResult(request));
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Lỗi khi tải dữ liệu grid ProductParameter");
                 return Json(new { Errors = "Lỗi khi tải dữ liệu: " + ex.Message });
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> ShowCreateConfig(int pId = 0, string pFlagCall = "1")
         {
@@ -192,7 +236,7 @@ namespace VBSPOSS.Controllers
         //        if (items == null || items.Count == 0)
         //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
 
-               
+
         //        var recordCount = await _service.SaveBatchProductParameterAsync(
         //            request.ProductGroupCode,
         //            request.EffectedDate,
@@ -219,6 +263,66 @@ namespace VBSPOSS.Controllers
 
         // sửa hàm lưu thay đổi 
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
+        //{
+        //    try
+        //    {
+        //        var remarkChung = request.Remark?.Trim() ?? "";
+
+        //        if (string.IsNullOrEmpty(request.Items))
+        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
+
+        //        var items = JsonSerializer.Deserialize<List<ProductParameterDetailViewModel>>(request.Items);
+
+        //        if (items == null || items.Count == 0)
+        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
+
+        //        var recordCount = await _service.SaveBatchProductParameterAsync(
+        //            request.ProductGroupCode,
+        //            request.EffectedDate,
+        //            remarkChung,
+        //            items
+        //        );
+
+        //        if (recordCount > 0)
+        //        {
+        //            return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
+        //        }
+        //        else
+        //        {
+        //            return Json(new { success = false, message = "Lưu không thành công!" });
+        //        }
+        //    }
+        //    catch (DbUpdateException dbEx)   // ← Bắt riêng DbUpdateException
+        //    {
+        //        var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+        //        var innerInner = dbEx.InnerException?.InnerException?.Message;
+
+        //        _logger.LogError(dbEx, "DbUpdateException khi lưu batch. Inner: {Inner} | InnerInner: {InnerInner}",
+        //            innerMessage, innerInner);
+
+        //        Console.WriteLine($"=== DbUpdateException ===");
+        //        Console.WriteLine($"Message: {dbEx.Message}");
+        //        Console.WriteLine($"Inner: {innerMessage}");
+        //        if (!string.IsNullOrEmpty(innerInner))
+        //            Console.WriteLine($"Inner Inner: {innerInner}");
+
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = $"Lỗi lưu dữ liệu: {innerMessage}"
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Lỗi không xác định khi lưu batch");
+        //        return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
+        //    }
+        //}
+
+        // sửa al
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
@@ -251,35 +355,35 @@ namespace VBSPOSS.Controllers
                     return Json(new { success = false, message = "Lưu không thành công!" });
                 }
             }
-            catch (DbUpdateException dbEx)   // ← Bắt riêng DbUpdateException
-            {
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                var innerInner = dbEx.InnerException?.InnerException?.Message;
-
-                _logger.LogError(dbEx, "DbUpdateException khi lưu batch. Inner: {Inner} | InnerInner: {InnerInner}",
-                    innerMessage, innerInner);
-
-                Console.WriteLine($"=== DbUpdateException ===");
-                Console.WriteLine($"Message: {dbEx.Message}");
-                Console.WriteLine($"Inner: {innerMessage}");
-                if (!string.IsNullOrEmpty(innerInner))
-                    Console.WriteLine($"Inner Inner: {innerInner}");
-
-                return Json(new
-                {
-                    success = false,
-                    message = $"Lỗi lưu dữ liệu: {innerMessage}"
-                });
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi không xác định khi lưu batch");
+                _logger.LogError(ex, "Lỗi khi lưu batch ProductParameter");
+
+                string message = ex.Message;
+
+                // Xử lý riêng trường hợp trùng ngày hiệu lực
+                if (message.Contains("Đã tồn tại cấu hình") || message.Contains("trùng"))
+                {
+                    // Làm cho thông báo ngắn gọn và rõ ràng hơn
+                    if (message.Contains("Không thể tạo trùng"))
+                    {
+                        // Giữ nguyên thông báo từ Service
+                        return Json(new { success = false, message = message });
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Đã tồn tại cấu hình cho phân loại {request.ProductGroupCode} với ngày hiệu lực {request.EffectedDate:dd/MM/yyyy}. Không thể tạo trùng."
+                        });
+                    }
+                }
+
+                // Các lỗi khác (DbUpdateException, lỗi database, v.v.)
                 return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
             }
         }
-
-
-
 
     }
 }
