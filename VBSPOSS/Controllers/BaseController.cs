@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Implements;

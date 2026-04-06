@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using NuGet.Configuration;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers;
@@ -645,7 +645,7 @@ namespace VBSPOSS.Controllers
                     itemUpdAdd.PosCode = itemData.PosCode;
                     itemUpdAdd.PosName = itemData.PosName;
                     itemUpdAdd.ProductGroupCode = ProductGroupCode.ProductGroupCode_DepositPenal;
-                    itemUpdAdd.UserId = ConstValueAPI.UserId_Call_ApiIDC;
+                    itemUpdAdd.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;
                     itemUpdAdd.CircularDate = dCircularDateTmp.Date;
                     itemUpdAdd.CircularRefNum = requestUpd.CircularRefNum;
                     itemUpdAdd.RecordSerialNo = itemData.OrderNo;

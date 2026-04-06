@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.ViewModel;
@@ -201,6 +201,13 @@ namespace VBSPOSS.Controllers
         public JsonResult GetListBranchs(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
         {
+            var data = GetListBranchForData(pFlagCondi, pStatus, pShortName, pTitleChoice, pFlagTextShow, pUserPosCode, pFlagAllBank);
+            return Json(data);
+        }
+
+        private ArrayList GetListBranchForData(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
+                                         string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
+        {
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
             //sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn đơn vị---" : pTitleChoice;
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
@@ -261,9 +268,8 @@ namespace VBSPOSS.Controllers
                     }
                 }
             }
-            return Json(data);
+            return data;
         }
-
 
         public JsonResult GetListBranchForTide(string pFlagCondi, string pStatus = "O", string pShortName = "1", string pTitleChoice = "",
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
@@ -273,10 +279,15 @@ namespace VBSPOSS.Controllers
                 ArrayList data = new ArrayList();
                 data.Add(new { id = "0", value = $"0 - Toàn hàng" });
                 return Json(data);
-            } else
+            } 
+            else
             {
-               return GetListBranchs( pFlagCondi,  pStatus,  pShortName,  pTitleChoice,
-                                         pFlagTextShow,  pUserPosCode,  pFlagAllBank);  
+                ArrayList data = new ArrayList();
+                //data.Add(new { id = "0", value = $"0 - Toàn Chi nhánh" });
+                var lstBranchs = GetListBranchForData( pFlagCondi,  pStatus,  pShortName,  pTitleChoice,
+                                         pFlagTextShow,  pUserPosCode,  pFlagAllBank);
+                data.AddRange(lstBranchs);
+                return Json(data);
             }                
         }
 
@@ -891,7 +902,7 @@ namespace VBSPOSS.Controllers
             if (!string.IsNullOrEmpty(pParentId_TKiem))
             {
                 //Lấy Id danh mục từ mã số danh mục
-                var listObj = _serviceLOV.GetListOfValueByCode(pParentId_TKiem, DefaultValue.StatusClosed);
+                var listObj = _serviceLOV.GetListOfValueByCode(-1, "", pParentId_TKiem, DefaultValue.StatusClosed);
                 if (listObj != null)
                     iParentId = listObj.Id;
                 else iParentId = -1;
@@ -1425,7 +1436,9 @@ namespace VBSPOSS.Controllers
 
             ArrayList data = new ArrayList();
             var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", pStatus, 2);
-            var listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
+            var listRoleOfUserIDC = listRoleOfUserIDCTmp;
+            if(sCodeApply != "1")
+                listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
             if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
                 data.Add(new { id = "", value = sTitleChoice });
             if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)

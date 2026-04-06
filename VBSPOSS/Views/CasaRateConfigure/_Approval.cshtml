@@ -1,7 +1,7 @@
 ﻿@model VBSPOSS.ViewModels.InterestRateConfigMasterViewModel
 @using Kendo.Mvc.UI
 @using VBSPOSS.Constants
-@using VBSPOSS.Data.Models
+@using VBSPOSS.Data.OSS.Models
 @using VBSPOSS.ViewModels
 
 
@@ -78,6 +78,7 @@
       asp-action="SaveApprovalForm">
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.IdList)
+    @Html.HiddenFor(m => m.PosCode)
 
     <!-- Thông tin chung -->
     <div class="section-header">
@@ -280,13 +281,14 @@
             var circularRefNum = $("#CircularRefNum").val();
             var listId = $("#IdList").val();
             var formattedDate = kendo.toString($("#CircularDate").data("kendoDatePicker").value(), "yyyyMMdd");
+            var posCode = $("#PosCode").val();
 
           //  alert(circularRefNum);
            // alert(listId);
             $.ajax({
                 url: '/Report/GenerateToTrinh_Casa',  // <-- 
                 type: 'POST',
-                data: { listId: listId, circularRefNum: circularRefNum, circularDate: formattedDate },
+                data: { listId: listId, circularRefNum: circularRefNum, circularDate: formattedDate , posCode: posCode},
                 xhrFields: {
                     responseType: 'blob'
                 },

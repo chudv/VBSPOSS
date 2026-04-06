@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 
 namespace VBSPOSS.Data
@@ -25,6 +25,7 @@ namespace VBSPOSS.Data
         public virtual DbSet<Permission> Permissions { get; set; }
         public virtual DbSet<RolePermission> RolePermissions { get; set; }
         public virtual DbSet<ListOfCommune> ListOfCommunes { get; set; }
+        //public virtual DbSet<ListOfCommunes> ListOfCommune { get; set; }
 
         public DbSet<TideTermWorking> TideTermWorkings { get; set; }
 
@@ -54,6 +55,10 @@ namespace VBSPOSS.Data
         public virtual DbSet<UserManagementIDC> UserManagementIDCs { get; set; }
 
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
+
+        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; } 
+
+        public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -210,6 +215,15 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<PosRepresentative>().ToTable("PosRepresentative");
             modelBuilder.Entity<PosRepresentative>().HasKey(x => new { x.Id });
+
+            modelBuilder.Entity<UserIDCApproval>(eb =>
+            {
+                eb.HasNoKey();
+                eb.ToView("UserIDCApprovals");
+            });
+
+            modelBuilder.Entity<UserIDCRestrictionAllowedDays>().ToTable("UserIDCRestrictionAllowedDays");
+            modelBuilder.Entity<UserIDCRestrictionAllowedDays>().HasNoKey();
         }
     }
 }

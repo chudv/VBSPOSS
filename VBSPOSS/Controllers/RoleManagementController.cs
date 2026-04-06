@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
@@ -145,7 +145,7 @@ namespace VBSPOSS.Controllers
                 data.Add(new { id = 0, value = pTitleChoice });
             }
                 
-            foreach (Data.Models.Menu item in listMenu)
+            foreach (Data.OSS.Models.Menu item in listMenu)
             {
                 data.Add(new { id = item.Id, value = item.Text });
             }

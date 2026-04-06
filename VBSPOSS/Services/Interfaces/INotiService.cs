@@ -1,5 +1,5 @@
 ﻿
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces

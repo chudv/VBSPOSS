@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
 using VBSPOSS.ViewModels;
@@ -72,6 +72,7 @@ namespace VBSPOSS.Mappings
             CreateMap<StaffVbspInforViewModel, PosRepresentativeViewModel>();
             CreateMap<PosRepresentativeViewModel, StaffVbspInforViewModel>();
 
+            CreateMap<UserIDCApproval, UserIDCApprovalViewModel>();
            
             CreateMap<AddCasaProductViewModel, InterestRateConfigMaster>()
                .ForMember(dest => dest.ModifiedDate, opt => opt.Ignore())

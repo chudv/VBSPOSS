@@ -63,6 +63,8 @@ namespace VBSPOSS.ViewModels
 
         public List<string> ApplyPosList { get; set; }
 
+        public bool ApplyAllPosFlag { get; set; }
+
         //public List<TideTermViewModel> TideTerms { get; set; } = new List<TideTermViewModel>();
     }
 
@@ -134,6 +136,9 @@ namespace VBSPOSS.ViewModels
         public string CircularRefNum { get; set; } // Số quyết định
         public string PosCode { get; set; }
         public List<string> ApplyPosList { get; set; }
+
+        public bool ApplyAllPosFlag { get; set; }
+
         public decimal? PenalRate { get; set; } // Mặc định 0 nếu cần
         public decimal? AmoutSlab { get; set; }
         public DateTime? CircularDate { get; set; }

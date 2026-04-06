@@ -1,4 +1,4 @@
-﻿using VBSPOSS.Data.Models;
+﻿using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 
 namespace VBSPOSS.Services.Interfaces

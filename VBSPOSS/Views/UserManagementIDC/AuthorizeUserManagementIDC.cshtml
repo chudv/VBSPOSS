@@ -1,0 +1,523 @@
+﻿@model VBSPOSS.ViewModels.UserManagementIDCViewModel
+
+<div id="mySppLocality"></div>
+
+<style>
+    .k-animation-container {
+        z-index: 100000 !important;
+    }
+
+    .readonly-field input,
+    .readonly-field .k-input,
+    .readonly-field textarea {
+        background-color: #f0f0f0 !important;
+        color: #28a745 !important; /* Màu xanh lá */
+        cursor: not-allowed !important;
+    }
+
+    .editable-field input,
+    .editable-field .k-input {
+        color: navy !important;
+    }
+
+    #EffectDate, #ExpiryDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .hidden-block {
+        display: none !important;
+    }
+</style>
+
+<script>
+
+    var isEditMode = false;
+
+
+    (function() {
+        var flagCallView = '@TempData["FlagCall"]';
+        if (flagCallView === "2") {
+            isEditMode = true;
+        }
+    })();
+
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadListStaffFind() {
+        return {
+            pPosCode: $("#PosCode").val(),
+            pTitleChoice: "",
+            pFlagTextShow: "2",
+            pFlagCall: "2"
+        };
+    }
+
+    function paramLoadListRoleOfUserIDC() {
+        return {
+            pPosCode: $("#UserPosCodeView").val(),
+            pTitleChoice: ""
+        };
+    }
+
+    function Change_PosCode() {
+
+        if (isEditMode) return;
+
+        var staffIdReload = $("#StaffId").data("kendoComboBox");
+        if (staffIdReload != null) {
+            staffIdReload.dataSource.read();
+        }
+    }
+
+    var roleLists;
+    function Change_RoleOfUserIDC() {
+        var objGroupId = $("#GroupName").val();
+        if (objGroupId != null) {
+            $.ajax({
+                type: "GET",
+                data: {
+                    pUserRole: objGroupId
+                },
+                url: "../ListOfValue/GetRoleToTransferCashByUserRole",
+                success: function (data) {
+                    roleLists = data;
+                    if (roleLists != null && roleLists.length != 0) {
+                        //$("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
+                        $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
+                        $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
+                        $("#UserRoleNameChange").val(roleLists[0].UserRoleName);
+                    }
+                }
+            });
+        }
+
+    }
+
+    //Hàm dùng khi khởi động màn hình
+    function Change_RoleOfUserIDCStart() {
+        var objGroupId = $("#GroupName").val();
+        if (objGroupId != null) {
+            $.ajax({
+                type: "GET",
+                data: {
+                    pUserRole: objGroupId
+                },
+                url: "../ListOfValue/GetRoleToTransferCashByUserRole",
+                success: function (data) {
+                    roleLists = data;
+                    if (roleLists != null && roleLists.length != 0) {
+                        $("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
+                        $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
+                        $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
+                        $("#UserRoleName").val(roleLists[0].UserRoleName);
+                        $("#UserRoleNameChange").val(roleLists[0].UserRoleName);
+                    }
+                }
+            });
+        }
+
+    }
+
+    var staffLists;
+    function LoadStaffInfoDetail(e) {
+        var lcStaffId = $("#StaffId").val(); // Lấy ID của thành viên =>Load thông tin ra theo ID này
+        if (lcStaffId != null && lcStaffId != "" && lcStaffId != "0") {
+            $.ajax({
+                type: "GET",
+                data: {
+                    pStaffId: lcStaffId
+                },
+                url: "../ListOfValue/GetListStaffVBSPByStaffId",
+                success: function (data) {
+                    staffLists = data;
+                    if (staffLists != null && staffLists.length != 0) {
+                        $("#StaffCode").val(staffLists[0].StaffCode);
+                        $("#Genders").val(staffLists[0].GenderText);
+                        $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
+                        $("#PosNameIDC").val(staffLists[0].StaffPosName);
+                        $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
+                        $("#StaffPositionName").val(staffLists[0].StaffPositionName);
+                        $("#MobileNumberEdit").val($("#MobileNumber").val());
+                        $("#EmailEdit").val($("#EmailAddress").val());
+                        $("#StaffPosCode").val(staffLists[0].StaffPosCode);
+                        $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
+                        $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
+                        $("#FullName").val(staffLists[0].StaffName);
+                        $("#MobileNumberIDC").val(staffLists[0].StaffMobileNo);
+                        $("#EmailAddressIDC").val(staffLists[0].StaffEmail);
+                        $("#PosCodeNew").val($("#PosCode").val());
+                    }
+                }
+            });
+        }
+    }
+
+    function onCloseUpdate(ev) {
+        mainWindow.data("kendoWindow").close();
+    }
+
+
+    function Change_Status(e) {
+
+        if (!isEditMode) return;
+
+        var statusDDL = $("#Status").data("kendoDropDownList");
+        var statusValue = statusDDL.value();
+
+
+        if (statusValue === "0") {
+            var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+            if (expirePicker) {
+
+                expirePicker.value(new Date());
+
+
+                expirePicker.enable(true);
+            }
+        }
+    }
+
+    function onClick(e) {
+        var lcPosCode = $("#PosCode").val();
+        var lcStaffId = $("#StaffCode").val();
+        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#PosCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (lcStaffId == null || lcStaffId == "") {
+            alert('Cán bộ được phân giao quản lý địa bàn không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#StaffCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        var effectPicker = new Date();
+        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+        if (effectPicker && expirePicker) {
+            var dEffectDate = effectPicker.value();
+            var dExpiryDate = expirePicker.value();
+            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
+                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
+                $('#ExpiryDate').focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+    }
+
+    var lcButton = "";
+
+    function onClickApproval(e) {
+        lcButton = "8";
+        var lcPosCode = $("#PosCode").val();
+        var lcStaffId = $("#StaffCode").val();
+        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#PosCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (lcStaffId == null || lcStaffId == "") {
+            alert('Cán bộ được phân giao quản lý địa bàn không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#StaffCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        var effectPicker = new Date();
+        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+        if (effectPicker && expirePicker) {
+            var dEffectDate = effectPicker.value();
+            var dExpiryDate = expirePicker.value();
+            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
+                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
+                $('#ExpiryDate').focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+    }
+
+    function onClickDenie(e) {
+        lcButton = "3";
+        var lcPosCode = $("#PosCode").val();
+        var lcRemark = $("#Remark").val();
+        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#PosCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (lcRemark == null || lcRemark == "" || lcRemark.length < 5) {
+            alert('Từ chối cần phải nhập ghi chú. Bạn vui lòng kiểm tra lại!');
+            $('#Remark').focus();
+            e.preventDefault();
+            return false;
+        }
+        var effectPicker = new Date();
+        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+        if (effectPicker && expirePicker) {
+            var dEffectDate = effectPicker.value();
+            var dExpiryDate = expirePicker.value();
+            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
+                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
+                $('#ExpiryDate').focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+    }
+
+</script>
+
+<form asp-controller="UserManagementIDC" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
+    <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
+    @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
+    @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@*     @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
+ *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
+    @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
+    @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
+    @Html.HiddenFor(m => m.PosCode, new { @Value = Model == null ? "" : Model.PosCode })
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+
+    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
+        @(TempData["FlagCall"]?.ToString() == "2" ? "TRÌNH DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "PHÊ DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC")
+    </div>
+    <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="align-items-center">
+        <div style="margin-bottom: 10px;color: navy; padding-top: 0px;" class="row">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 90px;color: navy;text-align:left;">Đơn vị</label>
+                @Html.Kendo().TextBox().Name("PosNameIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;">Tài khoản</label>
+                @Html.Kendo().TextBoxFor(m => m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;">Họ tên</label>
+                @Html.Kendo().TextBoxFor(m => m.FullName).HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:90px;padding-top: 7px;">Mã cán bộ</label>
+                @Html.Kendo().TextBoxFor(m => m.StaffCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 60px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;padding-right: 10px!important;">Ngày sinh</label>
+                @Html.TextBoxFor(m => m.DateOfBirth, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:80px;padding-top: 7px;padding-right: 10px!important;">Giới tính</label>
+                @Html.Kendo().TextBox().Name("Genders").HtmlAttributes(new { @readonly = "readonly", style = " width: 60px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Điện thoại</label>
+                @Html.Kendo().TextBox().Name("MobileNumberIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 85px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 10px!important;">Email</label>
+                @Html.Kendo().TextBox().Name("EmailAddressIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 160px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Trạng thái</label>
+                @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+
+            </div>
+        </div>
+
+        <!-- Thêm thông tin cán bộ -->
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Chức vụ</label>
+                @Html.Kendo().TextBox().Name("StaffPositionName").HtmlAttributes(new { @readonly = "readonly", style = " width: 80px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 10px!important;">Phòng ban</label>
+                @Html.Kendo().TextBox().Name("StaffDepartmentName").HtmlAttributes(new { @readonly = "readonly", style = " width: 120px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Nhóm quyền</label>
+                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:left;width:20px;padding-top: 7px;"></label>
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 150px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+
+            </div>
+        </div>
+
+@*         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Nhóm quyền</label>
+                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt</label>
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 400px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+ *@
+        <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: maroon;text-align:left;width:500px;padding-top: 7px;">Thông tin thay đổi người dùng IDC</label>
+            </div>
+        </div>
+
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
+                @Html.Kendo().TextBoxFor(m=>m.FunctionTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 350px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:120px;padding-top: 7px;padding-right: 10px!important;">Ngày hiệu lực</label>
+                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
+                @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+            </div>
+        </div>
+
+        <div id="divPosCode" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Đơn vị mới</label>
+                @Html.Kendo().TextBox().Name("PosCodeNew").HtmlAttributes(new { @readonly = "readonly", style = " width: 80px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;">Tên đơn vị</label>
+                @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = " width: 610px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div id="divModify" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px;">Số điện thoại</label>
+                @Html.Kendo().TextBoxFor(m => m.MobileNumber).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="width: 80px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px;">Email</label>
+                @Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { @readonly = "readonly", style = " width: 610px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div id="divRole" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Nhóm quyền</label>
+                @Html.Kendo().TextBoxFor(m => m.GroupName).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="width: 10px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; "></label>
+                @Html.Kendo().TextBox().Name("UserRoleNameChange").HtmlAttributes(new { @readonly = "readonly", style = " width: 350px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt </label>
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescriptionDetail").HtmlAttributes(new { @readonly = "readonly", style = " width: 210px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 150px; vertical-align: middle;color: navy;text-align:left;">Ghi chú</label>
+                @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "min-height:50px;width:790px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2", placeholder = "Yêu cầu nhập ghi chú khi từ chối!" })
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+            <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
+                <label class="control-label" id="lblMessageInfor" style="width: 740px; text-align: left; color: red;"></label>
+                &nbsp;&nbsp;
+                @(Html.Kendo().Button()
+                                .Name("btnApproval")
+                                .Events(ev => ev.Click("onClickApproval"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Trình duyệt"))
+                &nbsp;
+                @(Html.Kendo().Button()
+                                .Name("btnDenie")
+                                .Events(ev => ev.Click("onClickDenie"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Từ chối"))
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+<script>
+    $(function () {
+        $("#form0").submit(function (event) {
+            event.preventDefault();
+
+            var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+
+            if (expirePicker && expirePicker.value()) {
+                $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
+            }
+
+            $("#UserId").val($("#StaffCode").val());
+            $("#NickName").val($("#StaffCode").val());
+            var form = this;
+            var posCode = $("#PosCode").val();
+            $("#pFlagCall").val($("#FlagCallView").val());
+            $("#pButtonType").val(lcButton);
+            submitFormAjax(form);
+            return false;
+        });
+    });
+
+    function submitFormAjax(form) {
+        var dataString;
+        var contentType;
+        var processData;
+        if (form.enctype === "multipart/form-data") {
+            dataString = new FormData($(form).get(0));
+            contentType = false;
+            processData = false;
+        }
+        $.ajax({
+            url: form.action,
+            type: form.method,
+            dataType: "json",
+            contentType: contentType,
+            processData: processData,
+            data: dataString,
+            success: function (result) {
+                if (result == "0") {
+                    alert("Bạn đã cập nhật thành công Thông tin người đại diện!");
+                    dataChange = true;
+                    onCloseUpdate();
+                } else {
+                    dataChange = false;
+                    if (result == "1")
+                        alert("Phòng giao dịch/Hội sở tỉnh không được để trống!");
+                    else if (result == "2")
+                        alert("Cán bộ được phân giao người đại diện không được để trống!");
+                    else if (result == "3")
+                        alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
+                    else if (result == "4")
+                        alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        Change_RoleOfUserIDCStart();
+        LoadStaffInfoDetail();
+        var lcFunctionType = $("#FunctionType").val();
+        if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER") {
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "MODIFY_USER"){
+            $("#divPosCode").hide();
+            $("#divModify").show();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_POS"){
+            $("#divPosCode").show();
+            $("#divModify").hide();
+            $("#divRole").hide();
+        }
+        else if (lcFunctionType == "CHANGE_ROLE"){
+            $("#divPosCode").hide();
+            $("#divModify").hide();
+            $("#divRole").show();
+        }
+    });
+
+</script>

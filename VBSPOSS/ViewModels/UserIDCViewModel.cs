@@ -8,6 +8,7 @@ namespace VBSPOSS.ViewModels
 {
     public class UserManagementIDCViewModel
     {
+        public int OrderNo { get; set; }
         public long Id { get; set; }
         public string FunctionType { get; set; }
         public string PosCode { get; set; }
@@ -30,17 +31,16 @@ namespace VBSPOSS.ViewModels
         public string AuthsecType { get; set; }
         public string ExtraAttributeUserRole { get; set; }
         public string ExtraAttributeBranchCode { get; set; }
-        public DateTime EffectDate { get; set; }
+        public DateTime? EffectiveDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Ticket { get; set; }
         public string Remark { get; set; }
         public string OrtherNotes { get; set; }
-        public string TiOrtherNotescket { get; set; }
         public int Status { get; set; }
         public string StatusText { get; set; }            //Thêm
         public int StatusUpdateCore { get; set; }
         public bool SessionValReq { get; set; }
-        public string PrevStatus { get; set; }
+        public int PrevStatus { get; set; }
         public string ResponseAttributes { get; set; }
         public string CallApiStatus { get; set; }
         public int CallApiReqRecordSl { get; set; }
@@ -52,6 +52,17 @@ namespace VBSPOSS.ViewModels
         public DateTime ModifiedDate { get; set; }
         public string ApproverBy { get; set; }
         public DateTime ApprovalDate { get; set; }
+        public string FunctionTypeName { get; set; }
+        public string RoleToTransferCashDescription { get; set; }
+        public string RoleToTransferCashValue { get; set; }
+        public string GroupNameDetail { get; set; }
+        public string RoleToTransferCashDescriptionDetail { get; set; }
+        public string RoleToTransferCashName { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
+        public string? SubType { get; set; }
     }
 
 
@@ -69,7 +80,7 @@ namespace VBSPOSS.ViewModels
         public string LastName { get; set; }
         public string FullName { get; set; }
         public string EmailAddress { get; set; }
-
+        public string? SubType { get; set; }
         public string MobileNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string GroupName { get; set; }
@@ -97,6 +108,13 @@ namespace VBSPOSS.ViewModels
         public string StaffDepartmentName { get; set; }
         public string RoleToTransferCashDescription { get; set; }
         public string RoleToTransferCashValue { get; set; }
+        public string GroupNameDetail { get; set; }
+        public string RoleToTransferCashDescriptionDetail { get; set; }
+        public string RoleToTransferCashName { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IpSetCode { get; set; }
+        public string? IpSetDetail { get; set; }
+        public int? RestrictionFlag { get; set; }
     }
 
 
@@ -327,7 +345,58 @@ namespace VBSPOSS.ViewModels
         public string UserRole { get; set; }
     }
 
+    public class UserIDCApprovalViewModel
+    {
+        public string STT { get; set; }
+        public int TT_Dong { get; set; }
+        public int KieuIn { get; set; }
+        public string MaDonVi { get; set; }
+        public int SoLgTrinh_ThemMoi { get; set; }
+        public int SoLgTrinh_Matkhau { get; set; }
+        public int SoLgTrinh_MoKhoa { get; set; }
+        public int SoLgTrinh_Khoa { get; set; }
+        public int SoLgTrinh_Edit { get; set; }
+        public int SoLgTrinh_ChangePos { get; set; }
+        public int SoLgTrinh_ChangeRole { get; set; }
+        public string TenChiNhanh { get; set; }            //Thêm
+        public string KhoangThoiGian { get; set; }
+    }
 
+    public class PendingTransAPIResponseViewModel
+    {
+        public string TxnStatus { get; set; }
 
+        public string ResponseCode { get; set; }
 
+        public string ResponseMsg { get; set; }
+
+        public List<PendingTransactionInforRecords> Records { get; set; }
+    }
+
+    public class PendingTransactionInforRecords
+    {
+        public string TxnRefNum { get; set; }
+
+        public string MakerDate { get; set; }       //2020-07-31 09:10:05
+
+        public string MakerId { get; set; }
+
+        public string BranchCd { get; set; }
+
+        public string Status { get; set; }
+
+        public string TransDate { get; set; }           //20220120
+
+        public string TxnNarr { get; set; }
+
+        public decimal TransAmount { get; set; }
+
+        public long BatchNum { get; set; }
+
+        public string TransType { get; set; }
+        /// <summary>
+        /// yyyyMMddHHmmss
+        /// </summary>
+        public string TranEntTime { get; set; }
+    }
 }

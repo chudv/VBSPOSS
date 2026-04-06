@@ -465,7 +465,6 @@ namespace VBSPOSS.Integration.Model
         public string? UsrPasswd { get; set; }
     }
 
-
     /// <summary>
     /// Kết quả trả ra của API thay đổi quyền người dùng Intellect iDC
     /// </summary>
@@ -667,9 +666,6 @@ namespace VBSPOSS.Integration.Model
         }
     }
 
-
-
-
     /// <summary>
     /// Model thông tin trả ra khi gọi API thay đổi thông tin tài khoản người dùng Intellect iDC. Ex:
     ///     {
@@ -761,6 +757,92 @@ namespace VBSPOSS.Integration.Model
     }
 
 
+    public class PendingTransResponseResult
+    {
+        [JsonProperty("txnStatus")]
+        public string TxnStatus { get; set; }
+
+        [JsonProperty("responseCode")]
+        public string ResponseCode { get; set; }
+
+        [JsonProperty("responseMsg")]
+        public string ResponseMsg { get; set; }
+
+        [JsonProperty("record")]
+        public List<PendingTransactionRecords> Records { get; set; }
+
+
+        public PendingTransResponseResult(string txnStatus, string responseCode, string responseMsg, List<PendingTransactionRecords> records)
+        {
+            ResponseMsg = responseMsg;
+            ResponseCode = responseCode;
+            TxnStatus = txnStatus;
+            Records = records;
+        }
+
+
+        public static PendingTransResponseResult Fail(string message)
+        {
+            return new PendingTransResponseResult("Failed", "90000", $"{HttpStatusCode.BadRequest.ToString()}; {message}", null);
+        }
+    }
+
+    public class PendingTransactionRecords
+    {
+        [JsonProperty("txnRefNum")]
+        public string TxnRefNum { get; set; }
+
+        [JsonProperty("mkrDt")]
+        public string MakerDate { get; set; }       //2020-07-31 09:10:05
+
+        [JsonProperty("mkrId")]
+        public string MakerId { get; set; }
+        
+        /// <summary>
+        /// Transaction POS code - Mã POS của giao dịch
+        /// </summary>
+        [JsonProperty("branchCd")]
+        public string BranchCd { get; set; }
+
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Transaction date - Ngày giao dịch
+        /// </summary>
+        [JsonProperty("txnDt")]
+        public string TransDate { get; set; }           //20220120
+
+        /// <summary>
+        /// Transaction narrative - Mô tả giao dịch
+        /// </summary>
+        [JsonProperty("txnNarr")]
+        public string TxnNarr { get; set; }
+
+        /// <summary>
+        /// Transaction amount - Số tiền giao dịch
+        /// </summary>
+        [JsonProperty("tranAmt")]
+        public decimal? TransAmount { get; set; }
+
+        /// <summary>
+        /// Transaction batch number - Số lô giao dịch
+        /// </summary>
+        [JsonProperty("batchNum")]
+        public long BatchNum { get; set; }
+        
+        /// <summary>
+        /// Transaction type name: Tên loại giao dịch
+        /// </summary>
+        [JsonProperty("txnType")]
+        public string TransType { get; set; }
+
+        /// <summary>
+        /// Transaction input date time: Thời gian nhập giao dịch
+        /// </summary>
+        [JsonProperty("tranEntTime")]
+        public string TranEntTime { get; set; }     //20241208 01:45:48
+    }
 
     public class UpdateNotiResult
     {

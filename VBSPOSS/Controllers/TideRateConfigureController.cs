@@ -9,7 +9,7 @@ using System.Data;
 using System.Globalization;
 using System.Text.Json;
 using VBSPOSS.Constants;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers;
 using VBSPOSS.Helpers.Interfaces;
@@ -317,9 +317,11 @@ namespace VBSPOSS.Controllers
         {
             try
             {
-                var termType = Request.Form["termType"].ToString(); //   
-                var inclusionFlag = Request.Form["inclusionFlag"].ToString(); //   
-                var termBasis = int.Parse( Request.Form["termBasis"].ToString()); //   
+                var termType = Request.Form["termType"].ToString(); //   Loại kỳ hạn: Tháng, Quý, Năm
+                var inclusionFlag = Request.Form["inclusionFlag"].ToString(); //   Cờ bao gồm/Không bao gồm
+                var termBasis = int.Parse( Request.Form["termBasis"].ToString()); //   Bước nhảy
+                var depositType = Request.Form["depositType"].ToString(); // Loại sản phầm: Đầu kỳ, cuối kỳ, định kỳ
+
                 if (string.IsNullOrEmpty(inclusionFlag))
                 {
                     inclusionFlag = "INCLUSIVE";
@@ -329,7 +331,7 @@ namespace VBSPOSS.Controllers
                     termType = "M";
                 }
 
-                var models = _productService.GetDepositTerms(termType, termBasis, inclusionFlag);
+                var models = _productService.GetDepositTerms(termType, termBasis, inclusionFlag, depositType);
 
                 var result = models.ToDataSourceResult(request, ModelState);
                 return Json(result);

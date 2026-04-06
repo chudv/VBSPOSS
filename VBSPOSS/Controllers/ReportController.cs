@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using VBSPOSS.Helpers.Interfaces;
@@ -14,7 +15,7 @@ namespace VBSPOSS.Controllers
         public ReportController(IReportService reportService, ILogger<ReportController> logger, IAdministrationService administrationService, ISessionHelper sessionHelper) : base(logger, administrationService, sessionHelper)
         {
             _reportService = reportService;
-        }   
+        }
 
         public IActionResult Index()
         {
@@ -26,7 +27,7 @@ namespace VBSPOSS.Controllers
         public async Task<IActionResult> GenerateFile(string id)
         {
             try
-            {               
+            {
                 var filePath = await _reportService.GetTTLSCASA01(id);
                 // Lấy tên file từ đường dẫn
                 string fileName = Path.GetFileName(filePath);
@@ -34,21 +35,22 @@ namespace VBSPOSS.Controllers
                 // 3. Trả file về trình duyệt
                 return PhysicalFile(filePath, "application/octet-stream", fileName);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 // Xử lý lỗi nếu cần thiết
                 return BadRequest($"Lỗi khi tạo file: {ex.Message}");
             }
-           
+
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> GenerateToTrinh_Tide(string listId, string circularRefNum, string circularDate)
+        public async Task<IActionResult> GenerateToTrinh_Tide(string listId, string circularRefNum, string circularDate, string posCode)
         {
             try
             {
-                var filePath = await _reportService.GetTTLSTIDE01(listId, circularRefNum, circularDate);
+                var filePath = await _reportService.GetTTLSTIDE01(listId, circularRefNum, circularDate, posCode);
                 // Lấy tên file từ đường dẫn
                 string fileName = Path.GetFileName(filePath);
 
@@ -67,12 +69,12 @@ namespace VBSPOSS.Controllers
 
         // add Casa
         [HttpPost]
-        public async Task<IActionResult> GenerateToTrinh_Casa(string listId, string circularRefNum, string circularDate)
+        public async Task<IActionResult> GenerateToTrinh_Casa(string listId, string circularRefNum, string circularDate, string posCode)
         {
             try
             {
-               
-                var filePath = await _reportService.GetTTLS_CASA_01(listId, circularRefNum, circularDate);  //
+
+                var filePath = await _reportService.GetTTLS_CASA_01(listId, circularRefNum, circularDate, posCode);  //
 
                 string fileName = Path.GetFileName(filePath);
 
@@ -102,11 +104,11 @@ namespace VBSPOSS.Controllers
         /// <param name="pCircularRefNum">Số quyết định cấu hình lãi suất</param>
         /// <returns>File tờ trình cấu hình lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn</returns>
         [HttpPost]
-        public async Task<IActionResult> GenerateFileReport_DepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate)
+        public async Task<IActionResult> GenerateFileReport_DepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate, string posCode)
         {
             try
             {
-                var filePath = await _reportService.GetDepositPenalIntRateConfig(pListId, pCircularRefNum   , circularDate);
+                var filePath = await _reportService.GetDepositPenalIntRateConfig(pListId, pCircularRefNum, circularDate, posCode);
                 // Lấy tên file từ đường dẫn
                 string fileName = Path.GetFileName(filePath);
 

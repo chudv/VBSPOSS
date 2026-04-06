@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.ViewModels;
@@ -247,31 +247,34 @@ namespace VBSPOSS.Integration.Implements
         }
 
 
+        /// <summary>
+        /// Hàm lấy danh Cập nhật thông tin gửi thông báo người dùng đi GDX
+        /// </summary>
+        /// <param name="notiType">Loại thông báo ( bắt buộc)</param>
+        /// <param name="posCode">Mã POS ( bắt buộc)</param>
+        /// <param name="transPoint">Điểm giao dịch</param>
+        /// <returns>Kết quả cập nhật</returns>
         public async Task<UpdateNotiResult> UpdateNotiDataList(List<NotificationDataResponse> request)
         {
+            if (request == null || !request.Any())
+                throw new ArgumentException("request không được null hoặc rỗng");
+
+            var url = "api/v1/update-notification-data";
+
             try
             {
-                if (request == null || !request.Any())
-                    throw new ArgumentException("request không được null hoặc rỗng");
-
-                var url = "api/v1/update-notification-data";
-
-                // Serialize request
                 var json = System.Text.Json.JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                _logger.LogInformation("Calling Noti API: {Url} with body: {Body}", url, json);
+                _logger.LogInformation("Calling Noti API: {Url}", url);
+                _logger.LogInformation("Request JSON: {Json}", json);
 
                 var response = await _client.PostAsync(url, content);
-
                 var responseText = await response.Content.ReadAsStringAsync();
 
                 _logger.LogInformation("StatusCode: {StatusCode}", (int)response.StatusCode);
-                _logger.LogInformation("Response: {Response}", responseText);
+                _logger.LogDebug("Response: {Response}", responseText);
 
-                response.EnsureSuccessStatusCode();
-
-                // ===== DESERIALIZE =====
                 var result = System.Text.Json.JsonSerializer.Deserialize<UpdateNotiResult>(
                     responseText,
                     new JsonSerializerOptions
@@ -280,27 +283,45 @@ namespace VBSPOSS.Integration.Implements
                     });
 
                 if (result == null)
-                    throw new Exception("Không parse được response từ Noti API");
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "99",
+                        Message = "Không parse được response từ Noti API"
+                    };
+                }
 
                 return result;
-            }
-            catch (System.Text.Json.JsonException ex)
-            {
-                _logger.LogError(ex, "Lỗi parse JSON từ Noti API");
-                throw;
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, "Lỗi HTTP khi gọi Noti API");
-                throw;
+
+                return new UpdateNotiResult
+                {
+                    Code = "98",
+                    Message = "Lỗi kết nối Noti API"
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling Noti API");
-                throw;
+
+                return new UpdateNotiResult
+                {
+                    Code = "99",
+                    Message = "Lỗi hệ thống"
+                };
             }
         }
 
+
+        /// <summary>
+        /// Hàm Lấy danh sách noti User offlien theo string notiType, string posCode, string transPoint, max(D9)
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/get-list-notification-data-user-offline
+        /// </summary>
+        /// <returns> Danh sách NotificationDataResponse
+        /// </returns>
 
         public async Task<GenericResultCode<List<NotificationDataResponse>?>> GetNotificationDataUserOffline(string notiType, string posCode, string transPoint)
         {
@@ -344,6 +365,10 @@ namespace VBSPOSS.Integration.Implements
 
         /// <summary>
         /// Hàm lấy danh Cập nhật thông tin gửi thông báo người dùng đi GDX
+        /// B1: Lấy dữ liệu trong bảng VBSP_NOTIFICATION_DATA
+        /// B2: Set các giá trị để gửi lại (status, resendTimes)
+        /// B3: Gọi api cập nhật
+        /// B4" Sau khi cập nhật xong lưu vào UserOfflineSendOTTHist
         /// </summary>
         /// <param name="notiType">Loại thông báo ( bắt buộc)</param>
         /// <param name="posCode">Mã POS ( bắt buộc)</param>
@@ -394,9 +419,9 @@ namespace VBSPOSS.Integration.Implements
                     item.resendTimes3 = 0;
                 }
 
-                var updateResponse =  UpdateNotiDataList(data);
+                var updateResponse = await UpdateNotiDataList(data);
 
-                if (updateResponse == null || updateResponse.Result == null)
+                if (updateResponse == null)
                 {
                     return new UpdateNotiResult
                     {
@@ -404,14 +429,14 @@ namespace VBSPOSS.Integration.Implements
                         Message = "Không nhận được phản hồi từ hệ thống cập nhật"
                     };
                 }
-                if (updateResponse.Result.Code != "00")
+                if (updateResponse.Code != "00")
                 {
-                    _logger.LogError($"Update thất bại. Code: {updateResponse.Result.Code}, Msg: {updateResponse.Result.Message}");
+                    _logger.LogError($"Update thất bại. Code: {updateResponse.Code}, Msg: {updateResponse.Message}");
 
                     return new UpdateNotiResult
                     {
-                        Code = updateResponse.Result.Code,
-                        Message = "Cập nhật thất bại: " + updateResponse.Result.Message
+                        Code = updateResponse.Code,
+                        Message = "Cập nhật thất bại: " + updateResponse.Message
                     };
                 }
 
@@ -464,6 +489,76 @@ namespace VBSPOSS.Integration.Implements
                 {
                     Code = "99",
                     Message = "Lỗi hệ thống: " + ex.Message
+                };
+            }
+        }
+
+        /// <summary>
+        /// Hàm gọi Insert dữ liệu noti vào bảng VBSP_NOTIFICATION_DATA
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/insert-notification-data
+        /// </summary>
+        /// <returns>
+        ///     {
+                //  "code": "00",
+                //  "message": "Cập nhật dữ liệu thành công!"
+                //}
+    /// </returns>
+    public async Task<UpdateNotiResult> InsertNotiDataList(List<NotificationDataResponse> request)
+        {
+            if (request == null || !request.Any())
+                throw new ArgumentException("request không được null hoặc rỗng");
+
+            var url = "api/v1/insert-notification-data";
+
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                _logger.LogInformation("Calling Noti API: {Url}", url);
+
+                var response = await _client.PostAsync(url, content);
+                var responseText = await response.Content.ReadAsStringAsync();
+
+                _logger.LogInformation("StatusCode: {StatusCode}", (int)response.StatusCode);
+                _logger.LogDebug("Response: {Response}", responseText);
+
+                var result = System.Text.Json.JsonSerializer.Deserialize<UpdateNotiResult>(
+                    responseText,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (result == null)
+                {
+                    return new UpdateNotiResult
+                    {
+                        Code = "99",
+                        Message = "Không parse được response từ Noti API"
+                    };
+                }
+
+                return result;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Lỗi HTTP khi gọi Noti API");
+
+                return new UpdateNotiResult
+                {
+                    Code = "98",
+                    Message = "Lỗi kết nối Noti API"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Noti API");
+
+                return new UpdateNotiResult
+                {
+                    Code = "99",
+                    Message = "Lỗi hệ thống"
                 };
             }
         }

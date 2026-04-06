@@ -1,14 +1,18 @@
-﻿using System;
-using System.Linq;
-using System.Reflection.Emit;
-using AutoMapper;
+﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.RulesetToEditorconfig;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Data;
+using System.Linq;
+using System.Reflection.Emit;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
-using VBSPOSS.Data.Models;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.Integration.ViewModel;
@@ -26,13 +30,15 @@ namespace VBSPOSS.Services.Implements
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly ILogger<UserManagementIDCService> _logger;
-        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
+        private readonly IListOfValueService _serviceLOV;
+        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
                         ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
             _mapper = mapper;
             _apiInternalEsbService = apiInternalEsbService;
             _logger = logger;
+            _serviceLOV = serviceLOV;
         }
         /// <summary>
         /// Hàm lấy danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC
@@ -204,7 +210,7 @@ namespace VBSPOSS.Services.Implements
                             //Thêm mới ở bảng UserManagementIDC
                             UserManagementIDCViewModel objUserManagementIDC = new UserManagementIDCViewModel();
                             objUserManagementIDC = _mapper.Map<UserManagementIDCViewModel>(objUserIDCMasterUpdNew);
-                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall);
+                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall,"");
                             if (pSaveUserManagementIDC > 0)
                             {
                                 int iSaveChanges = _dbContext.SaveChanges();
@@ -237,40 +243,52 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
         /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall)
+        public async Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall,string pButtonType)
         {
-            int iCountUpdate = 0;
+            int iCountUpdate = 0, iSaveChanges = 0;
             long iRetIdUpd = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             try
             {
                 if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
                 {
-                    if (pFlagCall == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                    var objUserManagementIDCsUpdNew = _dbContext.UserManagementIDCs.Where(m => m.Id == pUserManagementUpd.Id && m.UserId == pUserManagementUpd.UserId).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(pButtonType))
                     {
                         #region --- Cập nhật thêm mới thông tin ---
                         UserManagementIDC objUserManagementUpdNew = new UserManagementIDC();
-                        objUserManagementUpdNew.Id = 0;
-                        objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                        objUserManagementUpdNew.Id = 0;                
                         objUserManagementUpdNew.PosCode = pUserManagementUpd.PosCode;
                         objUserManagementUpdNew.PosName = pUserManagementUpd.PosName;
                         objUserManagementUpdNew.StaffId = pUserManagementUpd.StaffId;
                         objUserManagementUpdNew.StaffCode = pUserManagementUpd.StaffCode;
                         objUserManagementUpdNew.UserId = pUserManagementUpd.UserId;
+                        if (!string.IsNullOrWhiteSpace(pUserManagementUpd.FullName))
+                        {
+                            var partName = pUserManagementUpd.FullName
+                                .Trim()
+                                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        
+                            if (partName.Length > 0)
+                            {
+                                objUserManagementUpdNew.LastName = partName[^1];
+                                objUserManagementUpdNew.FirstName = string.Join(" ", partName.Take(partName.Length - 1));
+                            }
+                        }
                         objUserManagementUpdNew.NickName = pUserManagementUpd.NickName;
-                        objUserManagementUpdNew.FirstName = pUserManagementUpd.FirstName;
-                        objUserManagementUpdNew.LastName = pUserManagementUpd.LastName;
                         objUserManagementUpdNew.EmailAddress = pUserManagementUpd.EmailAddress;
                         objUserManagementUpdNew.MobileNumber = pUserManagementUpd.MobileNumber;
                         objUserManagementUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
                         objUserManagementUpdNew.GroupName = pUserManagementUpd.GroupName;
                         objUserManagementUpdNew.EntityList = pUserManagementUpd.EntityList;
-                        objUserManagementUpdNew.AuthType = pUserManagementUpd.AuthType;
-                        objUserManagementUpdNew.UserType = pUserManagementUpd.UserType;
-                        objUserManagementUpdNew.MailIdFlag = pUserManagementUpd.MailIdFlag;
-                        objUserManagementUpdNew.AuthsecType = pUserManagementUpd.AuthsecType;
+                        if (!string.IsNullOrWhiteSpace(pUserManagementUpd.RoleToTransferCashValue))
+                        {
+                            objUserManagementUpdNew.MailIdFlag = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? MailIdFlag.MailIdFlag_RandomSendAPI.Code : MailIdFlag.MailIdFlag_DefaultPassword.Code;
+                            objUserManagementUpdNew.AuthsecType = (pUserManagementUpd.RoleToTransferCashValue == StatusLov.StatusYes)? "17" : "0";
+                        }
                         objUserManagementUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
                         objUserManagementUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
+                        objUserManagementUpdNew.EffectiveDate = pUserManagementUpd.EffectiveDate;
                         objUserManagementUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
                         objUserManagementUpdNew.Remark = pUserManagementUpd.Remark;
                         objUserManagementUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
@@ -284,21 +302,113 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.CallApiReqRecordSl = 0; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseCode = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.CallApiResponseMsg = ""; //Xử lý khi gọi API
-                        objUserManagementUpdNew.CreatedBy = pUserNameUpd;
-                        objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
-                        objUserManagementUpdNew.ModifiedBy = "";
-                        objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
-                        objUserManagementUpdNew.ApproverBy = "";
-                        objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+                        objUserManagementUpdNew.IpSetCode = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.IpSetDetail = ""; //Xử lý khi gọi API
+                        objUserManagementUpdNew.RestrictionFlag = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.SubType = "1";
+                        if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
+                        {
+                            objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                            objUserManagementUpdNew.AuthType = pButtonType;
+                            objUserManagementUpdNew.UserType = pButtonType;
+                            objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                            objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ModifiedBy = "";
+                            objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ApproverBy = "";
+                            objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.StartDate = dCurrentDateTmp;
+                        }
+                        else
+                        {
+                            objUserManagementUpdNew.FunctionType = pUserManagementUpd.FunctionType;
+                            objUserManagementUpdNew.AuthType = pUserManagementUpd.AuthType;
+                            objUserManagementUpdNew.UserType = pUserManagementUpd.UserType;
+                            objUserManagementUpdNew.CreatedBy = pUserNameUpd;
+                            objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ModifiedBy = pUserNameUpd;
+                            objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.ApproverBy = pUserManagementUpd.ApproverBy;
+                            objUserManagementUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
+                            objUserManagementUpdNew.StartDate = pUserManagementUpd.StartDate;
+                        }
 
                         _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
-                        int iSaveChanges = _dbContext.SaveChanges();
+                        iSaveChanges = _dbContext.SaveChanges();
                         if (iSaveChanges > 0)
                         {
                             iCountUpdate++;
                             iRetIdUpd = objUserManagementUpdNew.Id;
                         }
                         #endregion
+                    }
+
+                    else if(objUserManagementIDCsUpdNew != null && pFlagCall == EventFlag.EventFlag_Edit.Value.ToString())
+                    {
+                        objUserManagementIDCsUpdNew.Id = pUserManagementUpd.Id;
+                        objUserManagementIDCsUpdNew.FunctionType = pUserManagementUpd.FunctionType;
+                        objUserManagementIDCsUpdNew.PosCode = pUserManagementUpd.PosCode;
+                        objUserManagementIDCsUpdNew.PosName = pUserManagementUpd.PosName;
+                        objUserManagementIDCsUpdNew.StaffId = pUserManagementUpd.StaffId;
+                        objUserManagementIDCsUpdNew.StaffCode = pUserManagementUpd.StaffCode;
+                        objUserManagementIDCsUpdNew.UserId = pUserManagementUpd.UserId;
+                        objUserManagementIDCsUpdNew.FirstName = pUserManagementUpd.FirstName;
+                        objUserManagementIDCsUpdNew.LastName = pUserManagementUpd.LastName;
+                        objUserManagementIDCsUpdNew.NickName = pUserManagementUpd.NickName;
+                        objUserManagementIDCsUpdNew.EmailAddress = pUserManagementUpd.EmailAddress;
+                        objUserManagementIDCsUpdNew.MobileNumber = pUserManagementUpd.MobileNumber;
+                        objUserManagementIDCsUpdNew.DateOfBirth = pUserManagementUpd.DateOfBirth.Date;
+                        objUserManagementIDCsUpdNew.GroupName = pUserManagementUpd.GroupName;
+                        objUserManagementIDCsUpdNew.EntityList = pUserManagementUpd.EntityList;
+                        objUserManagementIDCsUpdNew.AuthType = pUserManagementUpd.AuthType;
+                        objUserManagementIDCsUpdNew.UserType = pUserManagementUpd.UserType;
+                        objUserManagementIDCsUpdNew.MailIdFlag = pUserManagementUpd.MailIdFlag;
+                        objUserManagementIDCsUpdNew.AuthsecType = pUserManagementUpd.AuthsecType;                        
+                        objUserManagementIDCsUpdNew.ExtraAttributeUserRole = pUserManagementUpd.ExtraAttributeUserRole;
+                        objUserManagementIDCsUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
+                        objUserManagementIDCsUpdNew.EffectiveDate = pUserManagementUpd.EffectiveDate;
+                        objUserManagementIDCsUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
+                        objUserManagementIDCsUpdNew.Remark = pUserManagementUpd.Remark;
+                        objUserManagementIDCsUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
+                        objUserManagementIDCsUpdNew.Ticket = pUserManagementUpd.Ticket;
+                        objUserManagementIDCsUpdNew.Status = pUserManagementUpd.Status;
+                        objUserManagementIDCsUpdNew.StatusUpdateCore = pUserManagementUpd.StatusUpdateCore; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.SessionValReq = pUserManagementUpd.SessionValReq; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.PrevStatus = pUserManagementUpd.PrevStatus; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.ResponseAttributes = pUserManagementUpd.ResponseAttributes; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiStatus = pUserManagementUpd.CallApiStatus; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiReqRecordSl = pUserManagementUpd.CallApiReqRecordSl; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiResponseCode = pUserManagementUpd.CallApiResponseCode; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CallApiResponseMsg = pUserManagementUpd.CallApiResponseMsg; //Xử lý khi gọi API
+                        objUserManagementIDCsUpdNew.CreatedBy = pUserManagementUpd.CreatedBy;
+                        objUserManagementIDCsUpdNew.CreatedDate = pUserManagementUpd.CreatedDate;
+                        objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd;
+                        objUserManagementIDCsUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementIDCsUpdNew.ApproverBy = pUserManagementUpd.ApproverBy;
+                        objUserManagementIDCsUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
+                        _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
+                        iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                        }
+                    }
+
+                    else if(objUserManagementIDCsUpdNew != null && pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
+                    {
+                        objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptCN);
+                        objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd; 
+                        objUserManagementIDCsUpdNew.ModifiedDate = dCurrentDateTmp;
+                        objUserManagementIDCsUpdNew.ApproverBy = pUserNameUpd; 
+                        objUserManagementIDCsUpdNew.ApprovalDate = dCurrentDateTmp;
+                        _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
+                        iSaveChanges = _dbContext.SaveChanges();
+                        if (iSaveChanges > 0)
+                        {
+                            iCountUpdate++;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                        }
                     }
                 }
             }
@@ -574,7 +684,7 @@ namespace VBSPOSS.Services.Implements
                 if (requestInput != null && !string.IsNullOrEmpty(requestInput.TellerId))
                 {
                     if (string.IsNullOrEmpty(requestInput.MkrId))
-                        requestInput.MkrId = ConstValueAPI.UserId_Call_ApiIDC;
+                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     var apiResponse = await _apiInternalEsbService.ChangeRoleToTransferCashByAPITellerRoleAssign(requestInput);
 
                     if (apiResponse == null)
@@ -1077,5 +1187,355 @@ namespace VBSPOSS.Services.Implements
             return objResultModifyUser;
         }
 
+        /// <summary>
+        /// Hàm lấy danh sách Trình duyệt người dùng IDC
+        /// </summary>
+        /// <returns></returns>
+        public List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai)
+        {
+            var answer = new List<UserIDCApprovalViewModel>();
+            try
+            {
+                SqlParameter paramNgayHLBatDau = new SqlParameter("@pNgayHLBatDau", SqlDbType.VarChar);
+                paramNgayHLBatDau.Value = pNgayHLBatDau;
+                SqlParameter paramNgayHLKetThuc = new SqlParameter("@pNgayHLKetThuc", SqlDbType.VarChar);
+                paramNgayHLKetThuc.Value = pNgayHLKetThuc;
+                SqlParameter paramDonViTrinhKT = new SqlParameter("@pDonVi", SqlDbType.VarChar);
+                paramDonViTrinhKT.Value = pDonVi;
+                SqlParameter paramFlagCall = new SqlParameter("@pFlagCall", SqlDbType.Int);
+                paramFlagCall.Value = pFlagCall;
+                SqlParameter paramTrangThai = new SqlParameter("@pTrangThai", SqlDbType.VarChar);
+                paramTrangThai.Value = pTrangThai;
+                var pApprovalTongHops = _dbContext.UserIDCApprovals.FromSqlRaw($"exec [dbo].[UserIDCApproval_GetSearch] @pNgayHLBatDau,@pNgayHLKetThuc,@pDonVi,@pFlagCall,@pTrangThai", paramNgayHLBatDau, paramNgayHLKetThuc, paramDonViTrinhKT, paramFlagCall,paramTrangThai).ToList();
+                if(pApprovalTongHops != null)
+                {
+                    if (pFlagCall == 1)
+                        pApprovalTongHops = pApprovalTongHops.Where(w=>w.MaDonVi != "").ToList();
+                    foreach (var item in pApprovalTongHops)
+                    {
+                        UserIDCApprovalViewModel objItem = new UserIDCApprovalViewModel();
+                        objItem = _mapper.Map<UserIDCApprovalViewModel>(item);
+                        answer.Add(objItem);
+                    }
+                }       
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Hàm lấy danh sách bản ghi trong bảng UserManagementIDC Thông tin tài khoản người dùng Intellect iDC
+        /// </summary>
+        /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
+        /// <param name="pMainPosCode">Mã chi nhánh (Không bắt buộc). Ex: 002721</param>
+        /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
+        /// <param name="pUserId">Tên đăng nhập người dùng</param>
+        /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
+        /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
+        /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
+        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode)
+        {
+            try
+            {
+                List<string> listOfPosFind = new List<string>();
+                listOfPosFind = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS
+                                                            && (string.IsNullOrEmpty(pMainPosCode) || pMainPosCode == "000100" || (w.MainPosCode == pMainPosCode))                                                       
+                                                            ).OrderBy(o => o.Code).Select(s => s.Code).ToList();
+                List<UserManagementIDCViewModel> listUserIDCManagement = new List<UserManagementIDCViewModel>();
+                List<UserManagementIDCViewModel> listUserIDCManagement01 = new List<UserManagementIDCViewModel>();
+
+                var listUserIDCManagementTemp = _dbContext.UserManagementIDCs.Where(w => w.Id == pId || (pId == 0
+                        && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
+                        && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                        && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
+                        .Where(delegate (UserManagementIDC c)
+                        {
+                            if (string.IsNullOrEmpty(pFullName)
+                                || (c.LastName != null && pFullName.ToLower().Contains(c.LastName.ToLower()))
+                                || (c.LastName != null && Utilities.ConvertToUnSign(pFullName.ToLower()).IndexOf(c.LastName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                )
+                                return true;
+                            else
+                                return false;
+                        }).OrderByDescending(o => o.PosCode).ThenBy(o => o.GroupName).ThenBy(o => o.UserId).ToList();
+                    
+                if (listUserIDCManagementTemp != null && listUserIDCManagementTemp.Count != 0)
+                {
+                    int iCountTemp = 0;
+                    foreach (var item in listUserIDCManagementTemp)
+                    {
+                        iCountTemp++;
+                        UserManagementIDCViewModel objItem = new UserManagementIDCViewModel();
+
+                        objItem = _mapper.Map<UserManagementIDCViewModel>(item);
+                        objItem.OrderNo = iCountTemp;
+                        objItem.FullName = objItem.FirstName + " " + objItem.LastName;
+                        objItem.StatusText = ConfigStatus.GetByValue(item.Status).Description;
+                        var pFunctionTypeMap = new Dictionary<string, string>
+                        {
+                            { FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code, FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code, FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code, FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code, FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code, FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code, FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code, FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Description },
+                            { FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Code, FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Description },
+                        };
+                        
+                        objItem.FunctionTypeName = pFunctionTypeMap.ContainsKey(objItem.FunctionType)
+                            ? pFunctionTypeMap[objItem.FunctionType]
+                            : "";
+                        listUserIDCManagement.Add(objItem);
+                    }
+                }
+                return listUserIDCManagement;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện gọi API idcPendingTxn/lmsPendingTxn Lấy danh sách giao dịch Pending theo người dùng
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/idcPendingTxn
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/lmsPendingTxn
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "userId": "68510"
+        ///     }
+        ///     Hoặc
+        ///     {
+        ///         "userId": "20047"
+        ///     }
+        /// 
+        /// </param>
+        /// <param name="pApiName">Tên API truyền vào. Nếu trống sẽ lấy cả 2 API vào (EsbApiName.LMSPendingTxn)</param>
+        /// <param name="pUserNameUpd">Người dùng của VBSPOSS thực hiện</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu là idcPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "6",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:46:38"
+        ///             },
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "7",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:47:17"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// Nếu là lmsPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<PendingTransAPIResponseViewModel> GetPendingTransactionsByApiPendingTxn(PendingTransRequestViewModel requestInput, string pApiName, string pUserNameUpd)
+        {
+            DateTime dCurrentDateTmp = DateTime.Now;
+            PendingTransAPIResponseViewModel objResultPendingTrans = new PendingTransAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    if (!string.IsNullOrEmpty(pApiName))
+                    {
+                        var apiResponse = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, pApiName);
+                        if (apiResponse == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            objResultPendingTrans.ResponseCode = apiResponse.ResponseCode;
+                            objResultPendingTrans.ResponseMsg = apiResponse.ResponseMsg;
+                            objResultPendingTrans.TxnStatus = apiResponse.TxnStatus.Trim();
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponse.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    if (pApiName == EsbApiName.IDCPendingTxn.Code)
+                                    {
+                                        itemResult.TransDate = item.TransDate;
+                                        itemResult.TxnNarr = item.TxnNarr;
+                                        itemResult.TransAmount = item.TransAmount.Value;
+                                        itemResult.BatchNum = item.BatchNum;
+                                        itemResult.TransType = item.TransType;
+                                        itemResult.BranchCd = item.BranchCd;
+                                        itemResult.TranEntTime = item.TranEntTime.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        itemResult.TxnRefNum = "";
+                                        itemResult.MakerDate = itemResult.TranEntTime;
+                                        itemResult.MakerId = requestInput.UserId;
+                                        itemResult.Status = "Pending for Authorize";
+                                    }
+                                    else
+                                    {
+                                        itemResult.TransDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        if (item.MakerDate.Length > 8)
+                                            itemResult.TransDate = itemResult.TransDate.Substring(0, 8);
+                                        itemResult.TxnNarr = "Lending";
+                                        itemResult.TransAmount = 0;
+                                        itemResult.BatchNum = 0;
+                                        itemResult.TransType = "Giao dịch về Lending";
+                                        itemResult.TranEntTime = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+
+                                        itemResult.TxnRefNum = item.TxnRefNum;
+                                        itemResult.MakerDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        itemResult.MakerId = item.MakerId;
+                                        itemResult.BranchCd = item.BranchCd;
+                                        itemResult.Status = item.Status;
+                                    }
+                                    listTransPending.Add(itemResult);
+                                }
+                                
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+                    }
+                    else
+                    {
+                        //Trường hợp không truyền tên API thì gọi lấy cả 2 Pending bên IDC và LMS
+                        var apiResponseIDC = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, EsbApiName.IDCPendingTxn.Code);
+                        if (apiResponseIDC == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            objResultPendingTrans.ResponseCode = apiResponseIDC.ResponseCode;
+                            objResultPendingTrans.ResponseMsg = apiResponseIDC.ResponseMsg;
+                            objResultPendingTrans.TxnStatus = apiResponseIDC.TxnStatus.Trim();
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponseIDC.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    itemResult.TransDate = item.TransDate;
+                                    itemResult.TxnNarr = item.TxnNarr;
+                                    itemResult.TransAmount = item.TransAmount.Value;
+                                    itemResult.BatchNum = item.BatchNum;
+                                    itemResult.TransType = item.TransType;
+                                    itemResult.BranchCd = item.BranchCd;
+                                    itemResult.TranEntTime = item.TranEntTime.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    itemResult.TxnRefNum = "";
+                                    itemResult.MakerDate = itemResult.TranEntTime;
+                                    itemResult.MakerId = requestInput.UserId;
+                                    itemResult.Status = "Pending for Authorize";
+                                    listTransPending.Add(itemResult);
+                                }
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+
+                        var apiResponseLMS = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, EsbApiName.LMSPendingTxn.Code);
+                        if (apiResponseLMS == null && objResultPendingTrans == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            if (objResultPendingTrans == null)
+                            {
+                                objResultPendingTrans.ResponseCode = apiResponseLMS.ResponseCode;
+                                objResultPendingTrans.ResponseMsg = apiResponseLMS.ResponseMsg;
+                                objResultPendingTrans.TxnStatus = apiResponseLMS.TxnStatus.Trim();
+                            }
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponseLMS.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    
+                                    itemResult.TransDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    if (item.MakerDate.Length > 8)
+                                        itemResult.TransDate = itemResult.TransDate.Substring(0, 8);
+                                    itemResult.TxnNarr = "Lending";
+                                    itemResult.TransAmount = 0;
+                                    itemResult.BatchNum = 0;
+                                    itemResult.TransType = "Giao dịch về Lending";
+                                    itemResult.TranEntTime = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+
+                                    itemResult.TxnRefNum = item.TxnRefNum;
+                                    itemResult.MakerDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    itemResult.MakerId = item.MakerId;
+                                    itemResult.BranchCd = item.BranchCd;
+                                    itemResult.Status = item.Status;
+                                    
+                                    listTransPending.Add(itemResult);
+                                }
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //iRetIdUpd = -1;
+                Console.WriteLine($"GetPendingTransactionsByApiPendingTxn('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm lấy danh sách giao dịch Pending của người dùng " +
+                                        $"GetPendingTransactionsByApiPendingTxn('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultPendingTrans;
+        }
     }
 }
