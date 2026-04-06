@@ -129,14 +129,14 @@ namespace VBSPOSS.Controllers
                 DateTime? fromDate = null;
                 DateTime? toDate = null;
 
-                // Parse Từ ngày
+              
                 if (!string.IsNullOrEmpty(effectDateBegin)
                     && DateTime.TryParseExact(effectDateBegin, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFrom))
                 {
                     fromDate = parsedFrom.Date;
                 }
 
-                // Parse Đến ngày
+                // Đến ngày
                 if (!string.IsNullOrEmpty(effectDateEnd)
                     && DateTime.TryParseExact(effectDateEnd, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTo))
                 {
