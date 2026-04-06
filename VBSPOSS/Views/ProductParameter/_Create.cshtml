@@ -58,21 +58,21 @@
 </style>
 
 <script>
-    var notification = $("#notification").kendoNotification({
-        position: { top: 20, right: 20 },
-        autoHideAfter: 5000
-    }).data("kendoNotification");
+    // var notification = $("#notification").kendoNotification({
+    //     position: { top: 20, right: 20 },
+    //     autoHideAfter: 5000
+    // }).data("kendoNotification");
 
-    function loadProductGrid() {
+        function loadProductGrid() {
         var groupCode = $("#ProductGroupCode").val();
         var effectedDate = $("#EffectedDate").data("kendoDatePicker").value();
 
         if (!groupCode || groupCode === "") {
-            notification.show({ message: "Vui lòng chọn phân loại!", type: "error" });
+            alert("Vui lòng chọn phân loại!");
             return;
         }
         if (!effectedDate) {
-            notification.show({ message: "Vui lòng chọn ngày hiệu lực!", type: "error" });
+            alert("Vui lòng chọn ngày hiệu lực!");
             return;
         }
 
@@ -93,19 +93,66 @@
                         grid.dataSource.data(response);
                     }
                 } else {
-                    notification.show({ message: "Không có dữ liệu!", type: "warning" });
+                    alert("Không có dữ liệu!");
                 }
             },
             error: function (xhr) {
-                notification.show({ message: "Lỗi tải dữ liệu: " + (xhr.responseText || "Unknown error"), type: "error" });
+                alert("Lỗi tải dữ liệu: " + (xhr.responseText || "Unknown error"));
             }
         });
     }
+    // function saveBatch() {
+    //     var grid = $("#gridCreateDetail").data("kendoGrid");
+    //     if (!grid) {
+    //         notification.show({ message: "Grid chưa sẵn sàng!", type: "error" });
+    //         return;
+    //     }
 
-    function saveBatch() {
+    //     var data = grid.dataSource.data().toJSON();
+    //     var changedData = data.filter(item =>
+    //         item.NewApplyPosFlag !== (item.CurrentApplyPos === "X") ||
+    //         item.NewMinSpread !== item.CurrentMinSpread ||
+    //         item.NewMaxSpread !== item.CurrentMaxSpread ||
+    //         (item.Remark && item.Remark.trim() !== "")
+    //     );
+
+    //     if (changedData.length === 0) {
+    //         notification.show({ message: "Không có thay đổi nào để lưu!", type: "warning" });
+    //         return;
+    //     }
+
+    //     kendo.ui.progress($("#createForm"), true);
+
+    //     var formData = new FormData($("#createForm")[0]);
+    //     formData.append("Items", JSON.stringify(changedData));
+
+    //     $.ajax({
+    //         url: '@Url.Action("SaveBatchProductParameter", "ProductParameter")',
+    //         type: "POST",
+    //         data: formData,
+    //         contentType: false,
+    //         processData: false,
+    //         headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+    //         success: function (res) {
+    //             kendo.ui.progress($("#createForm"), false);
+    //             alert(res?.message || (res?.success ? "Lưu thành công!" : "Lưu thất bại!"));
+    //             if (res && res.success) {
+    //                 doCompleteWindow();
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             kendo.ui.progress($("#createForm"), false);
+    //             alert("Lỗi hệ thống: " + (xhr.responseText || "Unknown error"));
+    //         }
+    //     });
+    // }
+
+
+    // sửa saveBatch
+        function saveBatch() {
         var grid = $("#gridCreateDetail").data("kendoGrid");
         if (!grid) {
-            notification.show({ message: "Grid chưa sẵn sàng!", type: "error" });
+            alert("Grid chưa sẵn sàng!");
             return;
         }
 
@@ -118,10 +165,11 @@
         );
 
         if (changedData.length === 0) {
-            notification.show({ message: "Không có thay đổi nào để lưu!", type: "warning" });
+            alert("Không có thay đổi nào để lưu!");
             return;
         }
 
+        // Hiển thị loading
         kendo.ui.progress($("#createForm"), true);
 
         var formData = new FormData($("#createForm")[0]);
@@ -136,17 +184,21 @@
             headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
             success: function (res) {
                 kendo.ui.progress($("#createForm"), false);
-                alert(res?.message || (res?.success ? "Lưu thành công!" : "Lưu thất bại!"));
+
                 if (res && res.success) {
+                    alert(res.message || "Lưu thành công!");
                     doCompleteWindow();
+                } else {
+                    alert(res?.message || "Lưu thất bại! Vui lòng thử lại.");
                 }
             },
             error: function (xhr) {
                 kendo.ui.progress($("#createForm"), false);
-                alert("Lỗi hệ thống: " + (xhr.responseText || "Unknown error"));
+                alert("Lỗi hệ thống khi lưu:\n" + (xhr.responseText || "Unknown error"));
             }
         });
     }
+
 
     function doCompleteWindow() {
         var popup = $("#createWindow").data("kendoWindow");
