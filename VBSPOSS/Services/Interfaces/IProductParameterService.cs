@@ -66,9 +66,18 @@ namespace VBSPOSS.Services.Interfaces
         Task<int> SaveBatchProductParameterAsync(string productGroupCode, DateTime effectedDate, string remark, List<ProductParameterDetailViewModel> items);
 
         // Load màn Index
+       
         Task<List<ProductParametersView>> GetProductParametersViewListAsync(
-            string productGroupCode,
-            string productCode,
-            DateTime? effectDate);
+        string productGroupCode = null,
+        string productCode = null,
+        DateTime? fromDate = null,      // Từ ngày
+        DateTime? toDate = null);       // Đến ng
+
+
     }
+
+
+
+
+
 }
