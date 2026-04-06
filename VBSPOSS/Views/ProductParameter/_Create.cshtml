@@ -153,7 +153,7 @@
 
 
     // sửa saveBatch
-        function saveBatch() {
+    function saveBatch() {
         var grid = $("#gridCreateDetail").data("kendoGrid");
         if (!grid) {
             alert("Grid chưa sẵn sàng!");
@@ -161,6 +161,7 @@
         }
 
         var data = grid.dataSource.data().toJSON();
+
         var changedData = data.filter(item =>
             item.NewApplyPosFlag !== (item.CurrentApplyPos === "X") ||
             item.NewMinSpread !== item.CurrentMinSpread ||

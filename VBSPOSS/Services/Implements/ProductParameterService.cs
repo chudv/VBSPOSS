@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
@@ -676,12 +677,8 @@ namespace VBSPOSS.Services.Implements
     //        }
     //    }
         // Sửa thay đổi
-        public async Task<int> SaveBatchProductParameterAsync(
-    string productGroupCode,
-    DateTime effectedDate,
-    string remark,
-    List<ProductParameterDetailViewModel> items)
-        {
+    public async Task<int> SaveBatchProductParameterAsync(string productGroupCode,DateTime effectedDate,string remark,List<ProductParameterDetailViewModel> items)
+    {
             try
             {
                 if (string.IsNullOrEmpty(productGroupCode))
@@ -701,34 +698,73 @@ namespace VBSPOSS.Services.Implements
                 {
                     throw new Exception($"Đã tồn tại cấu hình cho phân loại {productGroupCode} với ngày hiệu lực {effectedDate:dd/MM/yyyy}. Không thể tạo trùng.");
                 }
-                // ====================== TIẾP TỤC LƯU ======================
-                var recordsToSave = new List<ProductParameter>();
 
-                foreach (var item in items)
+                // Lay danh sach da co
+                var maxEffectedDate = await _dbContext.ProductParameters
+                    .Where(x => x.ProductGroupCode == productGroupCode).MaxAsync(x => x.EffectedDate);
+                
+                var lstOldParameter = await _dbContext.ProductParameters
+                    .Where(x => x.ProductGroupCode == productGroupCode
+                                && x.EffectedDate.Date == maxEffectedDate.Date).ToListAsync();
+
+                var lstNewParameter = new List<ProductParameter>();
+
+                // Can cap nhat tu items vao lstOldParameter de thanh lstNewParameter
+                for (int i = 0; i < lstOldParameter.Count; i++)
                 {
-                    var finalRemark = !string.IsNullOrEmpty(item.Remark)
-                        ? item.Remark
-                        : remark?.Trim() ?? "";
-
-                    var entity = new ProductParameter
+                    // Kiem tra phan tu nay co thuoc trong danh sach items, neu co thi can update theo items, khong thi set lai ngay hieu luc va Id = 0
+                    if (items.Any(w => w.ProductGroupCode == lstOldParameter[i].ProductGroupCode && w.ProductCode == lstOldParameter[i].ProductCode))
                     {
-                        ProductGroupCode = productGroupCode,
-                        ProductCode = item.ProductCode,
-                        ProductName = item.ProductName ?? "",
-                        ApplyPosFlag = item.NewApplyPosFlag ? 1 : 0,
-                        MinInterestRateSpread = item.NewMinSpread,
-                        MaxInterestRateSpread = item.NewMaxSpread,
-                        EffectedDate = effectedDate.Date,
-                        Remark = finalRemark,
-                        Status = ConfigStatus.MAKER.Value,
-                        CreatedBy = "system",
-                        CreatedDate = DateTime.Now
-                    };
-
-                    recordsToSave.Add(entity);
+                        lstNewParameter.AddRange(items.Where(item => item.ProductCode == lstOldParameter[i].ProductCode).Select(item => new ProductParameter
+                        {
+                            ProductGroupCode = productGroupCode,
+                            ProductCode = item.ProductCode,
+                            ProductName = item.ProductName ?? "",
+                            ApplyPosFlag = item.NewApplyPosFlag ? 1 : 0,
+                            MinInterestRateSpread = item.NewMinSpread,
+                            MaxInterestRateSpread = item.NewMaxSpread,
+                            EffectedDate = effectedDate.Date,
+                            Remark = item.Remark,
+                            Status = ConfigStatus.MAKER.Value,
+                            CreatedBy = "system",
+                            CreatedDate = DateTime.Now
+                        }).ToList());
+                    }
+                    else
+                    {
+                        lstOldParameter[i].Id = 0;
+                        lstOldParameter[i].EffectedDate = effectedDate.Date;
+                        lstOldParameter[i].Remark = remark;
+                        lstNewParameter.Add(lstOldParameter[i]);
+                    } 
+                        
                 }
 
-                _dbContext.ProductParameters.AddRange(recordsToSave);
+                //foreach (var item in items)
+                //{
+                //    var finalRemark = !string.IsNullOrEmpty(item.Remark)
+                //        ? item.Remark
+                //        : remark?.Trim() ?? "";
+
+                //    var entity = new ProductParameter
+                //    {
+                //        ProductGroupCode = productGroupCode,
+                //        ProductCode = item.ProductCode,
+                //        ProductName = item.ProductName ?? "",
+                //        ApplyPosFlag = item.NewApplyPosFlag ? 1 : 0,
+                //        MinInterestRateSpread = item.NewMinSpread,
+                //        MaxInterestRateSpread = item.NewMaxSpread,
+                //        EffectedDate = effectedDate.Date,
+                //        Remark = finalRemark,
+                //        Status = ConfigStatus.MAKER.Value,
+                //        CreatedBy = "system",
+                //        CreatedDate = DateTime.Now
+                //    };
+
+                //    recordsToSave.Add(entity);
+                //}
+
+                _dbContext.ProductParameters.AddRange(lstNewParameter);
                 var recordCount = await _dbContext.SaveChangesAsync();
 
                 _logger.LogInformation($"Đã lưu thành công {recordCount} bản ghi cho {productGroupCode} - {effectedDate:dd/MM/yyyy}");
@@ -738,7 +774,7 @@ namespace VBSPOSS.Services.Implements
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi lưu batch trong service");
-                throw;   // Giữ throw để Controller xử lý
+                throw ex; 
             }
         }
 
