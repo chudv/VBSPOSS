@@ -552,7 +552,64 @@ namespace VBSPOSS.Services.Implements
         }
 
         // lưu
-        public async Task<int> SaveBatchProductParameterAsync(string productGroupCode, DateTime effectedDate, string remark, List<ProductParameterDetailViewModel> items)
+        //public async Task<int> SaveBatchProductParameterAsync(string productGroupCode, DateTime effectedDate, string remark, List<ProductParameterDetailViewModel> items)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(productGroupCode))
+        //            throw new ArgumentException("Vui lòng chọn phân loại");
+
+        //        if (effectedDate <= DateTime.Today)
+        //            throw new ArgumentException("Ngày hiệu lực phải lớn hơn hôm nay");
+
+        //        if (items == null || items.Count == 0)
+        //            throw new ArgumentException("Không có dữ liệu thay đổi để lưu");
+
+        //        var recordsToSave = new List<ProductParameter>();
+
+        //        foreach (var item in items)
+        //        {
+        //            // Ưu tiên Remark riêng trong grid, fallback Remark chung từ form
+        //            var finalRemark = !string.IsNullOrEmpty(item.Remark) ? item.Remark : remark?.Trim() ?? "";
+
+        //            var entity = new ProductParameter
+        //            {
+        //                ProductGroupCode = productGroupCode,
+        //                ProductCode = item.ProductCode,
+        //                ProductName = item.ProductName ?? "",
+        //                ApplyPosFlag = item.NewApplyPosFlag ? 1 : 0,
+        //                MinInterestRateSpread = item.NewMinSpread,
+        //                MaxInterestRateSpread = item.NewMaxSpread,
+        //                EffectedDate = effectedDate.Date,
+        //                Remark = finalRemark,
+        //                Status = ConfigStatus.MAKER.Value, // 1 - Tạo lập
+        //               // StatusDesc = ConfigStatus.MAKER.Description ?? "Tạo lập",
+        //                CreatedBy = "system", // Lấy từ session hoặc User nếu có
+        //                CreatedDate = DateTime.Now
+        //            };
+
+        //            recordsToSave.Add(entity);
+        //        }
+
+        //        _dbContext.ProductParameters.AddRange(recordsToSave);
+        //        var recordCount = await _dbContext.SaveChangesAsync();
+
+        //        return recordCount;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Lỗi lưu batch trong service");
+        //        throw ex;
+        //    }
+        //}
+
+
+        // Thay đổi khi lưu trùng ngày hiệu lực 
+        public async Task<int> SaveBatchProductParameterAsync(
+    string productGroupCode,
+    DateTime effectedDate,
+    string remark,
+    List<ProductParameterDetailViewModel> items)
         {
             try
             {
@@ -565,12 +622,25 @@ namespace VBSPOSS.Services.Implements
                 if (items == null || items.Count == 0)
                     throw new ArgumentException("Không có dữ liệu thay đổi để lưu");
 
+                // ====================== KIỂM TRA TRÙNG ======================
+                var existing = await _dbContext.ProductParameters
+                    .AnyAsync(x => x.ProductGroupCode == productGroupCode
+                                && x.EffectedDate.Date == effectedDate.Date);
+
+                if (existing)
+                {
+                    throw new Exception($"Đã tồn tại cấu hình cho phân loại {productGroupCode} với ngày hiệu lực {effectedDate:dd/MM/yyyy}. Không thể tạo trùng.");
+                }
+
+                // ====================== TIẾP TỤC LƯU ======================
                 var recordsToSave = new List<ProductParameter>();
 
                 foreach (var item in items)
                 {
                     // Ưu tiên Remark riêng trong grid, fallback Remark chung từ form
-                    var finalRemark = !string.IsNullOrEmpty(item.Remark) ? item.Remark : remark?.Trim() ?? "";
+                    var finalRemark = !string.IsNullOrEmpty(item.Remark)
+                        ? item.Remark
+                        : remark?.Trim() ?? "";
 
                     var entity = new ProductParameter
                     {
@@ -582,9 +652,8 @@ namespace VBSPOSS.Services.Implements
                         MaxInterestRateSpread = item.NewMaxSpread,
                         EffectedDate = effectedDate.Date,
                         Remark = finalRemark,
-                        Status = ConfigStatus.MAKER.Value, // 1 - Tạo lập
-                       // StatusDesc = ConfigStatus.MAKER.Description ?? "Tạo lập",
-                        CreatedBy = "system", // Lấy từ session hoặc User nếu có
+                        Status = ConfigStatus.MAKER.Value,
+                        CreatedBy = "system",           // Nên thay bằng UserName sau
                         CreatedDate = DateTime.Now
                     };
 
@@ -594,35 +663,38 @@ namespace VBSPOSS.Services.Implements
                 _dbContext.ProductParameters.AddRange(recordsToSave);
                 var recordCount = await _dbContext.SaveChangesAsync();
 
+                _logger.LogInformation($"Đã lưu thành công {recordCount} bản ghi cho {productGroupCode} - {effectedDate:dd/MM/yyyy}");
+
                 return recordCount;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi lưu batch trong service");
-                throw ex;
+                _logger.LogError(ex, "Lỗi lưu batch trong service - ProductGroup: {ProductGroup}, Date: {Date}",
+                    productGroupCode, effectedDate);
+                throw;   // Giữ nguyên để Controller bắt được
             }
         }
 
         //Load màn Index
-     //   public async Task<List<ProductParametersView>> GetProductParametersViewListAsync(
-     //string productGroupCode, string productCode, DateTime? effectDate)
-     //   {
-     //       var query = _dbContext.Set<ProductParametersView>().AsQueryable();
+        //   public async Task<List<ProductParametersView>> GetProductParametersViewListAsync(
+        //string productGroupCode, string productCode, DateTime? effectDate)
+        //   {
+        //       var query = _dbContext.Set<ProductParametersView>().AsQueryable();
 
-     //       if (!string.IsNullOrEmpty(productGroupCode))
-     //           query = query.Where(x => x.ProductGroupCode == productGroupCode);
+        //       if (!string.IsNullOrEmpty(productGroupCode))
+        //           query = query.Where(x => x.ProductGroupCode == productGroupCode);
 
-     //       if (!string.IsNullOrEmpty(productCode))
-     //           query = query.Where(x => x.ProductCodeList.Contains(productCode));
+        //       if (!string.IsNullOrEmpty(productCode))
+        //           query = query.Where(x => x.ProductCodeList.Contains(productCode));
 
-     //       if (effectDate.HasValue)
-     //           query = query.Where(x => x.EffectedDate.Date == effectDate.Value.Date);
+        //       if (effectDate.HasValue)
+        //           query = query.Where(x => x.EffectedDate.Date == effectDate.Value.Date);
 
-     //       return await query
-     //           .OrderBy(x => x.OrderNo)
-     //           .ThenByDescending(x => x.EffectedDate)
-     //           .ToListAsync();
-     //   }
+        //       return await query
+        //           .OrderBy(x => x.OrderNo)
+        //           .ThenByDescending(x => x.EffectedDate)
+        //           .ToListAsync();
+        //   }
 
 
 

@@ -176,43 +176,7 @@ namespace VBSPOSS.Constants
         public const string BeforeOfTerm = "B"; // Đầu ký
         public const string PartitalTerm = "P"; // Định kỳ
         public const string OnTerm = "E"; // Định kỳ
-    }   
-
-    ///// <summary>
-    ///// Chỉ số xác định danh mục gốc: Chức vụ; Phòng ban; Trình độ chuyên mốn;...
-    ///// </summary>
-    //public static class ParentLovValue
-    //{
-    //    /// <summary>
-    //    /// Chỉ số xác định Danh mục chức vụ
-    //    /// </summary>
-    //    public const int Parent_Title_Id = 14;
-        
-    //    /// <summary>
-    //    /// Mã xác định Danh mục chức vụ
-    //    /// </summary>
-    //    public const string Parent_Title_Code = "1400";
-
-    //    /// <summary>
-    //    /// Chỉ số xác định Danh mục Phòng ban
-    //    /// </summary>
-    //    public const int Parent_Department_Id = 15;
-
-    //    /// <summary>
-    //    /// Mã xác định Danh mục Phòng ban
-    //    /// </summary>
-    //    public const string Parent_Department_Code = "1500";
-
-    //    /// <summary>
-    //    /// Chỉ số xác định Danh mục Phòng ban
-    //    /// </summary>
-    //    public const int Parent_Degree_Id = 38;
-
-    //    /// <summary>
-    //    /// Mã xác định Danh mục Phòng ban
-    //    /// </summary>
-    //    public const string Parent_Degree_Code = "3800";
-    //}
+    }
 
     /// <summary>
     /// Kỳ hạn: D - Ngày, M - Tháng, Y - Năm
@@ -735,6 +699,17 @@ namespace VBSPOSS.Constants
             };
         }
 
+        public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            { 
+                MailIdFlag_DefaultPassword,
+                MailIdFlag_RandomSendEmail,
+                MailIdFlag_LinkPassword,
+                MailIdFlag_RandomSendAPI
+            };
+        }
+
     }
 
     /// <summary>
@@ -798,7 +773,7 @@ namespace VBSPOSS.Constants
         /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Không dùng phương thức xác thực thứ 2: AuthSecType_Single = 0
         /// </summary>
-        public static ValueConstModel AuthSecType_Single = new ValueConstModel { Value = 0, Code = "0", Description = "" };
+        public static ValueConstModel AuthSecType_Single = new ValueConstModel { Value = 0, Code = "0", Description = "None" };
 
         /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => Native: AuthSecType_Native = 1
@@ -923,5 +898,22 @@ namespace VBSPOSS.Constants
         }
     }
 
+    public class EsbApiName
+    {
+        public static ValueConstModel IDCPendingTxn = new ValueConstModel { Value = 8, Code = "idcPendingTxn", Description = "Danh sách giao dịch tài chính (iDC) Pending" };
+
+        public static ValueConstModel LMSPendingTxn = new ValueConstModel { Value = 9, Code = "lmsPendingTxn", Description = "Danh sách giao dịch LMS Pending" };
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                8 => IDCPendingTxn,
+                9 => LMSPendingTxn,
+                _ => null
+            };
+        }
+
+    }
 
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.RulesetToEditorconfig;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -264,11 +265,14 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.UserId = pUserManagementUpd.UserId;
                         if (!string.IsNullOrWhiteSpace(pUserManagementUpd.FullName))
                         {
-                            var partName= pUserManagementUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            var partName = pUserManagementUpd.FullName
+                                .Trim()
+                                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        
                             if (partName.Length > 0)
                             {
-                                objUserManagementUpdNew.FirstName = partName[0];
-                                objUserManagementUpdNew.LastName = string.Join(" ", partName.Skip(1));
+                                objUserManagementUpdNew.LastName = partName[^1];
+                                objUserManagementUpdNew.FirstName = string.Join(" ", partName.Take(partName.Length - 1));
                             }
                         }
                         objUserManagementUpdNew.NickName = pUserManagementUpd.NickName;
@@ -301,6 +305,7 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.IpSetCode = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.IpSetDetail = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.RestrictionFlag = 0; //Xử lý khi gọi API
+                        objUserManagementUpdNew.SubType = "1";
                         if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                         {
                             objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
@@ -679,7 +684,7 @@ namespace VBSPOSS.Services.Implements
                 if (requestInput != null && !string.IsNullOrEmpty(requestInput.TellerId))
                 {
                     if (string.IsNullOrEmpty(requestInput.MkrId))
-                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+                        requestInput.MkrId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                     var apiResponse = await _apiInternalEsbService.ChangeRoleToTransferCashByAPITellerRoleAssign(requestInput);
 
                     if (apiResponse == null)
@@ -1293,6 +1298,244 @@ namespace VBSPOSS.Services.Implements
             {
                 throw ex;
             }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện gọi API idcPendingTxn/lmsPendingTxn Lấy danh sách giao dịch Pending theo người dùng
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/idcPendingTxn
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/lmsPendingTxn
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "userId": "68510"
+        ///     }
+        ///     Hoặc
+        ///     {
+        ///         "userId": "20047"
+        ///     }
+        /// 
+        /// </param>
+        /// <param name="pApiName">Tên API truyền vào. Nếu trống sẽ lấy cả 2 API vào (EsbApiName.LMSPendingTxn)</param>
+        /// <param name="pUserNameUpd">Người dùng của VBSPOSS thực hiện</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu là idcPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "6",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:46:38"
+        ///             },
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "7",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:47:17"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// Nếu là lmsPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<PendingTransAPIResponseViewModel> GetPendingTransactionsByApiPendingTxn(PendingTransRequestViewModel requestInput, string pApiName, string pUserNameUpd)
+        {
+            DateTime dCurrentDateTmp = DateTime.Now;
+            PendingTransAPIResponseViewModel objResultPendingTrans = new PendingTransAPIResponseViewModel();
+            try
+            {
+                if (requestInput != null && !string.IsNullOrEmpty(requestInput.UserId))
+                {
+                    if (!string.IsNullOrEmpty(pApiName))
+                    {
+                        var apiResponse = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, pApiName);
+                        if (apiResponse == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            objResultPendingTrans.ResponseCode = apiResponse.ResponseCode;
+                            objResultPendingTrans.ResponseMsg = apiResponse.ResponseMsg;
+                            objResultPendingTrans.TxnStatus = apiResponse.TxnStatus.Trim();
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponse.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    if (pApiName == EsbApiName.IDCPendingTxn.Code)
+                                    {
+                                        itemResult.TransDate = item.TransDate;
+                                        itemResult.TxnNarr = item.TxnNarr;
+                                        itemResult.TransAmount = item.TransAmount.Value;
+                                        itemResult.BatchNum = item.BatchNum;
+                                        itemResult.TransType = item.TransType;
+                                        itemResult.BranchCd = item.BranchCd;
+                                        itemResult.TranEntTime = item.TranEntTime.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        itemResult.TxnRefNum = "";
+                                        itemResult.MakerDate = itemResult.TranEntTime;
+                                        itemResult.MakerId = requestInput.UserId;
+                                        itemResult.Status = "Pending for Authorize";
+                                    }
+                                    else
+                                    {
+                                        itemResult.TransDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        if (item.MakerDate.Length > 8)
+                                            itemResult.TransDate = itemResult.TransDate.Substring(0, 8);
+                                        itemResult.TxnNarr = "Lending";
+                                        itemResult.TransAmount = 0;
+                                        itemResult.BatchNum = 0;
+                                        itemResult.TransType = "Giao dịch về Lending";
+                                        itemResult.TranEntTime = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+
+                                        itemResult.TxnRefNum = item.TxnRefNum;
+                                        itemResult.MakerDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                        itemResult.MakerId = item.MakerId;
+                                        itemResult.BranchCd = item.BranchCd;
+                                        itemResult.Status = item.Status;
+                                    }
+                                    listTransPending.Add(itemResult);
+                                }
+                                
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+                    }
+                    else
+                    {
+                        //Trường hợp không truyền tên API thì gọi lấy cả 2 Pending bên IDC và LMS
+                        var apiResponseIDC = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, EsbApiName.IDCPendingTxn.Code);
+                        if (apiResponseIDC == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            objResultPendingTrans.ResponseCode = apiResponseIDC.ResponseCode;
+                            objResultPendingTrans.ResponseMsg = apiResponseIDC.ResponseMsg;
+                            objResultPendingTrans.TxnStatus = apiResponseIDC.TxnStatus.Trim();
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponseIDC.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    itemResult.TransDate = item.TransDate;
+                                    itemResult.TxnNarr = item.TxnNarr;
+                                    itemResult.TransAmount = item.TransAmount.Value;
+                                    itemResult.BatchNum = item.BatchNum;
+                                    itemResult.TransType = item.TransType;
+                                    itemResult.BranchCd = item.BranchCd;
+                                    itemResult.TranEntTime = item.TranEntTime.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    itemResult.TxnRefNum = "";
+                                    itemResult.MakerDate = itemResult.TranEntTime;
+                                    itemResult.MakerId = requestInput.UserId;
+                                    itemResult.Status = "Pending for Authorize";
+                                    listTransPending.Add(itemResult);
+                                }
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+
+                        var apiResponseLMS = await _apiInternalEsbService.GetPendingTransactionsByAPIPendingTxn(requestInput, EsbApiName.LMSPendingTxn.Code);
+                        if (apiResponseLMS == null && objResultPendingTrans == null)
+                        {
+                            objResultPendingTrans.ResponseCode = "";
+                            objResultPendingTrans.ResponseMsg = "Error";
+                            objResultPendingTrans.TxnStatus = ResultValueAPI.ResultValue_Status_Failed;
+                            objResultPendingTrans.Records = null;
+                        }
+                        else
+                        {
+                            if (objResultPendingTrans == null)
+                            {
+                                objResultPendingTrans.ResponseCode = apiResponseLMS.ResponseCode;
+                                objResultPendingTrans.ResponseMsg = apiResponseLMS.ResponseMsg;
+                                objResultPendingTrans.TxnStatus = apiResponseLMS.TxnStatus.Trim();
+                            }
+                            List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
+                            if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
+                            {
+                                foreach (var item in apiResponseLMS.Records)
+                                {
+                                    PendingTransactionInforRecords itemResult = new PendingTransactionInforRecords();
+                                    
+                                    itemResult.TransDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    if (item.MakerDate.Length > 8)
+                                        itemResult.TransDate = itemResult.TransDate.Substring(0, 8);
+                                    itemResult.TxnNarr = "Lending";
+                                    itemResult.TransAmount = 0;
+                                    itemResult.BatchNum = 0;
+                                    itemResult.TransType = "Giao dịch về Lending";
+                                    itemResult.TranEntTime = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+
+                                    itemResult.TxnRefNum = item.TxnRefNum;
+                                    itemResult.MakerDate = item.MakerDate.Replace(" ", "").Replace(":", "").Replace("-", "").Replace("/", "");
+                                    itemResult.MakerId = item.MakerId;
+                                    itemResult.BranchCd = item.BranchCd;
+                                    itemResult.Status = item.Status;
+                                    
+                                    listTransPending.Add(itemResult);
+                                }
+                            }
+                            objResultPendingTrans.Records.AddRange(listTransPending);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //iRetIdUpd = -1;
+                Console.WriteLine($"GetPendingTransactionsByApiPendingTxn('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm lấy danh sách giao dịch Pending của người dùng " +
+                                        $"GetPendingTransactionsByApiPendingTxn('{requestInput.UserId}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objResultPendingTrans;
         }
     }
 }

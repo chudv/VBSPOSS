@@ -62,6 +62,7 @@ namespace VBSPOSS.ViewModels
         public string? IpSetCode { get; set; }
         public string? IpSetDetail { get; set; }
         public int? RestrictionFlag { get; set; }
+        public string? SubType { get; set; }
     }
 
 
@@ -79,7 +80,7 @@ namespace VBSPOSS.ViewModels
         public string LastName { get; set; }
         public string FullName { get; set; }
         public string EmailAddress { get; set; }
-
+        public string? SubType { get; set; }
         public string MobileNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string GroupName { get; set; }
@@ -359,5 +360,43 @@ namespace VBSPOSS.ViewModels
         public int SoLgTrinh_ChangeRole { get; set; }
         public string TenChiNhanh { get; set; }            //Thêm
         public string KhoangThoiGian { get; set; }
+    }
+
+    public class PendingTransAPIResponseViewModel
+    {
+        public string TxnStatus { get; set; }
+
+        public string ResponseCode { get; set; }
+
+        public string ResponseMsg { get; set; }
+
+        public List<PendingTransactionInforRecords> Records { get; set; }
+    }
+
+    public class PendingTransactionInforRecords
+    {
+        public string TxnRefNum { get; set; }
+
+        public string MakerDate { get; set; }       //2020-07-31 09:10:05
+
+        public string MakerId { get; set; }
+
+        public string BranchCd { get; set; }
+
+        public string Status { get; set; }
+
+        public string TransDate { get; set; }           //20220120
+
+        public string TxnNarr { get; set; }
+
+        public decimal TransAmount { get; set; }
+
+        public long BatchNum { get; set; }
+
+        public string TransType { get; set; }
+        /// <summary>
+        /// yyyyMMddHHmmss
+        /// </summary>
+        public string TranEntTime { get; set; }
     }
 }

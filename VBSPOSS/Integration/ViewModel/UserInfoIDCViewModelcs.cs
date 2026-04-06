@@ -1,4 +1,6 @@
-﻿using System.Net.Mail;
+﻿using System.DirectoryServices.Protocols;
+using System.Net.Mail;
+using System.Net.NetworkInformation;
 using System.Text.Json;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
@@ -294,7 +296,7 @@ namespace VBSPOSS.Integration.ViewModel
         public string MobileNumber;
 
         /// <summary>
-        /// Định dạng ngày sinh: yyyy-MM-dd
+        /// Định dạng ngày sinh: yyyy-MM-dd     
         /// </summary>
         [JsonProperty("DOB")]
         public string DateOfBirth;
@@ -344,6 +346,33 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("ipSet")]
         public string IpSet;
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2. Người dùng có quyền tiền mặt là 17, Còn lại là 0
+        /// </summary>
+        [JsonProperty("authsecType")]
+        public string AuthsecType;
+
+        /// <summary>
+        /// Loại user. Giá trị là 1
+        /// </summary>
+        [JsonProperty("subType")]
+        public string SubType;
+
+        /// <summary>
+        /// Ngày bắt đầu (yyyyMMdd) lớn hơn hoặc bằng ngày hiện tại
+        /// </summary>
+        [JsonProperty("startDate")]
+        public string StartDate;
+
+        /// <summary>
+        /// Cờ hạn chế đăng nhập cho tất cả các ngày giống nhau hay không. Giá trị: 1 - Hạn chế tất cả các ngày giống nhau; 0 - Hạn chế với các ngày có giá trị khác nhau
+        /// </summary>
+        [JsonProperty("restrictSameTimeForAllDay")]
+        public string RestrictSameTimeForAllDay;
+
+        [JsonProperty("extraAttribute")]
+        public List<RestrictionRequest> ListRestrictionRequest{ get; set; }
     }
 
     public class AddUserExtraAttributeRequest
@@ -355,6 +384,27 @@ namespace VBSPOSS.Integration.ViewModel
         public string UserRole { get; set; }        //Nhóm quyền trên IDC(Không bao gồm Lending). Ex: POGD
 
     }
+
+    public class RestrictionRequest
+    {
+        /// <summary>
+        /// Ngày cho phép đăng nhập. Giá trị quy ươc: Nếu SameTimeForAllDays = 0 thì sẽ có giá trị từ 1 đến 7; Nếu SameTimeForAllDays = 0 thì chỉ nhận giá trị là 8;
+        /// </summary>
+        [JsonProperty("ALLOWED_DAYS")]
+        public string AllowedDays { get; set; }
+
+        /// <summary>
+        /// Giờ bắt đầu giới hạn. Định dạng HH24:Mi. Ví dụ "08:00"
+        /// </summary>
+        [JsonProperty("START_RESTRICTION")]
+        public string StartRestriction { get; set; }
+        /// <summary>
+        /// Giờ kết thúc giới hạn. Định dạng HH24:Mi. Ví dụ "17:00"
+        /// </summary>
+        [JsonProperty("END_RESTRICTION")]
+        public string EndRestriction { get; set; }
+    }
+
 
     /// <summary>
     /// Model cho Request gọi API tellerRoleAssign để gọi API gán hoặc bỏ gán quyền tiền mặt cho người dùng đăng nhập Intellect iDC
@@ -487,7 +537,53 @@ namespace VBSPOSS.Integration.ViewModel
 
         [JsonProperty("extraAttribute")]
         public AddUserExtraAttributeRequest AddUserExtraAttributeRequestViewModel { get; set; }
+
+        [JsonProperty("ipSet")]
+        public string IpSet;
+
+        /// <summary>
+        /// Phương thức xác thực thứ 2. Người dùng có quyền tiền mặt là 17, Còn lại là 0
+        /// </summary>
+        [JsonProperty("authsecType")]
+        public string AuthsecType;
+
+        /// <summary>
+        /// Loại user. Giá trị là 1
+        /// </summary>
+        [JsonProperty("subType")]
+        public string SubType;
+
+        /// <summary>
+        /// Ngày bắt đầu (yyyyMMdd) lớn hơn hoặc bằng ngày hiện tại
+        /// </summary>
+        [JsonProperty("startDate")]
+        public string StartDate;
+
+        /// <summary>
+        /// Cờ hạn chế đăng nhập cho tất cả các ngày giống nhau hay không. Giá trị: 1 - Hạn chế tất cả các ngày giống nhau; 0 - Hạn chế với các ngày có giá trị khác nhau
+        /// </summary>
+        [JsonProperty("restrictSameTimeForAllDay")]
+        public string RestrictSameTimeForAllDay;
+
+        [JsonProperty("restriction")]
+        public List<RestrictionRequest> ListRestrictionRequest { get; set; }
     }
+
+
+    /// <summary>
+    /// Model cho Request gọi API idcPendingTxn/lmsPendingTxn để gọi API lấy danh sách giao dịch Pending
+    ///         http://10.63.54.51:7003/vbsp/internal/api/v1/lmsPendingTxn => Ví dụ:
+    ///     {
+    ///         "userId": "68510"
+    ///     }
+    /// </summary>
+    public class PendingTransRequestViewModel
+    {
+        [JsonProperty("userId")]
+        public string UserId;
+    }
+
+
 
 
     public class UserInfoIDCViewModelcs

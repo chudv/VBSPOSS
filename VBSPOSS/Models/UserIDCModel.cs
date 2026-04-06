@@ -50,8 +50,8 @@ namespace VBSPOSS.Models
         public DateTime? StartDate { get; set; }
         public string? IpSetCode { get; set; }
         public string? IpSetDetail { get; set; }
-        public int? RestrictionFlag { get; set; }
-
+        public int? RestrictionFlag { get; set; } 
+        public string? SubType { get; set; }
     }
 
 
@@ -95,6 +95,7 @@ namespace VBSPOSS.Models
         public string? IpSetCode { get; set; }
         public string? IpSetDetail { get; set; }
         public int? RestrictionFlag { get; set; }
+        public string? SubType { get; set; }
     }
 
     public class UserIDCApproval
