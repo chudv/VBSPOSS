@@ -117,6 +117,9 @@
     var staffLists;
     function LoadStaffInfoDetail(e) {
         var objStaffId = $("#StaffId").data("kendoComboBox");
+        var lcUserId = $("#UserId").val();
+        var lcFirstName = $("#FirstName").val();
+        var lcLastName = $("#LastName").val();
         if (objStaffId != null) {
             var lcStaffId = $("#StaffId").val(); // Lấy ID của thành viên =>Load thông tin ra theo ID này
             if (lcStaffId != null && lcStaffId != "" && lcStaffId != "0") {
@@ -129,6 +132,21 @@
                     success: function (data) {
                         staffLists = data;
                         if (staffLists != null && staffLists.length != 0) {
+                            if (!lcUserId || lcUserId.trim() === "") {
+                                $("#UserId").val(staffLists[0].StaffCode);
+                            }
+                            if (staffLists[0].StaffName && staffLists[0].StaffName.trim() !== "") {
+                                var fullName = staffLists[0].StaffName.trim();
+                                var nameParts = fullName.split(/\s+/);
+                                var lastName = nameParts.pop();
+                                var firstName = nameParts.join(" ");
+                                if (!lcFirstName || lcFirstName.trim() === "") {
+                                    $("#FirstName").val(firstName);
+                                }
+                                if (!lcLastName || lcLastName.trim() === "") {
+                                    $("#LastName").val(lastName);
+                                }
+                            }
                             $("#StaffCode").val(staffLists[0].StaffCode);
                             $("#Genders").val(staffLists[0].GenderText);
                             $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
@@ -293,6 +311,8 @@
     @Html.HiddenFor(m => m.SubType, new { @Value = Model == null ? "" : Model.SubType })
     @Html.HiddenFor(m => m.EffectiveDate, new { @Value = Model == null ? Model.StartDate : Model.EffectiveDate })
     @Html.HiddenFor(m => m.IpSetCode, new { @Value = Model == null ? "" : Model.IpSetCode })
+    @Html.HiddenFor(m => m.RestrictionFlag, new { @Value = Model == null ? 0 : Model.RestrictionFlag })
+
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "SỬA ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "THÊM MỚI NGƯỜI DÙNG IDC")
     </div>
@@ -367,13 +387,13 @@
                 <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Tài khoản đăng nhập IDC</label>
                 @Html.Kendo().TextBoxFor(m=>m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 50px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Họ đệm </label>
-                @Html.Kendo().TextBoxFor(m => m.FirstName).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                @Html.Kendo().TextBoxFor(m => m.FirstName).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Tên đệm </label>
                 @Html.Kendo().TextBoxFor(m => m.LastName).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Mã quản lý</label>
-                @Html.Kendo().TextBoxFor(m => m.EntityList).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:200px;padding-top: 7px;padding-right: 10px;">Thiết lập trạng thái thời gian</label>
-                @(Html.Kendo().CheckBoxFor(m => m.RestrictionFlag).Label(" ").HtmlAttributes(new { style = "margin-top:7px;" }))
+                @Html.Kendo().TextBoxFor(m => m.EntityList).HtmlAttributes(new { @readonly = "readonly", style = " width: 60px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:180px;padding-top: 7px;padding-right: 10px;">Thiết lập trạng thái thời gian</label>
+                @(Html.Kendo().CheckBoxFor(m => m.RestrictionFlagCheck).Label(" ").HtmlAttributes(new { style = "margin-top:7px;" }))
             </div>
         </div>
         

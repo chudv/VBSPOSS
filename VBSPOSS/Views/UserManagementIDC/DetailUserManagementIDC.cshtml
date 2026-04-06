@@ -262,8 +262,6 @@
     @Html.HiddenFor(m => m.EntityList, new { @Value = Model == null ? "" : Model.EntityList })
     @Html.HiddenFor(m => m.AuthType, new { @Value = Model == null ? "" : Model.AuthType })
     @Html.HiddenFor(m => m.UserType, new { @Value = Model == null ? "" : Model.UserType })
-    @Html.HiddenFor(m => m.MailIdFlag, new { @Value = Model == null ? "" : Model.MailIdFlag })
-    @Html.HiddenFor(m => m.AuthsecType, new { @Value = Model == null ? "" : Model.AuthsecType })
     @Html.HiddenFor(m => m.ExtraAttributeUserRole, new { @Value = Model == null ? "" : Model.ExtraAttributeUserRole })
     @Html.HiddenFor(m => m.ExtraAttributeBranchCode, new { @Value = Model == null ? "" : Model.ExtraAttributeBranchCode })
     @Html.HiddenFor(m => m.Ticket, new { @Value = Model == null ? "" : Model.Ticket })
@@ -283,6 +281,8 @@
     @Html.HiddenFor(m => m.ApproverBy, new { @Value = Model == null ? "" : Model.ApproverBy })
     @Html.HiddenFor(m => m.ApprovalDate, new { @Value = Model == null ? Model.ApprovalDate : Model.ApprovalDate })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
+    @Html.HiddenFor(m => m.AuthsecType, new { @Value = Model == null ? "" : Model.AuthsecType })
+    @Html.HiddenFor(m => m.MailIdFlag, new { @Value = Model == null ? "" : Model.MailIdFlag })
 
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "CHI TIẾT THÔNG TIN NGƯỜI DÙNG IDC")
@@ -333,6 +333,27 @@
                 @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 450px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt</label>
                 @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 280px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Phương thức xác thực</label>
+                @Html.Kendo().TextBoxFor(m=>m.AuthsecTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Phương thức gửi mật khẩu</label>
+                @Html.Kendo().TextBoxFor(m => m.MailIdFlagName).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:170px;padding-top: 7px;padding-right: 10px;"> Dải IP được truy cập </label>
+                @Html.Kendo().TextBoxFor(m => m.IpSetDetail).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
             </div>
         </div>
 
