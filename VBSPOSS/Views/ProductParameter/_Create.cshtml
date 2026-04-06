@@ -49,12 +49,16 @@
         padding: 4px 0 !important;
     }
 
-        .k-grid td[data-field="NewApplyPosFlag"] input[type="checkbox"] {
-            margin: 0 auto;
-            display: block;
-            transform: scale(1.2);
-            cursor: pointer;
-        }
+    .k-grid td[data-field="NewApplyPosFlag"] input[type="checkbox"] {
+        margin: 0 auto;
+        display: block;
+        transform: scale(1.2);
+        cursor: pointer;
+    }
+
+    #EffectedDate {
+        width: 100px !important;
+    }
 </style>
 
 <script>
@@ -149,9 +153,11 @@
     }
 
     function doCompleteWindow() {
-        var popup = $("#createWindow").data("kendoWindow");
-        if (popup) popup.close();
-        else window.close();
+        var popup = $("#myPopup").data("kendoWindow");
+        if (popup) 
+            popup.close();
+        else 
+            window.close();
 
         if (window.dataChange && window.parent && window.parent.refreshGrid) {
             window.parent.refreshGrid();
@@ -168,7 +174,7 @@
                 @(Html.Kendo().DropDownListFor(m => m.ProductGroupCode)
                     .BindTo(Model.ProductGroupOptions)
                     .OptionLabel("--- Chọn phân loại ---")
-                    .HtmlAttributes(new { required = "required", style = "width:200px;" })
+                                .HtmlAttributes(new { required = "required", style = "width:250px; height: 28px !important;" })
                     )
             </div>
 
@@ -178,42 +184,47 @@
                     .Format("dd/MM/yyyy")
                     .Min(DateTime.Today.AddDays(1))
                     .Value(Model.EffectedDate)
-                    .HtmlAttributes(new { required = "required", style = "width:100px;" })
+                    .HtmlAttributes(new { required = "required", style = "width:150px;" })
                     )
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-5" style="display: flex; justify-content: space-between; align-items: flex-end;">
+
                 <label>Ghi chú</label>
                 @(Html.Kendo().TextAreaFor(m => m.Remark)
                     .Rows(3)
-                    .HtmlAttributes(new { style = "width:200px; resize:vertical;" })
+                                .HtmlAttributes(new { style = "width:250px !important; resize:vertical;" })
                     )
+
+                
+                @(Html.Kendo().Button()
+                                .Name("btnLoadList")
+                                .Content("Tải danh sách")
+                                .Events(e => e.Click("loadProductGrid"))
+                                .HtmlAttributes(new { type = "button", style = "width: 110px; height: 25px; font-weight: bold; color: blue;" })
+                                .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                                )
+                
             </div>
 
-            <div class="col-md-2">
-                @(Html.Kendo().Button()
-                    .Name("btnLoadList")
-                    .Content("Tải danh sách")
-                    .Events(e => e.Click("loadProductGrid"))
-                    .HtmlAttributes(new { type = "button", style = "width: 120px; height: 25px; font-weight: bold; color: blue;" })
-                    .ImageUrl(Url.Content("~/images/tim_kiem.png"))
-                    )
-            </div>
+            
         </div>
 
-        <div class="row form-group" style="margin-top: 15px;">
+        <div class="row form-group" style="margin-top: 5px; display: flex; justify-content: flex-end; gap: 10px;">
             @(Html.Kendo().Button()
                 .Name("btnSave")
                 .Content("Lưu lại")
                 .Events(e => e.Click("saveBatch"))
-                .HtmlAttributes(new { @class = "k-button k-primary" })
+                        .HtmlAttributes(new { type = "button", style = "width: 80px; height: 25px; font-weight: bold; color: blue;" })
+                        .ImageUrl(Url.Content("~/images/save.png"))
                 )
-          @*   @(Html.Kendo().Button()
+             @(Html.Kendo().Button()
                 .Name("btnExit")
                 .Content("Thoát")
-                .Events(e => e.Click("doCompleteWindow"))
-                .HtmlAttributes(new { @class = "k-button" })
-                ) *@
+                        .Events(e => e.Click("doCompleteWindow"))
+                        .HtmlAttributes(new { type = "button", style = "width: 80px; height: 25px; font-weight: bold; color: blue;" })
+                        .ImageUrl(Url.Content("~/images/cancel.png"))
+                ) 
         </div>
 
         <!-- Grid chính -->
@@ -242,10 +253,9 @@
                 .HeaderHtmlAttributes(new { @class = "group-header-new" })
                 .Columns(sub =>
                 {
-                    sub.Bound(p => p.NewApplyPosFlag)
+                        sub.Template("<input type='checkbox' class='chk-pos' #= NewApplyPosFlag ? 'checked=checked' : '' # />")
                 .Title("AD POS")
-                .Width(80)
-                .ClientTemplate("<input type='checkbox' class='chk-pos' #= NewApplyPosFlag ? 'checked=checked' : '' # />")
+                .Width(80)                    
                 .HtmlAttributes(new { style = "text-align:center; vertical-align:middle;" });
 
                     sub.Bound(p => p.NewMinSpread).Title("LSĐC tối thiểu").Width(120).Format("{0:N2}")
@@ -282,6 +292,7 @@
                 m.Field(p => p.CurrentMaxSpread).Editable(false);
                 m.Field(p => p.CurrentRemark).Editable(false);
                 m.Field(p => p.Remark).Editable(true);
+                m.Field(p => p.NewApplyPosFlag).Editable(true);
             })
             )
             .AutoBind(false)
@@ -291,12 +302,24 @@
 
 <script>
     // Checkbox handler
+    // $(document).on("change", "#gridCreateDetail .chk-pos", function () {
+    //     var grid = $("#gridCreateDetail").data("kendoGrid");
+    //     var row = $(this).closest("tr");
+    //     var dataItem = grid.dataItem(row);
+    //     if (dataItem) {
+    //         dataItem.set("NewApplyPosFlag", this.checked);
+    //     }
+    // });
+
     $(document).on("change", "#gridCreateDetail .chk-pos", function () {
         var grid = $("#gridCreateDetail").data("kendoGrid");
+
         var row = $(this).closest("tr");
         var dataItem = grid.dataItem(row);
-        if (dataItem) {
-            dataItem.set("NewApplyPosFlag", this.checked);
-        }
+
+        var isChecked = $(this).is(":checked");
+
+        // Update model
+        dataItem.set("NewApplyPosFlag", isChecked);
     });
 </script>
