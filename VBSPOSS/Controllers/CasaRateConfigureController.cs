@@ -209,15 +209,6 @@ namespace VBSPOSS.Controllers
             return await _interestRateConfigureService.GetApplyPosListByIdsAsync(lstIds);
         }
 
-
-
-
-
-
-
-
-
-
         [HttpGet]
         public IActionResult ShowCreateConfig(int pId, string pFlagCall)
         {
@@ -247,11 +238,6 @@ namespace VBSPOSS.Controllers
             return PartialView("_Create", model);
         }
 
-
-
-        ////add
-
-
         // THÊM: Action mới cho load grid VIEW DETAIL 
         [HttpPost]
         public async Task<IActionResult> LoadCasaConfigureViewGridData([DataSourceRequest] DataSourceRequest request)
@@ -274,9 +260,6 @@ namespace VBSPOSS.Controllers
                 return Json(new DataSourceResult { Data = new List<CasaRateProductViewModel>(), Total = 0 });
             }
         }
-
-
-
 
         // đóng tạm LoadCasaConfigureAddGridData
         [HttpPost]
@@ -400,11 +383,6 @@ namespace VBSPOSS.Controllers
             }
         }
 
-
-
-
-
-
         //Sửa thêm Grid Mã sản phẩm
         //[HttpPost]
         //public ActionResult LoadCasaProductGridData([DataSourceRequest] DataSourceRequest request)
@@ -489,17 +467,9 @@ namespace VBSPOSS.Controllers
             ViewBag.FlagCall = pFlagCall;
             return PartialView("_Detail", model);
         }
-
-
-
-
-
-
-
+       
 
         //Đóng tạm
-
-
 
         [HttpPost]
         [Route("SaveCasaRateConfigure")]
@@ -544,8 +514,6 @@ namespace VBSPOSS.Controllers
         }
 
         // Sửa lại lưu DB Create casa
-
-
 
 
         [HttpPost]
