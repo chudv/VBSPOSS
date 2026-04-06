@@ -52,6 +52,8 @@ namespace VBSPOSS.ViewModels
         public decimal CurrentMinSpread { get; set; }    // LS min hiện tại
         public decimal CurrentMaxSpread { get; set; }    // LS max hiện tại
 
+        public string CurrentRemark { get; set; }
+
         // Thông tin mới (có thể edit trong grid)
         public bool NewApplyPosFlag { get; set; }        // Checkbox: Áp dụng POS mới
         public decimal NewMinSpread { get; set; }        // LS min mới
