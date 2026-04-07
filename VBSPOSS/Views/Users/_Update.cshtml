@@ -1,5 +1,7 @@
 ﻿@model VBSPOSS.Models.UserModel
 
+
+
 <style>
     #mydiv {
         position: absolute;
@@ -32,388 +34,293 @@
 <script src="@Url.Content("~/js/utility.js")"></script>
 
 <script>
-    function loadImage() {
-        $("#imageFile").click();
-    }
-
+    // ====================== PARAM FUNCTIONS ======================
     function paramPhongBan_Update() {
-        //string pFlagCallRoot = "0", string pPhanLoai = "", string pStatus = "0", string pTenVT = "1", string pTitleChoice = "", string pFlagShow = "1"
-        return {
-            pFlagCallRoot: "0",
-            pParentId: "15",
-            pTenVT: "0",
-            pTitleChoice: "--- Chọn Phòng ban ---",
-            pStatus: "1"
-        };
+        return { pFlagCallRoot: "0", pParentId: "15", pTenVT: "0", pTitleChoice: "--- Chọn Phòng ban ---", pStatus: "1" };
     }
     function paramChucVu_Update() {
-        return {
-            pFlagCallRoot: "0",
-            pParentId: "14",
-            pTenVT: "0",
-            pTitleChoice: "--- Chọn Chức vụ ---",
-            pStatus: "1"
-        };
+        return { pFlagCallRoot: "0", pParentId: "14", pTenVT: "0", pTitleChoice: "--- Chọn Chức vụ ---", pStatus: "1" };
     }
-
     function paramDonViCT() {
-        return {
-            pFlagCondi: "5",
-            pStatus: "",
-            pShortName: "1",
-            pTitleChoice: "",
-            pFlagShow: "1"
-        };
+        return { pFlagCondi: "5", pStatus: "", pShortName: "1", pTitleChoice: "", pFlagShow: "1" };
     }
-
-    function paramPbByDonViQL() {
-        var lcDonVi_Cd = $("#DonVi_Cd").val();
-        return {
-            pPosCode: lcDonVi_Cd
-        };
-    }
-
-    function Change_DonVi(e) {
-        var phongBan = $("#PhongBan_Cd").data("kendoComboBox");
-        if (phongBan != null) {
-            phongBan.dataSource.read();
-        }
-
-        var chucVu = $("#ChucVu_Cd").data("kendoComboBox");
-        if (chucVu != null) {
-            chucVu.dataSource.read();
-        }
-    }
-
     function paramDegree_Update() {
-        return {
-            pFlagCallRoot: "0",
-            pParentId: "38",
-            pTenVT: "0",
-            pTitleChoice: "--- Chọn Trình độ ---",
-            pStatus: "1"
-        };
+        return { pFlagCallRoot: "0", pParentId: "38", pTenVT: "0", pTitleChoice: "--- Chọn Trình độ ---", pStatus: "1" };
     }
-
     function paramRole() {
-        return {
-            grantType : 0,
-            pTitleChoice: "--- Chọn Nhóm quyền ---"
-        };
+        return { grantType: 0, pTitleChoice: "--- Chọn Nhóm quyền ---" };
     }
-
-    var isClosed = false;
-
-    function onExit(ev) {
-        isClosed = true;
-        mainWindow.data("kendoWindow").close();
-    }
-
-    function Find_ReplaceALL(string, target, replacement) {
-        if (string != "") {
-            var i = 0, length = string.length;
-            for (i; i < length; i++) {
-                string = string.replace(target, replacement);
-            }
-        }
-        return string;
-    }
-
-    // function stringToDate(_date, _format, _delimiter) {
-    //     var formatLowerCase = _format.toLowerCase();
-    //     var formatItems = formatLowerCase.split(_delimiter);
-    //     var dateItems = _date.split(_delimiter);
-    //     var monthIndex = formatItems.indexOf("mm");
-    //     var dayIndex = formatItems.indexOf("dd");
-    //     var yearIndex = formatItems.indexOf("yyyy");
-    //     var month = parseInt(dateItems[monthIndex]);
-    //     month -= 1;
-    //     var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
-    //     return formatedDate;
-    // }
-        function stringToDate(_date, _format, _delimiter) {
-        if (typeof _date !== 'string' || typeof _format !== 'string' || typeof _delimiter !== 'string') {
-            console.error("stringToDate: Tham số không hợp lệ", { _date, _format, _delimiter });
-            return null;
-        }
-
-        var formatLowerCase = _format.toLowerCase();
-        var formatItems = formatLowerCase.split(_delimiter);
-        var dateItems = _date.split(_delimiter);
-
-        if (formatItems.length !== dateItems.length) {
-            console.error("stringToDate: Định dạng không khớp với dữ liệu ngày", { _date, _format });
-            return null;
-        }
-
-        var monthIndex = formatItems.indexOf("mm");
-        var dayIndex = formatItems.indexOf("dd");
-        var yearIndex = formatItems.indexOf("yyyy");
-
-        if (monthIndex === -1 || dayIndex === -1 || yearIndex === -1) {
-            console.error("stringToDate: Format không chứa dd/mm/yyyy đầy đủ");
-            return null;
-        }
-
-        var month = parseInt(dateItems[monthIndex], 10) - 1; // tháng trong JS: 0-11
-        var day = parseInt(dateItems[dayIndex], 10);
-        var year = parseInt(dateItems[yearIndex], 10);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year)) {
-            console.error("stringToDate: Dữ liệu ngày không hợp lệ");
-            return null;
-        }
-
-        return new Date(year, month, day);
-    }
-
-    function onClick(e) {
-        var lcTen_Nd = $("#UserName").val();
-        var lcNd_MatKhau = $("#Password").val();
-        var lcHoTen = $("#FullName").val();
-        var lcGioiTinh = $("#Sex").val();
-
-        var lcNgaySinh =  $("#UserBirthday").val();
-
-      //  alert(lcNgaySinh);
-
-        //var lcNgaySinh = $("#Birthday").val();
-        var lcDonVi_Cd = $("#PosCode").val();
-        var lcPhongBan_Cd = $("#DepartmentCode").val();
-        var lcChucVu_Cd = $("#TitleCode").val();
-        var lcTrinhDoCM_Cd = $("#DegreeCode").val();
-        var lcDienThoai = Find_ReplaceALL(Find_ReplaceALL($("#Mobile").val(), " ", ""), "_", "");
-        var lcSoCMT = Find_ReplaceALL(Find_ReplaceALL($("#IdCode").val(), " ", ""), "_", "");
-        var lcNgayCap = $("#IssuedDate").val();
-
-      //  alert(lcNgayCap);
-
-
-        var lcNd_Id = $("#Id").val();
-        var lcNhomNd_Cd = $("#DefaultRole").val();
-
-
-        var dNgaySinh = stringToDate(lcNgaySinh, "dd/MM/yyyy", "/");
-        var dNgayCap = stringToDate(lcNgayCap, "dd/MM/yyyy", "/");
-
-
-        if (lcTen_Nd == null || lcTen_Nd == "") {
-            alert('Tên đăng nhập không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#UserName').focus();
-            e.preventDefault();
-            return false;
-        }
-        if ((lcNd_MatKhau == null || lcNd_MatKhau == "") && (lcNd_Id == 0)) {
-            alert('Mật khẩu đăng nhập không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#Password').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcHoTen == null || lcHoTen == "") {
-            alert('Họ và tên không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#FullName').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcNgaySinh == "") {
-            alert('Ngày sinh không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#UserBirthday').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcDonVi_Cd == "") {
-            alert('Đơn vị công tác không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#PosCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcPhongBan_Cd == "") {
-            alert('Phòng ban không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#DepartmentCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcChucVu_Cd == "") {
-            alert('Chức vụ không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#TitleCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcTrinhDoCM_Cd == "") {
-            alert('Trình độ chuyên môn không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#DegreeCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcSoCMT == "" || lcSoCMT.length < 9) {
-            alert('Số CCCD không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#IdCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (dNgaySinh > dNgayCap) {
-            alert('Ngày cấp CCCD ' + lcNgayCap + ' không thể nhỏ hơn ngày sinh ' + lcNgaySinh + '. Vui lòng kiểm tra lại!');
-            e.preventDefault();
-            return false;
-        }
-        if (lcNhomNd_Cd == "") {
-            alert('Nhóm người dùng không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#DefaultRole').focus();
-            e.preventDefault();
-            return false;
-        }
-        // Kiểm tra định dạng số điện thoại
-
-
-
-        if (lcDienThoai == "" || !isValidVNMobile(lcDienThoai)) {
-            alert('Số điện thoại không đúng định dạng (VD: 1234 567 890). Vui lòng kiểm tra lại!');
-            $('#Mobile').focus();
-            e.preventDefault();
-            return false;
-        }
-
-    }
-
-
     function paramDonViLoad() {
+        return { pFlagCondi: "5", pStatus: "O", pShortName: "1", pTitleChoice: "", pFlagShow: "1" };
+    }
+    function paramUserPosCode() {
+        return { posCode: $("#DonVi_KeThua_Cd_TimKiem").val() };
+    }
+
+        function paramStaffByPosCode() {
         return {
-            pFlagCondi: "5",
-            pStatus: "O",
-            pShortName: "1",
-            pTitleChoice: "",
-            pFlagShow: "1"
+            pPosCode: $("#DonVi_KeThua_Cd_TimKiem").val() || "",
+            pTitleChoice: "--- Chọn cán bộ ---",
+            pFlagTextShow: "2"        //
         };
     }
 
-    function paramUserPosCode() {
-        return {
-            posCode: $("#DonVi_KeThua_Cd_TimKiem").val()
-        };
+    // ====================== COMMON FUNCTIONS ======================
+    function Change_DonVi(e) {
+        $("#DepartmentCode, #TitleCode").each(function () {
+            var cb = $(this).data("kendoComboBox");
+            if (cb) cb.dataSource.read();
+        });
     }
 
     function Bind_Ds_CanBo(e) {
-        var sDonVi_KeThua_Cd = $("#DonVi_KeThua_Cd_TimKiem").val();
         var dsCanBo = $("#StaffId").data("kendoComboBox");
-        if (dsCanBo != null) {
-            dsCanBo.dataSource.read();
-        }
+        if (dsCanBo) dsCanBo.dataSource.read();
     }
+
+    function onExit() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+    function Find_ReplaceALL(str, target, replacement) {
+        return (str || "").split(target).join(replacement);
+    }
+
+    function stringToDate(_date, _format, _delimiter) {
+        if (typeof _date !== 'string') return null;
+        var formatItems = _format.toLowerCase().split(_delimiter);
+        var dateItems = _date.split(_delimiter);
+        if (formatItems.length !== dateItems.length) return null;
+
+        var month = parseInt(dateItems[formatItems.indexOf("mm")], 10) - 1;
+        var day = parseInt(dateItems[formatItems.indexOf("dd")], 10);
+        var year = parseInt(dateItems[formatItems.indexOf("yyyy")], 10);
+        if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+        return new Date(year, month, day);
+    }
+
+    // ====================== LOAD CÁN BỘ ======================
 
     function LoadDsCanBo_ThanhVien(e) {
-        var kcbStaff = $("#StaffId").data("kendoComboBox");
-        if (kcbStaff != null) {
-            var _staffCode = $("#StaffId").val(); // Lấy ID của thành viên =>Load thông tin ra theo ID này
-            if (_staffCode != null && _staffCode != "" && _staffCode != "0") {
-                $.ajax({
-                    type: "GET",
-                    data: {
-                        staffId: _staffCode
-                    },
-                    url: "@Url.Action("GetStaffById", "RoleManagement")",
-                    success: function (data) {
-                        if (data != null) {
-                            $("#UserName").val("");
-                            $("#FullName").val(data.StaffName);
-                            $("#Sex").data('kendoDropDownList').value(data.Sex);
+        var staffId = $("#StaffId").val();
+        if (!staffId || staffId === "0") return;
 
-                            var birthdayDatePicker = $("#UserBirthday").data("kendoDatePicker");
-                            // Gán giá trị mới (chuỗi hoặc Date object)
-                            // alert('data.Birthday' + data.Birthday);
-                             birthdayDatePicker.value(new Date(data.Birthday));
-                            // Nếu muốn reformat ngay lập tức
-                            birthdayDatePicker.trigger("change");
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetListStaffVBSPByStaffId", "ListOfValue")",
+            data: { pStaffId: staffId },
+            success: function (response) {
+                if (!response || response.length === 0) {
+                    alert("Không tìm thấy thông tin cán bộ!");
+                    return;
+                }
 
-                            $("#PosCode").data('kendoComboBox').value(data.PosCode);
-                            Change_DonVi();
-                            $("#DepartmentCode").data('kendoComboBox').value(data.DepartmentCode);
-                            $("#TitleCode").data('kendoComboBox').value(data.TitleCode);
-                            $("#DegreeCode").data('kendoComboBox').value(data.DegreeCode);
-                            $("#IdCode").val(data.IdCode);
+                var data = response[0];   // API trả về mảng
 
-                            //$("#IssuedDate").val(data.IssuedDate);
-                            var issuedDatePicker = $("#IssuedDate").data("kendoDatePicker");
-                            // Gán giá trị mới (chuỗi hoặc Date object)
-                            issuedDatePicker.value(new Date(data.IssuedDate));
-                            // Nếu muốn reformat ngay lập tức
-                            issuedDatePicker.trigger("change");
+                $("#UserName").val("");
+                $("#FullName").val(data.StaffName || "");
 
-                            $("#IssuedPlace").val(data.IssuedPlace);
-                            $("#Mobile").val(data.Mobile);
-                            $("#Email").val(data.Email);
-                            //$("#StaffId").val(data.StaffId);
-                        }
+                $("#Sex").data("kendoDropDownList").value(data.GenderCode || "M");
+
+                if (data.DateOfBirth) {
+                    $("#UserBirthday").data("kendoDatePicker").value(new Date(data.DateOfBirth));
+                }
+
+                if (data.PosCode) {
+                    $("#PosCode").data("kendoComboBox").value(data.PosCode);
+                }
+
+                Change_DonVi();   // Load lại Phòng ban theo đơn vị mới
+
+                setTimeout(() => {
+                    // Phòng ban
+                    if (data.StaffDepartmentCode) {
+                        $("#DepartmentCode").data("kendoComboBox").value(data.StaffDepartmentCode);
                     }
-                });
+
+                    // Chức vụ
+                    if (data.StaffPositionCode) {
+                        $("#TitleCode").data("kendoComboBox").value(data.StaffPositionCode);
+                    }
+
+                    // Trình độ
+                    if (data.DegreeCode) {
+                        $("#DegreeCode").data("kendoComboBox").value(data.DegreeCode);
+                    }
+
+                    // CCCD (quan trọng)
+                    if (data.IdNo) {
+                        $("#IdCode").data("kendoMaskedTextBox").value(data.IdNo);
+                    }
+
+                    // Ngày cấp & Nơi cấp
+                    if (data.IssuedDate) {
+                        $("#IssuedDate").data("kendoDatePicker").value(new Date(data.IssuedDate));
+                    }
+                    $("#IssuedPlace").val(data.IssuedPlace || "");
+
+                    $("#Mobile").val(data.StaffMobileNo || "");
+                    $("#Email").val(data.StaffEmail || "");
+
+                }, 500);
+            },
+            error: function () {
+                alert("Không thể lấy thông tin cán bộ!");
             }
+        });
+    }
+
+    // ====================== VALIDATION ======================
+    function onClick(e) {
+        var lcTen_Nd = $("#UserName").val()?.trim();
+        var lcNd_MatKhau = $("#Password").val()?.trim();
+        var lcHoTen = $("#FullName").val()?.trim();
+        var lcNgaySinh = $("#UserBirthday").val();
+        var lcDonVi = $("#PosCode").val();
+        var lcPhongBan = $("#DepartmentCode").val();
+        var lcChucVu = $("#TitleCode").val();
+        var lcTrinhDo = $("#DegreeCode").val();
+        var lcDienThoai = Find_ReplaceALL(Find_ReplaceALL($("#Mobile").val() || "", " ", ""), "_", "");
+        var lcSoCMT = Find_ReplaceALL(Find_ReplaceALL($("#IdCode").val() || "", " ", ""), "_", "");
+        var lcNgayCap = $("#IssuedDate").val();
+        var lcId = $("#Id").val();
+        var lcNhom = $("#DefaultRole").val();
+
+        var dSinh = stringToDate(lcNgaySinh, "dd/MM/yyyy", "/");
+        var dCap = stringToDate(lcNgayCap, "dd/MM/yyyy", "/");
+
+        if (!lcTen_Nd) { alert('Tên đăng nhập không được để trống!'); $('#UserName').focus(); e.preventDefault(); return false; }
+        if (parseInt(lcId || 0) === 0 && !lcNd_MatKhau) {
+            alert('Mật khẩu không được để trống!'); $('#Password').focus(); e.preventDefault(); return false;
+        }
+        if (!lcHoTen) { alert('Họ và tên không được để trống!'); $('#FullName').focus(); e.preventDefault(); return false; }
+        if (!lcNgaySinh) { alert('Ngày sinh không được để trống!'); $('#UserBirthday').focus(); e.preventDefault(); return false; }
+        if (!lcDonVi) { alert('Đơn vị không được để trống!'); $('#PosCode').focus(); e.preventDefault(); return false; }
+        if (!lcPhongBan) { alert('Phòng ban không được để trống!'); $('#DepartmentCode').focus(); e.preventDefault(); return false; }
+        if (!lcChucVu) { alert('Chức vụ không được để trống!'); $('#TitleCode').focus(); e.preventDefault(); return false; }
+        if (!lcTrinhDo) { alert('Trình độ không được để trống!'); $('#DegreeCode').focus(); e.preventDefault(); return false; }
+        if (!lcSoCMT || lcSoCMT.length < 9) { alert('Số CCCD không hợp lệ!'); $('#IdCode').focus(); e.preventDefault(); return false; }
+        if (dSinh && dCap && dSinh > dCap) { alert('Ngày cấp CCCD không thể nhỏ hơn ngày sinh!'); e.preventDefault(); return false; }
+        if (!lcNhom) { alert('Nhóm quyền không được để trống!'); $('#DefaultRole').focus(); e.preventDefault(); return false; }
+        if (!lcDienThoai || !isValidVNMobile(lcDienThoai)) {
+            alert('Số điện thoại không đúng định dạng!'); $('#Mobile').focus(); e.preventDefault(); return false;
         }
     }
+
+
+    function initKeThuaCombo() {
+        if ($("#DonVi_KeThua_Cd_TimKiem").data("kendoComboBox")) return;
+
+        $("#DonVi_KeThua_Cd_TimKiem").kendoComboBox({
+            change: Bind_Ds_CanBo,
+            dataBound: Bind_Ds_CanBo,
+            autoBind: true,
+            dataTextField: "value",
+            dataValueField: "id",
+            placeholder: "--- Chọn đơn vị cập nhật người dùng ---",
+            suggest: true,
+            filter: "contains",
+            dataSource: { transport: { read: { url: "/ListOfValue/GetListBranchs", data: paramDonViLoad } } }
+        });
+    }
+
+    $(document).ready(function () {
+        initKeThuaCombo();
+
+        var isEdit = parseInt($("#IsEdit").val() || 0);
+
+        if (isEdit === 1) {
+            $("#UserName").attr('readonly', true);
+            var pw = $("#user_password").data("kendoTextBox");
+            if (pw) pw.wrapper.hide();
+            $('#lbl_matkhau').hide();
+            $("#StaffId, #DonVi_KeThua_Cd_TimKiem").each(function () {
+                var cb = $(this).data("kendoComboBox");
+                if (cb) cb.enable(false);
+            });
+        } else {
+            var pw = $("#user_password").data("kendoTextBox");
+            if (pw) pw.wrapper.show();
+            $('#lbl_matkhau').show();
+            $("#StaffId, #DonVi_KeThua_Cd_TimKiem").each(function () {
+                var cb = $(this).data("kendoComboBox");
+                if (cb) cb.enable(true);
+            });
+        }
+    });
 </script>
 
 <form asp-controller="Users" asp-action="CreateUser" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
-    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.Id, new { Value = Model?.Id ?? 0 })
     @Html.Hidden("IsEdit", TempData["IsEdit"])
 
-    <div class="view_form row">
+    <!-- Kế thừa cán bộ -->
+    <div class="view_form row" style="padding-top:5px;">
         <div class="col-md-4">
-            <label class="control-label" style="text-align: left; color:blueviolet; padding-top: 3px;" id="lbl_chon_qlns0">Kế thừa thông tin có đã có từ danh sách cán bộ</label>
+            <label class="control-label" style="color:blueviolet; padding-top: 3px;">Kế thừa thông tin từ danh sách cán bộ</label>
         </div>
         <div class="col-md-8">
-            @(Html.Kendo().ComboBox().Name("DonVi_KeThua_Cd_TimKiem")
+            @(Html.Kendo().ComboBox()
+                .Name("DonVi_KeThua_Cd_TimKiem")
                 .Filter(FilterType.Contains)
                 .Placeholder("--- Chọn đơn vị cập nhật người dùng ---")
                 .DataTextField("value")
                 .DataValueField("id")
-                .DataSource(
-                source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramDonViLoad"); }).ServerFiltering(false); })
-                .Events(v => v.Change("Bind_Ds_CanBo").DataBound("Bind_Ds_CanBo"))
-                .HtmlAttributes(new { style = "width: 660px !important;color:navy;" })
                 .Suggest(true)
                 .AutoBind(true)
-                .SelectedIndex(0)
+                .HtmlAttributes(new { style = "width: 660px !important;color:navy;" })
+                .Deferred()
                 )
         </div>
     </div>
-    <div class="view_form row">
-        <div class="col-md-4">
-        </div>
+
+    <!-- Chọn cán bộ -->
+
+    <div class="view_form row" style="padding-top:5px;">
+        <div class="col-md-4"></div>
         <div class="col-md-8">
             @(Html.Kendo().ComboBoxFor(m => m.StaffId)
                 .Filter(FilterType.Contains)
-                .Placeholder("Vui lòng chọn giá trị")
+                .Placeholder("Vui lòng chọn cán bộ")
                 .DataTextField("value")
                 .DataValueField("id")
                 .Events(v => v.Change("LoadDsCanBo_ThanhVien"))
-                .DataSource(source =>
-                { source.Read(read => { read.Action("GetStaffs", "RoleManagement").Data("paramUserPosCode"); }).ServerFiltering(false); })
+                .DataSource(ds => ds.Read(read => read
+                .Action("GetListStaffVBSP", "ListOfValue")
+                .Data("paramStaffByPosCode")
+                ))
                 .HtmlAttributes(new { style = "width:660px !important;color:navy;" })
                 .Suggest(true)
                 .AutoBind(false)
-                .SelectedIndex(0)
+                .MinLength(0)
                 )
         </div>
     </div>
 
-    <div class="view_form row">
+
+
+    <div class="view_form row" style="padding-top:10px;">
         <div class="col-md-6">
             <label class="control-label" style="text-align: left; color: navy; padding-top: 3px;">Tên đăng nhập (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px !important;max-width:100% !important;color:navy;", placeholder = "Nhập tài khoản" })
-
+            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px; !important;max-width:100% !important;color:navy;" })
             <label id="lbl_matkhau" class="control-label" style="text-align: right; padding-right: 3px; padding-top: 3px; ">Mật khẩu (<font color="red">*</font>)</label>
-
+            @* @Html.PasswordFor(m => m.Password, new { @class = "k-textbox", placeholder = "Mật khẩu người dùng", style = "width: 130px; !important;max-width:100% !important;color:navy;" }) *@
             @Html.Kendo().TextBoxFor(m => m.Password).HtmlAttributes(new
                 {
-                    @id = "user_password",
                     @class = "form-control",
                     type = "password",
                     placeholder = "Nhập mật khẩu",
                     style = "width: 130px; !important;max-width:100% !important;color:navy;"
                 })
         </div>
+
+
+
+
         <div class="col-md-6">
             <label id="lbl_hoten" class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Họ và tên (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.FullName).HtmlAttributes(new { style = "width: 230px; !important;max-width:100% !important;color:navy;", placeholder = "Nhập họ tên" })
+            @Html.Kendo().TextBoxFor(m => m.FullName).HtmlAttributes(new { style = "width: 230px; !important;max-width:100% !important;color:navy;" })
 
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Giới tính</label>
             @(Html.Kendo().DropDownList()
@@ -422,11 +329,11 @@
                 .DataValueField("Value")
                 .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Nam", Value = "M" }, new SelectListItem() { Text = "Nữ", Value = "F" } })
                 .SelectedIndex(0)
-                .HtmlAttributes(new { style = "width: 110px !important; height: 25px; color:navy;" })
+                .HtmlAttributes(new { style = "width: 110px !important;color:navy;" })
                 )
         </div>
     </div>
-    <div class="view_form row">
+    <div class="view_form row" style="padding-top:5px;">
         <div class="col-md-3">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Ngày sinh (<font color="red">*</font>)</label>
             @Html.Kendo().DatePickerFor(m => m.UserBirthday).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 120px !important;color:navy;" })
@@ -466,7 +373,7 @@
         </div>
     </div>
 
-    <div class="view_form row">
+    <div class="view_form row" style="padding-top:5px;">
         <div class="col-md-4">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Chức vụ (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.TitleCode)
@@ -501,6 +408,11 @@
         </div>
         <div class="col-md-4">
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px; ">Điện thoại</label>
+            @* @(Html.Kendo().MaskedTextBoxFor(m => m.Mobile) *@
+            @*     .Mask("00 000 000 000 000")
+                .HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", }).HtmlAttributes(new { style = "width: 200px !important;color: navy;" })
+                ) *@
+
             @(Html.Kendo().MaskedTextBoxFor(m => m.Mobile)
                 .Mask("0000 000 000") // Định dạng
                 .HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", style = "width: 200px !important;color: navy;" })
@@ -508,7 +420,7 @@
         </div>
     </div>
 
-    <div class="view_form row">
+    <div class="view_form row" style="padding-top:5px;">
         <div class="col-md-5">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Địa chỉ e-mail</label>
             @Html.Kendo().TextBoxFor(m => m.Email).HtmlAttributes(new { placeholder = "Địa chỉ E-mail", type = "email", data_email_msg = "Địa chỉ E-mail không hợp lệ", style = "width: 245px !important;max-width: 100% !important;color: navy;" })
@@ -530,7 +442,7 @@
         </div>
     </div>
 
-    <div class="view_form row">
+    <div class="view_form row" style="padding-top:5px;">
         <div class="col-md-6">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Số CCCD (<font color="red">*</font>)</label>
             @Html.Kendo().MaskedTextBoxFor(m => m.IdCode).Mask("0000 0000 0000 ").HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", }).HtmlAttributes(new { style = "width: 195px !important;max-width: 100% !important;color: navy;" })
@@ -553,35 +465,17 @@
     </div>
 
     <hr style='margin-top: 1em; margin-bottom: 0.2em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
-    <div class="view_form row">
-        <div class="col-md-12 d-flex justify-content-end" style="padding-right:10px;">
-
-            @(Html.Kendo().Button()
-                .Name("btnSave")
-                .Events(v => v.Click("onClick"))
-                .HtmlAttributes(new
-                {
-                    type = "submit",
-                    style = "margin-right: 10px; width: 87px; height: 25px;font-weight:bold; color: blue;",
-                    title = "Lưu thông tin vừa Thêm mới/Sửa đổi"
-                })
-                .ImageUrl(Url.Content("~/images/save.png"))
-                .Content(" Lưu lại")
-                )
-
-            @(Html.Kendo().Button()
-                .Name("btnExit")
-                .Events(ev => ev.Click("onExit"))
-                .HtmlAttributes(new
-                {
-                    type = "button",
-                    style = "width: 85px; height: 25px; font-weight:bold; color: blue;",
-                    title = "Đóng lại màn hình cập nhật Văn bản, tài liệu"
-                })
-                .ImageUrl(Url.Content("~/images/close_icon.gif"))
-                .Content(" Quay ra")
-                )
-
+    <div class="view_form row" style="padding-top:10px;padding-right:20px;">
+        <div class="col-md-12 text-right">
+            <div style="float:right; width:30%;text-align:right;padding-right:10px;">
+                @(Html.Kendo().Button()
+                    .Name("btnSave")
+                    .Events(v => v.Click("onClick"))
+                    .HtmlAttributes(new { type = "submit", style = "margin-right: 1.3em; width: 87px; font-weight:bold; color: blue;", title = "Lưu thông tin vừa Thêm mới/Sửa đổi" })
+                    .ImageUrl(Url.Content("~/images/save.png"))
+                    .Content(" Lưu lại"))
+                @(Html.Kendo().Button().Name("btnExit").Events(ev => ev.Click("onExit")).HtmlAttributes(new { type = "button", style = "width: 85px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật Văn bản, tài liệu" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content(" Quay ra"))
+            </div>
         </div>
     </div>
 
@@ -590,7 +484,10 @@
         <img style="height:80px;" src="~/images/loading.gif" class="ajax-loader" />
     </div>
 
+
+
 </form>
+
 
 <script>
     $('#mydiv').hide();
@@ -614,88 +511,32 @@
     function clearControls() {
     }
 
-    $(function () {
-        $("#form0").submit(function (event) {
-            event.preventDefault();
-            $('#mydiv').show();
-            var dataString;
-            var action = this.action;
-            var contentType;
-            var processData;
-            if (this.enctype == "multipart/form-data") {
-                dataString = new FormData($(this).get(0));
-                contentType = false;
-                processData = false;
-            } else {
-                //
-            }
+    $("#form0").submit(function (event) {
+        event.preventDefault();
+        $('#mydiv').show();
 
-            $.ajax({
-                url: this.action,
-                type: this.method,
-                //data: $(this).serialize(),
-                dataType: "json", //change to your own, else read my note above on enabling the JsonValueProviderFactory in MVC
-                contentType: contentType,
-                processData: processData,
-                data: dataString,
-                success: function (result) {
-                    $('#mydiv').hide();
-                    if (result == "0") {
-                        alert("Bạn đã cập nhật thành công Người dùng " + $("#FullName").val() + " [" + $("#UserName").val() + "]!");
-                        clearControls();
-                        dataChange = true;
-                        onExit();
-                    }
-                    else {
-                        if (result == "1")
-                            alert("Tên đăng nhập người dùng  [" + $("#UserName").val() + "] đã tồn tại. Vui lòng kiểm tra lại!");
-                        else if (result == "2")
-                            alert("Ngày sinh lớn hơn hoặc bằng ngày hiện tại.Vui lòng kiểm tra lại!");
-                        else if (result == "3")
-                            alert("Ngày sinh lớn hơn hoặc bằng ngày ngày cấp CMND/Thẻ căn cước. Vui lòng kiểm tra lại!");
-                        else if (result == "4")
-                            alert("Số  CMND/Thẻ căn cước  [" + $("#IdCode").val() + "] đã tồn tại. Vui lòng kiểm tra lại!");
-                        else if (result == "5")
-                            alert("Id của người dùng được thêm mới != 0, Bạn hãy kiểm tra lại");
-                        else
-                            alert("Có lỗi xảy ra, bạn hãy kiểm tra lại!");
-                        dataChange = false;
-                    }
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    $('#mydiv').hide();
-                    alert("Lỗi khi cập nhật dữ liệu người dùng. Vui lòng liên hệ quản trị hệ thống!");
+        $.ajax({
+            url: this.action,
+            type: this.method,
+            data: new FormData(this),
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                $('#mydiv').hide();
+                if (result == "0") {
+                    alert("Cập nhật thành công người dùng " + $("#FullName").val() + " [" + $("#UserName").val() + "]!");
+                    onExit();
+                } else {
+                    // các alert lỗi của bạn
+                    alert(result == "1" ? "Tên đăng nhập đã tồn tại!" : "Có lỗi xảy ra!");
                 }
-            });
-            return false;
+            },
+            error: function () {
+                $('#mydiv').hide();
+                alert("Lỗi khi lưu dữ liệu!");
+            }
         });
     });
 
 
-    $(document).ready(function () {
-
-        var isEdit = parseInt($("#IsEdit").val());
-
-        if (isEdit === 1) {
-            $("#UserName").attr('readonly', true);
-            //$('#lbl_matkhau').addClass('HideMatKhau');
-                var password = $("#user_password").data("kendoTextBox");
-    password.wrapper.hide();
-            $('#lbl_matkhau').hide();
-            $("#StaffId").data("kendoComboBox").enable(false);
-            $("#DonVi_KeThua_Cd_TimKiem").data("kendoComboBox").enable(false);
-            Change_DonVi();
-            $('#div_trangthai').show();
-        }
-        else {
-            $("#Password").attr('readonly', false);
-            //$('#lbl_matkhau').addClass('ShowMatKhau');
-                var password = $("#user_password").data("kendoTextBox");
-    password.wrappershow();
-            $('#lbl_matkhau').show();
-            $('#div_trangthai').hide();
-            $("#DonVi_KeThua_Cd_TimKiem").data("kendoComboBox").enable(true);
-            $("#StaffId").data("kendoComboBox").enable(true);
-        }
-    });
 </script>
