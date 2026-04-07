@@ -1,5 +1,6 @@
 ﻿@model VBSPOSS.ViewModels.UserManagementIDCViewModel
-
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
 
 <div id="myPopupApproval"></div>
 
@@ -143,7 +144,8 @@
             pPosCode: $("#MainPosCode_Find").val(),
             pFromEffectiveDate: "",
             pToEffectiveDate: "",
-            pFullName: $("#StaffName_Find").val(),
+            pFunctionType: $("#FunctionTypeApproval_Find").val(),
+            // pFullName: $("#StaffName_Find").val(),
             pStatus: $("#StatusApproval_Find").val()
         };
     }
@@ -172,39 +174,15 @@
                 row.find("td").css("color", "red");
             }
         }
+
+        var userPosCode = $("#UserPosCodeView").val();
+        if (userPosCode !== '000100' && userPosCode !== '000196') {
+            $("#gridMainIDCApproval").find(".btn-auth").hide();
+        }
     }
 
     var dataChange = false;
-
-    $(document).on('click', '#btnCreate', function (e)
-    {
-        e.preventDefault();
-        var pPosCode = $("#MainPosCode_Find").val();
-        if (mainWindowApproval.data("kendoWindow")) {
-            mainWindowApproval.data("kendoWindow").destroy();
-        }
-        mainWindowApproval.kendoWindow({
-            width: "1024px",
-            height: "500px",
-            title: "Thêm mới cấu hình thông tin người dùng IDC",
-            content: {
-                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: pPosCode, pStaffId: "", pFlagCall: "1" }
-            },
-            resizable: true,
-            visible: false,
-            close: onClose,
-            modal: true,
-            actions: ["Refresh", "Close"],
-            error: function (e) {
-                notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
-            mainWindowApproval.data("kendoWindow").close();
-            }
-        });
-        mainWindowApproval.data("kendoWindow").center().open();
-    });
-
-    function onClose() {
+    function onCloseApprove() {
         if (dataChange == true) {
             refreshGridIDCApproval();
             dataChange = false;
@@ -288,7 +266,7 @@
                 resizable: false,
                 visible: false,
                 modal: true,
-                close: onClose,
+                close: onCloseApprove,
                 actions: ["Refresh", "Close"]
             });
             mainWindowApproval.data("kendoWindow").wrapper.css({ height: 500, width: 1024 });
@@ -333,7 +311,7 @@
             resizable: false,
             visible: false,
             modal: true,
-            close: onClose,
+            close: onCloseApprove,
             actions: ["Refresh","Close"],
             error: function (e) {
                 notification.show({
@@ -349,25 +327,25 @@
     function submitForAuthorizeIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var sMessInfor = "[" + dataItem.FullName + "]";
         var grid = $("#gridMainTidePanelRate").data("kendoGrid");
-        // Kiểm tra trạng thái trước khi trình duyệt
-        // var deletedStatuses = [0, 2, 3, 4];
-        // if (deletedStatuses.includes(dataItem.Status)) {
-        //     if (dataItem.Status == 0) {
-        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
-        //     }
-        //     // else if (dataItem.Status == 2) {
-        //     //     alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
-        //     }
-        //     else if (dataItem.Status == 3) {
-        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
-        //     }
-        //     else if (dataItem.Status == 4) {
-        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
-        //     }
-        //     return;
-        // }
+        //Kiểm tra trạng thái trước khi trình duyệt
+        var deletedStatuses = [0, 1, 3, 4];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
+            }
+            else if (dataItem.Status == 1) {
+                alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 3) {
+                alert("Người dùng " + sMessInfor + " đã phê duyệt, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
         if (mainWindowApproval.data("kendoWindow")) {
             mainWindowApproval.data("kendoWindow").destroy();
         }
@@ -383,7 +361,7 @@
             resizable: false,
             visible: false,
             modal: true,
-            close: onClose,
+            close: onCloseApprove,
             actions: ["Refresh","Close"],
             error: function (e) {
                 notification.show({
@@ -414,7 +392,7 @@
             resizable: false,
             visible: false,
             modal: true,
-            close: onClose,
+            close: onCloseApprove,
             actions: ["Close"],
             error: function (e) {
                 notification.show({
@@ -430,10 +408,10 @@
 </script>
 
 
-@* @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
 @Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
- *@<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
     <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
@@ -452,12 +430,21 @@
                         .Suggest(true)
                         .AutoBind(true)
                         .SelectedIndex(0))
-
-            <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
+            <label class="lbcontrol" style="color: navy;text-align:center;width:80px;padding-top: 7px;">Nghiệp vụ</label>
+            @(Html.Kendo().ComboBox().Name("FunctionTypeApproval_Find")
+                        .Filter(FilterType.Contains)
+                        .DataTextField("Description")
+                        .DataValueField("Code")
+                        .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
+                        .Placeholder("Chọn nghiệp vụ yêu cầu")
+                        .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                        .Filter("contains")
+                        .SelectedIndex(0))
+@*             <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
             @(Html.Kendo().TextBox().Name("StaffName_Find")
                         .Placeholder("Nhập tên hoặc mã cán bộ")
                         .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
-
+ *@
             <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("StatusApproval_Find")
                         .DataTextField("Text")
@@ -499,31 +486,27 @@
                                     title = "Phê duyệt người dùng IDC",
                                     @class = "btn-auth"
                                 });
-                                command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
-                                {
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                                    title = "Xóa người dùng IDC",
-                                    @class = "btn-delete"
-                                });
+                            }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+
+                            columns.Command(command =>
+                            {
                                 command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTidePenalRate").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                                     title = "Xem chi tiết",
                                     @class = "btn-view"
                                 });
-                            }).Width(150).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                            }).Width(50).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.UserId).Title("Tài khoản").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.FullName).Title("Họ tên").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.DateOfBirth).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.MobileNumber).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.StatusText).Title("Trạng thái").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.UserId).Title("Tài khoản").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+@*                             columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
+ *@                            columns.Bound(c => c.StatusText).Title("Trạng thái").Width(80).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.Id).Hidden();
                             columns.Bound(c => c.PosCode).Hidden();
                             columns.Bound(c => c.StaffId).Hidden(); ;
@@ -548,18 +531,15 @@
                             columns.Bound(c => c.ModifiedDate).Hidden();
                             columns.Bound(c => c.ApproverBy).Hidden();
                             columns.Bound(c => c.ApprovalDate).Hidden();
-                            //columns.Bound(c => c.Genders).Hidden();
-                            columns.Bound(c => c.StatusText).Hidden();
-                            @* columns.Bound(c => c.StaffPositionName).Hidden();
-                            columns.Bound(c => c.StaffDepartmentName).Hidden();
-                            columns.Bound(c => c.RoleToTransferCashDescription).Hidden();
-                            columns.Bound(c => c.RoleToTransferCashValue).Hidden(); *@
+                            columns.Bound(c => c.DateOfBirth).Hidden();
+                            columns.Bound(c => c.MobileNumber).Hidden();
+                            columns.Bound(c => c.EffectiveDate).Hidden();
+                            columns.Bound(c => c.ExpiryDate).Hidden();
 
                         })
                         .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
                         .ToolBar(toolbar =>
                         {
-                            toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
                             toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
                         })
                         .Excel(excel => excel.FileName("Danh sach nguoi dung IDC.xlsx").AllPages(true))

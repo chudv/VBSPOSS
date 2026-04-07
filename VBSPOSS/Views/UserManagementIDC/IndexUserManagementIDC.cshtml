@@ -1,5 +1,6 @@
 ﻿@using Kendo.Mvc
-
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
 @{
     ViewData["Title"] = "CẤU HÌNH THÔNG TIN NGƯỜI DÙNG IDC";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -153,8 +154,7 @@
     function paramLoadGridData() {
         return {
             pPosCode: $("#MainPosCode_Find").val(),
-            pFromEffectiveDate: "",
-            pToEffectiveDate: "",
+            pFunctionType: $("#FunctionType_Find").val(),
             pFullName: $("#StaffName_Find").val(),
             pStatus: $("#Status_Find").val()
         };
@@ -393,22 +393,22 @@
     function showEditIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var sMessInfor = "[" + dataItem.FullName + "]";
         var grid = $("#gridMainIDC").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
-        var deletedStatuses = [0, 2, 3, 4];
+        var deletedStatuses = [0, 1, 2, 4];
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
+            }
+            else if (dataItem.Status == 1) {
+                alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 2) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
-            }
-            else if (dataItem.Status == 3) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert("Người dùng " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 4) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             return;
         }
@@ -460,17 +460,26 @@
                         .Events(e => e.Change("Change_PosCode"))
                         .ClearButton(false)
                         .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                        .HtmlAttributes(new { style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                         .Suggest(true)
                         .AutoBind(true)
                         .SelectedIndex(0))
-
-            <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người dùng IDC</label>
+            <label class="lbcontrol" style="color: navy;text-align:center;width:80px;padding-top: 7px;">Nghiệp vụ</label>
+            @(Html.Kendo().ComboBox().Name("FunctionType_Find")
+                        .Filter(FilterType.Contains)
+                        .DataTextField("Description")
+                        .DataValueField("Code")
+                        .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
+                        .Placeholder("Chọn nghiệp vụ yêu cầu")
+                        .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                        .Filter("contains")
+                        .SelectedIndex(0))
+            <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top:3px;padding-right:6px;">Tên/Mã người dùng</label>
             @(Html.Kendo().TextBox().Name("StaffName_Find")
                         .Placeholder("Nhập tên hoặc mã cán bộ")
-                        .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
+                        .HtmlAttributes(new { style = "width: 200px;padding-left: 3px;padding-right: 2px;" }))
 
-            <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
+            <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("Status_Find")
                         .DataTextField("Text")
                         .DataValueField("Value")
@@ -517,13 +526,17 @@
                                     title = "Xem chi tiết",
                                     @class = "btn-view"
                                 });
+                            }).Width(100).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+
+                            columns.Command(command =>
+                            {
                                 command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                                     title = "Yêu cầu chỉnh sửa người dùng",
                                     @class = "btn-EditIDC"
                                 });
-                            }).Width(150).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                            }).Width(70).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
