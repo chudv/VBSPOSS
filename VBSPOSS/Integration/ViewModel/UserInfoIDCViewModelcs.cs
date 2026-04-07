@@ -521,16 +521,16 @@ namespace VBSPOSS.Integration.ViewModel
         [JsonProperty("DOB")]
         public string DateOfBirth;
 
-        /// <summary>
-        /// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
-        ///         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
-        ///         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
-        ///         '2': Mật khẩu được gửi link vào email của người dùng
-        ///         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
-        /// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
-        /// </summary>
-        [JsonProperty("mailIdFlag")]
-        public int MailIdFlag;
+        ///// <summary>
+        ///// Cờ xác định cấp mật khẩu cho người dùng. Giá trị: 
+        /////         '0': Mật khẩu mặc định là: 4 ký tự đầu của UserId và ngày sinh ddMMyyyy;
+        /////         '1': Mật khẩu sinh ngẫu nhiên được gửi vào email của người dùng;
+        /////         '2': Mật khẩu được gửi link vào email của người dùng
+        /////         '4': Mật khẩu được sinh ngẫu nhiên và trả ra khi gọi API tạo người dùng
+        ///// Chú ý: Đối với các role có quyền tiền mặt gồm: POGD, POPGD, TKTTT, TKTTQ, TKTCB, CNGD, CNPGD, PKTTP, PKTPP, PKTTM, PKTTQ, SGDTQ, SGDTM, SGDPP, SGDTP, SGDPG, SGDGD, TTGD, TTKT, TTTQ, TTTKT, DTGD, DTKT, DTTQ, DTTKT, VPGD, VPKT, VPTQ thì bắt buộc Gía trị MailIdFlag = 4. Các role còn lại mặc định MailIdFlag = 0
+        ///// </summary>
+        //[JsonProperty("mailIdFlag")]
+        //public int MailIdFlag;
 
         [JsonProperty("language")]
         public string Language;
