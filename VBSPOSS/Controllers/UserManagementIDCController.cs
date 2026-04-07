@@ -168,7 +168,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.AuthsecType = "";
                 objPosUserIDCMaster.ExtraAttributeUserRole = "";
                 objPosUserIDCMaster.ExtraAttributeBranchCode = "";
-                objPosUserIDCMaster.ExpiryDate = DateTime.Now;
+                objPosUserIDCMaster.ExpiryDate = new DateTime(2060, 12, 31);
                 objPosUserIDCMaster.EffectiveDate = DateTime.Now;
                 objPosUserIDCMaster.Remark = "";
                 objPosUserIDCMaster.OrtherNotes = "";
@@ -178,6 +178,11 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.CreatedDate = DateTime.Now;
                 objPosUserIDCMaster.ModifiedBy = "";
                 objPosUserIDCMaster.ModifiedDate = DateTime.Now;
+                objPosUserIDCMaster.StartDate = DateTime.Now;
+                objPosUserIDCMaster.IpSetCode = "";
+                objPosUserIDCMaster.IpSetDetail = "";
+                objPosUserIDCMaster.RestrictionFlag = 0;
+                objPosUserIDCMaster.SubType = "";
             }
             else
             {
@@ -215,10 +220,17 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.FunctionTypeName = listStaffVBSP.FunctionTypeName;
                 objPosUserIDCMaster.EffectiveDate = listStaffVBSP.EffectiveDate;
                 objPosUserIDCMaster.FunctionType = listStaffVBSP.FunctionType;
+                objPosUserIDCMaster.StartDate = listStaffVBSP.StartDate;
+                objPosUserIDCMaster.IpSetCode = listStaffVBSP.IpSetCode;
+                objPosUserIDCMaster.IpSetDetail = listStaffVBSP.IpSetDetail;
+                objPosUserIDCMaster.RestrictionFlag = listStaffVBSP.RestrictionFlag;
+                objPosUserIDCMaster.SubType = listStaffVBSP.SubType;
+                objPosUserIDCMaster.AuthsecTypeName = listStaffVBSP.AuthsecTypeName;
+                objPosUserIDCMaster.MailIdFlagName = listStaffVBSP.MailIdFlagName;
             }
             if(string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                 sNameView = "UpdateUserManagementIDC";
-            else if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
+            else if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString() || pButtonType == FunctionTypeFlag.FunctionTypeFlag_AUTHORIZE.Value.ToString())
                 sNameView = "AuthorizeUserManagementIDC";
             else           
                 sNameView = "DetailUserManagementIDC";

@@ -731,7 +731,9 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_CHANGE_ROLE = new ValueConstModel { Value = 7, Code = "CHANGE_ROLE", Description = "Thay đổi quyền người dùng" };
 
-        public static ValueConstModel FunctionTypeFlag_APPROVAL = new ValueConstModel { Value = 8, Code = "APPROVAL", Description = "Trình duyệt/Phê duyệt" };
+        public static ValueConstModel FunctionTypeFlag_APPROVAL = new ValueConstModel { Value = 8, Code = "APPROVAL", Description = "Trình duyệt" };
+
+        public static ValueConstModel FunctionTypeFlag_AUTHORIZE = new ValueConstModel { Value = 9, Code = "AUTHORIZE", Description = "Phê duyệt" };
 
         public static ValueConstModel FunctionTypeFlag_EDIT = new ValueConstModel { Value = 10, Code = "EDIT", Description = "Chỉnh sửa thông tin người dùng IDC" };
 

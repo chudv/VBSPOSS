@@ -62,7 +62,10 @@ namespace VBSPOSS.ViewModels
         public string? IpSetCode { get; set; }
         public string? IpSetDetail { get; set; }
         public int? RestrictionFlag { get; set; }
+        public bool RestrictionFlagCheck { get; set; }
         public string? SubType { get; set; }
+        public string? AuthsecTypeName { get; set; }
+        public string? MailIdFlagName { get; set; }
     }
 
 

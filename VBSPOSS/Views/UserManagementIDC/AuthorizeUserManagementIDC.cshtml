@@ -253,6 +253,36 @@
         }
     }
 
+    function onClickAuthorize(e) {
+        lcButton = "9";
+        var lcPosCode = $("#PosCode").val();
+        var lcStaffId = $("#StaffCode").val();
+        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#PosCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        if (lcStaffId == null || lcStaffId == "") {
+            alert('Cán bộ được phân giao quản lý địa bàn không được để trống. Bạn vui lòng kiểm tra lại!');
+            $('#StaffCode').focus();
+            e.preventDefault();
+            return false;
+        }
+        var effectPicker = new Date();
+        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+        if (effectPicker && expirePicker) {
+            var dEffectDate = effectPicker.value();
+            var dExpiryDate = expirePicker.value();
+            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
+                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
+                $('#ExpiryDate').focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+    }
+
     function onClickDenie(e) {
         lcButton = "3";
         var lcPosCode = $("#PosCode").val();
@@ -345,6 +375,27 @@
             </div>
         </div>
 
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Phương thức xác thực</label>
+                @Html.Kendo().TextBoxFor(m => m.AuthsecTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Phương thức gửi mật khẩu</label>
+                @Html.Kendo().TextBoxFor(m => m.MailIdFlagName).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:170px;padding-top: 7px;padding-right: 10px;"> Dải IP được truy cập </label>
+                @Html.Kendo().TextBoxFor(m => m.IpSetDetail).HtmlAttributes(new { @readonly = "readonly", style = " width: 770px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+            </div>
+        </div>
+
 @*         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Nhóm quyền</label>
@@ -418,6 +469,13 @@
                                 .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Trình duyệt"))
+                &nbsp;
+                @(Html.Kendo().Button()
+                                .Name("btnAuthorize")
+                                .Events(ev => ev.Click("onClickAuthorize"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Phê duyệt"))
                 &nbsp;
                 @(Html.Kendo().Button()
                                 .Name("btnDenie")
