@@ -178,34 +178,6 @@
 
     var dataChange = false;
 
-    $(document).on('click', '#btnCreate', function (e)
-    {
-        e.preventDefault();
-        var pPosCode = $("#MainPosCode_Find").val();
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
-        }
-        mainWindow.kendoWindow({
-            width: "1024px",
-            height: "500px",
-            title: "Thêm mới cấu hình thông tin người dùng IDC",
-            content: {
-                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: pPosCode, pStaffId: "", pFlagCall: "1" }
-            },
-            resizable: true,
-            visible: false,
-            close: onClose,
-            modal: true,
-            actions: ["Refresh", "Close"],
-            error: function (e) {
-                notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
-            mainWindow.data("kendoWindow").close();
-            }
-        });
-        mainWindow.data("kendoWindow").center().open();
-    });
-
     function onClose() {
         if (dataChange == true) {
             refreshGridIDC();
@@ -410,7 +382,7 @@
                         .Name("EffectDate_Find")
                         .Format("dd/MM/yyyy")
                         .HtmlAttributes(new { style = "background-color: While !important; width: 105px !important; color: green; !important;", title = "Từ ngày cần tìm kiếm" })
-                        .Value(new DateTime(DateTime.Today.Year - 5, 1, 1))
+                        .Value(new DateTime(DateTime.Today.Year, 1, 1))
                         )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()
@@ -456,11 +428,11 @@
 
                             columns.Bound(c => c.STT).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.TenChiNhanh).Title("Đơn vị").Width(200).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.KhoangThoiGian).Title("Khoảng thời gian").Width(200).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.KhoangThoiGian).Title("Khoảng thời gian").Width(200).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.SoLgTrinh_ThemMoi).Title("Thêm mới").Width(90).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.SoLgTrinh_Matkhau).Title("Đổi mật khẩu").Width(90).HtmlAttributes(new { style = "text-align: left;" });
-                            columns.Bound(c => c.SoLgTrinh_MoKhoa).Title("Mở khóa người dùng").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.SoLgTrinh_Khoa).Title("Khóa người dùng").Width(90).HtmlAttributes(new { style = "text-align: left;" });
+                            columns.Bound(c => c.SoLgTrinh_MoKhoa).Title("Mở khóa người dùng").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.SoLgTrinh_Khoa).Title("Khóa người dùng").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.SoLgTrinh_Edit).Title("Chỉnh sửa").Width(90).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.SoLgTrinh_ChangePos).Title("Đổi POS").Width(90).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.SoLgTrinh_ChangeRole).Title("Đổi quyền").Width(90).HtmlAttributes(new { style = "text-align: left;" });
@@ -471,7 +443,6 @@
                         .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
                         .ToolBar(toolbar =>
                         {
-                            toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
                             toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
                         })
                         .Excel(excel => excel.FileName("Danh sach nguoi dung IDC.xlsx").AllPages(true))

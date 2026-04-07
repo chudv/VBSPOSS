@@ -362,14 +362,14 @@ namespace VBSPOSS.Integration.ViewModel
         /// <summary>
         /// Ngày bắt đầu (yyyyMMdd) lớn hơn hoặc bằng ngày hiện tại
         /// </summary>
-        //[JsonProperty("startDate")]
-        //public string StartDate;
+        [JsonProperty("startDate")]
+        public string StartDate;
 
         /// <summary>
         /// Cờ hạn chế đăng nhập cho tất cả các ngày giống nhau hay không. Giá trị: 1 - Hạn chế tất cả các ngày giống nhau; 0 - Hạn chế với các ngày có giá trị khác nhau
         /// </summary>
         [JsonProperty("restrictSameTimeForAllDay")]
-        public string RestrictSameTimeForAllDay;
+        public int? RestrictSameTimeForAllDay;
 
         [JsonProperty("restriction")]
         public List<RestrictionRequest> ListRestrictionRequest{ get; set; }

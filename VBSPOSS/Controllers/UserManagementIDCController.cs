@@ -63,7 +63,7 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
             TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
-
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return View("IndexUserManagementIDC");
         }
 
@@ -143,7 +143,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","")).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
                 objPosUserIDCMaster.Id = 0;
@@ -234,7 +234,7 @@ namespace VBSPOSS.Controllers
                 sNameView = "AuthorizeUserManagementIDC";
             else           
                 sNameView = "DetailUserManagementIDC";
-            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
             ViewBag.MailIdFlags = MailIdFlag.GetAll();
             ViewBag.AuthSecTypes = AuthSecType.GetAll();
             TempData["FlagCall"] = pFlagCall;
@@ -337,11 +337,12 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "")).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","")).FirstOrDefault();
             sNameView = (pFlagCall == "1")?"ApproveUserManagementIDC":"ApproveUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
             objPosUserIDCManagement.PosCode = pPosCode;
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return PartialView(sNameView, objPosUserIDCManagement);
         }
 
@@ -353,7 +354,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
         /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFromEffectiveDate, string pToEffectiveDate, string pUserId, int pStatus,string pFullName)
+        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, string pUserId, int pStatus,string pFullName)
         {
             try
             {
@@ -363,7 +364,9 @@ namespace VBSPOSS.Controllers
                     pUserId = "";
                 if (string.IsNullOrEmpty(pFullName))
                     pFullName = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "");
+                if (string.IsNullOrEmpty(pFunctionType))
+                    pFunctionType = "";
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "",pFunctionType);
 
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }

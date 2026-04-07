@@ -710,11 +710,7 @@ namespace VBSPOSS.Services.Implements
 
 
         // sửa lại logic
-        public async Task<int> SaveBatchProductParameterAsync(
-    string productGroupCode,
-    DateTime effectedDate,
-    string remark,
-    List<ProductParameterDetailViewModel> items)
+        public async Task<int> SaveBatchProductParameterAsync(string productGroupCode,DateTime effectedDate,string remark,List<ProductParameterDetailViewModel> items)
         {
             try
             {
@@ -818,59 +814,8 @@ namespace VBSPOSS.Services.Implements
 
 
 
-        //Load màn Index
-        //   public async Task<List<ProductParametersView>> GetProductParametersViewListAsync(
-        //string productGroupCode, string productCode, DateTime? effectDate)
-        //   {
-        //       var query = _dbContext.Set<ProductParametersView>().AsQueryable();
-
-        //       if (!string.IsNullOrEmpty(productGroupCode))
-        //           query = query.Where(x => x.ProductGroupCode == productGroupCode);
-
-        //       if (!string.IsNullOrEmpty(productCode))
-        //           query = query.Where(x => x.ProductCodeList.Contains(productCode));
-
-        //       if (effectDate.HasValue)
-        //           query = query.Where(x => x.EffectedDate.Date == effectDate.Value.Date);
-
-        //       return await query
-        //           .OrderBy(x => x.OrderNo)
-        //           .ThenByDescending(x => x.EffectedDate)
-        //           .ToListAsync();
-        //   }
-
-        // sửa thay đổi tạm 
-
-        //    public async Task<List<ProductParametersView>> GetProductParametersViewListAsync(
-        //string productGroupCode, string productCode, DateTime? effectDate)
-        //    {
-        //        var query = _dbContext.Set<ProductParametersView>().AsQueryable();
-
-        //        if (!string.IsNullOrEmpty(productGroupCode))
-        //            query = query.Where(x => x.ProductGroupCode == productGroupCode);
-
-        //        if (!string.IsNullOrEmpty(productCode))
-        //            query = query.Where(x => x.ProductCodeList.Contains(productCode));
-
-        //        // if (effectDate.HasValue)
-        //        //     query = query.Where(x => x.EffectedDate.Date == effectDate.Value.Date);
-
-        //        var data = await query
-        //            .OrderBy(x => x.OrderNo)
-        //            .ThenByDescending(x => x.EffectedDate)
-        //            .ToListAsync();
-
-
-        //        Console.WriteLine($"Service returned {data.Count} records"); // hoặc dùng ILogger
-        //        return data;
-        //    }
-
-
-        public async Task<List<ProductParametersView>> GetProductParametersViewListAsync(
-    string productGroupCode = null,
-    string productCode = null,
-    DateTime? fromDate = null,      // Từ ngày
-    DateTime? toDate = null)        // Đến ngày
+      
+        public async Task<List<ProductParametersView>> GetProductParametersViewListAsync( string productGroupCode = null,string productCode = null, DateTime? fromDate = null,     DateTime? toDate = null)        // Đến ngày
         {
             var query = _dbContext.Set<ProductParametersView>().AsQueryable();
 

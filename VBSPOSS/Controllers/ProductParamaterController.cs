@@ -87,35 +87,7 @@ namespace VBSPOSS.Controllers
         }
 
 
-        //Load màn Index
-    //    [HttpPost]
-    //    public async Task<ActionResult> LoadProductParametersGrid([DataSourceRequest] DataSourceRequest request,
-    //string productGroupCode = null, string productCode = null, string effectDate = null)
-    //    {
-    //        try
-    //        {
-    //            DateTime? filterDate = null;
-    //            if (!string.IsNullOrEmpty(effectDate) && DateTime.TryParseExact(effectDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-    //            {
-    //                filterDate = parsed;
-    //            }
-
-    //            var list = await _service.GetProductParametersViewListAsync(
-    //                productGroupCode,
-    //                productCode,
-    //                filterDate
-    //            );
-
-    //            // KHÔNG cần Select tạo mới object nữa
-    //            // StatusDesc đã tự tính trong model
-    //            return Json(list.ToDataSourceResult(request));
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return Json(new { Errors = "Lỗi khi tải dữ liệu: " + ex.Message });
-    //        }
-    //    }
-
+     
 
         [HttpPost]
         public async Task<ActionResult> LoadProductParametersGrid([DataSourceRequest] DataSourceRequest request,
@@ -223,43 +195,7 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        // luu
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
-        //{
-        //    try
-        //    {
-        //        var remarkChung = request.Remark?.Trim() ?? "";
-
-        //        var items = JsonSerializer.Deserialize<List<ProductParameterDetailViewModel>>(request.Items);
-        //        if (items == null || items.Count == 0)
-        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
-
-
-        //        var recordCount = await _service.SaveBatchProductParameterAsync(
-        //            request.ProductGroupCode,
-        //            request.EffectedDate,
-        //            remarkChung,
-        //            items
-        //        );
-
-        //        if (recordCount > 0)
-        //        {
-        //            return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = $"Lưu không thành công!" });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Lỗi lưu batch trong controller");
-        //        return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
-        //    }
-        //}
-
+        
 
         // sửa hàm lưu thay đổi 
 

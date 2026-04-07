@@ -738,7 +738,7 @@ namespace VBSPOSS.Integration.Implements
                 // Serialize input object to JSON
                 requestInput.IpSet = string.IsNullOrEmpty(requestInput.IpSet) ? null : requestInput.IpSet;
                 requestInput.SubType = string.IsNullOrEmpty(requestInput.SubType) ? null : requestInput.SubType;
-                requestInput.RestrictSameTimeForAllDay = string.IsNullOrEmpty(requestInput.RestrictSameTimeForAllDay) ? null : requestInput.RestrictSameTimeForAllDay;
+                requestInput.RestrictSameTimeForAllDay = (requestInput.RestrictSameTimeForAllDay == null) ? null : requestInput.RestrictSameTimeForAllDay;
                 if (requestInput.ListRestrictionRequest == null || requestInput.ListRestrictionRequest.Count <= 0)
                     requestInput.ListRestrictionRequest = null;
 

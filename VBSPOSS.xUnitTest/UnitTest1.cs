@@ -15,8 +15,8 @@ namespace VBSPOSS.UnitTests
         public void Generate_Encrypted_ConnectionString()
         {
             // Arrange
-            //var plainText = "User Id=IDL_IDC;Password=IDL_IDC;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.63.48.181)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=VBSPUAT)));";
-            var plainText = "Server=10.63.48.63;Database=VBSPOSS;User Id=sa;Password=Sql2017;MultipleActiveResultSets=true";
+            var plainText = "User Id=VBSPOSS;Password=vbsposs;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.63.48.181)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=VBSPUAT)));";
+            //var plainText = "Server=10.63.48.63;Database=VBSPOSS;User Id=sa;Password=Sql2017;MultipleActiveResultSets=true";
 
 
             var helper = new TestEncryptionHelper();

@@ -319,6 +319,7 @@
     <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
     @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
     @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+    @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
 @*     @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
  *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
@@ -575,6 +576,16 @@
             $("#divPosCode").hide();
             $("#divModify").hide();
             $("#divRole").show();
+        }
+
+        var lcButtonType = $("#ButtonTypeView").val();
+        if(lcButtonType == "8"){
+            $("#btnApproval").show();
+            $("#btnAuthorize").hide();
+        }
+        else if(lcButtonType == "9"){
+            $("#btnAuthorize").show();
+            $("#btnApproval").hide();
         }
     });
 
