@@ -99,17 +99,13 @@
         return new Date(year, month, day);
     }
 
-        function clearAllStaffFields() {
-        $("#FullName, #PosName, #TitleDesc, #DepartmentDesc, #DegreeDesc, #Genders, #Mobile, #Email, #IssuedPlace").val("");
-        $("#PosCode, #TitleCode, #DepartmentCode, #DegreeCode").val("");
-        $("#UserBirthday, #IssuedDate").data("kendoDatePicker")?.value(null);
-        var masked = $("#IdCode").data("kendoMaskedTextBox");
-        if (masked) masked.value("");
-    }
+        
 
     // ====================== LOAD CÁN BỘ ======================
 
                         function LoadDsCanBo_ThanhVien(e) {
+
+                            alert('a');
         var staffId = $("#StaffId").val();
 
         if (!staffId || staffId === "0" || staffId === "") {
@@ -124,26 +120,26 @@
             url: "@Url.Action("GetListStaffVBSPByStaffId", "ListOfValue")",
             data: { pStaffId: staffId },
             success: function (response) {
-                console.log("Response từ API:", response);   // ← Quan trọng để debug
+                console.log("Response từ API:", response);  
 
               
-                if (!response || response.length === 0) {
-                    alert("Không tìm thấy thông tin cán bộ với StaffId này!");
-                    clearAllStaffFields();   // hàm xóa sạch dữ liệu (tùy chọn)
-                    return;
-                }
+           //     if (!response || response.length === 0) {
+          //          alert("Không tìm thấy thông tin cán bộ với StaffId này!");
+                   // clearAllStaffFields();   
+             //       return;
+               // }
 
-                // Lấy dữ liệu (có thể response là object hoặc mảng)
+               
                 var data = Array.isArray(response) ? response[0] : response;
 
-                if (!data) {
-                    alert("Không tìm thấy thông tin cán bộ!");
-                    return;
-                }
+                // if (!data) {
+                //     alert("Không tìm thấy thông tin cán bộ!");
+                //     return;
+                // }
 
                console.log("Data cán bộ nhận được:", data);
 
-                // ==================== ĐỔ DỮ LIỆU ====================
+                
                 $("#StaffId").val(data.StaffCode || data.StaffId || "");
                 $("#FullName").val(data.StaffName || data.FullName || "");
                 $("#PosName").val(data.PosName || data.StaffPosName || "");
@@ -154,7 +150,7 @@
                 $("#Mobile").val(data.StaffMobileNo || data.Mobile || "");
                 $("#Email").val(data.StaffEmail || data.Email || "");
 
-                // ==================== ĐỔ MÃ (CÁC TRƯỜNG REQUIRED) ====================
+                //
                 $("#PosCode").val(data.PosCode || data.StaffPosCode || "");
                 $("#TitleCode").val(data.StaffPositionCode || data.TitleCode || "");
                 $("#DepartmentCode").val(data.StaffDepartmentCode || data.DepartmentCode || "");
@@ -179,7 +175,7 @@
                 }
                 $("#IssuedPlace").val(data.IssuedPlace || "");
 
-                // Load lại ComboBox cho chắc chắn
+             
                 setTimeout(() => {
                     $("#DepartmentCode").data("kendoComboBox")?.value($("#DepartmentCode").val());
                     $("#TitleCode").data("kendoComboBox")?.value($("#TitleCode").val());
