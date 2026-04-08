@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.RulesetToEditorconfig;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
 using System.Linq;
@@ -25,16 +26,17 @@ namespace VBSPOSS.Services.Implements
 {
     public class UserManagementIDCService: IUserManagementIDCService
     {
-
+        private readonly IntellectIDCDbContext _dbContextIDC;
         private readonly ApplicationDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly ILogger<UserManagementIDCService> _logger;
         private readonly IListOfValueService _serviceLOV;
-        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
+        public UserManagementIDCService(ApplicationDbContext context, IntellectIDCDbContext dbContextIDC, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
                         ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
+            _dbContextIDC = dbContextIDC;
             _mapper = mapper;
             _apiInternalEsbService = apiInternalEsbService;
             _logger = logger;
@@ -428,7 +430,7 @@ namespace VBSPOSS.Services.Implements
                             objAddUser.MobileNumber = objUserManagementIDCsUpdNew.MobileNumber;
                             objAddUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString("yyyy-MM-dd");
                             objAddUser.GroupName = objUserManagementIDCsUpdNew.GroupName;
-                            objAddUser.EntityList = "IDCPROUAT";
+                            objAddUser.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='EntityList' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");//"IDCPROUAT";
                             objAddUser.AuthType = Int32.Parse(objUserManagementIDCsUpdNew.AuthType);
                             objAddUser.UserType = Int32.Parse(objUserManagementIDCsUpdNew.UserType);
                             objAddUser.MailIdFlag = Int32.Parse(objUserManagementIDCsUpdNew.MailIdFlag);
@@ -1609,5 +1611,46 @@ namespace VBSPOSS.Services.Implements
             }
             return objResultPendingTrans;
         }
+
+
+
+        /// <summary>
+        /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
+        /// Ex: SELECT VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('44573', '03-SEP-2025') FROM DUAL
+        /// </summary>
+        /// <param name="pUserId">Tài khoản người dùng trên iDC</param>
+        /// <param name="pReportDate">Ngày kiểm tra định dạng dd-MON-yyyy</param>
+        /// <returns>Kết quả trả về:
+        ///                 0 - Chưa mở sổ tiền mặt đầu ngày;
+        ///                 1 - Đã mở chưa đóng;
+        ///                 2 - Đã mở và đóng nhưng còn tồn quỹ tiền mặt chưa chuyển về quỹ chính
+        ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
+        /// </returns>
+        public int CheckOpenCashByUserId(string pUserId, string pReportDate)
+        {
+            int iResultValue = 0;
+            string sReportDate = "";
+            if (string.IsNullOrEmpty(pReportDate))
+                sReportDate = DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA);
+            else sReportDate = pReportDate;
+
+            try
+            {
+                string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{pReportDate}')) Code From Dual ";
+                var iValueRet = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
+                if (iValueRet != null)
+                {
+                    iResultValue = Convert.ToInt32(iValueRet.ToString());
+                }
+                return iResultValue;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+
     }
 }

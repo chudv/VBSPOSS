@@ -128,7 +128,7 @@ namespace VBSPOSS.Controllers
         }
 
         /// <summary>
-        /// Hàm show màn hình update người dùng IDC
+        /// Hàm show màn hình Thêm/Sửa/Thay đổi POS, Quyền/Cấp lại mật khẩu... người dùng IDC
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
@@ -172,8 +172,8 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.EffectiveDate = DateTime.Now;
                 objPosUserIDCMaster.Remark = "";
                 objPosUserIDCMaster.OrtherNotes = "";
-                objPosUserIDCMaster.Status = 1;
-                objPosUserIDCMaster.StatusText = "";               
+                objPosUserIDCMaster.Status = StatusBusinessFlow.Status_Created.Value;
+                objPosUserIDCMaster.StatusText = StatusBusinessFlow.Status_Created.Description;               
                 objPosUserIDCMaster.CreatedBy = "";
                 objPosUserIDCMaster.CreatedDate = DateTime.Now;
                 objPosUserIDCMaster.ModifiedBy = "";

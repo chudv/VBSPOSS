@@ -645,7 +645,7 @@ namespace VBSPOSS.Controllers
                     itemUpdAdd.PosCode = itemData.PosCode;
                     itemUpdAdd.PosName = itemData.PosName;
                     itemUpdAdd.ProductGroupCode = ProductGroupCode.ProductGroupCode_DepositPenal;
-                    itemUpdAdd.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;
+                    itemUpdAdd.UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");// ConstValueAPI.UserId_Call_ApiIDC;
                     itemUpdAdd.CircularDate = dCircularDateTmp.Date;
                     itemUpdAdd.CircularRefNum = requestUpd.CircularRefNum;
                     itemUpdAdd.RecordSerialNo = itemData.OrderNo;
