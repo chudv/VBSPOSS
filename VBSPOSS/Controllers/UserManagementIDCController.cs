@@ -172,8 +172,8 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.EffectiveDate = DateTime.Now;
                 objPosUserIDCMaster.Remark = "";
                 objPosUserIDCMaster.OrtherNotes = "";
-                objPosUserIDCMaster.Status = 1;
-                objPosUserIDCMaster.StatusText = "";               
+                objPosUserIDCMaster.Status = StatusBusinessFlow.Status_Created.Value;
+                objPosUserIDCMaster.StatusText = StatusBusinessFlow.Status_Created.Description;               
                 objPosUserIDCMaster.CreatedBy = "";
                 objPosUserIDCMaster.CreatedDate = DateTime.Now;
                 objPosUserIDCMaster.ModifiedBy = "";

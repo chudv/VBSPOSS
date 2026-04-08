@@ -430,7 +430,7 @@ namespace VBSPOSS.Services.Implements
                             objAddUser.MobileNumber = objUserManagementIDCsUpdNew.MobileNumber;
                             objAddUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString("yyyy-MM-dd");
                             objAddUser.GroupName = objUserManagementIDCsUpdNew.GroupName;
-                            objAddUser.EntityList = "IDCPROUAT";
+                            objAddUser.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='EntityList' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");//"IDCPROUAT";
                             objAddUser.AuthType = Int32.Parse(objUserManagementIDCsUpdNew.AuthType);
                             objAddUser.UserType = Int32.Parse(objUserManagementIDCsUpdNew.UserType);
                             objAddUser.MailIdFlag = Int32.Parse(objUserManagementIDCsUpdNew.MailIdFlag);
