@@ -283,6 +283,7 @@
                 return false;
             }
         }
+        sendDataToParent(9);
     }
 
     function onClickDenie(e) {
@@ -501,14 +502,14 @@
                 @(Html.Kendo().Button()
                                 .Name("btnAuthorize")
                                 .Events(ev => ev.Click("onClickAuthorize"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Phê duyệt"))
                 &nbsp;
                 @(Html.Kendo().Button()
                                 .Name("btnDenie")
                                 .Events(ev => ev.Click("onClickDenie"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Từ chối"))
             </div>
