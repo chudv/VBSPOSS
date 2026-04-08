@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection.Emit;
+using Kendo.Mvc.UI;
 using Telerik.SvgIcons;
 using VBSPOSS.Models;
 
@@ -90,6 +91,72 @@ namespace VBSPOSS.Constants
 
         public const string ProductGroupCode_DepositPenal = "DEPOSITPENAL";
     }
+
+    /// <summary>
+    /// Trạng thái luồng nghiệp vụ cho Quản lý danh mục địa phương, điểm giao dịch
+    /// </summary>
+    public class StatusBusinessFlow
+    {
+        /// <summary>
+        /// Trạng thái đóng: Status_Closed = new ValueConstModel { Value = 0, Code = "Closed", Description = "Đóng" };
+        /// </summary>
+        public static ValueConstModel Status_Closed = new ValueConstModel { Value = 0, Code = "Closed", Description = "Đóng" };
+        /// <summary>
+        /// Trạng thái tạo lập: Status_Created = new ValueConstModel { Value = 1, Code = "Created", Description = "Tạo lập" };
+        /// </summary>
+        public static ValueConstModel Status_Created = new ValueConstModel { Value = 1, Code = "Created", Description = "Tạo lập" };
+
+        /// <summary>
+        /// Trạng thái chỉnh sửa bản ghi: Status_Modified = new ValueConstModel { Value = 5, Code = "Modified", Description = "Chỉnh sửa" };
+        /// </summary>
+        public static ValueConstModel Status_Modified = new ValueConstModel { Value = 5, Code = "Modified", Description = "Chỉnh sửa" };
+        
+        /// <summary>
+        /// Trạng thái đã trình duyệt: Status_Submitted = new ValueConstModel { Value = 2, Code = "Submitted", Description = "Trình duyệt" };
+        /// </summary>
+        public static ValueConstModel Status_Submitted = new ValueConstModel { Value = 2, Code = "Submitted", Description = "Trình duyệt" };
+
+        /// <summary>
+        /// Status_Branch_Approved = new ValueConstModel { Value = 6, Code = "BranchApproved", Description = "Phê duyệt chi nhánh" };
+        /// </summary>
+        public static ValueConstModel Status_Branch_Approved = new ValueConstModel { Value = 6, Code = "BranchApproved", Description = "Phê duyệt chi nhánh" };
+        /// <summary>
+        /// Status_Branch_Rejected = new ValueConstModel { Value = 7, Code = "BranchRejected", Description = "Từ chối chi nhánh" };
+        /// </summary>
+        public static ValueConstModel Status_Branch_Rejected = new ValueConstModel { Value = 7, Code = "BranchRejected", Description = "Từ chối chi nhánh" };
+
+        /// <summary>
+        /// Status_HeadOffice_Approved = new ValueConstModel { Value = 3, Code = "HeadOfficeApproved", Description = "Phê duyệt HSC" };
+        /// </summary>
+        public static ValueConstModel Status_HeadOffice_Approved = new ValueConstModel { Value = 3, Code = "HeadOfficeApproved", Description = "Phê duyệt Ban CMNV" };
+        /// <summary>
+        /// Status_HeadOffice_Rejected = new ValueConstModel { Value = 4, Code = "HeadOfficeRejected", Description = "Từ chối HSC" };
+        /// </summary>
+        public static ValueConstModel Status_HeadOffice_Rejected = new ValueConstModel { Value = 4, Code = "HeadOfficeRejected", Description = "Từ chối Ban CMNV" };
+
+        /// <summary>
+        /// Status_ITC_Applied = new ValueConstModel { Value = 4, Code = "HeadOfficeApplied", Description = "TTCNTT đã thực thi" };
+        /// </summary>
+        public static ValueConstModel Status_ITC_Applied = new ValueConstModel { Value = 9, Code = "HeadOfficeApplied", Description = "TTCNTT đã thực thi" };
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                0 => Status_Closed,
+                1 => Status_Created,
+                5 => Status_Modified,
+                2 => Status_Submitted,
+                6 => Status_Branch_Approved,
+                7 => Status_Branch_Rejected,
+                3 => Status_HeadOffice_Approved,
+                4 => Status_HeadOffice_Rejected,
+                9 => Status_ITC_Applied,
+                _ => null
+            };
+        }
+    }
+
     /// <summary>
     /// Trạng thái bản ghi: Tạo lập/Phê duyệt/Từ chối/
     /// </summary>
@@ -644,6 +711,8 @@ namespace VBSPOSS.Constants
 
     public static class FormatParameters
     {
+        public const string FORMAT_DATE_ORA = "dd-MMM-yyyy";
+
         public const string FORMAT_DATE_VN = "dd-MM-yyyy";
 
         public const string FORMAT_DATE = "dd/MM/yyyy";
@@ -753,10 +822,24 @@ namespace VBSPOSS.Constants
             };
         }
 
-        public static List<ValueConstModel> GetAll()
+        public static List<ValueConstModel> GetOption()
         {
             return new List<ValueConstModel>
             {
+                FunctionTypeFlag_ResetPassword,
+                FunctionTypeFlag_ENABLE_USER,
+                FunctionTypeFlag_DISABLE_USER,
+                FunctionTypeFlag_MODIFY_USER,
+                FunctionTypeFlag_CHANGE_POS,
+                FunctionTypeFlag_CHANGE_ROLE
+            };
+        }
+
+         public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            {
+                FunctionTypeFlag_ADDNEW_USER,
                 FunctionTypeFlag_ResetPassword,
                 FunctionTypeFlag_ENABLE_USER,
                 FunctionTypeFlag_DISABLE_USER,
@@ -915,7 +998,45 @@ namespace VBSPOSS.Constants
                 _ => null
             };
         }
-
     }
+
+    public class EventBusinessCode
+    {
+        /// <summary>
+        /// Thêm mới Xã hoặc Thôn: EventCode_AddNew_Locality = new ValueConstModel { Value = 1, Code = "ADDNEW_LOCALITY", Description = "Thêm mới Thôn/Xã" };
+        /// </summary>
+        public static ValueConstModel EventCode_AddNew_Locality = new ValueConstModel { Value = 1, Code = "ADDNEW_LOCALITY", Description = "Thêm mới Thôn/Xã" };
+
+        public static ValueConstModel EventCode_Change_Name = new ValueConstModel { Value = 2, Code = "CHANGE_NAME", Description = "Thay đổi tên Thôn/Xã" };
+
+        public static ValueConstModel EventCode_Change_Econ_Zone = new ValueConstModel { Value = 3, Code = "CHANGE_ECON_ZONE", Description = "Thay đổi vùng cho vay/Vùng khó khăn" };
+        
+        public static ValueConstModel EventCode_Transfer_Sub_Commune = new ValueConstModel { Value = 4, Code = "TRANSFER_SUB_COMMUNE", Description = "Điều chuyển Thôn/Ấp" };
+
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                1 => EventCode_AddNew_Locality,
+                2 => EventCode_Change_Name,
+                3 => EventCode_Change_Econ_Zone,
+                4 => EventCode_Transfer_Sub_Commune,
+                _ => null
+            };
+        }
+
+        public static List<ValueConstModel> GetAll()
+        {
+            return new List<ValueConstModel>
+            {
+                EventCode_AddNew_Locality,
+                EventCode_Change_Name,
+                EventCode_Change_Econ_Zone,
+                EventCode_Transfer_Sub_Commune
+            };
+        }
+    }
+
+
 
 }

@@ -1620,6 +1620,82 @@ namespace VBSPOSS.Controllers
             return Json(dataRoleToTransferCash);
         }
 
+        /// <summary>
+        /// Hàm lấy danh sách Entity người dùng trên Intellect iDC cho ra danh sách ComboBox
+        /// </summary>
+        /// <param name="pPosCode">Mã POS của người dùng đang sử dụng phần mềm. Ex: UserPosCode</param>
+        /// <param name="pStatus">Trạng thái bản ghi (Nếu truyền -1 sẽ lấy tất)</param>
+        /// <param name="pShortName">1 - Hiển thị tên viết tắt; 0 - Hiển thị tên đầy đủ</param>
+        /// <param name="pTitleChoice">Tiêu đề của ComboBox chọn</param>
+        /// <param name="pFlagShow">Cách hiển thị trên Combobox khi chọn. Quy ước:
+        ///             1 - Hiển thị [Tên quyền người dùng hoặc Tên viết tắt quyền người dùng]
+        ///             2 - Hiển thị [Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng]
+        ///             3 - Hiển thị [Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng - Áp dụng cho PGD/Chi nhánh/TTCNTT/TTĐT/HSC]
+        /// </param>
+        /// <returns></returns>
+        public JsonResult GetListEntityOfUserIDC(string pPosCode, int pStatus = 1, string pShortName = "1", string pTitleChoice = "", string pFlagShow = "1")
+        {
+            string sTitleChoice = "", sName = "", sShortName = "", sCodeApply = "", sNameApply = "";
+            if (string.IsNullOrEmpty(pPosCode))
+                pPosCode = UserPosCode;
+            sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "--- Nhóm quyền người dùng ---" : pTitleChoice;
+            sCodeApply = _serviceLOV.GetCodeApplyByPosCode(pPosCode, UserGrade);
+            if (sCodeApply == CodeOfLovUsed.CodeOfLovUsed_TrainingFacility)
+                sCodeApply = CodeOfLovUsed.CodeOfLovUsed_District;//Nếu là Cơ sở đào tạo thì cho quyền như PGD
+
+            ArrayList data = new ArrayList();
+            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdConfigIntellectIDC, "", 0, "", "", pStatus, 2);
+            var listRoleOfUserIDC = listRoleOfUserIDCTmp;
+            //if(sCodeApply != "1")
+            //    listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
+            if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
+                data.Add(new { id = "", value = sTitleChoice });
+            if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)
+            {
+                foreach (ListOfValueViewModel item in listRoleOfUserIDC)
+                {
+                    sName = item.Name.Trim();
+                    sShortName = item.ShortName.Trim();
+                    if (item.CodeOfLovUsed.Trim().Contains("HSC"))
+                        sNameApply = "HSC";
+                    else if (item.CodeOfLovUsed.Trim().Contains("TTCNTT"))
+                        sNameApply = "TTCNTT";
+                    else if (item.CodeOfLovUsed.Trim().Contains("TTDT"))
+                        sNameApply = "TTĐT";
+                    else if (item.CodeOfLovUsed.Trim().Contains("SGD"))
+                        sNameApply = "SGD";
+                    else if (item.CodeOfLovUsed.Trim().Contains("CN"))
+                        sNameApply = "Chi nhánh";
+                    else if (item.CodeOfLovUsed.Trim().Contains("PGD"))
+                        sNameApply = "PGD hoặc CSĐT";
+                    else sNameApply = "";
+
+                    if (pFlagShow == "1") //Hiển thị: Tên quyền người dùng hoặc Tên viết tắt quyền người dùn
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Notes, value = sShortName });
+                        else
+                            data.Add(new { id = item.Notes, value = sName });
+                    }
+                    else if (pFlagShow == "2") //Hiển thị: Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Notes, value = $"{item.Notes} - {sShortName}" });
+                        else
+                            data.Add(new { id = item.Notes, value = $"{item.Notes} - {sName}" });
+                    }
+                    else if (pFlagShow == "3") //Hiển thị: Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng - Áp dụng cho PGD/Chi nhánh/TTCNTT/TTĐT/HSC
+                    {
+                        if (pShortName == "1")
+                            data.Add(new { id = item.Notes, value = $"{item.Notes} - {sShortName} - Áp dụng với:  {sNameApply}" });
+                        else
+                            data.Add(new { id = item.Notes, value = $"{item.Notes} - {sName} - Áp dụng với: {sNameApply}" });
+                    }
+                }
+            }
+            return Json(data);
+        }
+
 
 
     }

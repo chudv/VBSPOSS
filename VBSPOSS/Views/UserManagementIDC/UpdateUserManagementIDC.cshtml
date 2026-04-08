@@ -70,17 +70,34 @@
         return {
             pPosCode: $("#PosCode").val(),
             pTitleChoice: "",
+            pFlagShow: "3"
+        };
+    }
+
+    function paramLoadListEntityOfUserIDC() {
+        return {
+            pPosCode: $("#PosCode").val(),
+            pTitleChoice: "",
             pFlagShow: "2"
         };
     }
 
     function Change_PosCode() {
-
-        if (isEditMode) return;
-
         var staffIdReload = $("#StaffId").data("kendoComboBox");
         if (staffIdReload != null) {
             staffIdReload.dataSource.read();
+        }
+
+        var comboGroup = $("#GroupName").data("kendoComboBox");
+        if (comboGroup) {
+            comboGroup.value("");
+            comboGroup.dataSource.read();
+            comboGroup.one("dataBound", function () {
+                if (this.dataSource.data().length > 0) {
+                    this.select(0);
+                    Change_RoleOfUserIDC();
+                }
+            });
         }
     }
 
@@ -107,6 +124,7 @@
                             } else {
                                 comboAuth.value("0");
                             }
+                            comboAuth.enable(false);
                         }
                     }
                 }
@@ -357,13 +375,13 @@
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Mã cán bộ</label>
                 @Html.Kendo().TextBoxFor(m => m.StaffCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 60px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Ngày sinh</label>
-                @Html.TextBoxFor(m => m.DateOfBirth, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                @Html.Kendo().DatePickerFor(m => m.DateOfBirth).Format("dd/MM/yyyy").HtmlAttributes(new { @readonly = "readonly", style = "width: 95px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:80px;padding-top: 7px;padding-right: 10px!important;">Giới tính</label>
                 @Html.Kendo().TextBox().Name("Genders").HtmlAttributes(new { @readonly = "readonly", style = " width: 60px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Điện thoại</label>
                 @Html.Kendo().TextBoxFor(m => m.MobileNumber).HtmlAttributes(new { @readonly = "readonly", style = " width: 85px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 10px!important;">Email</label>
-                @Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { @readonly = "readonly", style = " width: 240px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
         <div class="row" style="padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
@@ -385,16 +403,26 @@
         <div class="row" style="margin-bottom: 15px; padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Tài khoản đăng nhập IDC</label>
-                @Html.Kendo().TextBoxFor(m=>m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 50px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                @Html.Kendo().TextBoxFor(m=>m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Họ đệm </label>
-                @Html.Kendo().TextBoxFor(m => m.FirstName).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                @Html.Kendo().TextBoxFor(m => m.FirstName).HtmlAttributes(new { @readonly = "readonly", style = " width: 90px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Tên đệm </label>
-                @Html.Kendo().TextBoxFor(m => m.LastName).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                @Html.Kendo().TextBoxFor(m => m.LastName).HtmlAttributes(new { @readonly = "readonly", style = " width: 50px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Mã quản lý</label>
-                @Html.Kendo().TextBoxFor(m => m.EntityList).HtmlAttributes(new { @readonly = "readonly", style = " width: 60px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:180px;padding-top: 7px;padding-right: 10px;">Thiết lập trạng thái thời gian</label>
+                @(Html.Kendo().ComboBoxFor(m => m.EntityList)
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Nhóm mã quản lý ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .ClearButton(false)
+                                .DataSource(source => { source.Read(read => { read.Action("GetListEntityOfUserIDC", "ListOfValue").Data("paramLoadListEntityOfUserIDC"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .Suggest(true)
+                                .AutoBind(true)
+                                .SelectedIndex(0))
+@*                 <label class="lbcontrol" style="color: navy;text-align:right;width:180px;padding-top: 7px;padding-right: 10px;">Thiết lập trạng thái thời gian</label>
                 @(Html.Kendo().CheckBoxFor(m => m.RestrictionFlagCheck).Label(" ").HtmlAttributes(new { style = "margin-top:7px;" }))
-            </div>
+ *@            </div>
         </div>
         
         <div class="row" style="margin-bottom: 15px; padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
@@ -407,13 +435,13 @@
                                 .DataValueField("id")
                                 .ClearButton(false)
                                 .DataSource(source => { source.Read(read => { read.Action("GetListRoleOfUserIDC", "ListOfValue").Data("paramLoadListRoleOfUserIDC"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 350px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .HtmlAttributes(new { style = "width: 370px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                                 .Events(e => e.Change("Change_RoleOfUserIDC"))
                                 .Suggest(true)
                                 .AutoBind(true)
                                 .SelectedIndex(0))            
                 <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt</label>
-                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })            
+                @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 280px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })            
             </div>
         </div>
 
@@ -455,7 +483,7 @@
         <div class="row" style="margin-bottom: 15px;padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left;padding-top:3px;">Ngày bắt đầu</label>
-                @Html.Kendo().DatePickerFor(m => m.StartDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 150px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                @Html.Kendo().DatePickerFor(m => m.StartDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 150px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px;">Ngày hết hiệu lực</label>
                 @Html.Kendo().DatePickerFor(m => m.ExpiryDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 150px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
                 <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:7px;padding-top:3px; ">Trạng thái</label>
@@ -588,15 +616,10 @@
     }
 
     $(document).ready(function () {
-        Change_RoleOfUserIDC();
-        LoadStaffInfoDetail();
-        // var lcFlagCallView = $("#FlagCallView").val();
-        // if (lcFlagCallView == "2") {
-        //     isEditMode = true;
-        //     setTimeout(function() {
-        //         setEditMode();
-        //     }, 300);
-        // }
+            setTimeout(function () {
+            Change_RoleOfUserIDC();
+            LoadStaffInfoDetail();
+        }, 300); // delay nhẹ để đảm bảo Kendo init xong
     });
 
 </script>

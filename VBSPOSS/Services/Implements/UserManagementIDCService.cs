@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.RulesetToEditorconfig;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
 using System.Linq;
@@ -25,16 +26,17 @@ namespace VBSPOSS.Services.Implements
 {
     public class UserManagementIDCService: IUserManagementIDCService
     {
-
+        private readonly IntellectIDCDbContext _dbContextIDC;
         private readonly ApplicationDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly ILogger<UserManagementIDCService> _logger;
         private readonly IListOfValueService _serviceLOV;
-        public UserManagementIDCService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
+        public UserManagementIDCService(ApplicationDbContext context, IntellectIDCDbContext dbContextIDC, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
                         ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
+            _dbContextIDC = dbContextIDC;
             _mapper = mapper;
             _apiInternalEsbService = apiInternalEsbService;
             _logger = logger;
@@ -173,8 +175,8 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.UserId = pUserIDCMasterUpd.UserId;
                             objUserIDCMasterUpdNew.NickName = pUserIDCMasterUpd.NickName;
                             objUserIDCMasterUpdNew.FirstName =  pUserIDCMasterUpd.FirstName;
-                            objUserIDCMasterUpdNew.FirstName =  pUserIDCMasterUpd.LastName;
-                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FirstName + pUserIDCMasterUpd.LastName;
+                            objUserIDCMasterUpdNew.LastName =  pUserIDCMasterUpd.LastName;
+                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FirstName +" " + pUserIDCMasterUpd.LastName;
                             //if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.FullName))
                             //{
                             //    var partName= pUserIDCMasterUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -212,19 +214,12 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.SubType = pUserIDCMasterUpd.SubType;
 
                             _dbContext.UserIDCMasters.Add(objUserIDCMasterUpdNew);
-                            //Thêm mới ở bảng UserManagementIDC
-                            UserManagementIDCViewModel objUserManagementIDC = new UserManagementIDCViewModel();
-                            objUserManagementIDC = _mapper.Map<UserManagementIDCViewModel>(objUserIDCMasterUpdNew);
-                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall,"");
-                            if (pSaveUserManagementIDC > 0)
+                            int iSaveChanges = _dbContext.SaveChanges();
+                            if (iSaveChanges > 0)
                             {
-                                int iSaveChanges = _dbContext.SaveChanges();
-                                if (iSaveChanges > 0)
-                                {
-                                    iCountUpdate++;
-                                    iRetIdUpd = objUserIDCMasterUpdNew.Id;
-                                }
-                            }    
+                                iCountUpdate++;
+                                iRetIdUpd = objUserIDCMasterUpdNew.Id;
+                            }  
                         }
                         #endregion
                     }
@@ -435,7 +430,7 @@ namespace VBSPOSS.Services.Implements
                             objAddUser.MobileNumber = objUserManagementIDCsUpdNew.MobileNumber;
                             objAddUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString("yyyy-MM-dd");
                             objAddUser.GroupName = objUserManagementIDCsUpdNew.GroupName;
-                            objAddUser.EntityList = "IDCPROUAT";
+                            objAddUser.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='EntityList' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");//"IDCPROUAT";
                             objAddUser.AuthType = Int32.Parse(objUserManagementIDCsUpdNew.AuthType);
                             objAddUser.UserType = Int32.Parse(objUserManagementIDCsUpdNew.UserType);
                             objAddUser.MailIdFlag = Int32.Parse(objUserManagementIDCsUpdNew.MailIdFlag);
@@ -443,8 +438,8 @@ namespace VBSPOSS.Services.Implements
                             objAddUser.IpSet = objUserManagementIDCsUpdNew.IpSetCode;
                             objAddUser.AuthsecType = objUserManagementIDCsUpdNew.AuthsecType;
                             objAddUser.SubType = objUserManagementIDCsUpdNew.SubType;
-                            //objAddUser.StartDate = objUserManagementIDCsUpdNew.StartDate?.ToString("yyyy-MM-dd");
-                            //objAddUser.RestrictSameTimeForAllDay = objUserManagementIDCsUpdNew.RestrictionFlag.ToString();
+                            objAddUser.StartDate = (objUserManagementIDCsUpdNew.StartDate == null)?DateTime.Now.ToString("yyyyMMdd"):objUserManagementIDCsUpdNew.StartDate?.ToString("yyyyMMdd");
+                            objAddUser.RestrictSameTimeForAllDay =  null;
                             objAddUser.AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest
                             {
                                 BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0'),
@@ -456,7 +451,7 @@ namespace VBSPOSS.Services.Implements
                             iCreateUserIDC++;
                             if (objCreateUserIDCByApi != null && objCreateUserIDCByApi.Status && objCreateUserIDCByApi.ResponseCode == "0")
                             {      
-                                objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptTW);
+                                objUserManagementIDCsUpdNew.Status = ConfigStatus.AUTHORIZED.Value;
                                 objUserManagementIDCsUpdNew.StatusUpdateCore = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.SessionValReq = true;
                                 objUserManagementIDCsUpdNew.PrevStatus =objCreateUserIDCByApi.PrevStatus;
@@ -1313,7 +1308,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode)
+        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType)
         {
             try
             {
@@ -1327,6 +1322,7 @@ namespace VBSPOSS.Services.Implements
                 var listUserIDCManagementTemp = _dbContext.UserManagementIDCs.Where(w => w.Id == pId || (pId == 0
                         && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                        && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserManagementIDC c)
                         {
@@ -1615,5 +1611,46 @@ namespace VBSPOSS.Services.Implements
             }
             return objResultPendingTrans;
         }
+
+
+
+        /// <summary>
+        /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
+        /// Ex: SELECT VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('44573', '03-SEP-2025') FROM DUAL
+        /// </summary>
+        /// <param name="pUserId">Tài khoản người dùng trên iDC</param>
+        /// <param name="pReportDate">Ngày kiểm tra định dạng dd-MON-yyyy</param>
+        /// <returns>Kết quả trả về:
+        ///                 0 - Chưa mở sổ tiền mặt đầu ngày;
+        ///                 1 - Đã mở chưa đóng;
+        ///                 2 - Đã mở và đóng nhưng còn tồn quỹ tiền mặt chưa chuyển về quỹ chính
+        ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
+        /// </returns>
+        public int CheckOpenCashByUserId(string pUserId, string pReportDate)
+        {
+            int iResultValue = 0;
+            string sReportDate = "";
+            if (string.IsNullOrEmpty(pReportDate))
+                sReportDate = DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA);
+            else sReportDate = pReportDate;
+
+            try
+            {
+                string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{pReportDate}')) Code From Dual ";
+                var iValueRet = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
+                if (iValueRet != null)
+                {
+                    iResultValue = Convert.ToInt32(iValueRet.ToString());
+                }
+                return iResultValue;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+
     }
 }

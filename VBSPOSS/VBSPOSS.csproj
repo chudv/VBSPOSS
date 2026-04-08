@@ -331,7 +331,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\IntellectIDC\Models\" />
     <Folder Include="Views\FileManagement\" />
   </ItemGroup>
 
