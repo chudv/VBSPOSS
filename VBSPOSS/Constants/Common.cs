@@ -806,6 +806,9 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_EDIT = new ValueConstModel { Value = 10, Code = "EDIT", Description = "Chỉnh sửa thông tin người dùng IDC" };
 
+        public static ValueConstModel FunctionTypeFlag_DELETE_USER = new ValueConstModel { Value = 11, Code = "DELETE_USER", Description = "Xóa người dùng IDC" };
+
+
         public static ValueConstModel GetByValue(int value)
         {
             return value switch

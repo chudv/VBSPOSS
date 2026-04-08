@@ -151,13 +151,18 @@
     }
 
     function paramLoadGridDataApproval() {
+        var lcStatus = $("#StatusApproval_Find").val();
+        var lcButtonType = $("#ButtonTypeView").val();
+        if (lcButtonType == "9") {
+            lcStatus = 2;
+        }
         return {
             pPosCode: $("#MainPosCode_Find").val(),
             pFromEffectiveDate: "",
             pToEffectiveDate: "",
             pFunctionType: $("#FunctionTypeApproval_Find").val(),
             // pFullName: $("#StaffName_Find").val(),
-            pStatus: $("#StatusApproval_Find").val()
+            pStatus: lcStatus
         };
     }
 
@@ -466,7 +471,6 @@
         console.log("Danh sách hiện tại:", listApprovalData);
         // lưu vào hidden để submit sau
         $("#hiddenApprovalData").val(JSON.stringify(listApprovalData));
-
     }
 </script>
 
@@ -653,7 +657,7 @@
     
         <!-- BÊN PHẢI -->
         <div class="col-md-6 text-right">
-            @(Html.Kendo().Button().Name("btnApprovalAll").HtmlAttributes(new {type = "button",style = "font-weight:bold; width:110px; color: blue; height: 25px;",title = "Trình duyệt cấu hình lãi suất"}).ImageUrl(Url.Content("~/images/note_add.png")).Content("Trình duyệt"))
+            @(Html.Kendo().Button().Name("btnApprovalAll").HtmlAttributes(new {type = "button",style = "font-weight:bold; width:110px; color: blue; height: 25px;",title = "Trình duyệt/Phê duyệt người dùng IDC"}).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu lại"))
         </div>
     </div>
 
@@ -695,12 +699,13 @@
 
     $(document).ready(function () {
         $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC ĐỀ NGHỊ THAY ĐỔI</label>");
-        // Click nút "Chọn file"
+        var lcButtonType = $("#ButtonTypeView").val();
+        if (lcButtonType == "9") {
+            $("#btnPrintToTrinh").hide();
+        }
         $("#btnChooseFile").click(function () {
             $("#fileUpload").click();
         });
-
-        // Khi chọn file
         $("#fileUpload").on("change", function () {
             if (this.files && this.files.length > 0) {
                 $("#fileName").text(this.files[0].name);
@@ -709,19 +714,17 @@
                 resetFile();
             }
         });
-
         // Click nút xóa
         $("#btnRemoveFile").click(function () {
             resetFile();
         });
-
         function resetFile() {
             $("#fileUpload").val("");   // xóa file
             $("#fileName").text("Chưa chọn file");
             $("#btnRemoveFile").hide();
         }
 
-            $("#fileUpload").on("change", function () {
+        $("#fileUpload").on("change", function () {
             if (!this.files || this.files.length === 0) return;
 
             var file = this.files[0];
@@ -732,10 +735,11 @@
                 resetFile();
                 return;
             }
-
             $("#fileName").text(file.name);
             $("#btnRemoveFile").show();
         });
+
+
     });
 
     $("#btnApprovalAll").click(function () {
@@ -743,13 +747,46 @@
             alert("Chưa có dữ liệu!");
             return;
         }
+        // Check file đính kèm
+        var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+        var requireFileTypes = ["ADDNEW_USER", "DELETE_USER", "CHANGE_POS"];
+        if (requireFileTypes.includes(functionType)) {
+            var fileInput = $("#fileUpload")[0];
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Nghiệp vụ này yêu cầu phải đính kèm file PDF!");
+                return;
+            }
+            //check PDF
+            var fileName = fileInput.files[0].name.toLowerCase();
+            if (!fileName.endsWith(".pdf")) {
+                alert("File phải là định dạng PDF!");
+                return;
+            }
+        }
         $.ajax({
             url: "/UserManagementIDC/SaveUpdateApproval",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify(listApprovalData),
             success: function (res) {
-                alert("Lưu thành công!");
+                if (res === "0") {
+                    alert("Lưu thành công!");
+                    dataChange = false;
+                // } else if (res === "1") {
+                //     alert("Phòng giao dịch/Hội sở tỉnh không được để trống!");
+                // } else if (res === "2") {
+                //     alert("Cán bộ được phân giao người đại diện không được để trống!");
+                // } else if (res === "3") {
+                //     alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
+                // } else if (res === "4") {
+                //     alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+                } else {
+                    alert("Có lỗi xảy ra!");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
             }
         });
     });
