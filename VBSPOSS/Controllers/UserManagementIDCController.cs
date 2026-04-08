@@ -295,6 +295,68 @@ namespace VBSPOSS.Controllers
         }
 
         /// <summary>
+        /// Hàm thực hiện lưu trình duyệt/phê duyệt người dùng IDC
+        /// </summary>
+        [AcceptVerbs("Post")]
+        public async Task<IActionResult> SaveUpdateApproval([DataSourceRequest] DataSourceRequest request, [FromBody] List<UserManagementIDCViewModel> listData, string pFlagCall)
+        {
+            try
+            {
+                string result = "0";
+                //result = IsValidPosRepresentative(objUserIDC).ToString();
+                if (result == "0" && listData != null && listData.Any())
+                {
+                    foreach (var objUserIDC in listData)
+                    {
+                        if (!TryValidateModel(objUserIDC)) continue;
+                
+                        foreach (var prop in objUserIDC.GetType().GetProperties())
+                        {
+                            var type = prop.PropertyType;
+                
+                            if (type == typeof(string))
+                            {
+                                var val = prop.GetValue(objUserIDC) as string;
+                                prop.SetValue(objUserIDC, val ?? "");
+                            }
+                            else if (type == typeof(DateTime))
+                            {
+                                var val = (DateTime)prop.GetValue(objUserIDC);
+                                if (val == DateTime.MinValue)
+                                    prop.SetValue(objUserIDC, DateTime.Now);
+                            }
+                            else if (type == typeof(int))
+                            {
+                                var val = (int)prop.GetValue(objUserIDC);
+                                if (val == 0)
+                                    prop.SetValue(objUserIDC, 1);
+                            }
+                            else if (type == typeof(long))
+                            {
+                                var val = (long)prop.GetValue(objUserIDC);
+                                if (val == 0)
+                                    prop.SetValue(objUserIDC, 0);
+                            }
+                        }
+                        string pButtonType = objUserIDC.Status.ToString();
+                        long iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
+                        if (iVal <= 0)
+                        {
+                            result = "99";
+                            break;
+                        }
+                    }
+                }
+                return new JsonResult(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"{System.Reflection.MethodBase.GetCurrentMethod()} Error: {ex.Message}");
+                return new JsonResult("99");
+            }
+        }
+
+        /// <summary>
         /// Hàm lấy danh sách lên lưới dữ liệu Danh sách trình duyệt người dùng IDC theo Pos
         /// </summary>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
@@ -328,7 +390,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
         /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult ShowApprovalUserIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName)
+        public ActionResult ShowApprovalUserIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName, string pButtonType)
         {
             UserManagementIDCViewModel objPosUserIDCManagement = new UserManagementIDCViewModel();
             
@@ -341,6 +403,7 @@ namespace VBSPOSS.Controllers
             sNameView = (pFlagCall == "1")?"ApproveUserManagementIDC":"ApproveUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
+            TempData["ButtonType"] = pButtonType;
             objPosUserIDCManagement.PosCode = pPosCode;
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return PartialView(sNameView, objPosUserIDCManagement);

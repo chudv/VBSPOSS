@@ -302,7 +302,62 @@
             title: "Trình duyệt thay đổi thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowApprovalUserIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.MaDonVi, pUserId: "", pFlagCall: "2" }
+                data: { pPosCode: dataItem.MaDonVi, pUserId: "", pFlagCall: "2", pButtonType : "8" }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onClose,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    }
+
+    function submitForAuthorize(e) {
+        e.preventDefault();
+        var userPosCode = $("#UserPosCodeView").val();
+        if (userPosCode !== "000196" && userPosCode !== "000100") {
+            alert("Bạn không có quyền phê duyệt!");
+            return;
+        }
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var grid = $("#gridMainTidePanelRate").data("kendoGrid");
+        // Kiểm tra trạng thái trước khi trình duyệt
+        // var deletedStatuses = [0, 2, 3, 4];
+        // if (deletedStatuses.includes(dataItem.Status)) {
+        //     if (dataItem.Status == 0) {
+        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+        //     }
+        //     else if (dataItem.Status == 2) {
+        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
+        //     }
+        //     else if (dataItem.Status == 3) {
+        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+        //     }
+        //     else if (dataItem.Status == 4) {
+        //         alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+        //     }
+        //     return;
+        // }
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        mainWindow.kendoWindow({
+            width: "1050px",
+            height: "750px",
+            title: "Phê duyệt thay đổi thông tin người dùng IDC",
+            content: {
+                url: '@Url.Action("ShowApprovalUserIDC", "UserManagementIDC")',
+                data: { pPosCode: dataItem.MaDonVi, pUserId: "", pFlagCall: "2", pButtonType : "9" }
             },
             resizable: false,
             visible: false,
@@ -412,19 +467,19 @@
                         {
                             columns.Command(command =>
                             {
-                                command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("submitForApproval").HtmlAttributes(new
-                                {
-                                    @class = "btn-view-edit",
-                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                                    title = "Trình duyệt thông tin người dùng IDC"
-                                });
-                                command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailApprove").HtmlAttributes(new
+                                command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApproval").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                                    title = "Xem chi tiết",
-                                    @class = "btn-view"
+                                    title = "Trình duyệt người dùng IDC",
+                                    @class = "btn-approval"
                                 });
-                            }).Width(120).Title("Phê duyệt").HtmlAttributes(new { style = "text-align: center;" });
+                                command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorize").HtmlAttributes(new
+                                {
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                                    title = "Phê duyệt người dùng IDC",
+                                    @class = "btn-auth"
+                                });
+                            }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.STT).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.TenChiNhanh).Title("Đơn vị").Width(200).HtmlAttributes(new { style = "text-align: center;" });
@@ -503,7 +558,8 @@
     }
 
     $(document).ready(function () {
-        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC</label>");
+        $("#lbl_space").remove();
+        $("#gridMainIDC .k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC</label>");
 
     });
 </script>

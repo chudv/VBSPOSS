@@ -112,6 +112,17 @@
         border: none;
     }
 
+    input[type=file] {
+        display: block;
+        padding-top: 2px;
+        padding-left: 0px;
+    }
+
+    ._blue_link {
+        font-weight: bold;
+        color: blue;
+    }
+
 </style>
 <script>
     var mainWindowApproval = $("#myPopupApproval");
@@ -161,25 +172,28 @@
         refreshGridIDCApproval();
     }
 
-    function onRowBoundIDCApproval(e) {
-        var rows = e.sender.tbody.children();
-        var isRed = true;
-        for (var j = 0; j < rows.length; j++) {
-            var row = $(rows[j]);
-            var dataItem = e.sender.dataItem(row);
-            var trangthaiRow = dataItem.get("Status");
-            if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0)
-            {
-                row.css("background-color", "white");
-                row.find("td").css("color", "red");
+        function onRowBoundIDCApproval(e) {
+            var rows = e.sender.tbody.children();
+            for (var j = 0; j < rows.length; j++) {
+                var row = $(rows[j]);
+                var dataItem = e.sender.dataItem(row);
+                var trangthaiRow = dataItem.get("Status");
+                if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0) {
+                    row.css("background-color", "white");
+                    row.find("td").css("color", "red");
+                }
+
+                var lcButtonType = $("#ButtonTypeView").val();
+                if (lcButtonType == "8") {
+                    row.find(".btn-auth").hide();
+                    row.find(".btn-approval").show();
+                }
+                else if (lcButtonType == "9") {
+                    row.find(".btn-approval").hide(); 
+                    row.find(".btn-auth").show();
+                }
             }
         }
-
-        var userPosCode = $("#UserPosCodeView").val();
-        if (userPosCode !== '000100' && userPosCode !== '000196') {
-            $("#gridMainIDCApproval").find(".btn-auth").hide();
-        }
-    }
 
     var dataChange = false;
     function onCloseApprove() {
@@ -353,7 +367,7 @@
         mainWindowApproval.kendoWindow({
             width: "1000px",
             height: "550px",
-            title: "Trình duyệt thông tin người dùng IDC",
+            title: "Phê duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
                 data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "", pButtonType: "9" }
@@ -405,12 +419,62 @@
         mainWindowApproval.data("kendoWindow").center().open();
 
     }
+
+    function showAttachedFile(pDocumentId, pFileId, pFileNameNew) {
+        var now = new Date();
+        var win = window.open('../IntRateConfig/LoadPdfAttachedFile?pDocumentId=' + pDocumentId + '&' + 'pFileId=' + pFileId + '&' + 'pFileName=' + pFileNameNew + '&t=' + now.getTime(), '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            alert('Please allow popups for this website');
+        }
+    }
+
+    function add_download_link() {
+        var lcDocumentId = $("#DocumentId").val();
+        var lcFileType = "1";
+        if (lcDocumentId != 0) {
+            $.ajax({
+                type: "GET",
+                url: "../ListOfValue/GetListAttachedFileInfo_ForDocumentId?pDocumentId=" + lcDocumentId + '&' + 'pFileType=' + lcFileType,
+                success: function (data) {
+                    files = data;
+                    if (files != null) {
+                        $("#_no_file_attach_id").text("");
+                        for (i = 0; i < files.length; i++) {
+                            var thutu = i + 1;
+                            html = '<a title="' + files[i].Description + '" href="#" onclick=showAttachedFile(' + lcDocumentId + ',' + files[i].FileId + ',"' + files[i].FileNameNew + '")' + '>' + ' [' + thutu + '] ' + "</a>&nbsp;";
+                            $("#_no_file_attach_id").append(html);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    var listApprovalData = []; // danh sách tổng
+    function receiveDataFromChild(data) {
+        //Tránh trùng theo Id
+        var index = listApprovalData.findIndex(x => x.Id === data.Id);
+        if (index !== -1) {
+            // nếu đã tồn tại thì update
+            listApprovalData[index] = data;
+        } else {
+            // nếu chưa có thì thêm mới
+            listApprovalData.push(data);
+        }
+        console.log("Danh sách hiện tại:", listApprovalData);
+        // lưu vào hidden để submit sau
+        $("#hiddenApprovalData").val(JSON.stringify(listApprovalData));
+
+    }
 </script>
 
 
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
-@Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+@Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+<input type="hidden" id="hiddenApprovalData" name="ApprovalData" />
 <hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
@@ -437,7 +501,7 @@
                         .DataValueField("Code")
                         .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
                         .Placeholder("Chọn nghiệp vụ yêu cầu")
-                        .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                        .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                         .Filter("contains")
                         .SelectedIndex(0))
 @*             <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
@@ -445,7 +509,7 @@
                         .Placeholder("Nhập tên hoặc mã cán bộ")
                         .HtmlAttributes(new { style = "width: 250px;padding-left: 3px;padding-right: 2px;" }))
  *@
-            <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
+            <label class="lbcontrol" style="width: 90px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("StatusApproval_Find")
                         .DataTextField("Text")
                         .DataValueField("Value")
@@ -486,7 +550,7 @@
                                     title = "Phê duyệt người dùng IDC",
                                     @class = "btn-auth"
                                 });
-                            }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                            }).Width(90).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Command(command =>
                             {
@@ -496,7 +560,7 @@
                                     title = "Xem chi tiết",
                                     @class = "btn-view"
                                 });
-                            }).Width(50).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
+                            }).Width(45).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
@@ -506,7 +570,7 @@
                             columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
 @*                             columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
- *@                            columns.Bound(c => c.StatusText).Title("Trạng thái").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+ *@                            columns.Bound(c => c.StatusText).Title("Trạng thái").Width(70).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.Id).Hidden();
                             columns.Bound(c => c.PosCode).Hidden();
                             columns.Bound(c => c.StaffId).Hidden(); ;
@@ -537,9 +601,10 @@
                             columns.Bound(c => c.ExpiryDate).Hidden();
 
                         })
-                        .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
+                        .HtmlAttributes(new { style = "height: 400px;color: navy; border: 1px solid #ddd;" })
                         .ToolBar(toolbar =>
                         {
+                            toolbar.Custom().Text("In tờ trình").HtmlAttributes(new {id = "btnPrintToTrinh",style = "height: 25px;width: 120px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;",title = "In tờ trình"});
                             toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
                         })
                         .Excel(excel => excel.FileName("Danh sach nguoi dung IDC.xlsx").AllPages(true))
@@ -562,6 +627,35 @@
         </div>
     </div>
 
+    <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="row" style="padding-top: 5px;">
+        <!-- BÊN TRÁI -->
+        <div class="col-md-6 d-flex align-items-center">
+            <!-- input file ẩn -->
+            <input type="file" id="fileUpload" name="fileUpload" hidden accept="application/pdf" />
+    
+            <!-- nút chọn file -->
+            <button type="button" class="btn btn-primary" id="btnChooseFile">
+                Chọn file
+            </button>
+    
+            <!-- tên file -->
+            <span id="fileName" style="margin-left:10px; font-style: italic;">
+                Chưa chọn file
+            </span>
+    
+            <!-- nút xóa -->
+            <button type="button" class="btn btn-danger btn-sm"
+                    id="btnRemoveFile" style="display:none; margin-left:10px;">
+                ✖
+            </button>
+        </div>
+    
+        <!-- BÊN PHẢI -->
+        <div class="col-md-6 text-right">
+            @(Html.Kendo().Button().Name("btnApprovalAll").HtmlAttributes(new {type = "button",style = "font-weight:bold; width:110px; color: blue; height: 25px;",title = "Trình duyệt cấu hình lãi suất"}).ImageUrl(Url.Content("~/images/note_add.png")).Content("Trình duyệt"))
+        </div>
+    </div>
 
 </div>
 
@@ -600,7 +694,63 @@
     }
 
     $(document).ready(function () {
-        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC</label>");
+        $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC ĐỀ NGHỊ THAY ĐỔI</label>");
+        // Click nút "Chọn file"
+        $("#btnChooseFile").click(function () {
+            $("#fileUpload").click();
+        });
 
+        // Khi chọn file
+        $("#fileUpload").on("change", function () {
+            if (this.files && this.files.length > 0) {
+                $("#fileName").text(this.files[0].name);
+                $("#btnRemoveFile").show();
+            } else {
+                resetFile();
+            }
+        });
+
+        // Click nút xóa
+        $("#btnRemoveFile").click(function () {
+            resetFile();
+        });
+
+        function resetFile() {
+            $("#fileUpload").val("");   // xóa file
+            $("#fileName").text("Chưa chọn file");
+            $("#btnRemoveFile").hide();
+        }
+
+            $("#fileUpload").on("change", function () {
+            if (!this.files || this.files.length === 0) return;
+
+            var file = this.files[0];
+            var fileName = file.name.toLowerCase();
+
+            if (!fileName.endsWith(".pdf")) {
+                alert("Chỉ cho phép upload file PDF");
+                resetFile();
+                return;
+            }
+
+            $("#fileName").text(file.name);
+            $("#btnRemoveFile").show();
+        });
+    });
+
+    $("#btnApprovalAll").click(function () {
+        if (listApprovalData.length === 0) {
+            alert("Chưa có dữ liệu!");
+            return;
+        }
+        $.ajax({
+            url: "/UserManagementIDC/SaveUpdateApproval",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(listApprovalData),
+            success: function (res) {
+                alert("Lưu thành công!");
+            }
+        });
     });
 </script>
