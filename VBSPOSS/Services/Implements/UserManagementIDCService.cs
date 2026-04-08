@@ -173,8 +173,8 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.UserId = pUserIDCMasterUpd.UserId;
                             objUserIDCMasterUpdNew.NickName = pUserIDCMasterUpd.NickName;
                             objUserIDCMasterUpdNew.FirstName =  pUserIDCMasterUpd.FirstName;
-                            objUserIDCMasterUpdNew.FirstName =  pUserIDCMasterUpd.LastName;
-                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FirstName + pUserIDCMasterUpd.LastName;
+                            objUserIDCMasterUpdNew.LastName =  pUserIDCMasterUpd.LastName;
+                            objUserIDCMasterUpdNew.FullName = pUserIDCMasterUpd.FirstName +" " + pUserIDCMasterUpd.LastName;
                             //if (!string.IsNullOrWhiteSpace(pUserIDCMasterUpd.FullName))
                             //{
                             //    var partName= pUserIDCMasterUpd.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -212,19 +212,12 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.SubType = pUserIDCMasterUpd.SubType;
 
                             _dbContext.UserIDCMasters.Add(objUserIDCMasterUpdNew);
-                            //Thêm mới ở bảng UserManagementIDC
-                            UserManagementIDCViewModel objUserManagementIDC = new UserManagementIDCViewModel();
-                            objUserManagementIDC = _mapper.Map<UserManagementIDCViewModel>(objUserIDCMasterUpdNew);
-                            var pSaveUserManagementIDC = await SaveUserManagementIDC(objUserManagementIDC,pUserNameUpd,pFlagCall,"");
-                            if (pSaveUserManagementIDC > 0)
+                            int iSaveChanges = _dbContext.SaveChanges();
+                            if (iSaveChanges > 0)
                             {
-                                int iSaveChanges = _dbContext.SaveChanges();
-                                if (iSaveChanges > 0)
-                                {
-                                    iCountUpdate++;
-                                    iRetIdUpd = objUserIDCMasterUpdNew.Id;
-                                }
-                            }    
+                                iCountUpdate++;
+                                iRetIdUpd = objUserIDCMasterUpdNew.Id;
+                            }  
                         }
                         #endregion
                     }
@@ -443,8 +436,8 @@ namespace VBSPOSS.Services.Implements
                             objAddUser.IpSet = objUserManagementIDCsUpdNew.IpSetCode;
                             objAddUser.AuthsecType = objUserManagementIDCsUpdNew.AuthsecType;
                             objAddUser.SubType = objUserManagementIDCsUpdNew.SubType;
-                            //objAddUser.StartDate = objUserManagementIDCsUpdNew.StartDate?.ToString("yyyy-MM-dd");
-                            //objAddUser.RestrictSameTimeForAllDay = objUserManagementIDCsUpdNew.RestrictionFlag.ToString();
+                            objAddUser.StartDate = (objUserManagementIDCsUpdNew.StartDate == null)?DateTime.Now.ToString("yyyyMMdd"):objUserManagementIDCsUpdNew.StartDate?.ToString("yyyyMMdd");
+                            objAddUser.RestrictSameTimeForAllDay =  null;
                             objAddUser.AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest
                             {
                                 BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0'),
@@ -456,7 +449,7 @@ namespace VBSPOSS.Services.Implements
                             iCreateUserIDC++;
                             if (objCreateUserIDCByApi != null && objCreateUserIDCByApi.Status && objCreateUserIDCByApi.ResponseCode == "0")
                             {      
-                                objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptTW);
+                                objUserManagementIDCsUpdNew.Status = ConfigStatus.AUTHORIZED.Value;
                                 objUserManagementIDCsUpdNew.StatusUpdateCore = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.SessionValReq = true;
                                 objUserManagementIDCsUpdNew.PrevStatus =objCreateUserIDCByApi.PrevStatus;
@@ -1313,7 +1306,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode)
+        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType)
         {
             try
             {
@@ -1327,6 +1320,7 @@ namespace VBSPOSS.Services.Implements
                 var listUserIDCManagementTemp = _dbContext.UserManagementIDCs.Where(w => w.Id == pId || (pId == 0
                         && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                        && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserManagementIDC c)
                         {
