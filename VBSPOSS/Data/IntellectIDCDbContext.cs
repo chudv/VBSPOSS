@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using VBSPOSS.Data.OSS.Models;
+using VBSPOSS.Data.IntellectIDC.Models;
 
 namespace VBSPOSS.Data
 {
@@ -8,7 +8,7 @@ namespace VBSPOSS.Data
     {
         public virtual DbSet<CellValue> CellValues { get; set; }
 
-        public IntellectIDCDbContext(DbContextOptions<ApplicationDbContext> options)
+        public IntellectIDCDbContext(DbContextOptions<IntellectIDCDbContext> options)
             : base(options)
         {
         }
