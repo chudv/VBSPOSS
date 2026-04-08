@@ -128,7 +128,7 @@ namespace VBSPOSS.Controllers
         }
 
         /// <summary>
-        /// Hàm show màn hình update người dùng IDC
+        /// Hàm show màn hình Thêm/Sửa/Thay đổi POS, Quyền/Cấp lại mật khẩu... người dùng IDC
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
