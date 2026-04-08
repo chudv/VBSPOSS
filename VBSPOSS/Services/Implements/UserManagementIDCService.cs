@@ -253,6 +253,7 @@ namespace VBSPOSS.Services.Implements
                 if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
                 {
                     var objUserManagementIDCsUpdNew = _dbContext.UserManagementIDCs.Where(m => m.Id == pUserManagementUpd.Id && m.UserId == pUserManagementUpd.UserId).FirstOrDefault();
+                    //Thêm mới vào bảng trong trường hợp thêm mới người dùng
                     if (objUserManagementIDCsUpdNew == null && !string.IsNullOrEmpty(pButtonType))
                     {
                         #region --- Cập nhật thêm mới thông tin ---
@@ -306,6 +307,7 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementUpdNew.IpSetDetail = ""; //Xử lý khi gọi API
                         objUserManagementUpdNew.RestrictionFlag = 0; //Xử lý khi gọi API
                         objUserManagementUpdNew.SubType = "1";
+                        // Thêm mới người dùng
                         if(pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                         {
                             objUserManagementUpdNew.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
@@ -319,6 +321,7 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
                             objUserManagementUpdNew.StartDate = dCurrentDateTmp;
                         }
+                        // Thêm mới theo chức năng yêu cầu chỉnh sửa
                         else
                         {
                             objUserManagementUpdNew.FunctionType = pUserManagementUpd.FunctionType;
@@ -332,7 +335,6 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ApprovalDate = pUserManagementUpd.ApprovalDate;
                             objUserManagementUpdNew.StartDate = pUserManagementUpd.StartDate;
                         }
-
                         _dbContext.UserManagementIDCs.Add(objUserManagementUpdNew);
                         iSaveChanges = _dbContext.SaveChanges();
                         if (iSaveChanges > 0)
@@ -342,7 +344,7 @@ namespace VBSPOSS.Services.Implements
                         }
                         #endregion
                     }
-
+                    //Xử lý trường hợp chỉnh sửa người dùng (Chưa thực hiện phê duyệt)
                     else if(objUserManagementIDCsUpdNew != null && pFlagCall == EventFlag.EventFlag_Edit.Value.ToString())
                     {
                         objUserManagementIDCsUpdNew.Id = pUserManagementUpd.Id;
@@ -371,7 +373,7 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementIDCsUpdNew.Remark = pUserManagementUpd.Remark;
                         objUserManagementIDCsUpdNew.OrtherNotes = pUserManagementUpd.OrtherNotes;
                         objUserManagementIDCsUpdNew.Ticket = pUserManagementUpd.Ticket;
-                        objUserManagementIDCsUpdNew.Status = pUserManagementUpd.Status;
+                        objUserManagementIDCsUpdNew.Status = StatusBusinessFlow.Status_Modified.Value;
                         objUserManagementIDCsUpdNew.StatusUpdateCore = pUserManagementUpd.StatusUpdateCore; //Xử lý khi gọi API
                         objUserManagementIDCsUpdNew.SessionValReq = pUserManagementUpd.SessionValReq; //Xử lý khi gọi API
                         objUserManagementIDCsUpdNew.PrevStatus = pUserManagementUpd.PrevStatus; //Xử lý khi gọi API
@@ -399,7 +401,7 @@ namespace VBSPOSS.Services.Implements
                             iRetIdUpd = objUserManagementIDCsUpdNew.Id;
                         }
                     }
-
+                    //Trường hợp trình duyệt ở cấp chi nhánh
                     else if(objUserManagementIDCsUpdNew != null && pButtonType == FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Value.ToString())
                     {
                         objUserManagementIDCsUpdNew.Status = Int32.Parse(DefaultValue.StatusAcceptCN);
@@ -415,7 +417,7 @@ namespace VBSPOSS.Services.Implements
                             iRetIdUpd = objUserManagementIDCsUpdNew.Id;
                         }
                     }
-
+                    //Trường hợp phê duyệt ở TTCNTT
                     else if(objUserManagementIDCsUpdNew != null && pButtonType == FunctionTypeFlag.FunctionTypeFlag_AUTHORIZE.Value.ToString())
                     {
                         if(objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
@@ -1308,7 +1310,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType)
+        public List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType, int iStatus)
         {
             try
             {
@@ -1323,6 +1325,7 @@ namespace VBSPOSS.Services.Implements
                         && (listOfPosFind==null|| listOfPosFind.Count<=0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
                         && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
+                        && (iStatus == 0 || w.Status == iStatus)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserManagementIDC c)
                         {
@@ -1345,7 +1348,7 @@ namespace VBSPOSS.Services.Implements
                         objItem = _mapper.Map<UserManagementIDCViewModel>(item);
                         objItem.OrderNo = iCountTemp;
                         objItem.FullName = objItem.FirstName + " " + objItem.LastName;
-                        objItem.StatusText = ConfigStatus.GetByValue(item.Status).Description;
+                        objItem.StatusText = StatusBusinessFlow.GetByValue(item.Status).Description;
                         objItem.AuthsecTypeName = int.TryParse(objItem.AuthsecType, out var v)? AuthSecType.GetByValue(v)?.Description: "";
                         objItem.MailIdFlagName = int.TryParse(objItem.MailIdFlag, out var y)? MailIdFlag.GetByValue(y)?.Description: "";
                         var pFunctionTypeMap = new Dictionary<string, string>

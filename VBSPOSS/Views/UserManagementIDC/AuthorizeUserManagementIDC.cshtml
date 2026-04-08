@@ -2,6 +2,7 @@
 
 <div id="mySppLocality"></div>
 
+
 <style>
     .k-animation-container {
         z-index: 100000 !important;
@@ -168,7 +169,7 @@
     }
 
     function onCloseUpdate(ev) {
-        mainWindow.data("kendoWindow").close();
+        mainWindowApproval.data("kendoWindow").close();
     }
 
 
@@ -251,6 +252,7 @@
                 return false;
             }
         }
+        sendDataToParent(8);
     }
 
     function onClickAuthorize(e) {
@@ -281,10 +283,12 @@
                 return false;
             }
         }
+        sendDataToParent(9);
     }
 
     function onClickDenie(e) {
         lcButton = "3";
+        sendDataToParent(10);
         var lcPosCode = $("#PosCode").val();
         var lcRemark = $("#Remark").val();
         if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
@@ -313,6 +317,30 @@
         }
     }
 
+    function sendDataToParent(status) {
+        var data = {
+            Id: $("#Id").val(),
+            UserId: $("#UserId").val(),
+            Status: status
+        };
+        if (window.parent && window.parent.receiveDataFromChild) {
+            window.parent.receiveDataFromChild(data);
+        }
+        if(status == 8) {
+            alert("Trình duyệt thành công");
+        }
+
+        if(status == 9) {
+            alert("Phê duyệt thành công");
+        }
+
+        if(status == 10) {
+            alert("Từ chối thành công");
+        }
+        onCloseUpdate();
+    }
+
+
 </script>
 
 <form asp-controller="UserManagementIDC" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
@@ -324,7 +352,7 @@
  *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
     @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
-    @Html.HiddenFor(m => m.PosCode, new { @Value = Model == null ? "" : Model.PosCode })
+    @Html.HiddenFor(m => m.PosCode, new { id = "PosCodeChild" })    
     @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
 
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
@@ -467,21 +495,21 @@
                 @(Html.Kendo().Button()
                                 .Name("btnApproval")
                                 .Events(ev => ev.Click("onClickApproval"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Trình duyệt"))
                 &nbsp;
                 @(Html.Kendo().Button()
                                 .Name("btnAuthorize")
                                 .Events(ev => ev.Click("onClickAuthorize"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Phê duyệt"))
                 &nbsp;
                 @(Html.Kendo().Button()
                                 .Name("btnDenie")
                                 .Events(ev => ev.Click("onClickDenie"))
-                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
+                                .HtmlAttributes(new { type = "button", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Trình duyệt cấp chi nhánh người dùng IDC" })
                                 .ImageUrl(Url.Content("~/images/save.png"))
                                 .Content("Từ chối"))
             </div>

@@ -132,8 +132,14 @@ namespace VBSPOSS.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
-        /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
-        /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserId">Mã UserId</param>
+        /// <param name="pFlagCall"></param>
+        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
+        /// <param name="pButtonType">Cờ phân biệt thêm mới/Chỉnh sửa/Phê duyệt</param>
+        ///             1 - Thêm mới
+        ///             2 - Chỉnh sửa
+        ///             8 - Phê duyệt
+        ///             9 - Trình duyệt
         /// <returns>Danh sách người đại diện các đơn vị</returns>
         public ActionResult ShowUpdateUserManagementIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName, string pButtonType)
         {
@@ -143,7 +149,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","")).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",0)).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
                 objPosUserIDCMaster.Id = 0;
@@ -245,6 +251,11 @@ namespace VBSPOSS.Controllers
 
         /// <summary>
         /// Hàm thực hiện lưu thông tin người dùng IDC
+        /// <param name="pButtonType">Cờ phân biệt thêm mới/Chỉnh sửa/Phê duyệt</param>
+        ///             1 - Thêm mới
+        ///             2 - Chỉnh sửa
+        ///             8 - Phê duyệt
+        ///             9 - Trình duyệt
         /// </summary>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdate([DataSourceRequest] DataSourceRequest request, UserManagementIDCViewModel objUserIDC, string pFlagCall, string pButtonType)
@@ -295,6 +306,68 @@ namespace VBSPOSS.Controllers
         }
 
         /// <summary>
+        /// Hàm thực hiện lưu trình duyệt/phê duyệt người dùng IDC
+        /// </summary>
+        [AcceptVerbs("Post")]
+        public async Task<IActionResult> SaveUpdateApproval([DataSourceRequest] DataSourceRequest request, [FromBody] List<UserManagementIDCViewModel> listData, string pFlagCall)
+        {
+            try
+            {
+                string result = "0";
+                //result = IsValidPosRepresentative(objUserIDC).ToString();
+                if (result == "0" && listData != null && listData.Any())
+                {
+                    foreach (var objUserIDC in listData)
+                    {
+                        if (!TryValidateModel(objUserIDC)) continue;
+                
+                        foreach (var prop in objUserIDC.GetType().GetProperties())
+                        {
+                            var type = prop.PropertyType;
+                
+                            if (type == typeof(string))
+                            {
+                                var val = prop.GetValue(objUserIDC) as string;
+                                prop.SetValue(objUserIDC, val ?? "");
+                            }
+                            else if (type == typeof(DateTime))
+                            {
+                                var val = (DateTime)prop.GetValue(objUserIDC);
+                                if (val == DateTime.MinValue)
+                                    prop.SetValue(objUserIDC, DateTime.Now);
+                            }
+                            else if (type == typeof(int))
+                            {
+                                var val = (int)prop.GetValue(objUserIDC);
+                                if (val == 0)
+                                    prop.SetValue(objUserIDC, 1);
+                            }
+                            else if (type == typeof(long))
+                            {
+                                var val = (long)prop.GetValue(objUserIDC);
+                                if (val == 0)
+                                    prop.SetValue(objUserIDC, 0);
+                            }
+                        }
+                        string pButtonType = objUserIDC.Status.ToString();
+                        long iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
+                        if (iVal <= 0)
+                        {
+                            result = "99";
+                            break;
+                        }
+                    }
+                }
+                return new JsonResult(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"{System.Reflection.MethodBase.GetCurrentMethod()} Error: {ex.Message}");
+                return new JsonResult("99");
+            }
+        }
+
+        /// <summary>
         /// Hàm lấy danh sách lên lưới dữ liệu Danh sách trình duyệt người dùng IDC theo Pos
         /// </summary>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
@@ -309,7 +382,6 @@ namespace VBSPOSS.Controllers
                 if (string.IsNullOrEmpty(pFullName))
                     pFullName = "";
                 var listStaffVBSP = _userManagementIDCService.UserIDCApproval_GetSearch(pFromEffectiveDate,pToEffectiveDate,pPosCode, 1, "");
-
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -328,7 +400,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
         /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult ShowApprovalUserIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName)
+        public ActionResult ShowApprovalUserIDC(long pId,string pPosCode, string pUserId, string pFlagCall, string pFullName, string pButtonType)
         {
             UserManagementIDCViewModel objPosUserIDCManagement = new UserManagementIDCViewModel();
             
@@ -337,22 +409,25 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","")).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",0)).FirstOrDefault();
             sNameView = (pFlagCall == "1")?"ApproveUserManagementIDC":"ApproveUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
+            TempData["ButtonType"] = pButtonType;
             objPosUserIDCManagement.PosCode = pPosCode;
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return PartialView(sNameView, objPosUserIDCManagement);
         }
 
         /// <summary>
-        /// Hàm lấy danh sách lên lưới dữ liệu Danh sách người dùng IDC
+        /// Hàm show màn hình Thêm/Sửa/Thay đổi POS, Quyền/Cấp lại mật khẩu... người dùng IDC
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
-        /// <param name="pFromEffectiveDate">Ngày HL bắt đầu. Định dạng dd/MM/yyyy</param>
-        /// <param name="pToEffectiveDate">Ngày HL kết thúc. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserId">Mã UserId</param>
+        /// <param name="pFunctionType">Loại chức năng chọn</param>
+        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
+        /// <param name="pStatus">Trạng thái</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
         public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, string pUserId, int pStatus,string pFullName)
         {
@@ -366,8 +441,7 @@ namespace VBSPOSS.Controllers
                     pFullName = "";
                 if (string.IsNullOrEmpty(pFunctionType))
                     pFunctionType = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "",pFunctionType);
-
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "",pFunctionType,pStatus);
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
