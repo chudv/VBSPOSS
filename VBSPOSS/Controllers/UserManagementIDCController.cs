@@ -167,11 +167,11 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.MobileNumber = "";
                 objPosUserIDCMaster.DateOfBirth = DateTime.Now;
                 objPosUserIDCMaster.GroupName = "";
-                objPosUserIDCMaster.EntityList = "";
+                objPosUserIDCMaster.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='EntityList' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                 objPosUserIDCMaster.AuthType = "";
                 objPosUserIDCMaster.UserType = "";
-                objPosUserIDCMaster.MailIdFlag = "";
-                objPosUserIDCMaster.AuthsecType = "";
+                objPosUserIDCMaster.MailIdFlag = MailIdFlag.MailIdFlag_RandomSendAPI.Code;
+                objPosUserIDCMaster.AuthsecType = AuthSecType.AuthSecType_Single.Code;
                 objPosUserIDCMaster.ExtraAttributeUserRole = "";
                 objPosUserIDCMaster.ExtraAttributeBranchCode = "";
                 objPosUserIDCMaster.ExpiryDate = new DateTime(2060, 12, 31);
