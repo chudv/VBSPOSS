@@ -322,7 +322,7 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserManagementUpdNew.ApproverBy = "";
                             objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
-                            objUserManagementUpdNew.StartDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.StartDate = pUserManagementUpd.StartDate;
                         }
                         // Thêm mới theo chức năng yêu cầu chỉnh sửa
                         else
@@ -401,7 +401,13 @@ namespace VBSPOSS.Services.Implements
                         if (iSaveChanges > 0)
                         {
                             iCountUpdate++;
-                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;                      
+                            var objNew = new UserManagementIDC();                        
+                            _dbContext.Entry(objNew).CurrentValues.SetValues(objUserManagementIDCsUpdNew);
+                            objNew.Id = 0;
+                            objNew.Status = 1; 
+                            _dbContext.UserManagementIDCs.Add(objNew);
+                            _dbContext.SaveChanges();
                         }
                     }
                     //Trường hợp trình duyệt ở cấp chi nhánh
@@ -427,8 +433,8 @@ namespace VBSPOSS.Services.Implements
                         {
                             AddUserRequestViewModel objAddUser = new AddUserRequestViewModel();
                             objAddUser.Ticket = objUserManagementIDCsUpdNew.Ticket;
-                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId + "2";
-                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName + "2";
+                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId + "3";
+                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName + "3";
                             objAddUser.FirstName = objUserManagementIDCsUpdNew.FirstName;
                             objAddUser.LastName = objUserManagementIDCsUpdNew.LastName;
                             objAddUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
@@ -1328,7 +1334,7 @@ namespace VBSPOSS.Services.Implements
                         && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
                         && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
-                        && (iStatus == 0 || w.Status == iStatus)
+                        && (iStatus == -1 || w.Status == iStatus)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserManagementIDC c)
                         {
@@ -1656,6 +1662,133 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm lưu file đính kèm
+        /// </summary>
+        public async Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId)
+        {
+            if (attachedFiles == null || !attachedFiles.Any())
+            {
+                return null;
+            }
+            try
+            {
+
+                List<long> result = new List<long>();
+                List<AttachedFileInfo> attachedFilesAdd = new();
+                List<AttachedFileInfo> attachedFilesUpdate = new();
+                foreach (var attachedFile in attachedFiles)
+                {
+                    if (attachedFile.FileId == 0)
+                    {
+                        if (string.IsNullOrEmpty(attachedFile.CreatedBy))
+                            attachedFile.CreatedBy = userId ?? "UnknownUser";
+                        if (attachedFile.CreatedDate == default)
+                            attachedFile.CreatedDate = DateTime.UtcNow;
+                        if (string.IsNullOrEmpty(attachedFile.FileName) ||
+                            string.IsNullOrEmpty(attachedFile.FileNameNew) ||
+                            string.IsNullOrEmpty(attachedFile.PathFile))
+                        {
+                            throw new Exception("FileName, FileNameNew, hoặc PathFile không được để trống.");
+                        }
+                        if (string.IsNullOrEmpty(attachedFile.DocumentNumber))
+                        {
+                            throw new Exception("DocumentNumber không được để trống.");
+                        }
+                        attachedFilesAdd.Add(attachedFile);
+                    }
+                    else
+                    {
+                        var existingAttachedFile = await _dbContext.AttachedFileInfos.FindAsync(attachedFile.FileId);
+                        if (existingAttachedFile != null)
+                        {
+                            _mapper.Map(attachedFile, existingAttachedFile);
+                            existingAttachedFile.ModifiedBy = userId ?? "UnknownUser";
+                            existingAttachedFile.ModifiedDate = DateTime.UtcNow;
+                            attachedFilesUpdate.Add(existingAttachedFile);
+                        }
+                    }
+                }
+                if (attachedFilesUpdate.Any())
+                {
+                    _dbContext.AttachedFileInfos.UpdateRange(attachedFilesUpdate);
+                }
+                if (attachedFilesAdd.Any())
+                {
+                    _dbContext.AttachedFileInfos.AddRange(attachedFilesAdd);
+                }
+
+                var changes = await _dbContext.SaveChangesAsync();
+
+                if (attachedFilesAdd.Any())
+                {
+                    result.AddRange(attachedFilesAdd.Select(s => s.FileId).ToList());
+                }
+
+                if (attachedFilesUpdate.Any())
+                {
+                    result.AddRange(attachedFilesUpdate.Select(s => s.FileId).ToList());
+                }
+
+                return result;
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.Message ?? "Không có inner exception";
+                Console.WriteLine($"DB Update Error in SaveAttachedFiles: {ex.Message}\nInner Exception: {innerException}\nStackTrace: {ex.StackTrace}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var innerException = ex.InnerException?.Message ?? "Không có inner exception";
+                Console.WriteLine($"Error in SaveAttachedFiles: {ex.Message}\nInner Exception: {innerException}\nStackTrace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Hàm lấy danh sách thông tin tệp tin đính kèm theo các điều kiện truyền vào (nếu có)
+        /// </summary>
+        /// <param name="pFileId">Chỉ số khóa bản ghi File đính kèm</param>
+        /// <param name="pThamChieuId">Chỉ số xác định Tham chiếu có file đính kèm (Id của phân hệ có file đính kèm)</param>
+        /// <param name="pThamChieuHT">Tiêu đề/Số hiệu/Nội dung của thông tinTham chiếu có file đính kèm (Ví dụ QĐ Khen thưởng thì đây là tiêu đề quyết định cần tìm)</param>
+        /// <param name="pPhanLoai">Mã hiệu phan loại file đính kèm</param>
+        /// <param name="pTenFile">Tên file lúc đính kèm (Tên nguyên bản)</param>
+        /// <param name="pTenFileMoi">Tên file mới của file đính kèm theo quy ước</param>
+        /// <param name="pMoTa">Mô tả file đính kèm</param>
+        /// <param name="pTrangThai">Trạng thái bản ghi.Nếu truyền '0' lấy tất; Nếu truyền '1' lấy bản ghi đang mở</param>
+        /// <returns>Danh sách thông tin file đính kèm</returns>
+        public List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai)
+        {
+            var answer = new List<AttachedFileInfo>();
+            try
+            {
+                int iCount = 0;
+                var profileAttachFileTMP = _dbContext.AttachedFileInfos.Where(w => w.FileId != 0 && (pFileId == 0 || w.FileId == pFileId)
+                                            && (pDocumentId == -1 || w.DocumentId == pDocumentId)                            
+                                            && (string.IsNullOrEmpty(pTenFile) || w.FileName == pTenFile)
+                                            && (string.IsNullOrEmpty(pTenFileMoi) || w.FileNameNew == pTenFileMoi)
+                                            && (string.IsNullOrEmpty(pMoTa) || w.DocumentNumber.Contains(pMoTa))
+                                            && (w.CreatedDate >= DateTime.Now.AddDays(-1) && w.CreatedDate <= DateTime.Now.AddDays(1))
+                                            && (pTrangThai == -1 || w.Status == pTrangThai)
+                                        ).OrderBy(o => o.DocumentNumber).ThenBy(o => o.FileNameNew).ToList();
+                List<AttachedFileInfo> profileAttachFiles = new List<AttachedFileInfo>();
+                profileAttachFiles = profileAttachFileTMP;
+
+                foreach (var item in profileAttachFiles)
+                {
+                    iCount++;
+                    AttachedFileInfo objItem = new AttachedFileInfo();
+                    objItem = _mapper.Map<AttachedFileInfo>(item);
+                    answer.Add(objItem);
+                }
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId

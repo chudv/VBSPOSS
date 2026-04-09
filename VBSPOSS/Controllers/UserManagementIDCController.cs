@@ -3,15 +3,22 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using System.Collections;
 using System.Data;
+using System.Text.RegularExpressions;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
+using VBSPOSS.Helpers;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Integration.Model;
 using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.Models;
+using VBSPOSS.Services.Implements;
 using VBSPOSS.Services.Interfaces;
+using VBSPOSS.Utils;
 using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Controllers
@@ -149,7 +156,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",0)).FirstOrDefault();
+            var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",-1)).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
                 objPosUserIDCMaster.Id = 0;
@@ -308,57 +315,112 @@ namespace VBSPOSS.Controllers
         /// <summary>
         /// Hàm thực hiện lưu trình duyệt/phê duyệt người dùng IDC
         /// </summary>
-        [AcceptVerbs("Post")]
-        public async Task<IActionResult> SaveUpdateApproval([DataSourceRequest] DataSourceRequest request, [FromBody] List<UserManagementIDCViewModel> listData, string pFlagCall)
+        [AcceptVerbs("Post")]public async Task<IActionResult> SaveUpdateApproval([DataSourceRequest] DataSourceRequest request,string listApprovalData,string pFlagCall,IFormFile fileUpload, string pFunctionType, string pMainPosCode)
         {
+            List<long> saveFileStatus = null;
+            long iVal = 1; 
             try
             {
-                string result = "0";
-                //result = IsValidPosRepresentative(objUserIDC).ToString();
-                if (result == "0" && listData != null && listData.Any())
+                string result = "0";              
+                //if (string.IsNullOrEmpty(listApprovalData))
+                //    return new JsonResult("Không có dữ liệu");    
+                var listData = JsonConvert.DeserializeObject<List<UserManagementIDCViewModel>>(listApprovalData);       
+                if (listData == null || !listData.Any())
+                    return new JsonResult("Không có dữ liệu");
+                foreach (var objUserIDC in listData)
                 {
-                    foreach (var objUserIDC in listData)
+                    if (!TryValidateModel(objUserIDC))
                     {
-                        if (!TryValidateModel(objUserIDC)) continue;
-                
-                        foreach (var prop in objUserIDC.GetType().GetProperties())
+                        return new JsonResult("Dữ liệu không hợp lệ");
+                    }
+        
+                    foreach (var prop in objUserIDC.GetType().GetProperties())
+                    {
+                        var type = prop.PropertyType;
+        
+                        if (type == typeof(string))
                         {
-                            var type = prop.PropertyType;
-                
-                            if (type == typeof(string))
-                            {
-                                var val = prop.GetValue(objUserIDC) as string;
-                                prop.SetValue(objUserIDC, val ?? "");
-                            }
-                            else if (type == typeof(DateTime))
-                            {
-                                var val = (DateTime)prop.GetValue(objUserIDC);
-                                if (val == DateTime.MinValue)
-                                    prop.SetValue(objUserIDC, DateTime.Now);
-                            }
-                            else if (type == typeof(int))
-                            {
-                                var val = (int)prop.GetValue(objUserIDC);
-                                if (val == 0)
-                                    prop.SetValue(objUserIDC, 1);
-                            }
-                            else if (type == typeof(long))
-                            {
-                                var val = (long)prop.GetValue(objUserIDC);
-                                if (val == 0)
-                                    prop.SetValue(objUserIDC, 0);
-                            }
+                            var val = prop.GetValue(objUserIDC) as string;
+                            prop.SetValue(objUserIDC, val ?? "");
                         }
-                        string pButtonType = objUserIDC.Status.ToString();
-                        long iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
-                        if (iVal <= 0)
+                        else if (type == typeof(DateTime))
                         {
-                            result = "99";
-                            break;
+                            var val = (DateTime)prop.GetValue(objUserIDC);
+                            if (val == DateTime.MinValue)
+                                prop.SetValue(objUserIDC, DateTime.Now);
                         }
+                        else if (type == typeof(int))
+                        {
+                            var val = (int)prop.GetValue(objUserIDC);
+                            if (val == 0)
+                                prop.SetValue(objUserIDC, 1);
+                        }
+                        else if (type == typeof(long))
+                        {
+                            var val = (long)prop.GetValue(objUserIDC);
+                            if (val == 0)
+                                prop.SetValue(objUserIDC, 0);
+                        }
+                    }     
+                    string pButtonType = objUserIDC.Status.ToString();
+                    iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
+                    if (iVal <= 0)
+                    {
+                        result = "99";
+                        break;
                     }
                 }
-                return new JsonResult(result);
+
+                if (fileUpload != null && fileUpload.Length > 0)
+                {
+                    var extension = Path.GetExtension(fileUpload.FileName).ToLower();
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot", "uploads", "ToTrinh");
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+                    var pFunctionTypeName = FunctionTypeFlag.GetByCode(pFunctionType);
+                    var pFunctionTypeDesc = pFunctionTypeName?.Description ?? "";                                       
+                    //pFunctionTypeDesc = Regex.Replace(pFunctionTypeDesc, @"[^a-zA-Z0-9_]", ""); // xử lý ký tự đặc biệt            
+                    var timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    var fileName = $"ToTrinh_{pFunctionTypeDesc}_{timeStamp}{extension}";
+                    var filePath = Path.Combine(uploadPath, fileName);      
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await fileUpload.CopyToAsync(stream);
+                    }
+                    
+                    saveFileStatus = await _userManagementIDCService.SaveAttachedFiles(0,
+                        new List<AttachedFileInfo>
+                        {
+                            new AttachedFileInfo
+                            {
+                                DocumentId = long.Parse(pMainPosCode),
+                                FileType = extension.Replace('.', ' ').Trim(),
+                                FileName = fileUpload.FileName,
+                                PathFile = filePath,
+                                FileExtension = extension,
+                                FileNameNew = fileName,
+                                DocumentNumber = pFunctionType,
+                                Status = 1,
+                                CreatedBy = UserName,
+                                CreatedDate = DateTime.Now,
+                                ModifiedBy = UserName,
+                                ModifiedDate = DateTime.Now,
+                            }
+                        },
+                        UserName
+                    );
+                }
+                if (saveFileStatus != null && saveFileStatus.Any() && iVal > 0)
+                {
+                    return new JsonResult(result);
+                }
+                else
+                {
+                    ModelState.AddModelError("ERROR", "Lưu phê duyệt thất bại.");
+                    return Json(new[] { result }.ToDataSourceResult(request, ModelState));
+                }
             }
             catch (Exception ex)
             {
@@ -366,7 +428,6 @@ namespace VBSPOSS.Controllers
                 return new JsonResult("99");
             }
         }
-
         /// <summary>
         /// Hàm lấy danh sách lên lưới dữ liệu Danh sách trình duyệt người dùng IDC theo Pos
         /// </summary>
@@ -450,6 +511,72 @@ namespace VBSPOSS.Controllers
                 ModelState.AddModelError("ERROR", $"{ex.Message}");
                 return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
             }
+        }
+
+        /// <summary>
+        /// Hàm lấy danh sách file đính kèm theo Phân loại file và Chỉ số danh mục chứa file (
+        /// </summary>
+        /// <param name="pDocumentId">Chỉ số xác định mã Pos Chi nhánh</param>
+        /// <param name="pDocumentNumber">Chỉ số xác định loại nghiệp vụ </param>
+        /// <returns>Danh sách các file đính kèm</returns>
+        public JsonResult GetListAttachFile_ForGroupFile(int pDocumentId, string pDocumentNumber)
+        {
+            ArrayList data = new ArrayList();
+            var files = _userManagementIDCService.GetAttachFileSearch(0, pDocumentId, "", "", pDocumentNumber, 1);
+            for (int i = 0; i < files.Count; i++)
+            {
+                data.Add(new { OwnerId = files[i].DocumentId, Id = files[i].FileId, FileName = files[i].FileName, Description = files[i].ContentDescription, FileNameNew = files[i].FileNameNew, PhanLoaiChiTiet = files[i].DocumentNumber });
+            }
+            return new JsonResult(data);
+        }
+
+        /// <summary>
+        /// Hàm hiển thị file đính kèm lên Tab mới của trình duyệt
+        /// </summary>
+        /// <param name="pDocumentId">Chỉ số xác định VB/TL/QĐ Khác có file đính kèm</param>
+        /// <param name="pFileId">Chỉ số file đính kèm</param>
+        /// <param name="pFileName">Tên file đính kèm cần show</param>
+        /// <returns></returns>
+        public IActionResult LoadPdfFile(int pDocumentId, int pFileId, string pFileName)
+        {
+            string sFileNameNew = "", filePath = "", sSQL = "";
+            string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\") + @"\";
+            var sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), sPathFileUpload, "ToTrinh");
+            if (pFileId != 0)
+            {
+                var objFileInfo = _userManagementIDCService.GetAttachFileSearch(pFileId, pDocumentId, "", "", "", 1).FirstOrDefault();
+                if (objFileInfo != null && !string.IsNullOrEmpty(objFileInfo.FileNameNew))
+                {
+                    sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), objFileInfo.PathFile, "");
+                    if (objFileInfo.FileNameNew.Contains(objFileInfo.FileExtension))
+                        //filePath = string.Format("{0}/{1}", sUploadPathTemp);
+                        filePath = string.Format("{0}", sUploadPathTemp);
+                    else filePath = string.Format("{0}/{1}", sUploadPathTemp, $"{objFileInfo.FileNameNew}{objFileInfo.FileExtension}");
+                }
+            }
+            else
+            {
+                sFileNameNew = pFileName;
+                filePath = string.Format("{0}/{1}", sUploadPathTemp, pFileName);
+            }
+            if (System.IO.File.Exists(filePath))
+            {
+                if (filePath.ToUpper().Contains(".PDF"))
+                {
+                    if (filePath.ToUpper().Contains(".PDF"))
+                    {
+                        byte[] pdfByte = FilesUtils.GetBytesFromFile(filePath);
+                        return File(pdfByte, "application/pdf");
+                    }
+                }
+                else
+                {
+                    TempData["OK"] = "0";
+                    return View("_PdfContainer");
+                }
+            }
+            else TempData["OK"] = "2";
+            return View("_PdfContainer");
         }
     }
 }
