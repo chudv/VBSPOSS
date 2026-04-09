@@ -339,17 +339,17 @@
                 },
                 success: function (result) {
                     if (result == "0") {
-                        alert("Cập nhật thành công người dùng " + ($("#FullName").val() || "") + " [" + ($("#UserName").val() || "") + "]!");
+                        alert("Cập nhật thành công thêm mới tài khoản ["  + $("#UserName").val() + "] của [" + $("#FullName").val() + "]!");
                         onExit();
                     } else if (result == "1") {
-                        alert("Tên đăng nhập đã tồn tại!");
+                        alert("Tên đăng nhập ["  + $("#UserName").val() + "] đã tồn tại. Vui lòng kiểm tra lại!");
                     } else {
                         alert("Có lỗi xảy ra: " + result);
                     }
                 },
                 error: function (xhr, status, error) {
                     console.error("Lỗi AJAX:", xhr.responseText || error);
-                    alert("Lỗi khi lưu dữ liệu! Vui lòng xem console (F12) để biết chi tiết.");
+                    alert("Lỗi khi lưu dữ liệu! Vui lòng kiểm tra lại.");
                 },
                 complete: function () {
                     isSubmitting = false;
