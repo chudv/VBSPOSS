@@ -1656,6 +1656,12 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+
+        /// <summary>
+        /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public async Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId)
         {
             try
