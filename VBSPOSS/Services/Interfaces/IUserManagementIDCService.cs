@@ -1,4 +1,5 @@
-﻿using VBSPOSS.Integration.ViewModel;
+﻿using VBSPOSS.Data.IntellectIDC.Models;
+using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces
@@ -227,5 +228,13 @@ namespace VBSPOSS.Services.Interfaces
         ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
         /// </returns>
         int CheckOpenCashByUserId(string pUserId, string pReportDate);
+
+
+        /// <summary>
+        /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId);
     }
 }
