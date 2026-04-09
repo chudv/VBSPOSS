@@ -430,18 +430,7 @@
 
     <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
         <div class="col-md-12" style="display: inline-flex;">
-            <label class="control-label" style=" text-align:right; color: navy;padding-right:10px ">Tên đăng nhập (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px; max-width:100% !important;color:navy;" })
-
-
-            <label id="lbl_matkhau" class="control-label" style="text-align: right; padding-right: 3px; ">Mật khẩu (<font color="red">*</font>)</label>
-            @Html.Kendo().TextBoxFor(m => m.Password).HtmlAttributes(new
-                {
-                    @class = "form-control",
-                    type = "password",
-                    placeholder = "Nhập mật khẩu",
-                    style = "width: 150px; max-width:100% !important;color:navy;"
-                })
+           
 
 
             <label id="lbl_hoten" class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px;">Họ và tên (<font color="red">*</font>)</label>
@@ -481,13 +470,13 @@
             @Html.Kendo().TextBoxFor(m => m.DepartmentDesc).HtmlAttributes(new { @readonly = "readonly", style = "width: 180px; color: blueviolet;" })
 
             <label style="width:80px; text-align:right;padding-right: 10px!important;">Đơn vị</label>
-            @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = "width: 240px; color: blueviolet;" })
+            @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = "width: 220px; color: blueviolet;" })
         </div>
     </div>
 
     <div class="row" style="padding-top: 8px;">
         <div class="col-md-12" style="display: inline-flex; align-items: center; gap: 12px;">
-            <label style="width:90px;">Trình độ</label>
+            <label style="width:90px;color: navy;">Trình độ</label>
             @Html.Kendo().TextBoxFor(m => m.DegreeCode).HtmlAttributes(new { @readonly = "readonly", style = "width: 80px; color: blueviolet;" })
 
             <label class="control-label" style="width:100px;text-align: right; color: navy;">Số CCCD (<font color="red">*</font>)</label>
@@ -500,9 +489,22 @@
         </div>
     </div>
 
-   
-    <div class="view_form row" style="padding-top:5px;">
-        <div class="col-md-7">
+
+    <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
+            <label class="control-label" style=" text-align:right; color: navy;padding-right:10px ">Tên đăng nhập (<font color="red">*</font>)</label>
+            @Html.Kendo().TextBoxFor(m => m.UserName).HtmlAttributes(new { style = "width: 150px; max-width:100% !important;color:navy;" })
+
+
+            <label id="lbl_matkhau" class="control-label" style="text-align: right; padding-right: 3px; ">Mật khẩu (<font color="red">*</font>)</label>
+            @Html.Kendo().TextBoxFor(m => m.Password).HtmlAttributes(new
+                {
+                    @class = "form-control",
+                    type = "password",
+                    placeholder = "Nhập mật khẩu",
+                    style = "width: 150px; max-width:100% !important;color:navy;"
+                })
+
             <label class="control-label" style="text-align: right; color: navy; padding-right: 3px; padding-top: 3px;">Nhóm người dùng (<font color="red">*</font>)</label>
             @(Html.Kendo().ComboBoxFor(m => m.DefaultRole)
                         .Filter(FilterType.Contains)
@@ -522,10 +524,8 @@
         </div>
     </div>
 
-    <div class="view_form row" style="padding-top:5px;">
-        
-
-        <div class="col-md-6">
+    <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-12" style="display: inline-flex;">
             <label class="control-label" style="text-align: left; color: navy;padding-top:3px;">Trạng thái (<font color="red">*</font>)</label>
             @(Html.Kendo().DropDownList()
                         .Name("Status")
@@ -540,6 +540,7 @@
                         .HtmlAttributes(new { style = "width: 100px !important;color: navy;" }))
         </div>
     </div>
+
 
     <hr style="margin-top: 1em; margin-bottom: 0.2em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc);" />
 
