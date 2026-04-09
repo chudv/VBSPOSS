@@ -5,12 +5,12 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - VBSPOSS</title>
-    <!-- AdminLTE 3 CSS (includes Bootstrap 4) -->
+
     <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css" />
     <link rel="stylesheet" href="~/dist/css/adminlte.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
@@ -21,99 +21,520 @@
     <script src="@Url.Content("~/lib/kendo-ui/js/kendo.all.min.js")"></script>
     <script src="@Url.Content("~/lib/kendo-ui/js/kendo.aspnetmvc.min.js")"></script>
     <link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
-    <style>
-        .text-danger {
-            color: white !important;
-        } 
 
-        .input-group .text-danger {
-            display: block;
-            min-height: 20px; /* giữ chỗ trống khi chưa có lỗi */
-            color: white !important;
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --primary-dark: #0a58ca;
+            --text-main: #172033;
+            --text-sub: #667085;
+            --border: #dbe2ea;
+            --bg-soft: rgba(255,255,255,0.72);
+            --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.18);
+            --shadow-sm: 0 10px 25px rgba(15, 23, 42, 0.08);
+            --radius-xl: 24px;
+            --radius-lg: 16px;
         }
 
-        .alert-danger {
-            min-height: 40px; /* hoặc cao hơn để không co form */
+        html, body {
+            height: 100%;
+        }
+
+            body.login-page {
+                margin: 0;
+                min-height: 100vh;
+                font-family: "Segoe UI", Roboto, Arial, sans-serif;
+                background: radial-gradient(circle at top left, rgba(13,110,253,.18), transparent 28%), radial-gradient(circle at bottom right, rgba(32,201,151,.14), transparent 24%), linear-gradient(135deg, #eef4ff 0%, #f7faff 45%, #eef2f7 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+            }
+
+        .login-shell {
+            width: 100%;
+            max-width: 1120px;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .brand-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 32px;
+            padding: 48px;
+            color: #fff;
+            background: linear-gradient(145deg, #0f4cbd 0%, #0b63f6 55%, #2d8cff 100%);
+            box-shadow: var(--shadow-lg);
+            min-height: 620px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+            .brand-panel::before,
+            .brand-panel::after {
+                content: "";
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255,255,255,.10);
+                filter: blur(4px);
+            }
+
+            .brand-panel::before {
+                width: 240px;
+                height: 240px;
+                top: -60px;
+                right: -40px;
+            }
+
+            .brand-panel::after {
+                width: 180px;
+                height: 180px;
+                bottom: 40px;
+                left: -40px;
+            }
+
+        .brand-top,
+        .brand-bottom {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+            backdrop-filter: blur(8px);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .2px;
+            margin-bottom: 24px;
+        }
+
+        .brand-title {
+            font-size: 42px;
+            line-height: 1.15;
+            font-weight: 700;
+            margin: 0 0 14px;
+        }
+
+        .brand-desc {
+            font-size: 17px;
+            line-height: 1.75;
+            color: rgba(255,255,255,.92);
+            max-width: 560px;
+            margin-bottom: 0;
+        }
+
+        .feature-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: rgba(255,255,255,.95);
+        }
+
+            .feature-item i {
+                width: 34px;
+                height: 34px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                background: rgba(255,255,255,.16);
+            }
+
+        .login-panel {
+            background: var(--bg-soft);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,.75);
+            border-radius: 32px;
+            box-shadow: var(--shadow-lg);
+            padding: 28px;
+            display: flex;
+            align-items: center;
+            min-height: 620px;
+        }
+
+        .login-card-modern {
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+
+        .login-header {
+            margin-bottom: 28px;
+        }
+
+        .login-logo-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0b63f6, #2d8cff);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 12px 24px rgba(13,110,253,.28);
+        }
+
+        .logo-text {
+            font-size: 34px;
+            line-height: 1;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -.4px;
+        }
+
+            .logo-text span {
+                font-weight: 300;
+                color: #25324b;
+            }
+
+        .login-title {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .login-subtitle {
+            margin: 0;
+            color: var(--text-sub);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .validation-summary-custom {
+            border: 1px solid #ffd8d8;
+            background: #fff5f5;
+            color: #c92a2a;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .field-block {
+            margin-bottom: 18px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #344054;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .input-modern {
+            position: relative;
+        }
+
+            .input-modern .form-control {
+                height: 56px;
+                border-radius: 16px;
+                border: 1px solid var(--border);
+                background: rgba(255,255,255,.92);
+                padding-left: 48px;
+                padding-right: 48px;
+                font-size: 15px;
+                color: var(--text-main);
+                box-shadow: none;
+                transition: all .2s ease;
+            }
+
+                .input-modern .form-control:focus {
+                    border-color: rgba(13,110,253,.55);
+                    box-shadow: 0 0 0 4px rgba(13,110,253,.12);
+                    background: #fff;
+                }
+
+        .input-icon-left,
+        .input-icon-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 3;
+            color: #98a2b3;
+        }
+
+        .input-icon-left {
+            left: 16px;
+        }
+
+        .input-icon-right {
+            right: 16px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #667085;
+        }
+
+        .field-validation-error,
+        .text-danger {
+            display: block;
+            margin-top: 7px;
+            font-size: 13px;
+            color: #d92d20 !important;
+        }
+
+        .login-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 4px 0 24px;
+        }
+
+        .remember-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #344054;
+            font-size: 14px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+            .remember-modern input {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--primary);
+            }
+
+        .btn-login-modern {
+            height: 56px;
+            border: none;
+            border-radius: 16px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            background: linear-gradient(135deg, #0b63f6, #2d8cff);
+            box-shadow: 0 14px 28px rgba(13,110,253,.24);
+            transition: all .2s ease;
+        }
+
+            .btn-login-modern:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 18px 30px rgba(13,110,253,.28);
+                background: linear-gradient(135deg, var(--primary-dark), #1f7cff);
+            }
+
+        .login-footer {
+            margin-top: 22px;
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .support-link {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .support-link:hover {
+                color: var(--primary-dark);
+                text-decoration: none;
+            }
+
+        .copyright-note {
+            margin-top: 14px;
+            font-size: 12px;
+            color: #98a2b3;
+        }
+
+        @@media (max-width: 991.98px) {
+            .login-shell {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+
+            .brand-panel {
+                min-height: auto;
+                padding: 28px;
+            }
+
+            .brand-title {
+                font-size: 30px;
+            }
+
+            .brand-desc {
+                font-size: 15px;
+            }
+
+            .login-panel {
+                min-height: auto;
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            body.login-page {
+                padding: 14px;
+            }
+
+            .brand-panel,
+            .login-panel {
+                border-radius: 24px;
+            }
+
+            .login-title {
+                font-size: 24px;
+            }
+
+            .logo-text {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
-
-
-
 <body class="hold-transition login-page">
 
-    <div class="login-box">
-        <!-- /.login-logo -->
-        <div class="card card-outline card-primary">
-            <div class="card-header text-center">
-                <a href="#" class="h1"><b>VBSP</b>OSS</a>
+    <div class="login-shell">
+        <section class="brand-panel">
+            <div class="brand-top">
+                <div class="brand-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Hệ thống nội bộ bảo mật</span>
+                </div>
+
+                <h1 class="brand-title">
+                    Hệ thống Quản trị vận hành Intellect iDC
+                </h1>
+                <p class="brand-desc">
+                    Phục vụ công tác quản trị, cấu hình tham số, thay đổi ngày giao dịch,
+                    và quản lý người dùng... đảm bảo vận hành hệ thống Core Banking an toàn, ổn định và hiệu quả.
+                </p>
             </div>
-            <div class="card-body">
-                <p class="login-box-msg">Đăng nhập chương trình Quản trị vận hành CoreBanking</p>
+
+            <div class="brand-bottom">
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Xác thực tài khoản an toàn và ổn định</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Truy cập nhanh các chức năng vận hành hệ thống</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-headset"></i>
+                        <span>Hỗ trợ kỹ thuật khi cần xử lý sự cố</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="login-panel">
+            <div class="login-card-modern">
+                <div class="login-header">
+                    <div class="login-logo-modern">
+                        <div class="logo-mark">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="logo-text">VBSP<span>OSS</span></div>
+                    </div>
+
+                    <h2 class="login-title">Đăng nhập</h2>
+                    <p class="login-subtitle">
+                        Vui lòng nhập thông tin tài khoản để truy cập chương trình Quản trị vận hành Intellect iDC.
+                    </p>
+                </div>
 
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div class="alert alert-danger">
-                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                    <div class="validation-summary-custom">
+                        @Html.ValidationSummary(false, "", new { @class = "mb-0" })
                     </div>
                 }
 
-                <form asp-action="Login" method="post">
-                    <div class="input-group mb-3">
-                        <input asp-for="UserName" class="form-control" placeholder="Tài khoản người dùng">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-envelope"></span>
-                            </div>
+                <form asp-action="Login" method="post" autocomplete="off">
+                    <div class="field-block">
+                        <label asp-for="UserName" class="field-label">Tài khoản</label>
+                        <div class="input-modern">
+                            <span class="input-icon-left"><i class="fas fa-user"></i></span>
+                            <input asp-for="UserName" class="form-control" placeholder="Nhập tài khoản người dùng" />
                         </div>
                         <span asp-validation-for="UserName" class="text-danger"></span>
                     </div>
-                    <div class="input-group mb-3">
-                        <input asp-for="Password" type="password" class="form-control" placeholder="Mật khẩu">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
+
+                    <div class="field-block">
+                        <label asp-for="Password" class="field-label">Mật khẩu</label>
+                        <div class="input-modern">
+                            <span class="input-icon-left"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Password" id="Password" type="password" class="form-control" placeholder="Nhập mật khẩu" />
+                            <button type="button" class="input-icon-right" id="togglePassword" tabindex="-1" aria-label="Hiện hoặc ẩn mật khẩu">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
-                    <div class="row">
-                        <div class="col-7">
-                            <div class="icheck-primary">
-                                <input type="checkbox" id="RememberMe" name="RememberMe">
-                                <label for="remember">
-                                    Ghi nhớ tôi
-                                </label>
-                            </div>
-                        </div>
-                        <!-- /.col -->
-                        <div class="col-5">
-                            <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
-                        </div>
-                        <!-- /.col -->
+
+                    <div class="login-options">
+                        <label for="RememberMe" class="remember-modern">
+                            <input type="checkbox" id="RememberMe" name="RememberMe" />
+                            <span>Ghi nhớ đăng nhập</span>
+                        </label>
                     </div>
+
+                    <button type="submit" class="btn btn-primary btn-login-modern">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Đăng nhập
+                    </button>
                 </form>
 
-                <!-- Placeholder để giữ kích thước form -->
-                <div class="social-auth-links text-center mt-2 mb-3" style="visibility: hidden; height: 80px;">
-                    <a href="#" class="btn btn-block btn-primary" style="display: none;">
-                        <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
-                    </a>
-                    <a href="#" class="btn btn-block btn-danger" style="display: none;">
-                        <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
-                    </a>
+                <div class="login-footer">
+                    <div>
+                        Cần hỗ trợ? Liên hệ
+                        <a href="tel:02436417212" class="support-link">0243.6417.212</a>
+                    </div>
+                    <div class="copyright-note">
+                        © @DateTime.Now.Year VBSPOSS - Hệ thống Quản trị vận hành Intellect iDC
+                    </div>
                 </div>
-                <!-- /.social-auth-links -->
-                <!-- Thay bằng đoạn text -->
-                <p class="mb-0 text-center" style="color: darkgray;">Liên hệ 0243.6417.212 nếu bạn cần hỗ trợ.</p>
             </div>
-            <!-- /.card-body -->
-        </div>
-        <!-- /.card -->
+        </section>
     </div>
 
     <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/dist/js/adminlte.min.js"></script>
-    <script src="~/plugins/jquery/jquery.min.js"></script> <!-- Thêm jQuery để tránh lỗi -->
+
+    <script>
+        $(function () {
+            $("#togglePassword").on("click", function () {
+                const passwordInput = $("#Password");
+                const icon = $(this).find("i");
+                const isPassword = passwordInput.attr("type") === "password";
+
+                passwordInput.attr("type", isPassword ? "text" : "password");
+                icon.toggleClass("fa-eye fa-eye-slash");
+            });
+        });
+    </script>
 </body>
 </html>
