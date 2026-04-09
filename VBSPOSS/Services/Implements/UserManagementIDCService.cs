@@ -1656,78 +1656,49 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId)
+        public async Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string pUserId)
         {
             try
             {
-                var pUserId = new OracleParameter("P_USERID", OracleDbType.Varchar2)
-                {
-                    Direction = ParameterDirection.Input,
-                    Value = userId
-                };
+                var sUserIdInput = new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId };
+                var iRowsDeletedOut = new OracleParameter("P_ROWS_DELETED", OracleDbType.Int32) { Direction = ParameterDirection.Output };
+                var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Int32) { Direction = ParameterDirection.Output };
+                var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
 
-                var pRowsDeleted = new OracleParameter("P_ROWS_DELETED", OracleDbType.Int32)
-                {
-                    Direction = ParameterDirection.Output
-                };
-
-                var pSuccess = new OracleParameter("P_SUCCESS", OracleDbType.Int32) 
-                {
-                    Direction = ParameterDirection.Output
-                };
-
-                var pMessage = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000)
-                {
-                    Direction = ParameterDirection.Output
-                };
-
-                var sql = @"BEGIN 
-                    VBSP_OSS_GET.SP_DELETE_AUTHSECTYPE_BY_USERID(
-                        :P_USERID, 
-                        :P_ROWS_DELETED, 
-                        :P_SUCCESS, 
-                        :P_MESSAGE
-                    ); 
-                END;";
-
-                await _dbContextIDC.Database.ExecuteSqlRawAsync(
-                    sql,
-                    pUserId, pRowsDeleted, pSuccess, pMessage
-                );
+                var sSQL = @"BEGIN VBSP_OSS_GET.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID, :P_ROWS_DELETED, :P_SUCCESS, :P_MESSAGE); END;";
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRowsDeletedOut, iSuccessOut, sMessageOut);
 
                 // Mapping kết quả
-                var result = new ExecuteResultModelModel
-                {
-                    RowsAffected = pRowsDeleted.Value == DBNull.Value ? 0 : Convert.ToInt32(pRowsDeleted.Value),
-                    Success = pSuccess.Value == DBNull.Value ? -1 : Convert.ToInt32(pSuccess.Value),
-                    Message = pMessage.Value?.ToString()
-                };
+                var objExecuteResult = new ExecuteResultModelModel
+                        {
+                            RowsAffected = iRowsDeletedOut.Value == DBNull.Value ? 0 : Convert.ToInt32(iRowsDeletedOut.Value),
+                            Success = iSuccessOut.Value == DBNull.Value ? -1 : Convert.ToInt32(iSuccessOut.Value),
+                            Message = sMessageOut.Value?.ToString()
+                        };
 
                 // Map TxnStatus chuẩn hoá
-                result.TxnStatus = result.Success switch
+                objExecuteResult.TxnStatus = objExecuteResult.Success switch
                 {
-                    1 => "Success",
-                    0 => "Failed",
-                    _ => "Errored"
+                    1 => ResultValueAPI.ResultValue_Status_Success,
+                    0 => ResultValueAPI.ResultValue_Status_Failed,
+                    -1 => ResultValueAPI.ResultValue_Status_Errored,
+                    _ => ResultValueAPI.ResultValue_Status_Errored
                 };
-
-                return result;
+                return objExecuteResult;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"DeleteAuthSecTypeByUserIdAsync('{userId}') => Error: {ex.Message}");
+                Console.WriteLine($"DeleteAuthSecTypeByUserIdAsync('{pUserId}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm xóa AuthSecType theo UserId " +
-                                        $"DeleteAuthSecTypeByUserIdAsync('{userId}') => Error: {ex.Message}", ex);
+                                        $"DeleteAuthSecTypeByUserIdAsync('{pUserId}') => Error: {ex.Message}", ex);
             }
-
-
-
         }
+
+
     }
 }
