@@ -468,7 +468,7 @@ namespace VBSPOSS.Controllers
 
                 if (listStaffVBSPTemp != null && listStaffVBSPTemp.Count != 0)
                 {
-                    foreach (StaffVbspInforViewModel item in listStaffVBSP.Result)
+                    foreach (StaffVbspInforViewModel item in listStaffVBSPTemp)
                     {
                         iCountTemp++;
                         if (pFlagTextShow == "1") //Hiển thị Tên

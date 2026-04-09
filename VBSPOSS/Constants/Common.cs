@@ -838,18 +838,23 @@ namespace VBSPOSS.Constants
             };
         }
 
-         public static List<ValueConstModel> GetAll()
+        public static List<ValueConstModel> GetAll()
         {
-            return new List<ValueConstModel>
-            {
-                FunctionTypeFlag_ADDNEW_USER,
-                FunctionTypeFlag_ResetPassword,
-                FunctionTypeFlag_ENABLE_USER,
-                FunctionTypeFlag_DISABLE_USER,
-                FunctionTypeFlag_MODIFY_USER,
-                FunctionTypeFlag_CHANGE_POS,
-                FunctionTypeFlag_CHANGE_ROLE
-            };
+           return new List<ValueConstModel>
+           {
+               FunctionTypeFlag_ADDNEW_USER,
+               FunctionTypeFlag_ResetPassword,
+               FunctionTypeFlag_ENABLE_USER,
+               FunctionTypeFlag_DISABLE_USER,
+               FunctionTypeFlag_MODIFY_USER,
+               FunctionTypeFlag_CHANGE_POS,
+               FunctionTypeFlag_CHANGE_ROLE
+           };
+        }
+
+        public static ValueConstModel GetByCode(string code)
+        {
+            return GetAll().FirstOrDefault(x => x.Code == code);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using VBSPOSS.Integration.ViewModel;
+﻿using VBSPOSS.Data.OSS.Models;
+using VBSPOSS.Integration.ViewModel;
 using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces
@@ -227,5 +228,8 @@ namespace VBSPOSS.Services.Interfaces
         ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
         /// </returns>
         int CheckOpenCashByUserId(string pUserId, string pReportDate);
+        Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId);
+        List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai);
+
     }
 }

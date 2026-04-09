@@ -402,8 +402,8 @@
         </div>
         <div class="row" style="margin-bottom: 15px; padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Tài khoản đăng nhập IDC</label>
-                @Html.Kendo().TextBoxFor(m=>m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                <label class="lbcontrol" style="width: 170px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:3px; ">Tài khoản đăng nhập</label>
+                @Html.Kendo().TextBoxFor(m=>m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 70px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Họ đệm </label>
                 @Html.Kendo().TextBoxFor(m => m.FirstName).HtmlAttributes(new { @readonly = "readonly", style = " width: 90px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right: 10px;">Tên đệm </label>
@@ -416,7 +416,7 @@
                                 .DataValueField("id")
                                 .ClearButton(false)
                                 .DataSource(source => { source.Read(read => { read.Action("GetListEntityOfUserIDC", "ListOfValue").Data("paramLoadListEntityOfUserIDC"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                                 .Suggest(true)
                                 .AutoBind(true)
                                 .SelectedIndex(0))
