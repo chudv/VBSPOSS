@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
 using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.RulesetToEditorconfig;
 using Microsoft.Data.SqlClient;
@@ -13,6 +15,7 @@ using System.Reflection.Emit;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
+using VBSPOSS.Data.IntellectIDC.Models;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Integration.Interfaces;
 using VBSPOSS.Integration.Model;
@@ -1639,7 +1642,7 @@ namespace VBSPOSS.Services.Implements
 
             try
             {
-                string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{pReportDate}')) Code From Dual ";
+                string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{pReportDate}')) Code From Dual;";
                 var iValueRet = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
                 if (iValueRet != null)
                 {
@@ -1652,6 +1655,51 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
+
+        //public Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserId(string pUserId)
+        //{
+        //    ExecuteResultModelModel objResultDeleteAuthSecType = new ExecuteResultModelModel();
+        //    if (string.IsNullOrEmpty(pUserId))
+        //        pUserId = "";
+        //    try
+        //    {
+        //        int iRowsDeleted = 0, iSuccessOut;
+        //        string sMessageOut = "";
+        //        OracleParameter paramUserId = new OracleParameter("P_USERID", pUserId);
+        //        OracleParameter paramRowsDeletedOut = new OracleParameter("P_ROWS_DELETED", OracleDbType.Int32, ParameterDirection.Output);
+        //        OracleParameter paramSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Int32, ParameterDirection.Output);
+        //        OracleParameter paramMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, ParameterDirection.Output);
+        //        paramMessageOut.Size = 1024;               
+        //        string sSQL = "BEGIN VBSP_OSS_GET.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID,:P_ROWS_DELETED,:P_SUCCESS,:P_MESSAGE); END;";
+        //        var loanCollationData = _dbContextIDC.LoanCollationDatas.FromSqlRaw(sSQL, paramPosCode, paramReportDate, paramDistricCode, paramCommuneCode, paramMassOrgCode, paramGroupId, paramUncheckedLoanOutBalance, paramRemoveLoanDueOfYear, paramFlagCall, paramCrsData, paramMessage).ToList();
+        //        foreach (var item in loanCollationData)
+        //        {
+        //            iCount++;
+        //            DownloadDataCollationViewModel objItem = new DownloadDataCollationViewModel();
+        //            objItem = _mapper.Map<DownloadDataCollationViewModel>(item);
+        //            objItem.CollationKey = pCollationKey;
+        //            objItem.DisbDateText = Convert.ToDateTime(item.DisbDate).ToString("dd/MM/yyyy");
+        //            if (sFlagCall == "9")
+        //            {
+        //                objItem.STT = iCount.ToString();
+        //            }
+        //            //Một số trường hợp phải chia cho đơn vị
+        //            if (pCollationKey == Constants.ExcelTemplateFileName.KT_TCH_HUYEN_KQHDHOICAPHUYEN_001 || pCollationKey == Constants.ExcelTemplateFileName.KT_TCH_TINH_KQHDHOICAPTINH_001 || pCollationKey == Constants.ExcelTemplateFileName.KT_TCH_XA_KQHDHOICAPXA_001)
+        //            {
+        //                objItem.PrinBalanceOfMassOrg = item.PrinBalanceOfMassOrg / 1000000;
+        //                objItem.PrinBalance = item.PrinBalance / 1000000;
+        //                objItem.OverDueAmount = item.OverDueAmount / 1000000;
+        //                objItem.FreezeAmount = item.FreezeAmount / 1000000;
+        //            }
+        //            answer.Add(objItem);
+        //        }
+        //        return objResultDeleteAuthSecType;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
 
 
