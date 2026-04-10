@@ -197,7 +197,7 @@
         }
         mainWindow.kendoWindow({
             width: "1024px",
-            height: "620px",
+            height: "650px",
             title: "Thêm mới cấu hình thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
@@ -229,9 +229,15 @@
 
     function deleteItem(e) {
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.StaffName + " - " + dataItem.StaffPositionName + "]";
-        if (dataItem.Status === 0) {
-            alert("Thành viên " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện đánh dấu xóa lại!");
+        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
+        if (dataItem.Status.toString() == "0") {
+            alert(sMessInfor + " đã được đánh dấu xóa nên không thể xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "3") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "4") {
+            alert(sMessInfor + " đã được từ chối nên không thể xóa. Vui lòng kiểm tra lại!");
         }
         else {
             var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin thành viên " + sMessInfor + " không?");
@@ -276,7 +282,7 @@
     function showEdit(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "Người dùng [" + dataItem.UserId + "]";
+        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
         if (dataItem.Status.toString() == "0") {
             alert(sMessInfor + " đã được đánh dấu xóa nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
@@ -291,7 +297,7 @@
             var sFlagCall = $("#EventFlag_EditTemp").val();
             mainWindow.kendoWindow({
                 width: "1024px",
-                height: "620px",
+                height: "650px",
                 title: "Chỉnh sửa thông tin người dùng IDC",
                 content: {
                     url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
@@ -303,7 +309,7 @@
                 close: onClose,
                 actions: ["Refresh", "Close"]
             });
-            mainWindow.data("kendoWindow").wrapper.css({ height: 620, width: 1024 });
+            mainWindow.data("kendoWindow").wrapper.css({ height: 650, width: 1024 });
             mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa thông tin người dùng IDC");
         }
     }
@@ -311,22 +317,22 @@
     function submitForApprovalIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
         var grid = $("#gridMainTidePanelRate").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
         var deletedStatuses = [0, 2, 3, 4];
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+                alert(sMessInfor + " đã được đánh dấu xóa nên không thể thay đổi chức năng. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 1) {
+                alert(sMessInfor + " đang ở bước tạo lập không thể thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 2) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
-            }
-            else if (dataItem.Status == 3) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert(sMessInfor + " đã được trình duyệt nên không thể thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 4) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert(sMessInfor + " đã được từ chối nên không thể thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             return;
         }
@@ -396,12 +402,12 @@
         var sMessInfor = "[" + dataItem.FullName + "]";
         var grid = $("#gridMainIDC").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
-        var deletedStatuses = [0, 1, 2, 4];
+        var deletedStatuses = [0, 1, 2, 4, 5];
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
                 alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
             }
-            else if (dataItem.Status == 1) {
+            else if (dataItem.Status == 1 || dataItem.Status == 5) {
                 alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 2) {
@@ -460,7 +466,7 @@
                         .Events(e => e.Change("Change_PosCode"))
                         .ClearButton(false)
                         .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-                        .HtmlAttributes(new { style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                        .HtmlAttributes(new { style = "width: 200px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                         .Suggest(true)
                         .AutoBind(true)
                         .SelectedIndex(0))
@@ -474,17 +480,17 @@
                         .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                         .Filter("contains")
                         .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top:3px;padding-right:6px;">Tên/Mã người dùng</label>
+            <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top:3px;padding-right:6px;">Tên người dùng</label>
             @(Html.Kendo().TextBox().Name("StaffName_Find")
-                        .Placeholder("Nhập tên hoặc mã cán bộ")
-                        .HtmlAttributes(new { style = "width: 200px;padding-left: 3px;padding-right: 2px;" }))
+                        .Placeholder("Nhập tên hoặc mã")
+                        .HtmlAttributes(new { style = "width: 160px;padding-left: 3px;padding-right: 2px;" }))
 
-            <label class="lbcontrol" style="width: 70px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
+            <label class="lbcontrol" style="width: 80px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("Status_Find")
                         .DataTextField("Text")
                         .DataValueField("Value")
-                        .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" }, new SelectListItem() { Text = "Mở", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" } })
-                        .HtmlAttributes(new { style = "width: 120px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
+                        .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Phê duyệt", Value = "3" }, new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" } })
+                        .HtmlAttributes(new { style = "width: 150px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
                         .SelectedIndex(0)
                         )
 
@@ -536,7 +542,7 @@
                                     title = "Yêu cầu chỉnh sửa người dùng",
                                     @class = "btn-EditIDC"
                                 });
-                            }).Width(70).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                            }).Width(90).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                             columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });

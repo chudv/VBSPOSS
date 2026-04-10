@@ -156,6 +156,9 @@
         if (lcButtonType == "9") {
             lcStatus = 2;
         }
+        if (lcButtonType == "8") {
+            lcStatus = 1;
+        }
         return {
             pPosCode: $("#MainPosCode_Find").val(),
             pFromEffectiveDate: "",
@@ -296,22 +299,22 @@
     function submitForApprovalIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.CircularRefNum + "]";
+        var sMessInfor = "[" + dataItem.FullName + "]";
         var grid = $("#gridMainTidePanelRate").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
         var deletedStatuses = [0, 2, 3, 4];
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện trình duyệt!");
+                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
             }
             else if (dataItem.Status == 2) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đang trình duyệt, không thể thực hiện trình duyệt lại. Vui lòng kiểm tra lại!");
+                alert("Người dùng " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 3) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được phê duyệt, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert("Người dùng " + sMessInfor + " đã phê duyệt, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 4) {
-                alert("Cấu hình lãi suất rút trước hạn tiền gửi CKH " + sMessInfor + " đã được từ chối, không thể thực hiện trình duyệt. Vui lòng kiểm tra lại!");
+                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu phê duyệt. Vui lòng kiểm tra lại!");
             }
             return;
         }
@@ -325,7 +328,7 @@
             title: "Trình duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "", pButtonType: "8" }
+                data: { pId: dataItem.Id,pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "", pButtonType: "8" }
             },
             resizable: false,
             visible: false,
@@ -375,7 +378,7 @@
             title: "Phê duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "", pButtonType: "9" }
+                data: { pId: dataItem.Id,pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "", pButtonType: "9" }
             },
             resizable: false,
             visible: false,
@@ -471,6 +474,40 @@
         console.log("Danh sách hiện tại:", listApprovalData);
         // lưu vào hidden để submit sau
         $("#hiddenApprovalData").val(JSON.stringify(listApprovalData));
+    }
+
+    function addListAttachfilesLink() {
+        var pMainPosCode = parseInt($("#PosCode").val(), 10) || 0;
+        var pFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+        $("#_no_file_attachId").text("");
+        if (pMainPosCode != 0) {
+            $.ajax({
+                type: "GET",
+                url: "../UserManagementIDC/GetListAttachFile_ForGroupFile?pDocumentId=" + pMainPosCode + '&' + 'pDocumentNumber=' + pFunctionType,
+                success: function (data) {
+                    files = data;
+                    if (files != null) {
+                        $("#_no_file_attachId").text("");
+                        for (i = 0; i < files.length; i++) {
+                            var thutu = i + 1;
+                            html = '<a title="' + files[i].Description + '" href="#" ' +
+                                    'onclick="showAttachtFileQDKT(' + pMainPosCode + ',' + files[i].Id + ',\'' + files[i].FileNameNew + '\')">' +
+                                    ' [' + thutu + '] </a>&nbsp;';
+                            $("#_no_file_attachId").append(html);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function showAttachtFileQDKT(vanbanId, fileId, tenFileMoi) {
+        var win = window.open('../UserManagementIDC/LoadPdfFile?pDocumentId=' + vanbanId + '&' + 'pFileId=' + fileId + '&' + 'pFileName=' + tenFileMoi, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            alert('Please allow popups for this website');
+        }
     }
 </script>
 
@@ -632,7 +669,7 @@
     </div>
 
     <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
-    <div class="row" style="padding-top: 5px;">
+    <div id="divUploadFile"  class="row" style="padding-top: 5px;">
         <!-- BÊN TRÁI -->
         <div class="col-md-6 d-flex align-items-center">
             <!-- input file ẩn -->
@@ -660,6 +697,18 @@
             @(Html.Kendo().Button().Name("btnApprovalAll").HtmlAttributes(new {type = "button",style = "font-weight:bold; width:110px; color: blue; height: 25px;",title = "Trình duyệt/Phê duyệt người dùng IDC"}).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu lại"))
         </div>
     </div>
+
+    <div id="divFileAttached"  class="row" style="padding-top: 5px;">
+        <div class="col-md-6 d-flex align-items-center">
+            <span class="lbcontrol" style="text-align: right; color: navy;width:95px;padding-right:5px;font-weight:bold;">File đính kèm</span>
+            <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachfileIdQDKT"><span style="color:red;"></span><span id="_no_file_attachId"></span> </div>
+        </div>
+        <div class="col-md-6 text-right">
+            @(Html.Kendo().Button().Name("btnAuthorizeAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:110px; color: blue; height: 25px;", title = "Trình duyệt/Phê duyệt người dùng IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu lại"))
+        </div>
+
+    </div>
+
 
 </div>
 
@@ -702,6 +751,13 @@
         var lcButtonType = $("#ButtonTypeView").val();
         if (lcButtonType == "9") {
             $("#btnPrintToTrinh").hide();
+            $("#divUploadFile").hide();
+            $("#divFileAttached").show();
+            addListAttachfilesLink();
+        }
+        else if(lcButtonType == "8"){
+            $("#divFileAttached").hide();
+            $("#divUploadFile").show();
         }
         $("#btnChooseFile").click(function () {
             $("#fileUpload").click();
@@ -738,55 +794,113 @@
             $("#fileName").text(file.name);
             $("#btnRemoveFile").show();
         });
-
-
     });
 
-    $("#btnApprovalAll").click(function () {
+    // $("#btnApprovalAll").click(function () {
+    //     if (listApprovalData.length === 0) {
+    //         alert("Chưa có dữ liệu thông tin trình duyệt/phê duyệt người dùng IDC. Vui lòng trình duyệt/Phê duyệt!");
+    //         return;
+    //     }
+    //     // Check file đính kèm
+    //     var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+    //     var requireFileTypes = ["ADDNEW_USER", "DELETE_USER", "CHANGE_POS"];
+    //     if (requireFileTypes.includes(functionType)) {
+    //         var fileInput = $("#fileUpload")[0];
+    //         if (!fileInput.files || fileInput.files.length === 0) {
+    //             alert("Nghiệp vụ này yêu cầu phải đính kèm file PDF!");
+    //             return;
+    //         }
+    //         //check PDF
+    //         var fileName = fileInput.files[0].name.toLowerCase();
+    //         if (!fileName.endsWith(".pdf")) {
+    //             alert("File phải là định dạng PDF!");
+    //             return;
+    //         }
+    //     }
+    //     $.ajax({
+    //         url: "/UserManagementIDC/SaveUpdateApproval",
+    //         type: "POST",
+    //         contentType: "application/json",
+    //         data: JSON.stringify(listApprovalData),
+    //         success: function (res) {
+    //             if (res === "0") {
+    //                 alert("Lưu thành công!");
+    //                 dataChange = false;
+    //             // } else if (res === "1") {
+    //             //     alert("Phòng giao dịch/Hội sở tỉnh không được để trống!");
+    //             // } else if (res === "2") {
+    //             //     alert("Cán bộ được phân giao người đại diện không được để trống!");
+    //             // } else if (res === "3") {
+    //             //     alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
+    //             // } else if (res === "4") {
+    //             //     alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+    //             } else {
+    //                 alert("Có lỗi xảy ra!");
+    //             }
+    //         },
+    //         error: function (xhr, status, error) {
+    //             console.error("AJAX Error:", xhr.responseText);
+    //             alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
+    //         }
+    //     });
+    // });
+
+    $("#btnApprovalAll, #btnAuthorizeAll").click(function () {
         if (listApprovalData.length === 0) {
-            alert("Chưa có dữ liệu!");
+            alert("Chưa có dữ liệu thông tin trình duyệt/phê duyệt người dùng IDC. Vui lòng trình duyệt/Phê duyệt!");
             return;
         }
-        // Check file đính kèm
+        var lcButtonType = $("#ButtonTypeView").val();
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
         var requireFileTypes = ["ADDNEW_USER", "DELETE_USER", "CHANGE_POS"];
-        if (requireFileTypes.includes(functionType)) {
-            var fileInput = $("#fileUpload")[0];
-            if (!fileInput.files || fileInput.files.length === 0) {
+
+        var fileInput = $("#fileUpload")[0];
+        var file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+        if (requireFileTypes.includes(functionType) && lcButtonType == "8") {
+            if (!file) {
                 alert("Nghiệp vụ này yêu cầu phải đính kèm file PDF!");
                 return;
             }
-            //check PDF
-            var fileName = fileInput.files[0].name.toLowerCase();
-            if (!fileName.endsWith(".pdf")) {
-                alert("File phải là định dạng PDF!");
+
+            if (!file.name.toLowerCase().endsWith(".pdf")) {
+                alert("File phải là PDF!");
                 return;
             }
         }
+
+        var objFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox");
+        var objMainPos = $("#PosCode").data("kendoComboBox");
+
+        //Tạo FormData
+        var formData = new FormData();
+        // append list data
+        formData.append("listApprovalData", JSON.stringify(listApprovalData));
+        formData.append("pFunctionType", objFunctionType.value());
+        formData.append("pMainPosCode", objMainPos.value());
+        // append file
+        if (file) {
+            formData.append("fileUpload", file);
+        }
+
         $.ajax({
             url: "/UserManagementIDC/SaveUpdateApproval",
             type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(listApprovalData),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (res) {
                 if (res === "0") {
                     alert("Lưu thành công!");
                     dataChange = false;
-                // } else if (res === "1") {
-                //     alert("Phòng giao dịch/Hội sở tỉnh không được để trống!");
-                // } else if (res === "2") {
-                //     alert("Cán bộ được phân giao người đại diện không được để trống!");
-                // } else if (res === "3") {
-                //     alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
-                // } else if (res === "4") {
-                //     alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+                    refreshGridIDCApproval();
                 } else {
                     alert("Có lỗi xảy ra!");
                 }
             },
-            error: function (xhr, status, error) {
-                console.error("AJAX Error:", xhr.responseText);
-                alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                alert("Lỗi hệ thống!");
             }
         });
     });

@@ -322,7 +322,7 @@ namespace VBSPOSS.Services.Implements
                             objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
                             objUserManagementUpdNew.ApproverBy = "";
                             objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
-                            objUserManagementUpdNew.StartDate = dCurrentDateTmp;
+                            objUserManagementUpdNew.StartDate = pUserManagementUpd.StartDate;
                         }
                         // Thêm mới theo chức năng yêu cầu chỉnh sửa
                         else
@@ -401,7 +401,13 @@ namespace VBSPOSS.Services.Implements
                         if (iSaveChanges > 0)
                         {
                             iCountUpdate++;
-                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;
+                            iRetIdUpd = objUserManagementIDCsUpdNew.Id;                      
+                            var objNew = new UserManagementIDC();                        
+                            _dbContext.Entry(objNew).CurrentValues.SetValues(objUserManagementIDCsUpdNew);
+                            objNew.Id = 0;
+                            objNew.Status = 1; 
+                            _dbContext.UserManagementIDCs.Add(objNew);
+                            _dbContext.SaveChanges();
                         }
                     }
                     //Trường hợp trình duyệt ở cấp chi nhánh
@@ -427,8 +433,8 @@ namespace VBSPOSS.Services.Implements
                         {
                             AddUserRequestViewModel objAddUser = new AddUserRequestViewModel();
                             objAddUser.Ticket = objUserManagementIDCsUpdNew.Ticket;
-                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId + "2";
-                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName + "2";
+                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId + "3";
+                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName + "3";
                             objAddUser.FirstName = objUserManagementIDCsUpdNew.FirstName;
                             objAddUser.LastName = objUserManagementIDCsUpdNew.LastName;
                             objAddUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
@@ -1328,7 +1334,7 @@ namespace VBSPOSS.Services.Implements
                         && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode) || (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode)))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
                         && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
-                        && (iStatus == 0 || w.Status == iStatus)
+                        && (iStatus == -1 || w.Status == iStatus)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserManagementIDC c)
                         {
@@ -1655,6 +1661,18 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
+
+        /// <summary>
+        /// Hàm lưu file đính kèm
+        /// </summary>
+        public async Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId)
+        {
+            if (attachedFiles == null || !attachedFiles.Any())
+            {
+                return null;
+            }
+            try
+            {
 
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
