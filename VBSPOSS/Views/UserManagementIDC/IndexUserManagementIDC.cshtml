@@ -239,6 +239,10 @@
         else if (dataItem.Status.toString() == "4") {
             alert(sMessInfor + " đã được từ chối nên không thể xóa. Vui lòng kiểm tra lại!");
         }
+        else if (dataItem.FunctionType != "ADDNEW_USER") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+
         else {
             var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin thành viên " + sMessInfor + " không?");
             if (isConfirm == true) {
@@ -291,6 +295,9 @@
         }
         else if (dataItem.Status.toString() == "4") {
             alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.FunctionType != "ADDNEW_USER") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
         else
         {
@@ -428,7 +435,7 @@
             title: "Yêu cầu chỉnh sửa thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10" }
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10", pId: dataItem.Id }
             },
             resizable: false,
             visible: false,
@@ -579,6 +586,7 @@
                             columns.Bound(c => c.ModifiedDate).Hidden();
                             columns.Bound(c => c.ApproverBy).Hidden();
                             columns.Bound(c => c.ApprovalDate).Hidden();
+                            columns.Bound(c => c.FunctionType).Hidden();
                             //columns.Bound(c => c.Genders).Hidden();
                             columns.Bound(c => c.StatusText).Hidden();
                             @* columns.Bound(c => c.StaffPositionName).Hidden();

@@ -808,6 +808,9 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_DELETE_USER = new ValueConstModel { Value = 11, Code = "DELETE_USER", Description = "Xóa người dùng IDC" };
 
+        public static ValueConstModel FunctionTypeFlag_REJECT_BRANCH = new ValueConstModel { Value = 12, Code = "REJECT_BRANCH", Description = "Từ chối cấp chi nhánh" };
+        
+        public static ValueConstModel FunctionTypeFlag_REJECT_MAIN = new ValueConstModel { Value = 12, Code = "REJECT_MAIN", Description = "Từ chối cấp trung ương" };
 
         public static ValueConstModel GetByValue(int value)
         {
@@ -820,6 +823,7 @@ namespace VBSPOSS.Constants
                 5 => FunctionTypeFlag_MODIFY_USER,
                 6 => FunctionTypeFlag_CHANGE_POS,
                 7 => FunctionTypeFlag_CHANGE_ROLE,
+                11 => FunctionTypeFlag_DELETE_USER,
 
                 _ => null
             };
@@ -834,7 +838,8 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_DISABLE_USER,
                 FunctionTypeFlag_MODIFY_USER,
                 FunctionTypeFlag_CHANGE_POS,
-                FunctionTypeFlag_CHANGE_ROLE
+                FunctionTypeFlag_CHANGE_ROLE,
+                FunctionTypeFlag_DELETE_USER
             };
         }
 
@@ -848,7 +853,8 @@ namespace VBSPOSS.Constants
                FunctionTypeFlag_DISABLE_USER,
                FunctionTypeFlag_MODIFY_USER,
                FunctionTypeFlag_CHANGE_POS,
-               FunctionTypeFlag_CHANGE_ROLE
+               FunctionTypeFlag_CHANGE_ROLE,
+               FunctionTypeFlag_DELETE_USER
            };
         }
 

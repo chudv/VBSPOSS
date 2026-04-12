@@ -22,7 +22,7 @@
         color: navy !important;
     }
 
-    #EffectiveDate, #ExpiryDate {
+    #StartDate, #ExpiryDate {
         width: 50px !important;
         max-width: 100% !important;
         font-family: Tahoma;
@@ -53,7 +53,7 @@
             pStatus: "O",
             pShortName: "1",
             pTitleChoice: "",
-            pFlagTextShow: "1",
+            pFlagTextShow: "2",
             pUserPosCode: "",
             pUserName: "",
             pFlagWholeBank: 1
@@ -72,17 +72,16 @@
     function paramLoadListRoleOfUserIDC() {
         return {
             pPosCode: $("#UserPosCodeView").val(),
-            pTitleChoice: ""
+            pTitleChoice: "",
+            pFlagShow: "3"
         };
     }
 
     function Change_PosCode() {
-
-        if (isEditMode) return;
-
-        var staffIdReload = $("#StaffId").data("kendoComboBox");
-        if (staffIdReload != null) {
-            staffIdReload.dataSource.read();
+        var combo = $("#PosCode").data("kendoComboBox");
+        var dataItem = combo.dataItem();
+        if (dataItem) {
+            $("#PosName").val(dataItem.value);
         }
     }
 
@@ -175,7 +174,6 @@
                         $("#StaffCode").val(staffLists[0].StaffCode);
                         $("#Genders").val(staffLists[0].GenderText);
                         $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
-                        $("#PosNameIDC").val(staffLists[0].StaffPosName);
                         $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
                         $("#StaffPositionName").val(staffLists[0].StaffPositionName);
                         $("#MobileNumberEdit").val($("#MobileNumber").val());
@@ -184,9 +182,20 @@
                         $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
                         $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
                         $("#FullName").val(staffLists[0].StaffName);
-                        $("#MobileNumberIDC").val(staffLists[0].StaffMobileNo);
-                        $("#EmailAddressIDC").val(staffLists[0].StaffEmail);
+                        $("#MobileNumberIDC").val($("#MobileNumber").val());
+                        $("#EmailAddressIDC").val($("#EmailAddress").val());
                         $("#PosCodeNew").val($("#PosCode").val());
+                        // Gọi hàm check dữ liệu bảng UserIDCMaster
+                        $.ajax({
+                            type: "GET",
+                            url: "../UserManagementIDC/LoadGridData_UserIDCMaster",
+                            data: {
+                                pUserId: staffLists[0].StaffCode
+                            },
+                            success: function (res) {
+                                $("#PosNameIDC").val(res.Data[0].PosName);
+                            }
+                        });
                     }
                 }
             });
@@ -283,7 +292,7 @@
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
     @Html.HiddenFor(m => m.AuthsecType, new { @Value = Model == null ? "" : Model.AuthsecType })
     @Html.HiddenFor(m => m.MailIdFlag, new { @Value = Model == null ? "" : Model.MailIdFlag })
-
+    @Html.HiddenFor(m => m.PosName, new { @Value = Model == null ? "" : Model.PosName })
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "CHI TIẾT THÔNG TIN NGƯỜI DÙNG IDC")
     </div>
@@ -292,7 +301,7 @@
         <div style="margin-bottom: 10px;color: navy; padding-top: 0px;" class="row">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 90px;color: navy;text-align:left;">Đơn vị</label>
-                @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("PosNameIDC").HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;">Tài khoản</label>
                 @Html.Kendo().TextBoxFor(m => m.UserId).HtmlAttributes(new { @readonly = "readonly", style = " width: 100px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;">Họ tên</label>
@@ -376,8 +385,8 @@
                                 .Filter("contains")
                                 .Events(e => e.Change("Change_FunctionType"))
                                 .SelectedIndex(0))
-                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Value(DateTime.Today.AddDays(1)).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày bắt đầu</label>
+                @Html.Kendo().DatePickerFor(m => m.StartDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
             </div>
         </div>
 
@@ -418,7 +427,7 @@
                                 .DataValueField("id")
                                 .ClearButton(false)
                                 .DataSource(source => { source.Read(read => { read.Action("GetListRoleOfUserIDC", "ListOfValue").Data("paramLoadListRoleOfUserIDC"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .HtmlAttributes(new { style = "width: 400px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                                 .Events(e => e.Change("Change_RoleOfUserIDC"))
                                 .Suggest(true)
                                 .AutoBind(true)
@@ -494,7 +503,7 @@
             data: dataString,
             success: function (result) {
                 if (result == "0") {
-                    alert("Bạn đã cập nhật thành công Thông tin người đại diện!");
+                    alert("Bạn đã cập nhật thành công Thông tin người dùng IDC!");
                     dataChange = true;
                     onCloseDetail();
                 } else {
@@ -507,6 +516,15 @@
                         alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
                     else if (result == "4")
                         alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+                    else if (result == "5")
+                        alert("Người dùng này không được phép cấp lại mật khẩu. Vui lòng liên hệ quản trị viên!");
+                    else if (result == "6")
+                        alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
+                    else if (result == "7")
+                        alert("Thông tin sửa đổi trùng khớp với thông tin trên hệ thống. Vui lòng kiểm tra lại!");
+                    else if (result == "8")
+                        alert("Ngày bắt đầu nhỏ hơn ngày hiện tại. Vui lòng kiểm tra lại!");
+
                 }
             },
             error: function (xhr, status, error) {

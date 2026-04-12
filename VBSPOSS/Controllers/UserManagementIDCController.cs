@@ -256,6 +256,50 @@ namespace VBSPOSS.Controllers
             return PartialView(sNameView, objPosUserIDCMaster);
         }
 
+        //Hàm check dữ liệu trước khi lưu
+        public async Task<int> IsValidSaveUserIDC(UserManagementIDCViewModel objUserIDCFull)
+        {
+            int iResult = 0;
+            try
+            {
+                if (string.IsNullOrEmpty(objUserIDCFull.PosCode))
+                    return 1;
+                if (string.IsNullOrEmpty(objUserIDCFull.StaffCode))
+                    return 2;
+                if (objUserIDCFull.EffectiveDate?.ToString(FormatParameters.FORMAT_DATE) == objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE))
+                    return 3;
+                if (objUserIDCFull.EffectiveDate > objUserIDCFull.EffectiveDate && objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE) != "01/01/0001")
+                    return 4;
+                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
+                    return 5;
+                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code)
+                {
+                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(objUserIDCFull.UserId, objUserIDCFull.StartDate?.ToString("yyyy-MM-dd"));
+                    if(iCheckOpenCash > 0)
+                        return 6;
+                }
+                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
+                {
+                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
+                    if (objViewUserIDCByApi?.ServiceStatusResponseResponseCode == "0")
+                    {
+                        if ((objUserIDCFull.MobileNumber == objViewUserIDCByApi.MobileNumber && objUserIDCFull.EmailAddress == objViewUserIDCByApi.EmailAddress)
+                            && objUserIDCFull.GroupName == objViewUserIDCByApi.GroupName)
+                            return 7;
+                    }
+                }    
+                if (objUserIDCFull.StartDate?.Date < DateTime.Now.Date)
+                    return 8;
+
+                return iResult;
+            }
+            catch
+            {
+                return 99;
+            }
+        }
+
+
         /// <summary>
         /// Hàm thực hiện lưu thông tin người dùng IDC
         /// <param name="pButtonType">Cờ phân biệt thêm mới/Chỉnh sửa/Phê duyệt</param>
@@ -270,7 +314,8 @@ namespace VBSPOSS.Controllers
             try
             {
                 string result = "0";
-                //result = IsValidPosRepresentative(objUserIDC).ToString();
+                var resultValue = await IsValidSaveUserIDC(objUserIDC);
+                result = resultValue.ToString();
                 if (result == "0" && objUserIDC != null && ModelState.IsValid)
                 {
                     foreach (var prop in objUserIDC.GetType().GetProperties())
@@ -366,7 +411,7 @@ namespace VBSPOSS.Controllers
                     iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
                     if (iVal <= 0)
                     {
-                        result = "99";
+                        result = iVal.ToString();
                         break;
                     }
                 }
@@ -380,7 +425,7 @@ namespace VBSPOSS.Controllers
                         Directory.CreateDirectory(uploadPath);
                     }
                     var pFunctionTypeName = FunctionTypeFlag.GetByCode(pFunctionType);
-                    var pFunctionTypeDesc = pFunctionTypeName?.Description ?? "";                                       
+                    var pFunctionTypeDesc = (pFunctionTypeName?.Description ?? "").Replace(" ", "");                                      
                     //pFunctionTypeDesc = Regex.Replace(pFunctionTypeDesc, @"[^a-zA-Z0-9_]", ""); // xử lý ký tự đặc biệt            
                     var timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                     var fileName = $"ToTrinh_{pFunctionTypeDesc}_{timeStamp}{extension}";
@@ -411,16 +456,12 @@ namespace VBSPOSS.Controllers
                         },
                         UserName
                     );
+                    if (saveFileStatus?.Any() != true)
+                    {
+                        throw new Exception("Lưu file thất bại!");
+                    }
                 }
-                if (saveFileStatus != null && saveFileStatus.Any() && iVal > 0)
-                {
-                    return new JsonResult(result);
-                }
-                else
-                {
-                    ModelState.AddModelError("ERROR", "Lưu phê duyệt thất bại.");
-                    return Json(new[] { result }.ToDataSourceResult(request, ModelState));
-                }
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
@@ -475,7 +516,8 @@ namespace VBSPOSS.Controllers
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;
             TempData["ButtonType"] = pButtonType;
-            objPosUserIDCManagement.PosCode = pPosCode;
+            TempData["MainPosCode"] = pPosCode;
+            //objPosUserIDCManagement.PosCode = pPosCode;
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return PartialView(sNameView, objPosUserIDCManagement);
         }
