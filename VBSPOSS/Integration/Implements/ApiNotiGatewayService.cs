@@ -32,11 +32,11 @@ namespace VBSPOSS.Integration.Implements
         /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/noti-send-by-type
         /// </summary>
         /// <returns>Danh sách bản tin</returns>
-        public async Task<string> GetNotiByTypeAsync(string notiType, string sendType)
+        public async Task<string> GetNotiByTypeAsync(string notiType, string sendType, string ottType)
         {
             try
             {
-                var url = $"api/v1/noti-send-by-type?notiType={notiType}&sendType={sendType}";
+                var url = $"api/v1/noti-send-by-type?notiType={notiType}&sendType={sendType}&ottType={ottType}";
                 _logger.LogInformation("Calling Noti API: {Url}", url);
 
                 var response = await _client.GetAsync(url);
@@ -502,8 +502,8 @@ namespace VBSPOSS.Integration.Implements
                 //  "code": "00",
                 //  "message": "Cập nhật dữ liệu thành công!"
                 //}
-    /// </returns>
-    public async Task<UpdateNotiResult> InsertNotiDataList(List<NotificationDataResponse> request)
+        /// </returns>
+        public async Task<UpdateNotiResult> InsertNotiDataList(List<NotificationDataResponse> request)
         {
             if (request == null || !request.Any())
                 throw new ArgumentException("request không được null hoặc rỗng");

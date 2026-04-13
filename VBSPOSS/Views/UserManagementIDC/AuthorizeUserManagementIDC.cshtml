@@ -169,7 +169,13 @@
                                 pUserId: staffLists[0].StaffCode
                             },
                             success: function (res) {
-                                $("#PosNameIDC").val(res.Data[0].PosName);
+
+                                if (res && res.Data && res.Data.length > 0) {
+                                    $("#PosNameIDC").val(res.Data[0].PosName);
+                                } else {
+                                    $("#PosNameIDC").val(staffLists[0].StaffPosName);
+                                }
+
                             }
                         });
                     }

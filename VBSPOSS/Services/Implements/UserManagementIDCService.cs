@@ -12,6 +12,7 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text.Json;
 using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
@@ -33,10 +34,11 @@ namespace VBSPOSS.Services.Implements
         private readonly ApplicationDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
+        private readonly IApiNotiGatewayService _apiNotiGatewayService;
         private readonly ILogger<UserManagementIDCService> _logger;
         private readonly IListOfValueService _serviceLOV;
         public UserManagementIDCService(ApplicationDbContext context, IntellectIDCDbContext dbContextIDC, IMapper mapper, IApiInternalEsbService apiInternalEsbService, IListOfValueService serviceLOV,
-                        ILogger<UserManagementIDCService> logger)
+                        IApiNotiGatewayService apiNotiGatewayService,ILogger<UserManagementIDCService> logger)
         {
             _dbContext = context;
             _dbContextIDC = dbContextIDC;
@@ -44,6 +46,7 @@ namespace VBSPOSS.Services.Implements
             _apiInternalEsbService = apiInternalEsbService;
             _logger = logger;
             _serviceLOV = serviceLOV;
+            _apiNotiGatewayService = apiNotiGatewayService;
         }
         /// <summary>
         /// Hàm lấy danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC
@@ -632,6 +635,10 @@ namespace VBSPOSS.Services.Implements
                                 UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                 objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserManagementIDCsUpdNew);
                                 var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, "1");
+                                if(objCreateUserIDCMaster > 0)
+                                {
+                                    var objNotiData = await InsertNotiData(objUserManagementIDCsUpdNew, pUserNameUpd);
+                                }    
                             }
                             else
                             {
@@ -2085,6 +2092,79 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
-
+        /// <summary>
+        /// Hàm thực hiện gọi API Insert dữ liệu noti vào bảng VBSP_NOTIFICATION_DATA
+        /// Gọi đến API ESB: http://10.63.54.52:8085/api/v1/insert-notification-data
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        public async Task<NotificationDataResponse> InsertNotiData(UserManagementIDC pUserManagementUpd, string pUserNameUpd)
+        {
+            DateTime dCurrentDateTmp = DateTime.Now;
+            NotificationDataResponse objNotiData = new NotificationDataResponse();
+            try
+            {
+                var pMainPosName = _dbContext.ListOfPoss.Where(w => w.Code == pUserManagementUpd.PosCode).Select(s=>s.MainPosName).FirstOrDefault();
+                var listGroupName = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+                if (pUserManagementUpd != null && !string.IsNullOrEmpty(pUserManagementUpd.UserId))
+                {
+                    var pGroupNameDetail = listGroupName.Where(w=>w.Code == pUserManagementUpd.FunctionType).Select(s=>s.Name).FirstOrDefault();
+                    objNotiData.notiType = pUserManagementUpd.FunctionType;
+                    objNotiData.sourceId = "02";
+                    objNotiData.businessDate = pUserManagementUpd.EffectiveDate;
+                    objNotiData.posCode = pUserManagementUpd.PosCode;
+                    objNotiData.posName = pUserManagementUpd.PosName;
+                    objNotiData.customerId = pUserManagementUpd.StaffCode;
+                    objNotiData.customerName = pUserManagementUpd.FirstName + " " + pUserManagementUpd.LastName;
+                    objNotiData.mobileNo = pUserManagementUpd.MobileNumber;
+                    objNotiData.email = pUserManagementUpd.EmailAddress;
+                    objNotiData.d1 = pUserManagementUpd.FirstName + "" + pUserManagementUpd.LastName;
+                    objNotiData.d2 = pMainPosName;
+                    objNotiData.d3 = pUserManagementUpd.UserId;
+                    objNotiData.d4 = pUserManagementUpd.GroupName + " - " + pGroupNameDetail;
+                    objNotiData.d5 = pUserManagementUpd.PosName + ", " + pMainPosName;
+                    objNotiData.d6 = pUserManagementUpd.EffectiveDate?.ToString("yyyyMMdd");
+                    objNotiData.d7 = "OTT_TDCS";
+                    objNotiData.status = "0";
+                    objNotiData.errorCode = "00";
+                    objNotiData.errorCode3 = "00";
+                    objNotiData.sendType = "/3";
+                    objNotiData.status3 = "1";
+                    objNotiData.createdBy = pUserNameUpd;
+                    objNotiData.createdTime = dCurrentDateTmp;
+                    var apiResponse = await _apiNotiGatewayService.InsertNotiDataList(new List<NotificationDataResponse> { objNotiData });
+                    if (apiResponse != null && apiResponse.Code == "00")
+                    {
+                        var apiSendNoti = await _apiNotiGatewayService.GetNotiByTypeAsync(objNotiData.notiType, objNotiData.sendType, objNotiData.d7);
+                        if (string.IsNullOrEmpty(apiSendNoti))
+                        {
+                            throw new Exception("Không parse được response từ Noti API");
+                        }
+                        else
+                        {
+                            var result = JsonSerializer.Deserialize<UpdateNotiResult>(apiSendNoti,new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (result?.Code == "00")
+                            {
+                                Console.WriteLine("Thành công");
+                            }
+                            else
+                            {
+                                throw new Exception("Không parse được response từ Noti API");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Không parse được response từ Noti API");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"InsertNotiData('{pUserManagementUpd.UserId}', '{pUserNameUpd}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi khi insert dữ liệu vào Noti " +
+                                        $"InsertNotiData('{objNotiData.d3}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+            }
+            return objNotiData;
+        }
     }
 }
