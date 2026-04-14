@@ -144,7 +144,7 @@
     }
     function paramLoadListStaffApprovalFind() {
         return {
-            pPosCode: $("#MainPosCode_Find").val(),
+            pPosCode: $("#MainPosCodeUpd_Find").val(),
             pTitleChoice: "",
             pFlagTextShow: "2"
         };
@@ -160,7 +160,7 @@
             lcStatus = 1;
         }
         return {
-            pPosCode: $("#MainPosCode_Find").val(),
+            pPosCode: $("#MainPosCodeUpd_Find").val(),
             pFromEffectiveDate: "",
             pToEffectiveDate: "",
             pFunctionType: $("#FunctionTypeApproval_Find").val(),
@@ -249,6 +249,10 @@
     function Change_PosCode(e) {
     }
 
+    function Change_FunctionTypeApproval(e) {
+        addListAttachfilesLink();
+    }
+
 
     function formatDDMMYYYY(date) {
         if (!date) return null;
@@ -324,7 +328,7 @@
         var sFlagCall = $("#EventFlag_ApprovalTemp").val();
         mainWindowApproval.kendoWindow({
             width: "1000px",
-            height: "550px",
+            height: "600px",
             title: "Trình duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
@@ -374,7 +378,7 @@
         var sFlagCall = $("#EventFlag_ApprovalTemp").val();
         mainWindowApproval.kendoWindow({
             width: "1000px",
-            height: "550px",
+            height: "600px",
             title: "Phê duyệt thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
@@ -477,7 +481,7 @@
     }
 
     function addListAttachfilesLink() {
-        var pMainPosCode = parseInt($("#PosCode").val(), 10) || 0;
+        var pMainPosCode = parseInt($("#MainPosCodeView").val(), 10) || 0;
         var pFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
         $("#_no_file_attachId").text("");
         if (pMainPosCode != 0) {
@@ -515,6 +519,7 @@
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
 @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+@Html.Hidden("MainPosCodeView", TempData["MainPosCode"])
 <input type="hidden" id="hiddenApprovalData" name="ApprovalData" />
 <hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
@@ -523,7 +528,7 @@
 
         <div class="col-md-12">
             <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top:3px;padding-right:0px;padding-left:5px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
-            @(Html.Kendo().ComboBoxFor(m=>m.PosCode)
+            @(Html.Kendo().ComboBox().Name("MainPosCodeUpd_Find")
                         .Filter(FilterType.Contains)
                         .Placeholder("--- Đơn vị ---")
                         .DataTextField("value")
@@ -544,6 +549,7 @@
                         .Placeholder("Chọn nghiệp vụ yêu cầu")
                         .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                         .Filter("contains")
+                        .Events(e => e.Change("Change_FunctionTypeApproval"))
                         .SelectedIndex(0))
 @*             <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top:3px;padding-right:6px;">Tên/Mã người đại diện</label>
             @(Html.Kendo().TextBox().Name("StaffName_Find")
@@ -794,6 +800,14 @@
             $("#fileName").text(file.name);
             $("#btnRemoveFile").show();
         });
+
+        var combo = $("#MainPosCodeUpd_Find").data("kendoComboBox");
+        var value = $("#MainPosCodeView").val();
+        if (value) {
+            combo.value(value);
+            // Trigger change để đồng bộ PosName nếu cần
+            combo.trigger("change");
+        }
     });
 
     // $("#btnApprovalAll").click(function () {
@@ -870,7 +884,7 @@
         }
 
         var objFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox");
-        var objMainPos = $("#PosCode").data("kendoComboBox");
+        var objMainPos = $("#MainPosCodeUpd_Find").data("kendoComboBox");
 
         //Tạo FormData
         var formData = new FormData();
@@ -894,6 +908,10 @@
                     alert("Lưu thành công!");
                     dataChange = false;
                     refreshGridIDCApproval();
+                } else if (res === "-1") {
+                    alert("Lỗi khi lưu dữ liệu người dùng IDC");
+                } else if (res === "-2") {
+                    alert("Thực hiện gọi API không thành công: Thay đổi tài khoản người dùng thất bại");
                 } else {
                     alert("Có lỗi xảy ra!");
                 }

@@ -10,7 +10,7 @@ namespace VBSPOSS.Integration.Interfaces
         /// </summary>
         /// <param name="inputModel"></param>
         /// <returns></returns>
-        Task<string> GetNotiByTypeAsync(string notiType, string sendType);
+        Task<string> GetNotiByTypeAsync(string notiType, string sendType, string ottType);
         Task<string> UpdateNotiMsgTempAsync(NotiMsgTempRequest request);
         Task<List<NotiTempViewModel>> GetListNotiTempAsync(string pStatus);
 

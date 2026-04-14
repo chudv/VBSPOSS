@@ -150,7 +150,6 @@
                         $("#StaffCode").val(staffLists[0].StaffCode);
                         $("#Genders").val(staffLists[0].GenderText);
                         $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
-                        $("#PosNameIDC").val(staffLists[0].StaffPosName);
                         $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
                         $("#StaffPositionName").val(staffLists[0].StaffPositionName);
                         $("#MobileNumberEdit").val($("#MobileNumber").val());
@@ -162,6 +161,23 @@
                         $("#MobileNumberIDC").val(staffLists[0].StaffMobileNo);
                         $("#EmailAddressIDC").val(staffLists[0].StaffEmail);
                         $("#PosCodeNew").val($("#PosCode").val());
+                        // Gọi hàm check dữ liệu bảng UserIDCMaster
+                        $.ajax({
+                            type: "GET",
+                            url: "../UserManagementIDC/LoadGridData_UserIDCMaster",
+                            data: {
+                                pUserId: staffLists[0].StaffCode
+                            },
+                            success: function (res) {
+
+                                if (res && res.Data && res.Data.length > 0) {
+                                    $("#PosNameIDC").val(res.Data[0].PosName);
+                                } else {
+                                    $("#PosNameIDC").val(staffLists[0].StaffPosName);
+                                }
+
+                            }
+                        });
                     }
                 }
             });
@@ -288,7 +304,15 @@
 
     function onClickDenie(e) {
         lcButton = "3";
-        sendDataToParent(10);
+        var lcButtonType = $("#ButtonTypeView").val();
+        var lcStatusReject = 0;
+        if (lcButtonType == "8")
+        {
+            lcStatusReject = 12;
+        }
+        else {
+            lcStatusReject = 13;
+        }
         var lcPosCode = $("#PosCode").val();
         var lcRemark = $("#Remark").val();
         if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
@@ -315,6 +339,7 @@
                 return false;
             }
         }
+        sendDataToParent(lcStatusReject);
     }
 
     function sendDataToParent(status) {
@@ -334,7 +359,7 @@
             alert("Phê duyệt thành công");
         }
 
-        if(status == 10) {
+        if(status == 12 || status == 13) {
             alert("Từ chối thành công");
         }
         onCloseUpdate();
@@ -352,8 +377,8 @@
  *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
     @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
-    @Html.HiddenFor(m => m.PosCode, new { id = "PosCodeChild" })    
-    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+@*     @Html.HiddenFor(m => m.PosCode, new { id = "PosCodeChild" })    
+ *@    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
 
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "TRÌNH DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "PHÊ DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC")
@@ -455,7 +480,7 @@
         <div id="divPosCode" class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Đơn vị mới</label>
-                @Html.Kendo().TextBox().Name("PosCodeNew").HtmlAttributes(new { @readonly = "readonly", style = " width: 80px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBoxFor(m => m.PosCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 80px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;">Tên đơn vị</label>
                 @Html.Kendo().TextBoxFor(m => m.PosName).HtmlAttributes(new { @readonly = "readonly", style = " width: 610px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
