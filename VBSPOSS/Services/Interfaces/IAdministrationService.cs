@@ -46,7 +46,11 @@ namespace VBSPOSS.Services.Interfaces
         int UpdatePermission(Permission entity);
         int DeletePermission(Permission entity);
 
-        // GetUserByUserName
+        /// <summary>
+        /// Hàm lấy thông tin người dùng theo tài khoản người dùng truyền vào. Kết quả tra ra thông tin theo model vUsers
+        /// </summary>
+        /// <param name="userName">Tài khoản người dùng cần lấy thông tin</param>
+        /// <returns>Kết quả tra ra thông tin theo model vUsers</returns>
         UserModel GetUserByUserName(string userName);
 
         public Task<string> UpdateUser(UserModel data, string modifiedBy);
@@ -111,23 +115,23 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="batchUpdateData"></param>
         /// <returns></returns>
         int BatchUpdateRole(BatchAuthorizationModel batchUpdateData);
-       
+
         /// <summary>
-        /// Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
+        /// Hàm Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
         /// </summary>
-        /// <param name="posCode">Mã POS</param>
-        /// <param name="departmentCode">Mã phòng ban</param>
-        /// <param name="titleCode">Mã chức vụ người dùng</param>
-        /// <param name="fromBirthDay">Ngày sinh từ ngày</param>
-        /// <param name="toBirthDay">Ngày sinh đến ngày</param>
-        /// <param name="fullName">Họ và tên</param>
-        /// <param name="sex">Giới tính</param>
-        /// <param name="userName">Tài khoản người dùng</param>
-        /// <param name="roleCode">Mã nhóm người dùng</param>
-        /// <param name="staffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
+        /// <param name="pPosCode">Mã POS</param>
+        /// <param name="pDepartmentCode">Mã phòng ban</param>
+        /// <param name="pTitleCode">Mã chức vụ người dùng</param>
+        /// <param name="pFromBirthDay">Ngày sinh từ ngày</param>
+        /// <param name="pToBirthDay">Ngày sinh đến ngày</param>
+        /// <param name="pFullName">Họ và tên</param>
+        /// <param name="pSex">Giới tính</param>
+        /// <param name="pUserName">Tài khoản người dùng</param>
+        /// <param name="pRoleCode">Mã nhóm người dùng</param>
+        /// <param name="pStaffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
         /// <returns>Danh sách thông tin người dùng từ vUsers trả ra Model UserModel</returns>
-        List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay,
-                            string fullName, string sex, string userName, string roleCode, string staffId);
+        List<UserModel> GetUsers(string pPosCode, string pDepartmentCode, string pTitleCode, DateTime? pFromBirthDay, DateTime? pToBirthDay,
+                            string pFullName, string pSex, string pUserName, string pRoleCode, string pStaffId);
 
         /// <summary>
         /// Hàm lấy thông tin phân quyền của nhóm người dùng theo mã MenuId

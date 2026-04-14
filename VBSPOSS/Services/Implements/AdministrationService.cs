@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Security.Policy;
 using VBSPOSS.Constants;
 using VBSPOSS.Controllers;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
+using VBSPOSS.Utils;
 
 namespace VBSPOSS.Services.Implements
 {
@@ -1016,146 +1021,167 @@ namespace VBSPOSS.Services.Implements
         }
 
         /// <summary>
-        /// Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
+        /// Hàm Lấy danh sách thông tin người dùng từ vUsers trả ra Model UserModel
         /// </summary>
-        /// <param name="posCode">Mã POS</param>
-        /// <param name="departmentCode">Mã phòng ban</param>
-        /// <param name="titleCode">Mã chức vụ người dùng</param>
-        /// <param name="fromBirthDay">Ngày sinh từ ngày</param>
-        /// <param name="toBirthDay">Ngày sinh đến ngày</param>
-        /// <param name="fullName">Họ và tên</param>
-        /// <param name="sex">Giới tính</param>
-        /// <param name="userName">Tài khoản người dùng</param>
-        /// <param name="roleCode">Mã nhóm người dùng</param>
-        /// <param name="staffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
+        /// <param name="pPosCode">Mã POS</param>
+        /// <param name="pDepartmentCode">Mã phòng ban</param>
+        /// <param name="pTitleCode">Mã chức vụ người dùng</param>
+        /// <param name="pFromBirthDay">Ngày sinh từ ngày</param>
+        /// <param name="pToBirthDay">Ngày sinh đến ngày</param>
+        /// <param name="pFullName">Họ và tên</param>
+        /// <param name="pSex">Giới tính</param>
+        /// <param name="pUserName">Tài khoản người dùng</param>
+        /// <param name="pRoleCode">Mã nhóm người dùng</param>
+        /// <param name="pStaffId">Chỉ số IdCanBo (Không bắt buộc). Ex: 'CNTT00000000087'</param>
         /// <returns>Danh sách thông tin người dùng từ vUsers trả ra Model UserModel</returns>
-        public List<UserModel> GetUsers(string posCode, string departmentCode, string titleCode, DateTime? fromBirthDay, DateTime? toBirthDay, 
-                            string fullName, string sex, string userName, string roleCode, string staffId)
+        public List<UserModel> GetUsers(string pPosCode, string pDepartmentCode, string pTitleCode, DateTime? pFromBirthDay, DateTime? pToBirthDay,
+                            string pFullName, string pSex, string pUserName, string pRoleCode, string pStaffId)
         {
-            List<UserModel> _result = new List<UserModel>();
-            var _lstUser = _dbContext.UserViews.Where(w => (string.IsNullOrEmpty(posCode) || posCode == "000100" || posCode == "000199" || w.PosCode == posCode)
-                                    && (string.IsNullOrEmpty(departmentCode) || w.DepartmentCode == departmentCode)
-                                    && (string.IsNullOrEmpty(titleCode) || w.TitleCode == titleCode)
-                                    && (string.IsNullOrEmpty(fullName) || w.FullName.Contains(fullName))
-                                    && (string.IsNullOrEmpty(sex) || w.Sex == sex)
-                                    && (string.IsNullOrEmpty(userName) || w.UserName == userName)
-                                    && (fromBirthDay == null || w.BirthDay >= fromBirthDay)
-                                    && (toBirthDay == null || w.BirthDay <= toBirthDay)
-                                    && (string.IsNullOrEmpty(roleCode) || w.DefaultRole == roleCode)
-                                    && (string.IsNullOrEmpty(staffId) || w.StaffId == staffId)).ToList();
-            for (int i = 0; i < _lstUser.Count; i++)
+            List<UserModel> listUsers = new List<UserModel>();
+            var lstUserTmp = _dbContext.UserViews.Where(w => (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || w.PosCode == pPosCode)
+                                    && (string.IsNullOrEmpty(pDepartmentCode) || w.DepartmentCode == pDepartmentCode)
+                                    && (string.IsNullOrEmpty(pTitleCode) || w.TitleCode == pTitleCode)
+                                    && (string.IsNullOrEmpty(pSex) || w.Sex == pSex)
+                                    && (string.IsNullOrEmpty(pUserName) || w.UserName == pUserName)
+                                    && (pFromBirthDay == null || w.BirthDay >= pFromBirthDay)
+                                    && (pToBirthDay == null || w.BirthDay <=pToBirthDay)
+                                    && (string.IsNullOrEmpty(pRoleCode) || w.DefaultRole == pRoleCode)
+                                    && (string.IsNullOrEmpty(pStaffId) || w.StaffId == pStaffId)).OrderBy(o => o.PosCode).ThenBy(o => o.DepartmentCode).ThenBy(o => o.TitleCode).ToList();
+            if (!string.IsNullOrEmpty(pFullName))
             {
-                var _userModel = _mapper.Map<UserModel>(_lstUser[i]);
-                _userModel.Order = i + 1;
-                _result.Add(_userModel);
+                lstUserTmp = lstUserTmp.Where(c => c.FullName != null && (c.FullName.ToLower().Contains(pFullName.ToLower()) ||
+                     Utilities.ConvertToUnSign(c.FullName.ToLower()).Contains(pFullName.ToLower()))).OrderBy(o => o.PosCode).ThenBy(o => o.DepartmentCode).ThenBy(o => o.TitleCode).ToList();
             }
-            return _result;
+
+            if (lstUserTmp != null && lstUserTmp.Count != 0)
+            {
+                for (int i = 0; i < lstUserTmp.Count; i++)
+                {
+                    var objItemUserModel = _mapper.Map<UserModel>(lstUserTmp[i]);
+                    objItemUserModel.Order = i + 1;
+                    objItemUserModel.UserBirthday = lstUserTmp[i].BirthDay;
+                    objItemUserModel.BirthdayText = lstUserTmp[i].BirthDay.ToString(FormatParameters.FORMAT_DATE);
+                    objItemUserModel.Mobile = lstUserTmp[i].Mobile.Replace(" ", "").Replace("_", "").Replace("-", "").Replace(".", "").Trim();
+                    objItemUserModel.IdCode = lstUserTmp[i].IdCode.Replace(" ", "").Replace("_", "").Replace("-", "").Replace(".", "").Trim();
+                    listUsers.Add(objItemUserModel);
+                }
+            }
+            return listUsers;
         }
 
-        // add UpdateUser
-        public async Task<string> UpdateUser(UserModel data, string modifiedBy)
+        /// <summary>
+        /// Hàm thêm mới/thay đổi thông tin người dùng (Cập nhật bảng Users)
+        /// </summary>
+        /// <param name="pDataUpdate">Dữ liệu cập nhật Thêm mới/Chỉnh sửa</param>
+        /// <param name="pUserUpdate">Người thực hiện</param>
+        /// <returns>Kết quả trả về. Giá trị:
+        ///         "1" - Tên đăng nhập người dùng đã tồn tại. Vui lòng kiểm tra lại!"
+        ///         "2" - Ngày sinh lớn hơn hoặc bằng ngày hiện tại. Vui lòng kiểm tra lại!";
+        ///         "3" - Ngày sinh lớn hơn hoặc bằng ngày ngày cấp CMND/Thẻ căn cước. Vui lòng kiểm tra lại!";
+        ///         "4" - Số  căn cước [" + $("#SoCMT").val() + "] của người dùng đã tồn tại. Vui lòng kiểm tra lại!";
+        ///         "5" - Id của người dùng được thêm mới != 0, Bạn hãy kiểm tra lại.
+        ///         "6" - Có lỗi xảy ra, bạn hãy kiểm tra lại!"
+        ///         "7" - Đơn vị của người dùng không được để trống. Vui lòng kiểm tra lại!
+        ///         "8" - Phòng ban của người dùng không được để trống. Vui lòng kiểm tra lại!
+        ///         "9" - Chức vụ của người dùng không được để trống. Vui lòng kiểm tra lại!
+        ///         "10" - Trình độ chuyên môn của người dùng không được để trống. Vui lòng kiểm tra lại!
+        ///         "11" - Mật khẩu người dùng phải có ký tự chữ hoa, chữ thường, ký tự số và ký tự đặc biệt. Vui lòng kiểm tra lại!
+        ///         "12" - Mật khẩu người dùng tối thiểu phải 6 ký tự (trong đó có ký tự chữ hoa, chữ thường, ký tự số và ký tự đặc biệt). Vui lòng kiểm tra lại!
+        ///         "13" - Mật khẩu người dùng phải có ít nhất một ký tự đặc biệt. Vui lòng kiểm tra lại!
+        ///         "14" - Mật khẩu người dùng phải có ít nhất một ký tự chữ thường. Vui lòng kiểm tra lại!
+        ///         "15" - Mật khẩu người dùng phải có ít nhất một ký tự số. Vui lòng kiểm tra lại!
+        ///         "16" - Mật khẩu người dùng phải có ít nhất 6 ký tự khác nhau. Vui lòng kiểm tra lại!
+        ///         "17" - Mật khẩu người dùng không chính xác. Vui lòng kiểm tra lại!
+        ///         "18" - Người dùng đã có mật khẩu. Vui lòng kiểm tra lại!
+        /// </returns>
+        public async Task<string> UpdateUser(UserModel pDataUpdate, string pUserUpdate)
         {
-            //"1" - "Tên đăng nhập người dùng  [" + $("#Ten_Nd").val() + "] đã tồn tại. Vui lòng kiểm tra lại!"
-            //"2" - "Ngày sinh lớn hơn hoặc bằng ngày hiện tại. Vui lòng kiểm tra lại!";                        
-            //"3" - Ngày sinh lớn hơn hoặc bằng ngày ngày cấp CMND/Thẻ căn cước. Vui lòng kiểm tra lại!";            
-            //"4" - "Số  CMND/Thẻ căn cước  [" + $("#SoCMT").val() + "] đã tồn tại. Vui lòng kiểm tra lại!";            
-            //"5" - "Id của người dùng được thêm mới != 0, Bạn hãy kiểm tra lại.
-            //"6" - "Có lỗi xảy ra, bạn hãy kiểm tra lại!"
-
-            if (data.UserBirthday == null || data.UserBirthday >= DateTime.Now)
-            {
+            if (string.IsNullOrEmpty(pDataUpdate.PosCode.ToString().Trim()))
+                return "7";
+            if (string.IsNullOrEmpty(pDataUpdate.DepartmentCode.ToString().Trim()))
+                return "8";
+            if (string.IsNullOrEmpty(pDataUpdate.TitleCode.ToString().Trim()))
+                return "9";
+            if (string.IsNullOrEmpty(pDataUpdate.DegreeCode.ToString().Trim()))
+                return "10";
+            
+            if (pDataUpdate.UserBirthday == null || pDataUpdate.UserBirthday >= DateTime.Now)
                 return "2";
-            }
 
-            if (data.UserBirthday >= data.IssuedDate)
-            {
+            if (pDataUpdate.UserBirthday >= pDataUpdate.IssuedDate)
                 return "3";
-            }
 
-            User _currentUser = _dbContext.Users.Where(w => w.UserName == data.UserName).FirstOrDefault();
-
-
-            if (_currentUser != null)
+            User objUserFind = _dbContext.Users.Where(w => w.UserName == pDataUpdate.UserName).FirstOrDefault();
+            if (objUserFind != null && !string.IsNullOrEmpty(objUserFind.UserName))
             {
-                if (data.Id == 0) // them moi
+                if (pDataUpdate.Id == 0) // them moi
                 {
-                    //"Tên đăng nhập người dùng  [" + $("#Ten_Nd").val() + "] đã tồn tại. Vui lòng kiểm tra lại!"
                     return "1";
                 }
                 else
                 {
-                    _currentUser.FullName = data.FullName;
-                    _currentUser.Sex = data.Sex;
-                    _currentUser.BirthDay = data.UserBirthday;
-                    _currentUser.PosCode = data.PosCode;
-                    _currentUser.DepartmentCode = data.DepartmentCode;
-                    _currentUser.TitleCode = data.TitleCode;
-                    _currentUser.DegreeCode = data.DegreeCode;
-                    _currentUser.Mobile = data.Mobile;
-                    _currentUser.Email = data.Email;
-                    _currentUser.DefaultRole = data.DefaultRole;
-                    _currentUser.IdCode = data.IdCode;
-                    _currentUser.IssuedDate = data.IssuedDate;
-                    _currentUser.IssuedPlace = data.IssuedPlace;
-                    _currentUser.Status = data.Status;
-                    _currentUser.ModifiedBy = modifiedBy;
-                    _currentUser.ModifiedDate = DateTime.Now;
-                    _dbContext.Users.Update(_currentUser);
-                    int _status = _dbContext.SaveChanges();
+                    objUserFind.FullName = pDataUpdate.FullName;
+                    objUserFind.BirthDay = pDataUpdate.UserBirthday.Value.Date; 
+                    objUserFind.Sex = pDataUpdate.Sex;
 
-                    if (_status > 0)
-                    {
+                    objUserFind.TitleCode = pDataUpdate.TitleCode; 
+                    objUserFind.DepartmentCode = pDataUpdate.DepartmentCode;
+                    objUserFind.PosCode = pDataUpdate.PosCode;
+                    objUserFind.DegreeCode = pDataUpdate.DegreeCode;
+                    objUserFind.IdCode = pDataUpdate.IdCode;
+                    objUserFind.IssuedDate = pDataUpdate.IssuedDate.Date;
+                    objUserFind.IssuedPlace = pDataUpdate.IssuedPlace;
+                    //IdExpDate
+                    objUserFind.StaffId = pDataUpdate.StaffId;
+                    objUserFind.Mobile = pDataUpdate.Mobile;
+                    objUserFind.Email = pDataUpdate.Email;
+                    objUserFind.DefaultRole = pDataUpdate.DefaultRole;
+                    objUserFind.Status = pDataUpdate.Status;
+                    objUserFind.ModifiedBy = pUserUpdate;
+                    objUserFind.ModifiedDate = DateTime.Now;
+                  
+                    _dbContext.Users.Update(objUserFind);
+                    int iUpdateResult = _dbContext.SaveChanges();
+                    if (iUpdateResult > 0)
                         return "0";
-                    }
                     else
-                    {
-                        // Có lỗi xảy ra, bạn hãy kiểm tra lại!
-                        return "6";
-                    }
-
+                        return "6";// Có lỗi xảy ra, bạn hãy kiểm tra lại!
                 }
             }
             else
             {
-                // Them moi
-                if (data.Id != 0) // them moi
+                if (pDataUpdate.Id != 0)
                 {
-                    //"Id của người dùng được thêm mới != 0, Bạn hãy kiểm tra lại.
-                    return "5";
+                    return "5";     //"Id của người dùng được thêm mới != 0, Bạn hãy kiểm tra lại.
                 }
+                int iCountTmp = 0;
+                iCountTmp = _dbContext.Users.Where(w => w.IdCode == pDataUpdate.IdCode).ToList().Count;
+                if (iCountTmp > 0)
+                    return "4";     //"Số  CMND/Thẻ căn cước  [" + $("#SoCMT").val() + "] đã tồn tại. Vui lòng kiểm tra lại!"
+                DateTime dCurrentDate = DateTime.Now;
 
-                int _idCount = _dbContext.Users.Where(w => w.IdCode == data.IdCode).ToList().Count;
-
-                if (_idCount > 0)
-                {
-                    //"Số  CMND/Thẻ căn cước  [" + $("#SoCMT").val() + "] đã tồn tại. Vui lòng kiểm tra lại!"
-                    return "4";
-                }
-
-                User _user = _mapper.Map<User>(data);
-                _user.BirthDay = data.UserBirthday;
-                _user.ModifiedBy = modifiedBy;
-                _user.ModifiedDate = DateTime.Now;
-
-
+                User objUserAdd = _mapper.Map<User>(pDataUpdate);
+                objUserAdd.BirthDay = pDataUpdate.UserBirthday;
+                objUserAdd.CreatedBy = pUserUpdate;
+                objUserAdd.CreatedDate = dCurrentDate;
+                objUserAdd.ModifiedBy = pUserUpdate;
+                objUserAdd.ModifiedDate = dCurrentDate;
                 // Tao user trong identity
                 var _identityUser = new IdentityUser
                 {
-                    UserName = _user.UserName,
-                    Email = _user.Email,
+                    UserName = objUserAdd.UserName,
+                    Email = objUserAdd.Email,
                     EmailConfirmed = true
                 };
-                var result = await _userManager.CreateAsync(_identityUser, $"{data.Password}");
+                var resultCreateIdentityUser = await _userManager.CreateAsync(_identityUser, $"{pDataUpdate.Password}");
 
-                if (result.Succeeded)
+                if (resultCreateIdentityUser.Succeeded)
                 {
-                    _dbContext.Users.Add(_user);
-                    int _status = _dbContext.SaveChanges();
+                    _dbContext.Users.Add(objUserAdd);
+                    int iUpdateAdd = _dbContext.SaveChanges();
 
-                    if (_status > 0)
-                    {
+                    if (iUpdateAdd > 0)
                         return "0"; // Thành công
-                    }
                     else
                     {
                         // Có lỗi xảy ra, bạn hãy kiểm tra lại!
@@ -1165,8 +1191,31 @@ namespace VBSPOSS.Services.Implements
                 }
                 else
                 {
-                    // Có lỗi xảy ra, bạn hãy kiểm tra lại!
-                    return "6";
+                    string sResponseMsg = string.Join("; ", resultCreateIdentityUser.Errors.Select(e => e.Description));
+                    string sResponseCode = string.Join("; ", resultCreateIdentityUser.Errors.Select(e => e.Code));
+                    if (sResponseCode.Contains("PasswordRequiresUpper") || sResponseMsg.Contains("Passwords must have at least one uppercase ('A'-'Z')"))
+                        return "11";
+                    else if (sResponseCode.Contains("PasswordTooShort") || sResponseMsg.Contains("Passwords must be at least {0} characters"))
+                        return "12";
+                    else if (sResponseCode.Contains("PasswordRequiresNonAlphanumeric") || sResponseMsg.Contains("Passwords must have at least one non alphanumeric character."))
+                        return "13";
+                    else if (sResponseCode.Contains("PasswordRequiresLower") || sResponseMsg.Contains("Passwords must have at least one lowercase ('a'-'z')."))
+                        return "14";
+                    else if (sResponseCode.Contains("PasswordRequiresDigit") || sResponseMsg.Contains("Passwords must have at least one digit ('0'-'9')."))
+                        return "15";
+                    else if (sResponseCode.Contains("PasswordRequiresUniqueChars") || sResponseMsg.Contains("Passwords must use at least {0} different characters."))
+                        return "16";
+                    else if (sResponseCode.Contains("PasswordMismatch") || sResponseMsg.Contains("Incorrect password."))
+                        return "17";
+                    else if (sResponseCode.Contains("UserAlreadyHasPassword") || sResponseMsg.Contains("User already has a password."))
+                        return "18";
+                    //.
+                    //     must be at least { 0}        /
+                    //characters.PasswordRequiresNonAlphanumericPasswords must have at least one non alphanumeric character.PasswordRequiresLowerPasswords must have at least one lowercase('a' - 'z').PasswordRequiresUpperPasswords must have at least one uppercase('A' - 'Z').PasswordRequiresDigitPasswords must have at least one digit('0' - '9').PasswordRequiresUniqueCharsPasswords must use at least { 0}
+                    //different characters.PasswordMismatchIncorrect password.UserAlreadyHasPasswordUser already has a password.
+
+                    else
+                        return "6";     // Có lỗi xảy ra, bạn hãy kiểm tra lại!
                 }
             }
         }
@@ -1283,32 +1332,22 @@ namespace VBSPOSS.Services.Implements
             throw new NotImplementedException();
         }
 
-
-
-
-
-
-
-
-        //public int UpdateUserGroup(CreateProject entity)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public int DeleteUserGroup(CreateProject entity)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public int CreateUserGroup(CreateProject entity)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
+        /// <summary>
+        /// Hàm lấy thông tin người dùng theo tài khoản người dùng truyền vào. Kết quả tra ra thông tin theo model vUsers
+        /// </summary>
+        /// <param name="userName">Tài khoản người dùng cần lấy thông tin</param>
+        /// <returns>Kết quả tra ra thông tin theo model vUsers</returns>
         public UserModel GetUserByUserName(string userName)
         {
+            UserModel objUserInfoResult = new UserModel();
             var _userInfo = _dbContext.UserViews.Where(w => w.UserName == userName).FirstOrDefault();
-            return _mapper.Map<UserModel>(_userInfo);
+            objUserInfoResult = _mapper.Map<UserModel>(_userInfo);
+            objUserInfoResult.Mobile = objUserInfoResult.Mobile.Replace(" ", "").Replace("_", "").Replace("-", "").Replace(".", "").Trim();
+            objUserInfoResult.UserBirthday = _userInfo.BirthDay;
+            objUserInfoResult.BirthdayText = _userInfo.BirthDay.ToString(FormatParameters.FORMAT_DATE);
+            objUserInfoResult.IdCode = objUserInfoResult.IdCode.Replace(" ", "").Replace("_", "").Replace("-", "").Replace(".", "").Trim();
+            objUserInfoResult.Mobile = objUserInfoResult.Mobile.Replace(" ", "").Replace("_", "").Replace("-", "").Replace(".", "").Trim();
+            return objUserInfoResult;
         }
 
         public async Task<string> UpdcateUser(UserModel data, string modifiedBy)

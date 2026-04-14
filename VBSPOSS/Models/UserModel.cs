@@ -7,6 +7,7 @@
         public string UserName { get; set; }
         public string FullName { get; set; }
         public DateTime? UserBirthday { get; set; }
+        public string BirthdayText { get; set; }
         public string Sex { get; set; }
         public string SexDesc { get; set; }
 
@@ -24,7 +25,10 @@
         public string DegreeDesc { get; set; }
         public string IdCode { get; set; }
         public DateTime IssuedDate { get; set; }
+        public string IssuedDateText { get; set; }
         public string IssuedPlace { get; set; }
+        public DateTime IdExpDate { get; set; }
+        
         public string Mobile { get; set; }
         public string Email { get; set; }
         public int Status { get; set; }

@@ -516,6 +516,8 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pStaffId))
                 pStaffId = "";
             ArrayList dataListOfStaffVBSP = new ArrayList();
+            var listOfValueTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdProfessionalQualifications, "", 0, "", "", -1, 2);
+
             var listStaffVBSP = await _internalServiceAPI.GetListStaffByStaffId(pStaffId);
             if (listStaffVBSP != null && listStaffVBSP.Success && listStaffVBSP.Result != null && listStaffVBSP.Result.Count > 0)
             {
@@ -548,7 +550,7 @@ namespace VBSPOSS.Controllers
                             StaffCode = item.StaffCode,
                             StaffName = item.StaffName,
                             DateOfBirth = item.DateOfBirth,
-                            DateOfBirthText = item.DateOfBirth.ToString("dd/MM/yyyy"),
+                            DateOfBirthText = item.DateOfBirth.ToString(FormatParameters.FORMAT_DATE),
                             GenderCode = item.GenderCode,
                             GenderText = item.GenderText,
                             StaffPosCode = item.StaffPosCode,
@@ -562,8 +564,10 @@ namespace VBSPOSS.Controllers
                             AddressDetail = item.AddressDetail,
                             IdNo = item.IdNo,
                             IssuedDate = item.IssuedDate,
+                            IssuedDateText = item.IssuedDate.ToString(FormatParameters.FORMAT_DATE),
                             IssuedPlace = item.IssuedPlace,
                             DegreeCode = item.DegreeCode,
+                            DegreeDesc = (listOfValueTmp != null && listOfValueTmp.Count != 0) ? listOfValueTmp.Where(w => w.Code == item.DegreeCode).Select(s => s.Name).FirstOrDefault() : "",
                             StaffStatus = item.StaffStatus,
                             StaffStatusText = item.StaffStatusText,
                             DepartmentUnitCode = item.DepartmentUnitCode,
@@ -576,8 +580,7 @@ namespace VBSPOSS.Controllers
                             ModifiedDate = item.ModifiedDate,
                         });
                     }
-                } 
-                
+                }
             }
             return Json(dataListOfStaffVBSP);
         }
@@ -1644,10 +1647,8 @@ namespace VBSPOSS.Controllers
                 sCodeApply = CodeOfLovUsed.CodeOfLovUsed_District;//Nếu là Cơ sở đào tạo thì cho quyền như PGD
 
             ArrayList data = new ArrayList();
-            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdConfigIntellectIDC, "", 0, "", "", pStatus, 2);
+            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdConfigIntellectIDC, "", 0, $"{ConstValueAPI.EntityList_Code}", "", pStatus, 2);
             var listRoleOfUserIDC = listRoleOfUserIDCTmp;
-            //if(sCodeApply != "1")
-            //    listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
             if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
                 data.Add(new { id = "", value = sTitleChoice });
             if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)
