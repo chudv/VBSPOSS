@@ -1,19 +1,11 @@
 ﻿using AutoMapper;
-using AutoMapper.Execution;
 using Kendo.Mvc.Extensions;
-using Kendo.Mvc.UI;
-using Microsoft.AspNetCore.Http;
-using Microsoft.CodeAnalysis.RulesetToEditorconfig;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
-using System.Linq;
-using System.Reflection.Emit;
 using System.Text.Json;
-using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.IntellectIDC.Models;
@@ -1897,27 +1889,63 @@ namespace VBSPOSS.Services.Implements
         /// </returns>
         public int CheckOpenCashByUserId(string pUserId, string pReportDate)
         {
-            int iResultValue = 0;
-            string sReportDate = "";
-            if (string.IsNullOrEmpty(pReportDate))
-                sReportDate = DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA);
-            else sReportDate = pReportDate;
-
             try
             {
-                string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{pReportDate}')) Code From Dual;";
-                var iValueRet = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
-                if (iValueRet != null)
-                {
-                    iResultValue = Convert.ToInt32(iValueRet.ToString());
-                }
-                return iResultValue;
+                string sReportDate = string.IsNullOrEmpty(pReportDate)
+                    ? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA)
+                    : pReportDate;
+
+                string sql = @"SELECT TO_CHAR(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) AS Value FROM DUAL";
+
+                var result = _dbContextIDC.Set<QueryResult>()
+                    .FromSqlRaw(sql,
+                        new OracleParameter(":P_USERID", OracleDbType.Varchar2) { Value = pUserId ?? "" },
+                        new OracleParameter(":P_REPORTDATE", OracleDbType.Varchar2) { Value = sReportDate })
+                    .AsNoTracking()
+                    .FirstOrDefault();
+                string sVal = result?.Value ?? "0";
+
+                return Convert.ToInt32(sVal);
             }
             catch (Exception ex)
             {
-                throw ex;
+                Console.WriteLine($"Lỗi: {ex.Message}");
+                throw;
             }
         }
+        //public int CheckOpenCashByUserId(string pUserId, string pReportDate)
+        //{
+        //    int iResultValue = 0;
+        //    string sReportDate = "";
+        //    if (string.IsNullOrEmpty(pReportDate))
+        //        sReportDate = DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA);
+        //    else sReportDate = pReportDate;
+
+        //    try
+        //    {
+        //        string sSQL = @"SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) As Code FROM DUAL";
+
+        //        var result = _dbContextIDC.CellValues
+        //            .FromSqlRaw(sSQL,
+        //                new OracleParameter("P_USERID", pUserId),
+        //                new OracleParameter("P_REPORTDATE", sReportDate)
+        //            )
+        //            .FirstOrDefault();
+
+        //        //string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{sReportDate}')) Code From Dual;";
+        //        //var iValueRet = _dbContextIDC.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
+        //        int iValueRet = 0;
+        //        if (iValueRet != null)
+        //        {
+        //            iResultValue = Convert.ToInt32(iValueRet.ToString());
+        //        }
+        //        return iResultValue;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
 
 
