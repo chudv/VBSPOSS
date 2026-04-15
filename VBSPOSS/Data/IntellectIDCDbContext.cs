@@ -22,13 +22,11 @@ namespace VBSPOSS.Data
             {
                 eb.HasNoKey();
                 eb.ToView("CellValues");
-                eb.Property(v => v.Code).HasColumnName("Code");
             });
             modelBuilder.Entity<QueryResult>(eb =>
             {
                 eb.HasNoKey();
                 eb.ToView("QueryResults");
-                eb.Property(v => v.Value).HasColumnName("Value");
             });
 
         }

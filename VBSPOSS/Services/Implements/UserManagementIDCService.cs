@@ -1914,7 +1914,7 @@ namespace VBSPOSS.Services.Implements
                     .FromSqlRaw(sql,
                         new OracleParameter(":P_USERID", OracleDbType.Varchar2) { Value = pUserId ?? "" },
                         new OracleParameter(":P_REPORTDATE", OracleDbType.Varchar2) { Value = sReportDate })
-                    .AsNoTracking()
+                    //.AsNoTracking()
                     .FirstOrDefault();
                 string sVal = result?.Value ?? "0";
 
