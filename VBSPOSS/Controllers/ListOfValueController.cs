@@ -522,7 +522,7 @@ namespace VBSPOSS.Controllers
             if (listStaffVBSP != null && listStaffVBSP.Success && listStaffVBSP.Result != null && listStaffVBSP.Result.Count > 0)
             {
                 List<StaffVbspInforViewModel> listStaffVBSPTemp = new List<StaffVbspInforViewModel>();
-                pFlagCall = "1";
+                //pFlagCall = "1";
                 if (pFlagCall == "1")
                 {
                     DateTime fromDate = DateTime.Now.AddYears(-60);
