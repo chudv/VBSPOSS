@@ -46,6 +46,21 @@ namespace VBSPOSS.Controllers
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
+            //           /// <summary>
+            //           /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
+            //           /// Ex: SELECT VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('44573', '03-SEP-2025') FROM DUAL
+            //           /// </summary>
+            //           /// <param name="pUserId">Tài khoản người dùng trên iDC</param>
+            //           /// <param name="pReportDate">Ngày kiểm tra định dạng dd-MON-yyyy</param>
+            //           /// <returns>Kết quả trả về:
+            //           ///                 0 - Chưa mở sổ tiền mặt đầu ngày;
+            //           ///                 1 - Đã mở chưa đóng;
+            //           ///                 2 - Đã mở và đóng nhưng còn tồn quỹ tiền mặt chưa chuyển về quỹ chính
+            //           ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
+            //           /// </returns>
+            //public int CheckOpenCashByUserId(string pUserId, string pReportDate)
+            int ival = _userManagementIDCService.CheckOpenCashByUserId("44573", "03-SEP-2025");
+
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData
