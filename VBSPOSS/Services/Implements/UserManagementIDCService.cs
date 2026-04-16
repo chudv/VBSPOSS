@@ -537,6 +537,8 @@ namespace VBSPOSS.Services.Implements
                                             //objUserManagementIDCsUpdChange.AuthsecType = objViewUserIDCByApi.AuthsecType;
                                             //objUserManagementIDCsUpdChange.MailIdFlag = objViewUserIDCByApi.MailIdFlag;
                                             objUserManagementIDCsUpdChange.ModifiedBy = pUserNameUpd;
+                                            objUserManagementIDCsUpdChange.AuthsecType = objViewUserIDCByApi.AuthsecType;
+                                            objUserManagementIDCsUpdChange.MailIdFlag = objViewUserIDCByApi.MailIdFlag;
                                             objUserManagementIDCsUpdChange.ModifiedDate = dCurrentDateTmp;
                                             _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdChange);
                                         }    

@@ -810,54 +810,70 @@
         }
     });
 
-    // $("#btnApprovalAll").click(function () {
-    //     if (listApprovalData.length === 0) {
-    //         alert("Chưa có dữ liệu thông tin trình duyệt/phê duyệt người dùng IDC. Vui lòng trình duyệt/Phê duyệt!");
-    //         return;
-    //     }
-    //     // Check file đính kèm
-    //     var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
-    //     var requireFileTypes = ["ADDNEW_USER", "DELETE_USER", "CHANGE_POS"];
-    //     if (requireFileTypes.includes(functionType)) {
-    //         var fileInput = $("#fileUpload")[0];
-    //         if (!fileInput.files || fileInput.files.length === 0) {
-    //             alert("Nghiệp vụ này yêu cầu phải đính kèm file PDF!");
-    //             return;
-    //         }
-    //         //check PDF
-    //         var fileName = fileInput.files[0].name.toLowerCase();
-    //         if (!fileName.endsWith(".pdf")) {
-    //             alert("File phải là định dạng PDF!");
-    //             return;
-    //         }
-    //     }
-    //     $.ajax({
-    //         url: "/UserManagementIDC/SaveUpdateApproval",
-    //         type: "POST",
-    //         contentType: "application/json",
-    //         data: JSON.stringify(listApprovalData),
-    //         success: function (res) {
-    //             if (res === "0") {
-    //                 alert("Lưu thành công!");
-    //                 dataChange = false;
-    //             // } else if (res === "1") {
-    //             //     alert("Phòng giao dịch/Hội sở tỉnh không được để trống!");
-    //             // } else if (res === "2") {
-    //             //     alert("Cán bộ được phân giao người đại diện không được để trống!");
-    //             // } else if (res === "3") {
-    //             //     alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
-    //             // } else if (res === "4") {
-    //             //     alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
-    //             } else {
-    //                 alert("Có lỗi xảy ra!");
-    //             }
-    //         },
-    //         error: function (xhr, status, error) {
-    //             console.error("AJAX Error:", xhr.responseText);
-    //             alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
-    //         }
-    //     });
-    // });
+    //Hàm thực hiện gọi In tờ trình
+    $("#btnPrintToTrinh").click(function () {     
+        if (listApprovalData.length === 0) {
+            alert("Chưa có dữ liệu thông tin trình duyệt/phê duyệt người dùng IDC. Vui lòng trình duyệt/Phê duyệt!");
+            return;
+        }
+        var listPrintData = listApprovalData.filter(function(item) {
+            return Number(item.Status) === 8;
+        });
+
+        if (listPrintData.length === 0) {
+            alert("Chưa có dữ liệu thông tin trình duyệt/phê duyệt người dùng IDC. Vui lòng trình duyệt/Phê duyệt!");
+            return;
+        }
+
+        var lcListId = listPrintData.map(x => x.Id).join(',');
+        var lcMainPosName = $("#MainPosCodeUpd_Find").data("kendoComboBox").text();
+        var lcFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+        $.ajax({
+            url: '/Report/GenerateFileReport_UserIDC',
+            type: 'POST',
+            data: { pId: lcListId, pMainPosName: lcMainPosName, pFunctionType: lcFunctionType },
+            xhrFields: {
+                responseType: 'blob'   // BẮT BUỘC
+            },
+            success: function (data, status, xhr) {
+
+                var fileName = "To_Trinh_" + $("#PosCode").val() + "_" + $("#UserNameView").val() + ".pdf";
+                var disposition = xhr.getResponseHeader("Content-Disposition");
+
+                if (disposition) {
+                    // Ưu tiên filename*=UTF-8''
+                    var utf8Match = disposition.match(/filename\*\=UTF-8''(.+)/);
+                    if (utf8Match && utf8Match.length > 1) {
+                        fileName = decodeURIComponent(utf8Match[1]);
+                    }
+                    else {
+                        // fallback filename=
+                        var asciiMatch = disposition.match(/filename="?([^";]+)"?/);
+                        if (asciiMatch && asciiMatch.length > 1) {
+                            fileName = asciiMatch[1];
+                        }
+                    }
+                }
+
+                var blob = new Blob([data], {
+                    type: xhr.getResponseHeader("Content-Type") || "application/octet-stream"
+                });
+
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            },
+            error: function () {
+                alert("Không tải được file tờ trình cấu hình lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!");
+            }
+        });
+    });
 
     $("#btnApprovalAll, #btnAuthorizeAll").click(function () {
         if (listApprovalData.length === 0) {
