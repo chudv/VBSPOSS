@@ -1904,10 +1904,9 @@ namespace VBSPOSS.Services.Implements
         /// </returns>
         public int CheckOpenCashByUserId(string pUserId, string pReportDate)
         {
+            string sReportDate = string.IsNullOrEmpty(pReportDate) ? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA) : pReportDate;
             try
             {
-                string sReportDate = string.IsNullOrEmpty(pReportDate) ? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA) : pReportDate;
-
                 string sSQL = @"SELECT TO_CHAR(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) AS Value FROM DUAL";
 
                 var result = _dbContextIDC.Set<QueryResult>().FromSqlRaw(sSQL,
