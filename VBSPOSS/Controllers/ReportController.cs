@@ -122,6 +122,34 @@ namespace VBSPOSS.Controllers
             }
         }
 
+        /// <summary>
+        /// Hàm thực hiện in báo cáo Tờ trình người dùng IDC
+        /// </summary>
+        /// <param name="pFunctionType">Loại nghiệp vụ</param>
+        /// <param name="pStartDate">Ngày bắt đầu tìm kiếm</param>
+        /// <param name="pMainPosCode">Mã chi nhánh tìm kiếm</param>
+        /// <param name="pStaffDepartment">Phòng ban cán bộ</param>
+        /// <param name="pStaffPosition">Chức vụ cán bộ</param>
+        /// <returns>File tờ trình cấu hình lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn</returns>
+        [HttpPost]
+        public async Task<IActionResult> GenerateFileReport_UserIDC(string pId, string pMainPosName, string pFunctionType)
+        {
+            try
+            {
+                var filePath = await _reportService.GetUserIDCReport(pId, pMainPosName,pFunctionType);
+                // Lấy tên file từ đường dẫn
+                string fileName = Path.GetFileName(filePath);
+
+                // 3. Trả file về trình duyệt
+                return PhysicalFile(filePath, "application/octet-stream", fileName);
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi nếu cần thiết
+                return BadRequest($"Lỗi khi tạo file tờ trình người dùng IDC. Chi tiết lỗi: {ex.Message}");
+            }
+        }
+
 
     }
 }

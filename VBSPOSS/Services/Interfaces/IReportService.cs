@@ -36,5 +36,16 @@
         /// <exception cref="CustomException"></exception>
         /// <exception cref="Exception"></exception>
         Task<string> GetDepositPenalIntRateConfig(string pListId, string pCircularRefNum, string circularDate, string posCode);
+        /// <summary>
+        /// Hàm thực hiện in báo cáo Tờ trình người dùng IDC
+        /// </summary>
+        /// <param name="pId">List Id người dùng</param>
+        /// <param name="pMainPosName">Tên chi nhánh</param>
+        /// <returns>File báo cáo trả về</returns>
+        /// <exception cref="CustomException"></exception>
+        /// <exception cref="Exception"></exception>
+        Task<string> GetUserIDCReport(string pId, string pMainPosName, string pFunctionType);
+
     }
+
 }
