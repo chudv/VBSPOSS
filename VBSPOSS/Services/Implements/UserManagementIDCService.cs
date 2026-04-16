@@ -1904,25 +1904,20 @@ namespace VBSPOSS.Services.Implements
         {
             try
             {
-                string sReportDate = string.IsNullOrEmpty(pReportDate)
-                    ? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA)
-                    : pReportDate;
+                string sReportDate = string.IsNullOrEmpty(pReportDate) ? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA) : pReportDate;
 
-                string sql = @"SELECT TO_CHAR(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) AS Value FROM DUAL";
+                string sSQL = @"SELECT TO_CHAR(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) AS Value FROM DUAL";
 
-                var result = _dbContextIDC.Set<QueryResult>()
-                    .FromSqlRaw(sql,
-                        new OracleParameter(":P_USERID", OracleDbType.Varchar2) { Value = pUserId ?? "" },
-                        new OracleParameter(":P_REPORTDATE", OracleDbType.Varchar2) { Value = sReportDate })
-                    //.AsNoTracking()
-                    .FirstOrDefault();
-                string sVal = result?.Value ?? "0";
+                var result = _dbContextIDC.Set<QueryResult>().FromSqlRaw(sSQL,
+                                new OracleParameter(":P_USERID", OracleDbType.Varchar2) { Value = pUserId ?? "" },
+                                new OracleParameter(":P_REPORTDATE", OracleDbType.Varchar2) { Value = sReportDate }).FirstOrDefault();
+                string sValTemp = result?.Value ?? "0";
 
-                return Convert.ToInt32(sVal);
+                return Convert.ToInt32(sValTemp);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Lỗi: {ex.Message}");
+                Console.WriteLine($"Có lỗi khi gọi hàm kiểm tra mở quỹ tiền mặt của người dùng {pUserId} và ngày {sReportDate}. Chi tiết lỗi: {ex.Message}");
                 throw;
             }
         }
