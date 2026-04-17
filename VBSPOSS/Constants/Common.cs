@@ -1014,41 +1014,91 @@ namespace VBSPOSS.Constants
         }
     }
 
+    /// <summary>
+    /// Sự kiến cho: Điểm giao dịch, Danh mục địa phương
+    /// </summary>
     public class EventBusinessCode
     {
         /// <summary>
-        /// Thêm mới Xã hoặc Thôn: EventCode_AddNew_Locality = new ValueConstModel { Value = 1, Code = "ADDNEW_LOCALITY", Description = "Thêm mới Thôn/Xã" };
+        /// Thêm mới Xã hoặc Thôn: EventCode_Locality_AddNew = new ValueConstModel { Value = 1, Code = "LOCALITY_ADDNEW", Description = "Thêm mới Thôn/Xã" };
         /// </summary>
-        public static ValueConstModel EventCode_AddNew_Locality = new ValueConstModel { Value = 1, Code = "ADDNEW_LOCALITY", Description = "Thêm mới Thôn/Xã" };
+        public static ValueConstModel EventCode_Locality_AddNew = new ValueConstModel { Value = 1, Code = "LOCALITY_ADDNEW", Description = "Thêm mới Thôn/Xã" };
 
-        public static ValueConstModel EventCode_Change_Name = new ValueConstModel { Value = 2, Code = "CHANGE_NAME", Description = "Thay đổi tên Thôn/Xã" };
+        /// <summary>
+        /// Thay đổi tên Thôn/Xã: EventCode_Locality_Change_Name = new ValueConstModel { Value = 2, Code = "LOCALITY_CHANGE_NAME", Description = "Thay đổi tên Thôn/Xã" };
+        /// </summary>
+        public static ValueConstModel EventCode_Locality_Change_Name = new ValueConstModel { Value = 2, Code = "LOCALITY_CHANGE_NAME", Description = "Thay đổi tên Thôn/Xã" };
 
-        public static ValueConstModel EventCode_Change_Econ_Zone = new ValueConstModel { Value = 3, Code = "CHANGE_ECON_ZONE", Description = "Thay đổi vùng cho vay/Vùng khó khăn" };
-        
-        public static ValueConstModel EventCode_Transfer_Sub_Commune = new ValueConstModel { Value = 4, Code = "TRANSFER_SUB_COMMUNE", Description = "Điều chuyển Thôn/Ấp" };
+        /// <summary>
+        /// Thay đổi vùng cho vay/Vùng khó khăn: EventCode_Locality_Change_Econ_Zone = new ValueConstModel { Value = 3, Code = "LOCALITY_CHANGE_ECON_ZONE", Description = "Thay đổi vùng cho vay/Vùng khó khăn" };
+        /// </summary>
+        public static ValueConstModel EventCode_Locality_Change_Econ_Zone = new ValueConstModel { Value = 3, Code = "LOCALITY_CHANGE_ECON_ZONE", Description = "Thay đổi vùng cho vay/Vùng khó khăn" };
+
+        /// <summary>
+        /// Điều chuyển Thôn/Ấp: EventCode_Locality_Transfer_Sub_Commune = new ValueConstModel { Value = 4, Code = "LOCALITY_TRANSFER_SUB_COMMUNE", Description = "Điều chuyển Thôn/Ấp" };
+        /// </summary>
+        public static ValueConstModel EventCode_Locality_Transfer_Sub_Commune = new ValueConstModel { Value = 4, Code = "LOCALITY_TRANSFER_SUB_COMMUNE", Description = "Điều chuyển Thôn/Ấp" };
+
+        /// <summary>
+        /// Thêm mới điểm giao dịch: EventCode_TransPoint_AddNew = new ValueConstModel { Value = 10, Code = "TRANSPOINT_ADDNEW", Description = "Thêm mới điểm giao dịch" };
+        /// </summary>
+        public static ValueConstModel EventCode_TransPoint_AddNew = new ValueConstModel { Value = 10, Code = "TRANSPOINT_ADDNEW", Description = "Thêm mới điểm giao dịch" };
+
+        /// <summary>
+        /// Thay đổi ngày giao dịch cố định: EventCode_TransPoint_Change_VisitDate = new ValueConstModel { Value = 11, Code = "TRANSPOINT_CHANGE_VISITDATE", Description = "Thay đổi ngày giao dịch cố định" };
+        /// </summary>
+        public static ValueConstModel EventCode_TransPoint_Change_VisitDate = new ValueConstModel { Value = 11, Code = "TRANSPOINT_CHANGE_VISITDATE", Description = "Thay đổi ngày giao dịch cố định" };
+
+        /// <summary>
+        /// Thay đổi tên điểm giao dịch: EventCode_TransPoint_Change_Name = new ValueConstModel { Value = 12, Code = "TRANSPOINT_CHANGE_NAME", Description = "Thay đổi tên điểm giao dịch" };
+        /// </summary>
+        public static ValueConstModel EventCode_TransPoint_Change_Name = new ValueConstModel { Value = 12, Code = "TRANSPOINT_CHANGE_NAME", Description = "Thay đổi tên điểm giao dịch" };
+
+        /// <summary>
+        /// Thay đổi thông tin khác: Giờ, địa điểm, tọa độ,...: EventCode_TransPoint_Change_OtherInfor = new ValueConstModel { Value = 12, Code = "TRANSPOINT_CHANGE_OTHERINFOR", Description = "Thay đổi thông tin khác: Giờ, địa điểm, tọa độ,..." };
+        /// </summary>
+        public static ValueConstModel EventCode_TransPoint_Change_OtherInfor = new ValueConstModel { Value = 13, Code = "TRANSPOINT_CHANGE_OTHERINFOR", Description = "Thay đổi thông tin khác: Giờ, địa điểm, tọa độ,..." };
+
 
         public static ValueConstModel GetByValue(int value)
         {
             return value switch
             {
-                1 => EventCode_AddNew_Locality,
-                2 => EventCode_Change_Name,
-                3 => EventCode_Change_Econ_Zone,
-                4 => EventCode_Transfer_Sub_Commune,
+                1 => EventCode_Locality_AddNew,
+                2 => EventCode_Locality_Change_Name,
+                3 => EventCode_Locality_Change_Econ_Zone,
+                4 => EventCode_Locality_Transfer_Sub_Commune,
+                10 => EventCode_TransPoint_AddNew,
+                11 => EventCode_TransPoint_Change_VisitDate,
+                12 => EventCode_TransPoint_Change_Name,
+                13 => EventCode_TransPoint_Change_OtherInfor,
                 _ => null
             };
         }
 
-        public static List<ValueConstModel> GetAll()
+        public static List<ValueConstModel> GetListOfCommune()
         {
             return new List<ValueConstModel>
             {
-                EventCode_AddNew_Locality,
-                EventCode_Change_Name,
-                EventCode_Change_Econ_Zone,
-                EventCode_Transfer_Sub_Commune
+                EventCode_Locality_AddNew,
+                EventCode_Locality_Change_Name,
+                EventCode_Locality_Change_Econ_Zone,
+                EventCode_Locality_Transfer_Sub_Commune
             };
         }
+
+        public static List<ValueConstModel> GetListOfTransPoint()
+        {
+            return new List<ValueConstModel>
+            {
+                EventCode_TransPoint_AddNew,
+                EventCode_TransPoint_Change_VisitDate,
+                EventCode_TransPoint_Change_Name,
+                EventCode_TransPoint_Change_OtherInfor
+            };
+        }
+
+
     }
 
 
