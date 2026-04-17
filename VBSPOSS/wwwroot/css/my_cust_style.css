@@ -123,14 +123,15 @@ label {
 }
 
 .vbsp-page-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--vbsp-primary-dark);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 .vbsp-content {

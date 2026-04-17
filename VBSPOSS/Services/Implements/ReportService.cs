@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Emit;
+using VBSPOSS.Constants;
 using VBSPOSS.ExceptionHandling;
 using VBSPOSS.Helpers;
 using VBSPOSS.Integration.Interfaces;
@@ -224,6 +225,67 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+        /// <summary>
+        /// Hàm thực hiện in báo cáo Tờ trình người dùng IDC
+        /// </summary>
+        /// <param name="pFunctionType">Loại nghiệp vụ</param>
+        /// <param name="pStartDate">Ngày bắt đầu tìm kiếm</param>
+        /// <param name="pMainPosCode">Mã chi nhánh tìm kiếm</param>
+        /// <param name="pStaffDepartment">Phòng ban cán bộ</param>
+        /// <param name="pStaffPosition">Chức vụ cán bộ</param>
+        /// <returns>File báo cáo trả về</returns>
+        /// <exception cref="CustomException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> GetUserIDCReport(string pId, string pMainPosName, string pFunctionType)
+        {
+            ReportInput objReportInput = null;
+            try
+            {
+                //Định nghĩa thuộc tính chung
+                string dirSourceReport = $@"{_hostingEnvironment.ContentRootPath}\Documents\Reports\";
+                string dirDesReport = $@"{_hostingEnvironment.ContentRootPath}\wwwroot\Reports\";
+
+                if (!FileHelper.IsDirectory(dirSourceReport))
+                    Directory.CreateDirectory(dirSourceReport);
+                if (!FileHelper.IsDirectory(dirDesReport))
+                    Directory.CreateDirectory(dirDesReport);
+                
+                if(pFunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
+                {
+                    objReportInput = new ReportInput { ReportId = "BC0111114", FileType = "PDF" };
+                }
+                else if (pFunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                {
+                    objReportInput = new ReportInput { ReportId = "BC0111115", FileType = "PDF" };
+                }
+                else if (pFunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
+                {
+                    objReportInput = new ReportInput { ReportId = "BC0111116", FileType = "PDF" };
+                }
+
+                List<Parameter> parameters = new List<Parameter>();
+                parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{pId}" });
+                objReportInput.Parameters = new List<Parameter>(parameters);
+
+                GenericResultReportGateway<ReportResultDto> _response = _apiReportGateway.GetReport(objReportInput);
+
+                if (_response.Success)
+                {
+                    byte[] pdfBytes = Convert.FromBase64String(_response.Result.Data);
+                    string filePath = $@"{dirSourceReport}{_response.Result.FileName}";
+                    File.WriteAllBytes(filePath, pdfBytes);
+                    return filePath;
+                }
+                else
+                {
+                    throw new CustomException($"Lỗi tạo file báo cáo người dùng IDC: {objReportInput.ReportId}: {_response.Message}", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy báo cáo người dùng IDC", ex);
+            }
+        }
 
     }
 }

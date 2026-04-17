@@ -522,7 +522,7 @@ namespace VBSPOSS.Controllers
             if (listStaffVBSP != null && listStaffVBSP.Success && listStaffVBSP.Result != null && listStaffVBSP.Result.Count > 0)
             {
                 List<StaffVbspInforViewModel> listStaffVBSPTemp = new List<StaffVbspInforViewModel>();
-                pFlagCall = "1";
+                //pFlagCall = "1";
                 if (pFlagCall == "1")
                 {
                     DateTime fromDate = DateTime.Now.AddYears(-60);
@@ -1647,10 +1647,8 @@ namespace VBSPOSS.Controllers
                 sCodeApply = CodeOfLovUsed.CodeOfLovUsed_District;//Nếu là Cơ sở đào tạo thì cho quyền như PGD
 
             ArrayList data = new ArrayList();
-            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdConfigIntellectIDC, "", 0, "", "", pStatus, 2);
+            var listRoleOfUserIDCTmp = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentIdConfigIntellectIDC, "", 0, $"{ConstValueAPI.EntityList_Code}", "", pStatus, 2);
             var listRoleOfUserIDC = listRoleOfUserIDCTmp;
-            //if(sCodeApply != "1")
-            //    listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
             if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
                 data.Add(new { id = "", value = sTitleChoice });
             if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)
