@@ -133,5 +133,6 @@ namespace VBSPOSS.Data.OSS.Models
         [Column("ApprovalDate")]
         public DateTime ApprovalDate { get; set; }
     }
+
     #endregion
 }
