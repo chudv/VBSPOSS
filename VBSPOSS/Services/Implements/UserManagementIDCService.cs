@@ -2042,7 +2042,7 @@ namespace VBSPOSS.Services.Implements
                 var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
                 var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
 
-                var sSQL = @"BEGIN VBSP_OSS_GET.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID, :P_ROWS_DELETED, :P_SUCCESS, :P_MESSAGE); END;";
+                var sSQL = @"BEGIN VBSP_OSS_UPD.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID, :P_ROWS_DELETED, :P_SUCCESS, :P_MESSAGE); END;";
                 await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRowsDeletedOut, iSuccessOut, sMessageOut);
 
                 // Mapping kết quả

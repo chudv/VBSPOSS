@@ -49,32 +49,6 @@ namespace VBSPOSS.Controllers
         public async Task<IActionResult> IndexUserManagementIDC()
         {
 
-
-            //serviceTransPoint
-            var resultAddTransPoint = _serviceTransPoint.InsertTransactionPoint("002505", "TXN0234501", "17", "08h15-10h15", "Y", "Hà Giang 2", "228.605", "104.963", "TXN", "20251230", "SUCCESS", "N");
-            //    /// <summary>
-            //    /// Hàm thực hiện thêm mới bản ghi Điểm giao dịch vào bảng IDL_IDC.ADD_NEW_TXN_POINT_ITC
-            //    /// </summary>
-            //    /// <param name="pPosCode">Mã POS</param>
-            //    /// <param name="pTxnPointId">Mã điểm giao dịch</param>
-            //    /// <param name="pVisitDate">Ngày giao dịch cố định</param>
-            //    /// <param name="pVisitTime">Thời gian giao dịch. Ex: 8h00-12h00</param>
-            //    /// <param name="pTranpointFileGen">Cờ có xuất file không. Giá trị: Y/N</param>
-            //    /// <param name="pTxnPointName">Tên điểm giao dịch</param>
-            //    /// <param name="pLatitude">Tọa độ vĩ độ của điểm giao dịch</param>
-            //    /// <param name="pLongitude">Tọa độ kinh độ của điểm giao dịch</param>
-            //    /// <param name="pTypeCode">Mã ký tự đầu của điểm. TXN</param>
-            //    /// <param name="pMakerDate">Ngày tạo điểm. Định dạng yyyyMMdd</param>
-            //    /// <param name="pErrMsg">Mô tả lỗi</param>
-            //    /// <param name="pSynStatus">Trọng thái đồng bộ để trống</param>
-            //    /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
-            //    /// <exception cref="Exception"></exception>
-            //public async Task<ExecuteResultModelModel> InsertTransactionPoint(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
-            //                                   string pTxnPointName, string pLatitude, string pLongitude, string pTypeCode,
-            //                                   string pMakerDate, string pErrMsg, string pSynStatus)
-
-
-
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData

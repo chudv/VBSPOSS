@@ -266,10 +266,6 @@ namespace VBSPOSS.Services.Implements
 
 
 
-
-
-
-
         #region --- Các hàm liên quan đến thực thi vào Corebanking iDC - Nghiệp vụ Quản lý điểm giao dịch ---
         /// <summary>
         /// Hàm thực hiện thêm mới bản ghi Điểm giao dịch vào bảng IDL_IDC.ADD_NEW_TXN_POINT_ITC
@@ -289,7 +285,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pSynStatus">Trọng thái đồng bộ để trống</param>
         /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<ExecuteResultModelModel> InsertTransactionPoint(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
+        public async Task<ExecuteResultModelModel> InsertTransPointIDC(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
                                            string pTxnPointName, string pLatitude, string pLongitude, string pTypeCode,
                                            string pMakerDate,string pErrMsg,string pSynStatus)
         {
@@ -320,8 +316,8 @@ namespace VBSPOSS.Services.Implements
                                                 :P_ROWS_ADD,:P_SUCCESS,:P_MESSAGE); END;";
                 await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, paramsInsert);
                 // Lấy giá trị output
-                decimal rowsAdd = paramsInsert[12].Value as decimal? ?? 0;
-                decimal successCode = paramsInsert[13].Value as decimal? ?? -1;
+                decimal rowsAdd = Utilities.GetOracleDecimal(paramsInsert[12]);
+                decimal successCode = Utilities.GetOracleDecimal(paramsInsert[13], -1);
                 string message = paramsInsert[14].Value?.ToString() ?? "";
 
                 var objExecuteResult = new ExecuteResultModelModel
@@ -342,53 +338,76 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"InsertTransactionPoint('{pTxnPointId}') => Error: {ex.Message}");
+                _logger?.LogError(ex, $"InsertTransactionPoint('{pTxnPointId}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm thêm mới điểm giao dịch " +
                                         $"InsertTransactionPoint('{pTxnPointId}') => Error: {ex.Message}", ex);
             }
         }
 
+        /// <summary>
+        /// Hàm thực hiện tạo bảng ghi từ IDL_IDC.ADD_NEW_TXN_POINT_ITC vào 2 bảng IDL_IDC.TRANPOINT, IDL_IDC.TXIDMAP theo ngày SELECT PC_BUSINESS_DT FROM IDL_IDC.P_CTRL;
+        /// Ex: var resultCreateTransPoint = _serviceTransPoint.CreateTransPointByBusinessDateIDC("20260331", "GIANGNT", "GIANGNT");
+        /// </summary>
+        /// <param name="pMakerDate">Không bắt buộc vì vào trong thủ tục CSDL chỉ sử dụng SELECT PC_BUSINESS_DT INTO LV_BUSINESS_DT FROM IDL_IDC.P_CTRL;</param>
+        /// <param name="pCreatedBy">Người tạo lập</param>
+        /// <param name="pApproverBy">Ngày tạo lập</param>
+        /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ExecuteResultModelModel> CreateTransPointByBusinessDateIDC(string pMakerDate, string pCreatedBy, string pApproverBy)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(pCreatedBy))
+                    pCreatedBy = (pCreatedBy.Trim().Length > 8) ? pCreatedBy.Substring(0, 8) : pCreatedBy;
+                if (!string.IsNullOrEmpty(pApproverBy))
+                    pApproverBy = (pApproverBy.Trim().Length > 8) ? pApproverBy.Substring(0, 8) : pApproverBy;
 
-        /*
-         * 	--VBSP_OSS_UPD
-	PROCEDURE INSERT_ADD_NEW_TXN_POINT_ITC(P_POS_CD VARCHAR2, P_TXN_ID VARCHAR2, P_VISIT_DT VARCHAR2, P_VISIT_TIME VARCHAR2, P_TRANPOINT_FILE_GEN VARCHAR2, 
-										   P_TXN_NAME VARCHAR2, P_TRANPOINT_LATITUDE VARCHAR2, P_TRANPOINT_LONGITUDE VARCHAR2, P_TYPE_CD VARCHAR2, 
-										   P_MKR_DT VARCHAR2, --YYYYMMDD
-										   P_ERR_MSG VARCHAR2, P_SYN_STATUS VARCHAR2,		
-										   P_ROWS_ADD   	OUT NUMBER,            -- Số bản ghi đã thêm mới
-										   P_SUCCESS        	OUT NUMBER,        -- 1: Thành công, 0: Đã tồn tại bản ghi có mã điểm GD này không thêm mới được; -1: Lỗi xẩy ra
-										   P_MESSAGE        	OUT VARCHAR2       -- Thông báo chi tiết
-										   )
+                var paramsInsert = new[]
+                {
+                    new OracleParameter("P_MKR_DT", OracleDbType.Varchar2) { Value = pMakerDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_CREATEDBY", OracleDbType.Varchar2) { Value = pCreatedBy ?? (object)DBNull.Value },
+                    new OracleParameter("P_APPROVERBY", OracleDbType.Varchar2) { Value = pApproverBy ?? (object)DBNull.Value },
 
-         1. Thêm điểm giao dịch (Toản mô tả bổ sung)
- Insert dữ liệu vào bảng:
-    IDL_IDC.ADD_NEW_TXN_POINT_ITC
-Thực thi thủ tục:
-    DECLARE
-   V_ERR_MSG  VARCHAR2(4000);
-   V_ERR_CODE NUMBER;
-BEGIN
-   FOR I IN (
-      SELECT TXN_ID
-      FROM IDL_IDC.ADD_NEW_TXN_POINT_ITC
-      WHERE MKR_DT = (SELECT PC_BUSINESS_DT FROM idl_lms.P_CTRL) 
-        AND ERR_MSG IS NULL
-   )
-   LOOP
-      IDL_IDC.SP_NEW_TXN_POINT_VBSP_ITC(
-         I.TXN_ID,
-         V_ERR_MSG,
-         V_ERR_CODE
-      );
+                    new OracleParameter("P_ROWS_ADD", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output }
+                };
+                
+                var sSQL = @"BEGIN VBSP_OSS_UPD.CREATE_NEW_TXN_POINT_BY_BUSINESSDATE(:P_MKR_DT, :P_CREATEDBY, :P_APPROVERBY, :P_ROWS_ADD,:P_SUCCESS,:P_MESSAGE); END;";
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, paramsInsert);
+                // Lấy giá trị Output
+                decimal rowsAdd = Utilities.GetOracleDecimal(paramsInsert[3]);
+                decimal successCode = Utilities.GetOracleDecimal(paramsInsert[4], -1);
+                var message = paramsInsert[5].Value?.ToString() ?? "";
 
-   END LOOP;
+                var objExecuteResult = new ExecuteResultModelModel
+                {
+                    RowsAffected = (int)rowsAdd,
+                    Success = (int)successCode,
+                    Message = message,
+                    TxnStatus = successCode switch
+                    {
+                        1 => ResultValueAPI.ResultValue_Status_Success,
+                        0 => ResultValueAPI.ResultValue_Status_Failed,
+                        -1 => ResultValueAPI.ResultValue_Status_Errored,
+                        _ => ResultValueAPI.ResultValue_Status_Errored
+                    }
+                };
 
-END;
-
-         */
-
-
-
-                #endregion
+                return objExecuteResult;
             }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"CreateTransPointByBusinessDateIDC failed. MakerDate: {pMakerDate} => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm tạo bản ghi từ ADD_NEW_TXN_POINT_ITC cho 2 bảng IDL_IDC.TRANPOINT,IDL_IDC.TXIDMAP " +
+                                        $"CreateTransPointByBusinessDateIDC('{pMakerDate}') => Error: {ex.Message}", ex);
+            }
+        }
+
+
+
+        
+
+        #endregion
+    }
 }

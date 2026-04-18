@@ -58,9 +58,19 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pSynStatus">Trọng thái đồng bộ để trống</param>
         /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
         /// <exception cref="Exception"></exception>
-        Task<ExecuteResultModelModel> InsertTransactionPoint(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
+        Task<ExecuteResultModelModel> InsertTransPointIDC(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
                                            string pTxnPointName, string pLatitude, string pLongitude, string pTypeCode,
                                            string pMakerDate, string pErrMsg, string pSynStatus);
+
+        /// <summary>
+        /// Hàm thực hiện tạo bảng ghi từ IDL_IDC.ADD_NEW_TXN_POINT_ITC vào 2 bảng IDL_IDC.TRANPOINT, IDL_IDC.TXIDMAP theo ngày SELECT PC_BUSINESS_DT FROM IDL_IDC.P_CTRL;
+        /// </summary>
+        /// <param name="pMakerDate">Không bắt buộc vì vào trong thủ tục CSDL chỉ sử dụng SELECT PC_BUSINESS_DT INTO LV_BUSINESS_DT FROM IDL_IDC.P_CTRL;</param>
+        /// <param name="pCreatedBy">Người tạo lập</param>
+        /// <param name="pApproverBy">Ngày tạo lập</param>
+        /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
+        /// <exception cref="Exception"></exception>
+        Task<ExecuteResultModelModel> CreateTransPointByBusinessDateIDC(string pMakerDate, string pCreatedBy, string pApproverBy);
     }
         
 }
