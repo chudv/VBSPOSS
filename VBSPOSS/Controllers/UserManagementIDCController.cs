@@ -277,6 +277,11 @@ namespace VBSPOSS.Controllers
             int iResult = 0;
             try
             {
+                var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
+                if(objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                    return 9;
+                if(objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                    return 9;
                 if (string.IsNullOrEmpty(objUserIDCFull.PosCode))
                     return 1;
                 if (string.IsNullOrEmpty(objUserIDCFull.StaffCode))
@@ -287,15 +292,14 @@ namespace VBSPOSS.Controllers
                     return 4;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
                     return 5;
-                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code || || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 {
                     int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(objUserIDCFull.UserId, objUserIDCFull.StartDate?.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper());
                     if (iCheckOpenCash > 0)
                         return 6;
                 }
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
-                {
-                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
+                {                    
                     if (objViewUserIDCByApi?.ServiceStatusResponseResponseCode == "0")
                     {
                         if ((objUserIDCFull.MobileNumber == objViewUserIDCByApi.MobileNumber && objUserIDCFull.EmailAddress == objViewUserIDCByApi.EmailAddress)
