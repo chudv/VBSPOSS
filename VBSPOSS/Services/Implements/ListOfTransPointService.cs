@@ -3,10 +3,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
+using System.Drawing;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using Telerik.SvgIcons;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
+using VBSPOSS.Data.IntellectIDC.Models;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;
@@ -20,23 +25,30 @@ namespace VBSPOSS.Services.Implements
         /// Defines the _dbContext.
         /// </summary>
         private readonly ApplicationDbContext _dbContext;
-       
+        
+        /// <summary>
+        /// Kết nối CSDL Oracle của iDC
+        /// </summary>
+        private readonly IntellectIDCDbContext _dbContextIDC;
 
         /// <summary>
         /// Defines the _mapper.
         /// </summary>
         private readonly IMapper _mapper;
 
+        private readonly ILogger<ListOfTransPointService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ListOfValueService"/> class.
         /// </summary>
         /// <param name="dbContext">The dbContext<see cref="ApplicationDbContext"/>.</param>
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
-        public ListOfTransPointService(ApplicationDbContext dbContext, IMapper mapper)
+        public ListOfTransPointService(ApplicationDbContext dbContext, IMapper mapper, IntellectIDCDbContext dbContextIDC, ILogger<ListOfTransPointService> logger)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _dbContextIDC = dbContextIDC;
+            _logger = logger;
         }
 
         /// <summary>
@@ -49,7 +61,8 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
         /// <returns>Danh sách bản ghi</returns>
-        public List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode,string pTxnPointName, int iVisitDateBegin,int iVisitDateEnd, string pTxnStatus)
+        public List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+                                            int iVisitDateBegin, int iVisitDateEnd, string pTxnStatus)
         {
             var answer = new List<ListOfTransPointViewModel>();
             try
@@ -250,5 +263,132 @@ namespace VBSPOSS.Services.Implements
             }
             return bResult;
         }
-    }
+
+
+
+
+
+
+
+        #region --- Các hàm liên quan đến thực thi vào Corebanking iDC - Nghiệp vụ Quản lý điểm giao dịch ---
+        /// <summary>
+        /// Hàm thực hiện thêm mới bản ghi Điểm giao dịch vào bảng IDL_IDC.ADD_NEW_TXN_POINT_ITC
+        /// Ex: var resultAddTransPoint = _serviceTransPoint.InsertTransactionPoint("002505", "TXN0234501", "17", "08h15-10h15", "Y", "Hà Giang 2", "228.605", "104.963", "TXN", "20251230", "", "N");
+        /// </summary>
+        /// <param name="pPosCode">Mã POS</param>
+        /// <param name="pTxnPointId">Mã điểm giao dịch</param>
+        /// <param name="pVisitDate">Ngày giao dịch cố định</param>
+        /// <param name="pVisitTime">Thời gian giao dịch. Ex: 8h00-12h00</param>
+        /// <param name="pTranpointFileGen">Cờ có xuất file không. Giá trị: Y/N</param>
+        /// <param name="pTxnPointName">Tên điểm giao dịch</param>
+        /// <param name="pLatitude">Tọa độ vĩ độ của điểm giao dịch</param>
+        /// <param name="pLongitude">Tọa độ kinh độ của điểm giao dịch</param>
+        /// <param name="pTypeCode">Mã ký tự đầu của điểm. TXN</param>
+        /// <param name="pMakerDate">Ngày tạo điểm. Định dạng yyyyMMdd</param>
+        /// <param name="pErrMsg">Mô tả lỗi. Khi thêm mới để trống</param>
+        /// <param name="pSynStatus">Trọng thái đồng bộ để trống</param>
+        /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ExecuteResultModelModel> InsertTransactionPoint(string pPosCode, string pTxnPointId, string pVisitDate, string pVisitTime, string pTranpointFileGen,
+                                           string pTxnPointName, string pLatitude, string pLongitude, string pTypeCode,
+                                           string pMakerDate,string pErrMsg,string pSynStatus)
+        {
+            try
+            {
+                var paramsInsert = new[]
+                {
+                    new OracleParameter("P_POS_CD", OracleDbType.Varchar2) { Value = pPosCode ?? (object)DBNull.Value },
+                    new OracleParameter("P_TXN_ID", OracleDbType.Varchar2) { Value = pTxnPointId ?? (object)DBNull.Value },
+                    new OracleParameter("P_VISIT_DT", OracleDbType.Varchar2) { Value = pVisitDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_VISIT_TIME", OracleDbType.Varchar2) { Value = pVisitTime ?? (object)DBNull.Value },
+                    new OracleParameter("P_TRANPOINT_FILE_GEN", OracleDbType.Varchar2) { Value = pTranpointFileGen ?? (object)DBNull.Value },
+                    new OracleParameter("P_TXN_NAME", OracleDbType.Varchar2) { Value = pTxnPointName ?? (object)DBNull.Value },
+                    new OracleParameter("P_TRANPOINT_LATITUDE", OracleDbType.Varchar2) { Value = pLatitude ?? (object)DBNull.Value },
+                    new OracleParameter("P_TRANPOINT_LONGITUDE", OracleDbType.Varchar2) { Value = pLongitude ?? (object)DBNull.Value },
+                    new OracleParameter("P_TYPE_CD", OracleDbType.Varchar2) { Value = pTypeCode ?? (object)DBNull.Value },
+                    new OracleParameter("P_MKR_DT", OracleDbType.Varchar2) { Value = pMakerDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_ERR_MSG", OracleDbType.Varchar2) { Value = pErrMsg ?? (object)DBNull.Value },
+                    new OracleParameter("P_SYN_STATUS", OracleDbType.Varchar2) { Value = pSynStatus ?? (object)DBNull.Value },
+
+                    new OracleParameter("P_ROWS_ADD", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output }
+                };
+
+                var sSQL = @"BEGIN VBSP_OSS_UPD.INSERT_ADD_NEW_TXN_POINT_ITC(:P_POS_CD, :P_TXN_ID, :P_VISIT_DT, :P_VISIT_TIME, :P_TRANPOINT_FILE_GEN, :P_TXN_NAME,
+                                                :P_TRANPOINT_LATITUDE, :P_TRANPOINT_LONGITUDE, :P_TYPE_CD, :P_MKR_DT, :P_ERR_MSG, :P_SYN_STATUS, 
+                                                :P_ROWS_ADD,:P_SUCCESS,:P_MESSAGE); END;";
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, paramsInsert);
+                // Lấy giá trị output
+                decimal rowsAdd = paramsInsert[12].Value as decimal? ?? 0;
+                decimal successCode = paramsInsert[13].Value as decimal? ?? -1;
+                string message = paramsInsert[14].Value?.ToString() ?? "";
+
+                var objExecuteResult = new ExecuteResultModelModel
+                {
+                    RowsAffected = (int)rowsAdd,
+                    Success = (int)successCode,
+                    Message = message,
+                    TxnStatus = successCode switch
+                    {
+                        1 => ResultValueAPI.ResultValue_Status_Success,
+                        0 => ResultValueAPI.ResultValue_Status_Failed,
+                        -1 => ResultValueAPI.ResultValue_Status_Errored,
+                        _ => ResultValueAPI.ResultValue_Status_Errored
+                    }
+                };
+
+                return objExecuteResult;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"InsertTransactionPoint('{pTxnPointId}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm thêm mới điểm giao dịch " +
+                                        $"InsertTransactionPoint('{pTxnPointId}') => Error: {ex.Message}", ex);
+            }
+        }
+
+
+        /*
+         * 	--VBSP_OSS_UPD
+	PROCEDURE INSERT_ADD_NEW_TXN_POINT_ITC(P_POS_CD VARCHAR2, P_TXN_ID VARCHAR2, P_VISIT_DT VARCHAR2, P_VISIT_TIME VARCHAR2, P_TRANPOINT_FILE_GEN VARCHAR2, 
+										   P_TXN_NAME VARCHAR2, P_TRANPOINT_LATITUDE VARCHAR2, P_TRANPOINT_LONGITUDE VARCHAR2, P_TYPE_CD VARCHAR2, 
+										   P_MKR_DT VARCHAR2, --YYYYMMDD
+										   P_ERR_MSG VARCHAR2, P_SYN_STATUS VARCHAR2,		
+										   P_ROWS_ADD   	OUT NUMBER,            -- Số bản ghi đã thêm mới
+										   P_SUCCESS        	OUT NUMBER,        -- 1: Thành công, 0: Đã tồn tại bản ghi có mã điểm GD này không thêm mới được; -1: Lỗi xẩy ra
+										   P_MESSAGE        	OUT VARCHAR2       -- Thông báo chi tiết
+										   )
+
+         1. Thêm điểm giao dịch (Toản mô tả bổ sung)
+ Insert dữ liệu vào bảng:
+    IDL_IDC.ADD_NEW_TXN_POINT_ITC
+Thực thi thủ tục:
+    DECLARE
+   V_ERR_MSG  VARCHAR2(4000);
+   V_ERR_CODE NUMBER;
+BEGIN
+   FOR I IN (
+      SELECT TXN_ID
+      FROM IDL_IDC.ADD_NEW_TXN_POINT_ITC
+      WHERE MKR_DT = (SELECT PC_BUSINESS_DT FROM idl_lms.P_CTRL) 
+        AND ERR_MSG IS NULL
+   )
+   LOOP
+      IDL_IDC.SP_NEW_TXN_POINT_VBSP_ITC(
+         I.TXN_ID,
+         V_ERR_MSG,
+         V_ERR_CODE
+      );
+
+   END LOOP;
+
+END;
+
+         */
+
+
+
+                #endregion
+            }
 }
