@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
+using Oracle.ManagedDataAccess.Client;
 
 namespace VBSPOSS.Utils
 {
@@ -942,6 +943,20 @@ namespace VBSPOSS.Utils
             {
                 return source;
             }
+        }
+
+        /// <summary>
+        /// Hàm Convert kiểu dữ liệu tham số trả ra của Oracle về decimal
+        /// Ex: decimal rowsAdd = Utilities.GetOracleDecimal(paramsInsert[3]);
+        /// </summary>
+        /// <param name="paramValue">Tham số của thủ tục Oracle</param>
+        /// <param name="defaultValue">Giá trị mặc định</param>
+        /// <returns></returns>
+        public static decimal GetOracleDecimal(OracleParameter paramValue, decimal defaultValue = 0)
+        {
+            if (paramValue.Value is Oracle.ManagedDataAccess.Types.OracleDecimal oracleDec && !oracleDec.IsNull)
+                return oracleDec.Value;
+            return defaultValue;
         }
     }
 }

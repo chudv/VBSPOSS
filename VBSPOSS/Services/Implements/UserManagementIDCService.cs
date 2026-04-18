@@ -439,7 +439,7 @@ namespace VBSPOSS.Services.Implements
                                 objUserManagementIDCsUpdNew.StatusUpdateCore = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.SessionValReq = objResetPasswordUserIDCByApi.SessionValReq;
                                 objUserManagementIDCsUpdNew.PrevStatus = objResetPasswordUserIDCByApi.PrevStatus;
-                                objUserManagementIDCsUpdNew.CallApiStatus = (objResetPasswordUserIDCByApi.Status == true) ? "SUCCESS" : "FAILED";
+                                objUserManagementIDCsUpdNew.CallApiStatus = (objResetPasswordUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
                                 objUserManagementIDCsUpdNew.CallApiReqRecordSl = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.CallApiResponseCode = objResetPasswordUserIDCByApi.ResponseCode;
                                 objUserManagementIDCsUpdNew.CallApiResponseMsg = objResetPasswordUserIDCByApi.ResponseMsg;
@@ -1995,7 +1995,6 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-
         /// <summary>
         /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
         /// Ex: SELECT VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('44573', '03-SEP-2025') FROM DUAL
@@ -2028,41 +2027,6 @@ namespace VBSPOSS.Services.Implements
                 throw;
             }
         }
-        //public int CheckOpenCashByUserId(string pUserId, string pReportDate)
-        //{
-        //    int iResultValue = 0;
-        //    string sReportDate = "";
-        //    if (string.IsNullOrEmpty(pReportDate))
-        //        sReportDate = DateTime.Now.ToString(FormatParameters.FORMAT_DATE_ORA);
-        //    else sReportDate = pReportDate;
-
-        //    try
-        //    {
-        //        string sSQL = @"SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID(:P_USERID, :P_REPORTDATE)) As Code FROM DUAL";
-
-        //        var result = _dbContextIDC.CellValues
-        //            .FromSqlRaw(sSQL,
-        //                new OracleParameter("P_USERID", pUserId),
-        //                new OracleParameter("P_REPORTDATE", sReportDate)
-        //            )
-        //            .FirstOrDefault();
-
-        //        //string sSQL = $" SELECT TRIM(VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('{pUserId}', '{sReportDate}')) Code From Dual;";
-        //        //var iValueRet = _dbContextIDC.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
-        //        int iValueRet = 0;
-        //        if (iValueRet != null)
-        //        {
-        //            iResultValue = Convert.ToInt32(iValueRet.ToString());
-        //        }
-        //        return iResultValue;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
-
 
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
@@ -2074,11 +2038,11 @@ namespace VBSPOSS.Services.Implements
             try
             {
                 var sUserIdInput = new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId };
-                var iRowsDeletedOut = new OracleParameter("P_ROWS_DELETED", OracleDbType.Int32) { Direction = ParameterDirection.Output };
-                var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Int32) { Direction = ParameterDirection.Output };
+                var iRowsDeletedOut = new OracleParameter("P_ROWS_DELETED", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
+                var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
                 var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
 
-                var sSQL = @"BEGIN VBSP_OSS_GET.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID, :P_ROWS_DELETED, :P_SUCCESS, :P_MESSAGE); END;";
+                var sSQL = @"BEGIN VBSP_OSS_UPD.SP_DELETE_AUTHSECTYPE_BY_USERID(:P_USERID, :P_ROWS_DELETED, :P_SUCCESS, :P_MESSAGE); END;";
                 await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRowsDeletedOut, iSuccessOut, sMessageOut);
 
                 // Mapping kết quả
@@ -2106,7 +2070,6 @@ namespace VBSPOSS.Services.Implements
                                         $"DeleteAuthSecTypeByUserIdAsync('{pUserId}') => Error: {ex.Message}", ex);
             }
         }
-
 
         /// <summary>
         /// Hàm lưu file đính kèm
