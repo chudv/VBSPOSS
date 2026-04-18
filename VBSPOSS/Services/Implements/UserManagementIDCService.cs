@@ -439,7 +439,7 @@ namespace VBSPOSS.Services.Implements
                                 objUserManagementIDCsUpdNew.StatusUpdateCore = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.SessionValReq = objResetPasswordUserIDCByApi.SessionValReq;
                                 objUserManagementIDCsUpdNew.PrevStatus = objResetPasswordUserIDCByApi.PrevStatus;
-                                objUserManagementIDCsUpdNew.CallApiStatus = (objResetPasswordUserIDCByApi.Status == true) ? "SUCCESS" : "FAILED";
+                                objUserManagementIDCsUpdNew.CallApiStatus = (objResetPasswordUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
                                 objUserManagementIDCsUpdNew.CallApiReqRecordSl = iCreateUserIDC;
                                 objUserManagementIDCsUpdNew.CallApiResponseCode = objResetPasswordUserIDCByApi.ResponseCode;
                                 objUserManagementIDCsUpdNew.CallApiResponseMsg = objResetPasswordUserIDCByApi.ResponseMsg;

@@ -3,6 +3,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Data;
@@ -45,7 +46,10 @@ namespace VBSPOSS.Controllers
             _context = context;
             _serviceTransPoint = serviceTransPoint;
         }
-
+        /// <summary>
+        /// Menu: Tạo mới và thay đổi thông tin người dùng
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> IndexUserManagementIDC()
         {
             string sessionUser = UserName;
@@ -75,6 +79,41 @@ namespace VBSPOSS.Controllers
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
             return View("IndexUserManagementIDC");
         }
+
+        /// <summary>
+        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Mã đơn vị</param>
+        /// <param name="pUserId">Mã UserId</param>
+        /// <param name="pFunctionType">Loại chức năng chọn</param>
+        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
+        /// <param name="pStatus">Trạng thái</param>
+        /// <returns>Danh sách người đại diện các đơn vị</returns>
+        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, string pUserId, int pStatus,
+                                                            string pFullName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pPosCode))
+                    pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
+                if (string.IsNullOrEmpty(pUserId))
+                    pUserId = "";
+                if (string.IsNullOrEmpty(pFullName))
+                    pFullName = "";
+                if (string.IsNullOrEmpty(pFunctionType))
+                    pFunctionType = "";
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0, pPosCode, pPosCode, pUserId, pFullName, "", pFunctionType, pStatus);
+                return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_UserIDCManagement('{pPosCode}','{pFunctionType}','{pUserId}',{pStatus},'{pFullName}') => Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+            }
+        }
+
 
         public async Task<IActionResult> IndexApproveUserManagementIDC()
         {
@@ -176,7 +215,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.MobileNumber = "";
                 objPosUserIDCMaster.DateOfBirth = DateTime.Now;
                 objPosUserIDCMaster.GroupName = "";
-                objPosUserIDCMaster.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='EntityList' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+                objPosUserIDCMaster.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                 objPosUserIDCMaster.AuthType = "";
                 objPosUserIDCMaster.UserType = "";
                 objPosUserIDCMaster.MailIdFlag = MailIdFlag.MailIdFlag_RandomSendAPI.Code;
@@ -258,17 +297,21 @@ namespace VBSPOSS.Controllers
             return PartialView(sNameView, objPosUserIDCMaster);
         }
 
-        //Hàm check dữ liệu trước khi lưu
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objUserIDCFull"></param>
+        /// <returns></returns>
         public async Task<int> IsValidSaveUserIDC(UserManagementIDCViewModel objUserIDCFull)
         {
             int iResult = 0;
             try
             {
                 var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
-                if(objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
-                    return 9;
-                if(objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
-                    return 9;
+                if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId))
+                    return 10;
+                if (objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                    return 9;       //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
                 if (string.IsNullOrEmpty(objUserIDCFull.PosCode))
                     return 1;
                 if (string.IsNullOrEmpty(objUserIDCFull.StaffCode))
@@ -528,39 +571,7 @@ namespace VBSPOSS.Controllers
             return PartialView(sNameView, objPosUserIDCManagement);
         }
 
-        /// <summary>
-        /// Hàm show màn hình Thêm/Sửa/Thay đổi POS, Quyền/Cấp lại mật khẩu... người dùng IDC
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="pPosCode">Mã đơn vị</param>
-        /// <param name="pUserId">Mã UserId</param>
-        /// <param name="pFunctionType">Loại chức năng chọn</param>
-        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
-        /// <param name="pStatus">Trạng thái</param>
-        /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, string pUserId, int pStatus,string pFullName)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(pPosCode))
-                    pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
-                if (string.IsNullOrEmpty(pUserId))
-                    pUserId = "";
-                if (string.IsNullOrEmpty(pFullName))
-                    pFullName = "";
-                if (string.IsNullOrEmpty(pFunctionType))
-                    pFunctionType = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0,pPosCode,pPosCode, pUserId, pFullName, "",pFunctionType,pStatus);
-                return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
-            }
-            catch (Exception ex)
-            {
-                WriteLog(LogType.ERROR, ex.Message);
-                ModelState.AddModelError("ERROR", $"{ex.Message}");
-                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
-            }
-        }
-
+       
         /// <summary>
         /// Hàm lấy danh sách file đính kèm theo Phân loại file và Chỉ số danh mục chứa file (
         /// </summary>
