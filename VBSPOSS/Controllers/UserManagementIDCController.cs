@@ -9,6 +9,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
+using VBSPOSS.Data.IntellectIDC.Models;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers;
@@ -30,37 +31,23 @@ namespace VBSPOSS.Controllers
         private readonly IListOfValueService _serviceLOV;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
-        private readonly IPosRepresentativeService _service;
+        private readonly IListOfTransPointService _serviceTransPoint;
+
 
         public UserManagementIDCController(ILogger<UserManagementIDCController> logger, IAdministrationService adminService,
-            ISessionHelper sessionHelper, IUserManagementIDCService userManagementIDCService,
-                    IListOfValueService serviceLOV,IPosRepresentativeService service, IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
+            ISessionHelper sessionHelper, IUserManagementIDCService userManagementIDCService, IListOfTransPointService serviceTransPoint,
+                    IListOfValueService serviceLOV,IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
         {
             _logger = logger;
             _userManagementIDCService = userManagementIDCService;
             _serviceLOV = serviceLOV;
             _mapper = mapper;
             _context = context;
-            _service = service;
+            _serviceTransPoint = serviceTransPoint;
         }
 
         public async Task<IActionResult> IndexUserManagementIDC()
         {
-            //           /// <summary>
-            //           /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
-            //           /// Ex: SELECT VBSP_OSS_GET.FN_CHECK_OPENCASH_BY_USERID('44573', '03-SEP-2025') FROM DUAL
-            //           /// </summary>
-            //           /// <param name="pUserId">Tài khoản người dùng trên iDC</param>
-            //           /// <param name="pReportDate">Ngày kiểm tra định dạng dd-MON-yyyy</param>
-            //           /// <returns>Kết quả trả về:
-            //           ///                 0 - Chưa mở sổ tiền mặt đầu ngày;
-            //           ///                 1 - Đã mở chưa đóng;
-            //           ///                 2 - Đã mở và đóng nhưng còn tồn quỹ tiền mặt chưa chuyển về quỹ chính
-            //           ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
-            //           /// </returns>
-            //public int CheckOpenCashByUserId(string pUserId, string pReportDate)
-            int ival = _userManagementIDCService.CheckOpenCashByUserId("44573", "03-SEP-2025");
-
             string sessionUser = UserName;
             string posCode = UserPosCode;
             // Hoặc cách khác qua RouteData
