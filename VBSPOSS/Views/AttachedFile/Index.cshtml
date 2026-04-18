@@ -1,0 +1,592 @@
+﻿@using Kendo.Mvc
+@using VBSPOSS.Data.OSS.Models
+@using VBSPOSS.Extensions
+@using VBSPOSS.Models
+@{
+    ViewBag.Title = "Attached File";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
+<div id="myPopup"></div>
+<div id="notification"></div>
+<style>
+    #gridMainCasaRate div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainCasaRate .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridMainCasaRate .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-auth.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-approval.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+
+    #StaredDate_From_TimKiem {
+        width: 50px !important;
+    }
+
+    #StaredDate_End_TimKiem {
+        width: 50px !important;
+    }
+
+    #Search_Panel {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px; /* Khoảng cách giữa các button, có thể điều chỉnh */
+    }
+
+    .status-red {
+        color: red !important;
+    }
+    /* * {
+                            font-family: 'tahoma', sans-serif;
+                            font-size: 12px;
+                        } */
+    .ajax-loader {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -32px; /* -1 * image width / 2 */
+        margin-top: -32px; /* -1 * image height / 2 */
+        display: block;
+    }
+
+    #mydivMain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: grey;
+        opacity: .8;
+    }
+
+
+    .red {
+        color: red;
+    }
+   
+
+    #gridMainCasaConfig div a, table tr, td {
+        font-size: 12px;
+    }
+
+</style>
+<script>
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+    // Khởi tạo Kendo Notification
+    var notification = $("#notification").kendoNotification({
+        position: {
+            top: 20,
+            right: 20
+        },
+        autoHideAfter: 5000
+    }).data("kendoNotification");
+    var mainWindow = $("#myPopup");
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "2",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+
+    function paramLoadGridData() {
+        var combo = $("#FileType_Find").data("kendoComboBox");
+        var fileType = combo ? combo.value() : null;  //
+
+        var params = {
+            pPosCode: $("#PosCode_Find").val() || "",
+            pFileType: fileType                          //
+        };
+
+        console.log("Params gửi lên server:", params);  //
+
+        return params;
+    }
+    function refreshGridCasaRateConfigure() {
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+    function onSearchCasaRateConfigure(e) {
+        refreshGridCasaRateConfigure();
+    }
+    function onRowBoundCasaRateConfigure(e) {
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiRow = dataItem.get("Status");
+            if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0 || trangthaiRow == 4)
+                row.css({ "background-color": "#f8f9fa", "color": "#6c757d" });
+            if (trangthaiRow != null && trangthaiRow == 4)
+                row.css({ "background-color": "#fff5f5", "color": "#dc3545" });
+            if (trangthaiRow != null && trangthaiRow == 3) // Đã duyệt
+                row.css({ "background-color": "#e8f5e9", "color": "#2e7d32" });
+
+        }
+
+
+        var grid = this;
+        grid.tbody.find("tr").each(function () {
+            var dataItem = grid.dataItem(this);
+            if (userPermission.EditPermissionFlag == 0) {
+                $(this).find(".k-grid-ViewEdit").hide();
+            }
+            if (userPermission.DeletePermissionFlag == 0) {
+                $(this).find(".k-grid-Delete").hide();
+            }
+            if (userPermission.AuthorizePermissionFlag == 0) {
+                $(this).find(".k-grid-Authorize").hide();
+            }
+            if (userPermission.ReportPermissionFlag == 0) {
+                $(this).find(".k-grid-Approval").hide();
+            }
+        });
+
+
+
+        // Checkbox logic
+        $("#gridMainCasaRate").on("click", ".chkbx", function () {
+            var grid = $("#gridMainCasaRate").data("kendoGrid");
+            var dataItem = grid.dataItem($(this).closest("tr"));
+            var checked = $(this).is(":checked");
+            if (checked) {
+                var dataItems = grid.dataSource.view();
+                for (var i = 0; i < dataItems.length; i++) {
+                    if (dataItems[i] && dataItems[i].Id && dataItems[i].Id !== dataItem.Id) {
+                        dataItems[i].set("IsSelected", false);
+                    }
+                }
+                dataItem.set("IsSelected", true);
+            } else {
+                dataItem.set("IsSelected", false);
+            }
+            $("#gridMainCasaRate .chkbx").each(function () {
+                var rowDataItem = grid.dataItem($(this).closest("tr"));
+                $(this).prop("checked", rowDataItem.IsSelected);
+            });
+        });
+    }
+    var dataChangeCasaRateConfigure = false;
+    function onCloseCasaRateConfigure() {
+        if (dataChangeCasaRateConfigure == true) {
+            refreshGridCasaRateConfigure();
+            dataChangeCasaRateConfigure = false;
+        }
+    }
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+   
+
+
+
+
+
+    function getAssignedImage(Id, PosCode) {
+        var lcId = Id;
+        var lcPosCode = PosCode;
+        return "<img src='../images/xem_bao_cao.png' height='15' width='15'/>";
+    }
+
+
+    $(document).on("click", "#btnUploadFile", function (e) {
+        e.preventDefault();
+
+        var mainWindow = $("#myPopup");
+
+        var wnd = mainWindow.data("kendoWindow");
+
+        if (!wnd) {
+            mainWindow.kendoWindow({
+                width: "900px",
+                height: "550px",
+                title: "Tập tin đính kèm",
+                content: "../AttachedFile/UploadFileInit",
+                resizable: true,
+                modal: true,
+                visible: false,
+                actions: ["Refresh", "Close"]
+            });
+
+            wnd = mainWindow.data("kendoWindow");
+        }
+
+        wnd.wrapper.css({ height: 550, width: 900 });
+        wnd.center().open();
+    });
+
+    function onFileTypeChange() {
+        var combo = $("#FileType_Find").data("kendoComboBox");
+        var type = combo.value();
+
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+
+        if (!grid) return;
+
+        if (type == "6") {
+            buildGridType1(grid);
+        }
+        else {
+            buildGridType2(grid);
+        }
+
+        grid.dataSource.page(1);   // reset paging
+        grid.dataSource.read();
+    }
+    function buildGridType1(grid) {
+
+        grid.setOptions({
+            columns: [
+
+                { field: "Orderby", title: "STT", width: 40, attributes: { style: "text-align:center" } },
+
+                { field: "PosCode", title: "Mã POS", width: 90 },
+
+                { field: "PosName", title: "Tên POS", width: 150 },
+
+                { field: "FileName", title: "Tên file", width: 220 },
+
+                { field: "SizeKB", title: "Size (MB)", width: 100, attributes: { style: "text-align:right" } },
+
+                { field: "TransactionDate", title: "Ngày GD", width: 110, attributes: { style: "text-align:center" } },
+
+                { field: "ExportDate", title: "Ngày xuất", width: 110, attributes: { style: "text-align:center" } },
+
+                { field: "ExportTime", title: "Giờ xuất", width: 100, attributes: { style: "text-align:center" } },
+
+                { field: "DownloadCount", title: "Số lần tải", width: 100, attributes: { style: "text-align:center" } },
+
+                {
+                    field: "FileName",
+                    title: "Tải file",
+                    width: 100,
+                    attributes: { style: "text-align:center" },
+                    template:
+                        "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
+                        "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
+                }
+            ]
+        });
+
+    }
+    function buildGridType2(grid) {
+
+        grid.setOptions({
+            columns: [
+
+                {
+                    field: "Orderby",
+                    title: "STT",
+                    width: 40,
+                    attributes: { style: "text-align:center" },
+                    headerAttributes: { style: "text-align:center" }
+                },
+
+                {
+                    field: "FileName",
+                    title: "Tên file",
+                    width: 260
+                },
+
+                {
+                    field: "DocumentNumber",
+                    title: "Số văn bản",
+                    width: 150
+                },
+
+                {
+                    field: "ContentDescription",
+                    title: "Mô tả",
+                    width: 220
+                },
+
+                {
+                    field: "CreatedDate",
+                    title: "Ngày tạo",
+                    width: 100,
+                    attributes: { style: "text-align:center" },
+                    headerAttributes: { style: "text-align:center" },
+                    template: "#= kendo.toString(kendo.parseDate(CreatedDate), 'dd/MM/yyyy HH:mm') #"
+                },
+
+                {
+                    field: "FileName",
+                    title: "Tải file",
+                    width: 100,
+                    attributes: { style: "text-align:center" },
+                    headerAttributes: { style: "text-align:center" },
+                    template:
+                        "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
+                        "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
+                }
+
+            ]
+        });
+
+    }
+</script>
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+@Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+        <div class="col-md-12">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:50px;padding-top:3px;padding-right:0px;">Đơn vị</label>
+            @(Html.Kendo().ComboBox().Name("PosCode_Find")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { @id = "PosCode_Find", style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;class='form - control';" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+
+
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:85px;padding-top:3px;padding-right:6px;">Loại file</label>
+            @(Html.Kendo().ComboBox()
+                .Name("FileType_Find")
+                .Filter("contains")
+                .Placeholder("--- Chọn loại file ---")
+                .DataTextField("Description")      //
+                .DataValueField("Value")           //
+                .DataSource(source => source
+                .Read(read => read.Action("GetFileType", "AttachedFile"))
+                
+                )
+                .Events(e => e.Change("onFileTypeChange"))
+                .HtmlAttributes(new
+                {
+                    style = "background-color:white;width: 250px;padding-left:3px;padding-right: 2px;!important;"
+                })
+                .AutoBind(true)
+                .SelectedIndex(0)  //
+                )
+           
+            &nbsp;&nbsp;
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Ngày giao dịch</label>
+            @(Html.Kendo().DatePicker()
+                .Name("CircularDateBegin_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
+                .Value(DateTime.Today.AddMonths(-1))
+                )
+
+            @(Html.Kendo().Button()
+                .Name("btnSearchCasaRateConfigure")
+                .Events(ev => ev.Click("onSearchCasaRateConfigure"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:120px; color: blue;padding-left: 0px; ", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất CASA" })
+                .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                .Content(" Tìm kiếm "))
+        </div>
+    </div>
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+            @(Html.Kendo().Grid<AttachedFileInfoView>()
+                .Name("gridMainCasaRate")
+                .Events(e => e.DataBound("onRowBoundCasaRateConfigure"))
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.Orderby)
+                    .Title("STT")
+                    .Width(60)
+                    .HtmlAttributes(new { style = "text-align:center" });
+
+                    columns.Bound(c => c.PosCode)
+                    .Title("Mã POS")
+                    .Width(90);
+
+                    columns.Bound(c => c.PosName)
+                    .Title("Tên POS")
+                    .Width(150);
+
+                    columns.Bound(c => c.FileName)
+                    .Title("Tên file")
+                    .Width(220);
+
+                    columns.Bound(c => c.SizeKB)
+                    .Title("Size (MB)")
+                    .Width(100)
+                    .HtmlAttributes(new { style = "text-align:right" });
+
+                    columns.Bound(c => c.TransactionDate)
+                    .Title("Ngày GD")
+                    .Width(110)
+                    .HtmlAttributes(new { style = "text-align:center" });
+
+                    columns.Bound(c => c.ExportDate)
+                    .Title("Ngày xuất")
+                    .Width(110)
+                    .HtmlAttributes(new { style = "text-align:center" });
+
+                    columns.Bound(c => c.ExportTime)
+                    .Title("Giờ xuất")
+                    .Width(100)
+                    .HtmlAttributes(new { style = "text-align:center" });
+
+                    columns.Bound(c => c.DownloadCount)
+                    .Title("Số lần tải")
+                    .Width(100)
+                    .HtmlAttributes(new { style = "text-align:center" });
+
+                    columns.Bound(c => c.FileName)
+                    .Title("Tải file")
+                    .Width(100)
+                    .HtmlAttributes(new { style = "text-align: center;" })
+                    .ClientTemplate(
+                    "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
+                    "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
+                    );
+                })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Upload file").Name("btnUploadFile").HtmlAttributes(new { id = "btnUploadFile", style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+                })
+                .HtmlAttributes(new { style = "height: 650px;color: navy; border: 1px solid #ddd;" })
+                .Editable(editable => editable.Mode(GridEditMode.InLine))
+                .Sortable()
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(false)
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.FileId))
+                .Events(e => e.RequestEnd("onSaveGridCompletedCasaRateConfigure")
+                .Error("error_handlerCasaRateConfigure"))
+                .Read(read => read.Action("LoadAttachedFileGridData", "AttachedFile")
+                .Data("paramLoadGridData"))
+                .PageSize(50)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(false)
+                )
+        </div>
+    </div>
+</div>
+<script>
+
+
+    function onSaveGridCompletedCasaRateConfigure(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+    function error_handlerCasaRateConfigure(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors); //
+        }
+    }
+    $(document).ready(function () {
+        // $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH QUYẾT ĐỊNH CẤU HÌNH LÃI SUẤT CASA</label>");
+    });
+</script>

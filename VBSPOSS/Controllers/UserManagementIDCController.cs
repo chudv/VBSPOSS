@@ -287,7 +287,7 @@ namespace VBSPOSS.Controllers
                     return 4;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
                     return 5;
-                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code || || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code ||  objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 {
                     int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(objUserIDCFull.UserId, objUserIDCFull.StartDate?.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper());
                     if (iCheckOpenCash > 0)
