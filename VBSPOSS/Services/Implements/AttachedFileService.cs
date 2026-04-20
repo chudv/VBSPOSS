@@ -150,10 +150,10 @@ namespace VBSPOSS.Services.Implements
         }
 
         public async Task<string> UploadFileAsync(
-     IFormFile file,
-     string description,
-     string createdBy,
-     string valueFileType)
+         IFormFile file,
+         string description,
+         string createdBy,
+         string valueFileType, string DocumentNumber)
         {
             try
             {
@@ -188,7 +188,8 @@ namespace VBSPOSS.Services.Implements
                     ContentDescription = description,
                     Status = 1,
                     CreatedBy = createdBy,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    DocumentNumber = DocumentNumber
                 };
 
                 _dbContext.AttachedFileInfos.Add(entity);

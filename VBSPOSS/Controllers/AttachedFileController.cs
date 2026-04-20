@@ -130,9 +130,9 @@ namespace VBSPOSS.Controllers
         }
 
         [HttpPost]
-        public async Task<string> Upload(IFormFile files, string Mo_Ta, string valueFileType)
+        public async Task<string> Upload(IFormFile files, string Mo_Ta, string valueFileType, string DocumentNumber)
         {
-            string result = await  _attachedFile.UploadFileAsync(files, Mo_Ta, UserName, valueFileType);
+            string result = await  _attachedFile.UploadFileAsync(files, Mo_Ta, UserName, valueFileType, DocumentNumber);
             return result;
         }
 

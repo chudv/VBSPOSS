@@ -10,7 +10,7 @@ namespace VBSPOSS.Services.Interfaces
         Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode,
        string pFileType, string pTranDate_Find);
 
-        Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType);
+        Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType, string DocumentNumber);
 
         DownloadFileResult DownloadFile(long fileId, string fileName);
     }

@@ -37,14 +37,26 @@
 
         <!-- chọn file -->
         <div class="row" style="margin-bottom:8px;">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label style="color:navy;">Chọn file</label>
             </div>
 
-            <div class="col-md-9">
+            <div class="col-md-4" style="width:600px;">
                 <input type="file"
                        id="files"
                        name="files"
+                       style="width:100%;color:blue;" />
+            </div>
+
+            <div class="col-md-1">
+                <label style="color:navy;">Số VB</label>
+            </div>
+
+            <div class="col-md-4">
+                <input type="text"
+                       id="DocumentNumber"
+                       name="DocumentNumber"
+                       class="k-textbox"
                        style="width:100%;color:blue;" />
             </div>
         </div>
@@ -94,6 +106,7 @@
 
         var file = $("#files")[0].files[0];
         var mota = $("#Mo_Ta").val();
+        var documentNumber = $("#DocumentNumber").val();
 
         if (!file) {
             alert("Chưa chọn file");
