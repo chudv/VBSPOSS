@@ -1,173 +1,25 @@
-﻿
+﻿@model VBSPOSS.Models.AttachedFileInfoView
 
-@model VBSPOSS.Models.AttachedFileInfoView
-
-
-<link rel="stylesheet" href="@Url.Content("~/css/kendo_cust_style.css")" />
-<link rel="stylesheet" href="@Url.Content("~/css/my_cust_style.css")" />
+@{
+    var valueFileType = ViewBag.UserPosCode;
+}
 
 <style>
+    .btn-upload {
+    padding: 4px 14px;
+    height: 30px;
+    background: #1976d2;
+    border: 1px solid #1565c0;
+    color: white;
+    border-radius: 3px;
+    font-size: 12px;
+}
 
-
-    #tideRateConfigureGrid {
-        margin-top: 20px; /* Tăng khoảng cách trên */
-        border: 1px solid #ddd; /* Thêm viền cho Grid */
-        border-radius: 4px; /* Bo góc Grid */
-    }
-
-    .cell-updated {
-        font-weight: bold !important;
-        color: red !important;
-        background-color: #ffe6e6 !important; /* Light red background for visibility */
-    }
-
-    .term-int-rate-new {
-        background-color: #DFFFD6 !important; /* Light orange background */
-        text-align: center; /* Maintain centering */
-        font-weight: bold !important;
-    }
-
-    .create_form.row {
-        width: 100% !important;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .create_form.button {
-        width: 100px !important;
-        height: 25px !important;
-        margin-left: 0;
-        margin-right: 0;
-    }
+.btn-upload:hover {
+    background: #1565c0;
+}
 </style>
-
-<script>
-    function onRowBound(e) {
-        $(".k-grid-View").find("span").addClass("k-icon k-i-search");
-        $(".k-grid-Delete").find("span").addClass("k-icon k-i-cancel");
-        $(".k-grid-Download").find("span").addClass("k-icon k-i-seek-s");
-    }
-
-    function onSuccess(e) {
-        alert('success');
-        clearControls();
-    }
-
-    function onError(e) {
-        alert('Error');
-    }
-
-    function paramHdId() {
-        return {
-            pHd_Id: $("#Dm_Id").val()
-        }
-    }
-
-    function showFile(e) {
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        //var win = window.open('../HoiDong/LoadPdfFile?pDm_Id=' + dataItem.Dm_Id + '&' + 'pFileId=' + dataItem.File_Id + '&' + 'pFileName=' + dataItem.Ten_File, '_blank');
-        var now = new Date();
-        var win = window.open('../HoiDong/LoadPdfFile?pDm_Id=' + dataItem.Dm_Id + '&' + 'pFileId=' + dataItem.File_Id + '&' + 'pFileName=' + dataItem.Ten_File + '&t=' + now.getTime(), '_blank');
-        if (win) {
-            win.focus();
-        } else {
-            alert('Please allow popups for this website');
-        }
-    }
-
-    function ajax_download(url, data) {
-        var $iframe,
-            iframe_doc,
-            iframe_html;
-
-        if (($iframe = $('#download_iframe')).length === 0) {
-            $iframe = $("<iframe id='download_iframe'" +
-                        " style='display: none' src='about:blank'></iframe>"
-                       ).appendTo("body");
-        }
-
-        iframe_doc = $iframe[0].contentWindow || $iframe[0].contentDocument;
-        if (iframe_doc.document) {
-            iframe_doc = iframe_doc.document;
-        }
-
-        iframe_html = "<html><head></head><body><form method='POST' action='" +
-                      url + "'>"
-
-        Object.keys(data).forEach(function (key) {
-            iframe_html += "<input type='hidden' name='" + key + "' value='" + data[key] + "'>";
-
-        });
-
-        iframe_html += "</form></body></html>";
-
-        iframe_doc.open();
-        iframe_doc.write(iframe_html);
-        $(iframe_doc).find('form').submit();
-    }
-
-    function downLoadFile(e) {
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        ajax_download('../HoiDong/DownLoadFile', { 'pHd_Id': dataItem.Dm_Id, 'pFileId': dataItem.File_Id, 'pFileName': dataItem.Ten_File });
-    }
-
-    function deleteFile(e) {
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var questionYesNo = confirm("Bạn có chắc chắn muốn xóa tệp tin [" + dataItem.Ten_File + "] đính kèm Hội đồng [ " + $("#TenDM").val() + " ] không?");
-        if (questionYesNo == true) {
-            var tenHoiDong = "[ " + $("#TenDM").val() + " ] ";
-            $.ajax({
-                data: { pHd_Id: dataItem.Dm_Id, pFileId: dataItem.File_Id },
-                type: "POST",
-                url: "../HoiDong/DeleteFile",
-                success: function (msg) {
-                    if (msg == "1") {
-                        alert("Xóa tệp tin đính kèm Hội đồng " + tenHoiDong + " thành công!");
-                        oReloadLoadGridData();
-                    }
-                    else
-                    {
-                        if (msg == "2") {
-                            alert("Bạn không thể xóa tệp tin [" + dataItem.Ten_File + "] đính kèm Hội đồng " + tenHoiDong + " !");
-                        }
-                        else {
-                            alert("Xóa tệp tin [" + dataItem.Ten_File + "] đính kèm Hội đồng " + tenHoiDong + " thất bại!");
-                        }
-                    }
-                },
-                error: function () {
-                    alert("Xóa tệp tin [" + dataItem.Ten_File + "] đính kèm Hội đồng " + tenHoiDong + " có lỗi!");
-                }
-            });
-        } else {
-            alert("Xóa tệp tin [" + dataItem.Ten_File + "] đính kèm Hội đồng " + tenHoiDong + " bị hủy bỏ!");
-        }
-    }
-
-    function isEmpty(val) {
-        return (typeof (val) == "undefined" || val == null || val.length <= 0) ? true : false;
-    }
-
-    function onClick(e) {
-        var mota = $("#Mo_Ta").val();
-        var fileChoise = document.getElementById('files');
-        if (fileChoise.files.length > 0)
-        {
-            if (fileChoise.files[0].size > 4000000) {
-                alert('Tệp tin đính kèm có dung lượng lớn hơn 4MB. Bạn vui lòng kiểm tra lại!');
-                e.preventDefault();
-                return false;
-            }
-        }
-        if (isEmpty(mota)) {
-            alert('Bạn chưa nhập mô tả tên file đính kèm. Bạn vui lòng kiểm tra lại!');
-            e.preventDefault();
-            return false;
-        }
-    }
-</script>
-
-
+@Html.Hidden("valueFileType", ViewBag.UserPosCode as string)
 
 <form id="uploadForm"
       method="post"
@@ -176,98 +28,60 @@
 
     @Html.AntiForgeryToken()
 
-    <input type="hidden" id="FileId" name="FileId"
+    <input type="hidden" name="FileId"
            value="@(Model?.FileId ?? 0)" />
 
-    <div class="form-horizontal">
+    <input type="hidden" name="valueFileType"
+           value="@valueFileType" />
+    <div style="padding:10px">
 
-
-        <div class="row" style="margin-top:5px;">
-
-            <div class="col-md-2">
-                <label style="width:180px;color:navy;">Chọn file</label>
+        <!-- chọn file -->
+        <div class="row" style="margin-bottom:8px;">
+            <div class="col-md-3">
+                <label style="color:navy;">Chọn file</label>
             </div>
 
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <input type="file"
                        id="files"
                        name="files"
-                       accept=".pdf"
                        style="width:100%;color:blue;" />
             </div>
         </div>
 
-            <div >
+        <hr>
+
+        <!-- mô tả -->
+        <div class="row" style="margin-bottom:5px;">
+            <div class="col-md-2">
                 <label style="color:navy;">Mô tả</label>
             </div>
 
-
-        <div class="col-md-12" style="margin-top:5px; align-items:center;">
-
-            <!-- Mô tả -->
             <div class="col-md-8">
                 <textarea id="Mo_Ta"
                           name="Mo_Ta"
                           placeholder="Nhập mô tả"
-                          style="width:100%;min-height:33px;border:0;border-bottom:1px dotted;color:blue;"></textarea>
+                          style="width:600px;
+                             height:53px;
+                             border:0;
+                             border-bottom:1px dotted;
+                             color:blue;"></textarea>
             </div>
 
-            <!-- Ghi chú -->
-            <div class="col-md-2" style="display:flex;align-items:center;">
-                <label style="color:orangered;margin:0;">
-                    (File <= 4MB)
+            <div class="col-md-2" style="padding-top:6px;">
+                <label style="color:orangered;white-space:nowrap;width:150px">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(File <= 4MB)
                 </label>
             </div>
-
-            <!-- Button -->
-            <div class="col-md-2" style="text-align:right;">
-                <button type="submit"
-                        id="btnSave"
-                        class="k-button k-primary"
-                        style="min-width:120px;">
-                    Tải tệp tin
-                </button>
-            </div>
-
         </div>
-
-        <hr />
-
-        <div class="row">
-            <div class="col-md-12">
-
-                @(Html.Kendo().Grid<VBSPOSS.Models.AttachedFileInfoView>()
-                    .Name("_DmFileGrid")
-                    .Events(e => e.DataBound("onRowBound"))
-                    .Columns(columns =>
-                    {
-                        columns.Bound(c => c.FileId).Hidden();
-
-                        columns.Bound(c => c.FileName)
-                               .Title("Tên tệp tin")
-                               .Width(260);
-
-                        columns.Bound(c => c.ContentDescription)
-                               .Title("Mô tả")
-                               .Width(360);
-
-                        columns.Command(command =>
-                        {
-                            command.Custom("View").Click("showFile");
-                            command.Custom("Download").Click("downLoadFile");
-                            command.Custom("Delete").Click("deleteFile");
-                        }).Width(110);
-                    })
-                    .Scrollable()
-                    .Pageable()
-                    .DataSource(ds => ds
-                        .Ajax()
-                        .Read(r => r.Action("LoadToGrid_ListFiles", "HoiDong")
-                        .Data("paramHdId"))
-                        .PageSize(100)
-                    )
-                )
-
+        <hr>
+        <!-- button -->
+        <div style="width:100%; max-width:100%;">
+            <div style="text-align:right;">
+                <button type="submit" class="btn-upload">
+                    <span class="k-icon k-i-upload"></span>
+                    Tải lên
+                </button>
             </div>
         </div>
 
@@ -275,92 +89,54 @@
 </form>
 
 <script>
-    function clearControls() {
-        var id = $("#Dm_Id").val();
-        $("#Mo_Ta").val("");
-        $('input[type=file]').val('');
-    }
-    $(document).ready(function () {
+    $("#uploadForm").on("submit", function (e) {
+        e.preventDefault();
 
-        $("#uploadForm").on("submit", function (e) {
-            e.preventDefault();
+        var file = $("#files")[0].files[0];
+        var mota = $("#Mo_Ta").val();
 
-            var fileInput = document.getElementById("files");
-            var file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+        if (!file) {
+            alert("Chưa chọn file");
+            return;
+        }
 
-            var moTa = $("#Mo_Ta").val();
+        if (file.size > 4 * 1024 * 1024) {
+            alert("File vượt quá 4MB");
+            return;
+        }
 
-            if (!file) {
-                alert("Chưa chọn file!");
-                return;
-            }
+        if (!mota || mota.trim() === "") {
+            alert("Chưa nhập mô tả");
+            return;
+        }
 
-            if (file.size > 4 * 1024 * 1024) {
-                alert("File vượt quá 4MB!");
-                return;
-            }
+        var formData = new FormData(this);
 
-            if (!moTa || moTa.trim() === "") {
-                alert("Chưa nhập mô tả!");
-                return;
-            }
+        $.ajax({
+            url: "/AttachedFile/Upload",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
 
-            var formData = new FormData(this);
+                if (res == "0") {
+                    alert("Upload thành công");
 
-            $.ajax({
-                url: "/AttachedFile/Upload",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (res) {
-                    if (res === "0") {
-                        alert("Upload thành công!");
-                        $("#_DmFileGrid").data("kendoGrid").dataSource.read();
-                        $("#files").val("");
-                        $("#Mo_Ta").val("");
-                    } else {
-                        alert("Upload lỗi!");
-                    }
-                },
-                error: function () {
-                    alert("Lỗi hệ thống!");
+                    $("#files").val("");
+                    $("#Mo_Ta").val("");
+
+                    var grid = $("#gridMainCasaRate").data("kendoGrid");
+                    if (grid) grid.dataSource.read();
                 }
-            });
+                else {
+                    alert("Upload lỗi");
+                }
+            },
+            error: function () {
+                alert("Lỗi hệ thống");
+            }
         });
 
-    });
-
-    function onSaveGridCompleted(e) {
-        if (e != null && e.response != null) {
-            if (!e.response.Errors) {
-                if (e.type == "create") {
-                    onLoadGridData();
-                }
-                else if (e.type == "update") {
-                    alert("Xử lý yêu cầu thành công!");
-                }
-                else if (e.type == "read") {
-                }
-            }
-            else {
-                alert(e.response.Errors);
-            }
-        }
-    }
-
-    function error_handler(e) {
-        $("#_DmFileGrid").data("kendoGrid").cancelChanges();
-    }
-
-    function oReloadLoadGridData() {
-        var grid = $("#_DmFileGrid").data("kendoGrid");
-        if (grid != null) {
-            grid.dataSource.read();
-        }
-    }
-
-    $(document).ready(function () {
-        oReloadLoadGridData();
     });
 </script>

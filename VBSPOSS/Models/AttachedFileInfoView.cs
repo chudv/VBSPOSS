@@ -45,5 +45,13 @@
 
         public int DownloadCount { get; set; }
 
+        public string TxnPointCode { get; set; }
+
+        public string TxnPointName { get; set; }
+
+        public string ProvinceCode { get; set; }
+
+        public DateTime EffectiveDate { get; set; }
+
     }
 }
