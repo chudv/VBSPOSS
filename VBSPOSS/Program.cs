@@ -92,7 +92,7 @@ builder.Services.AddScoped<IApiReportGateway, ApiReportGateway>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotiService, NotiService>();
 builder.Services.AddScoped<IListOfTransPointService, ListOfTransPointService>();
-
+builder.Services.AddScoped<IAttachedFileService, AttachedFileService>();
 
 // Cấu hình cookie xác thực
 builder.Services.ConfigureApplicationCookie(options =>
