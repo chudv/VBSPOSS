@@ -240,5 +240,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId);
+        Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+        string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate);
+
     }
 }

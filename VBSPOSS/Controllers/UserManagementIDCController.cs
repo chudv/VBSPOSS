@@ -33,11 +33,11 @@ namespace VBSPOSS.Controllers
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly IListOfTransPointService _serviceTransPoint;
-
+        private readonly IInterestRateConfigureService _intRateConfigService;
 
         public UserManagementIDCController(ILogger<UserManagementIDCController> logger, IAdministrationService adminService,
             ISessionHelper sessionHelper, IUserManagementIDCService userManagementIDCService, IListOfTransPointService serviceTransPoint,
-                    IListOfValueService serviceLOV,IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
+                    IListOfValueService serviceLOV,IInterestRateConfigureService intRateConfigService,IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
         {
             _logger = logger;
             _userManagementIDCService = userManagementIDCService;
@@ -45,6 +45,7 @@ namespace VBSPOSS.Controllers
             _mapper = mapper;
             _context = context;
             _serviceTransPoint = serviceTransPoint;
+            _intRateConfigService = intRateConfigService;
         }
         /// <summary>
         /// Menu: Tạo mới và thay đổi thông tin người dùng
@@ -90,11 +91,13 @@ namespace VBSPOSS.Controllers
         /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
         /// <param name="pStatus">Trạng thái</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, string pUserId, int pStatus,
+        public ActionResult LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request,string pMainPosCode, string pPosCode, string pFunctionType, string pUserId, int pStatus,
                                                             string pFullName)
         {
             try
             {
+                if (string.IsNullOrEmpty(pMainPosCode))
+                    pMainPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
                 if (string.IsNullOrEmpty(pPosCode))
                     pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
                 if (string.IsNullOrEmpty(pUserId))
@@ -103,7 +106,9 @@ namespace VBSPOSS.Controllers
                     pFullName = "";
                 if (string.IsNullOrEmpty(pFunctionType))
                     pFunctionType = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0, pPosCode, pPosCode, pUserId, pFullName, "", pFunctionType, pStatus);
+                if(pMainPosCode == pPosCode)
+                    pPosCode = "";
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCManagement(0, pMainPosCode, pPosCode, pUserId, pFullName, "", pFunctionType, pStatus);
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -197,6 +202,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
+            var listStaffVBSPMaster = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, pUserId, pFullName, "").FirstOrDefault();
             var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",-1)).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
@@ -218,7 +224,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
                 objPosUserIDCMaster.AuthType = "";
                 objPosUserIDCMaster.UserType = "";
-                objPosUserIDCMaster.MailIdFlag = MailIdFlag.MailIdFlag_RandomSendAPI.Code;
+                objPosUserIDCMaster.MailIdFlag = MailIdFlag.MailIdFlag_DefaultPassword.Code;
                 objPosUserIDCMaster.AuthsecType = AuthSecType.AuthSecType_Single.Code;
                 objPosUserIDCMaster.ExtraAttributeUserRole = "";
                 objPosUserIDCMaster.ExtraAttributeBranchCode = "";
@@ -237,6 +243,8 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.IpSetDetail = "";
                 objPosUserIDCMaster.RestrictionFlag = 0;
                 objPosUserIDCMaster.SubType = "";
+                objPosUserIDCMaster.FunctionType = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+                objPosUserIDCMaster.GroupNameOld = "";
             }
             else
             {
@@ -262,7 +270,7 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.AuthsecType = listStaffVBSP.AuthsecType;
                 objPosUserIDCMaster.ExtraAttributeUserRole = listStaffVBSP.ExtraAttributeUserRole;
                 objPosUserIDCMaster.ExtraAttributeBranchCode = listStaffVBSP.ExtraAttributeBranchCode;
-                objPosUserIDCMaster.ExpiryDate = listStaffVBSP.ExpiryDate;
+                objPosUserIDCMaster.ExpiryDate = listStaffVBSP.ExpiryDate.Date;
                 objPosUserIDCMaster.Remark = listStaffVBSP.Remark;
                 objPosUserIDCMaster.OrtherNotes = listStaffVBSP.OrtherNotes;
                 objPosUserIDCMaster.Status = listStaffVBSP.Status;
@@ -272,15 +280,19 @@ namespace VBSPOSS.Controllers
                 objPosUserIDCMaster.ModifiedBy = listStaffVBSP.ModifiedBy;
                 objPosUserIDCMaster.ModifiedDate = listStaffVBSP.ModifiedDate;
                 objPosUserIDCMaster.FunctionTypeName = listStaffVBSP.FunctionTypeName;
-                objPosUserIDCMaster.EffectiveDate = listStaffVBSP.EffectiveDate;
+                objPosUserIDCMaster.EffectiveDate = listStaffVBSP.EffectiveDate?.Date;
                 objPosUserIDCMaster.FunctionType = listStaffVBSP.FunctionType;
-                objPosUserIDCMaster.StartDate = listStaffVBSP.StartDate;
+                objPosUserIDCMaster.StartDate = listStaffVBSP.StartDate?.Date;
                 objPosUserIDCMaster.IpSetCode = listStaffVBSP.IpSetCode;
                 objPosUserIDCMaster.IpSetDetail = listStaffVBSP.IpSetDetail;
                 objPosUserIDCMaster.RestrictionFlag = listStaffVBSP.RestrictionFlag;
                 objPosUserIDCMaster.SubType = listStaffVBSP.SubType;
                 objPosUserIDCMaster.AuthsecTypeName = listStaffVBSP.AuthsecTypeName;
                 objPosUserIDCMaster.MailIdFlagName = listStaffVBSP.MailIdFlagName;
+                if(listStaffVBSPMaster != null)
+                    objPosUserIDCMaster.GroupNameOld = listStaffVBSPMaster.GroupName;
+                else
+                    objPosUserIDCMaster.GroupNameOld = listStaffVBSP.GroupName;
             }
             if(string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
                 sNameView = "UpdateUserManagementIDC";
@@ -298,18 +310,27 @@ namespace VBSPOSS.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
+        ///  1 - Kiểm tra PosCode
+        ///  2 - Kiểm tra Mã cán bộ
+        ///  3 - Kiểm tra ngày hiệu lực bằng ngày hết hạn thì báo lỗi
+        ///  4 - Ngày hiệu lực lớn hơn ngày hết hạn
+        ///  5 - Kiểm tra xem Người dùng IDC được phép cấp lại mật khẩu hay không?
+        ///  6 - Kiểm tra mở sổ tiền mặt đầu ngày
+        ///  7 - Kiểm tra thay đổi thông tin người dùng IDC có trùng khớp với thông tin trên hệ thống không?
+        ///  8 - Kiểm tra ngày bắt đầu có nhỏ hơn ngày hiện tại không?
+        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
+        ///  10 - Kiểm tra khi thêm mới người dùng IDC nếu đã tồn tại trên hệ thống rồi sẽ báo lỗi
+        ///  11 - Kiểm tra Email nếu không phải Mail của NHCSXH thì báo lỗi
         /// </summary>
-        /// <param name="objUserIDCFull"></param>
-        /// <returns></returns>
         public async Task<int> IsValidSaveUserIDC(UserManagementIDCViewModel objUserIDCFull)
         {
             int iResult = 0;
             try
             {
                 var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
-                if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId))
-                    return 10;
+                //if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId) && objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
+                //    return 10;
                 if (objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
                     return 9;       //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
                 if (string.IsNullOrEmpty(objUserIDCFull.PosCode))
@@ -318,7 +339,7 @@ namespace VBSPOSS.Controllers
                     return 2;
                 if (objUserIDCFull.EffectiveDate?.ToString(FormatParameters.FORMAT_DATE) == objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE))
                     return 3;
-                if (objUserIDCFull.EffectiveDate > objUserIDCFull.EffectiveDate && objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE) != "01/01/0001")
+                if (objUserIDCFull.EffectiveDate > objUserIDCFull.ExpiryDate && objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE) != "01/01/0001")
                     return 4;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
                     return 5;
@@ -339,7 +360,8 @@ namespace VBSPOSS.Controllers
                 }    
                 if (objUserIDCFull.StartDate?.Date < DateTime.Now.Date)
                     return 8;
-
+                if (string.IsNullOrWhiteSpace(objUserIDCFull.EmailAddress) || !objUserIDCFull.EmailAddress.Trim().ToLower().EndsWith("@vbsp.vn"))
+                    return 11;
                 return iResult;
             }
             catch
@@ -457,7 +479,7 @@ namespace VBSPOSS.Controllers
                         }
                     }     
                     string pButtonType = objUserIDC.Status.ToString();
-                    iVal = await _userManagementIDCService.SaveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
+                    iVal = await _userManagementIDCService.SaveApproveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
                     if (iVal <= 0)
                     {
                         result = iVal.ToString();
@@ -467,19 +489,17 @@ namespace VBSPOSS.Controllers
 
                 if (fileUpload != null && fileUpload.Length > 0)
                 {
-                    var extension = Path.GetExtension(fileUpload.FileName).ToLower();
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot", "uploads", "ToTrinh");
-                    if (!Directory.Exists(uploadPath))
+                    var extension = Path.GetExtension(fileUpload.FileName).ToLower();          
+                    string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\");            
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot","Uploads","ToTrinh");
+                    if (!Directory.Exists(folderPath))
                     {
-                        Directory.CreateDirectory(uploadPath);
+                        Directory.CreateDirectory(folderPath);
                     }
-                    var pFunctionTypeName = FunctionTypeFlag.GetByCode(pFunctionType);
-                    var pFunctionTypeDesc = (pFunctionTypeName?.Description ?? "").Replace(" ", "");                                      
-                    //pFunctionTypeDesc = Regex.Replace(pFunctionTypeDesc, @"[^a-zA-Z0-9_]", ""); // xử lý ký tự đặc biệt            
-                    var timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                    var fileName = $"ToTrinh_{pFunctionTypeDesc}_{timeStamp}{extension}";
-                    var filePath = Path.Combine(uploadPath, fileName);      
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    var fileName = _userManagementIDCService.GetFileNameNewUpload(0,pFunctionType,"",DateTime.Now) + extension;               
+                    var fullFilePath = Path.Combine(folderPath, fileName);                   
+                    var relativeFilePath = Path.Combine("wwwroot", "Uploads", "ToTrinh");
+                    using (var stream = new FileStream(fullFilePath, FileMode.Create))
                     {
                         await fileUpload.CopyToAsync(stream);
                     }
@@ -490,9 +510,9 @@ namespace VBSPOSS.Controllers
                             new AttachedFileInfo
                             {
                                 DocumentId = long.Parse(pMainPosCode),
-                                FileType = extension.Replace('.', ' ').Trim(),
+                                FileType = "2",
                                 FileName = fileUpload.FileName,
-                                PathFile = filePath,
+                                PathFile = relativeFilePath,
                                 FileExtension = extension,
                                 FileNameNew = fileName,
                                 DocumentNumber = pFunctionType,
@@ -609,7 +629,7 @@ namespace VBSPOSS.Controllers
                     sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), objFileInfo.PathFile, "");
                     if (objFileInfo.FileNameNew.Contains(objFileInfo.FileExtension))
                         //filePath = string.Format("{0}/{1}", sUploadPathTemp);
-                        filePath = string.Format("{0}", sUploadPathTemp);
+                        filePath = string.Format("{0}/{1}", sUploadPathTemp, $"{objFileInfo.FileNameNew}");
                     else filePath = string.Format("{0}/{1}", sUploadPathTemp, $"{objFileInfo.FileNameNew}{objFileInfo.FileExtension}");
                 }
             }

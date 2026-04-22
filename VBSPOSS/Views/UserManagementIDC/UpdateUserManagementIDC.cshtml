@@ -124,7 +124,12 @@
                             } else {
                                 comboAuth.value("0");
                             }
-                            comboAuth.enable(false);
+                            comboAuth.readonly(true);
+                        }
+
+                        var comboMailFlag = $("#MailIdFlag").data("kendoComboBox");
+                        if (comboMailFlag) {
+                            comboMailFlag.readonly(true);
                         }
                     }
                 }
@@ -150,21 +155,21 @@
                     success: function (data) {
                         staffLists = data;
                         if (staffLists != null && staffLists.length != 0) {
-                            if (!lcUserId || lcUserId.trim() === "") {
+                            // if (!lcUserId || lcUserId.trim() === "") {
                                 $("#UserId").val(staffLists[0].StaffCode);
-                            }
-                            if (staffLists[0].StaffName && staffLists[0].StaffName.trim() !== "") {
+                            // }
+                            // if (staffLists[0].StaffName && staffLists[0].StaffName.trim() !== "") {
                                 var fullName = staffLists[0].StaffName.trim();
                                 var nameParts = fullName.split(/\s+/);
                                 var lastName = nameParts.pop();
                                 var firstName = nameParts.join(" ");
-                                if (!lcFirstName || lcFirstName.trim() === "") {
+                                // if (!lcFirstName || lcFirstName.trim() === "") {
                                     $("#FirstName").val(firstName);
-                                }
-                                if (!lcLastName || lcLastName.trim() === "") {
+                                // }
+                                // if (!lcLastName || lcLastName.trim() === "") {
                                     $("#LastName").val(lastName);
-                                }
-                            }
+                                // }
+                            // }
                             $("#StaffCode").val(staffLists[0].StaffCode);
                             $("#Genders").val(staffLists[0].GenderText);
                             $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
@@ -469,7 +474,7 @@
                     .Placeholder("Chọn phương thức gửi mật khẩu")
                     .HtmlAttributes(new { style = "width: 770px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                     .Filter("contains")
-                    .SelectedIndex(3))
+                    .SelectedIndex(0))
             </div>
         </div>
 
@@ -606,6 +611,20 @@
                         alert("Ngày hiệu lực và ngày hết hiệu lực không được trùng nhau!");
                     else if (result == "4")
                         alert("Ngày hiệu lực lớn hơn ngày hết hiệu lực phân giao!");
+                    else if (result == "5")
+                        alert("Người dùng này không được phép cấp lại mật khẩu. Vui lòng liên hệ quản trị viên!");
+                    else if (result == "6")
+                        alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
+                    else if (result == "7")
+                        alert("Thông tin sửa đổi trùng khớp với thông tin trên hệ thống. Vui lòng kiểm tra lại!");
+                    else if (result == "8")
+                        alert("Ngày bắt đầu nhỏ hơn ngày hiện tại. Vui lòng kiểm tra lại!");
+                    else if (result == "9")
+                        alert("Người dùng này đang bị khóa, không thể thực hiện chức năng này. Vui lòng kiểm tra lại!");
+                    else if (result == "10")
+                        alert("Người dùng này đã tồn tại trên hệ thống IDC, không thể thực hiện thêm mới. Vui lòng kiểm tra lại!");
+                    else if (result == "11")
+                        alert("Email của người dùng không phải email của NHCSXH. Vui lòng kiểm tra lại!");
                 }
             },
             error: function (xhr, status, error) {

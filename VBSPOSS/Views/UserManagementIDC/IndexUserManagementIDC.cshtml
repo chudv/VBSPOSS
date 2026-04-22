@@ -371,26 +371,27 @@
         mainWindow.data("kendoWindow").center().open();
     }
 
-    function showDetailTidePenalRate(e) {
+    function showDetailUserIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var grid = $("#gridMainIDC").data("kendoGrid");
         if (mainWindow.data("kendoWindow")) {
             mainWindow.data("kendoWindow").destroy();
         }
-        var sFlagCall = $("#EventFlag_ViewTemp").val();
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
         mainWindow.kendoWindow({
-            width: "1050px",
-            height: "750px",
-            title: "Xem chi tiết thông tin Quyết định cấu hình lãi suất rút trước hạn tiền gửi CKH",
+            width: "1000px",
+            height: "500px",
+            title: "Xem chi tiết thông tin người dùng IDC",
             content: {
-                url: '@Url.Action("ShowUpdateTidePenalRate", "IntRateConfig")',
-                data: { pPosCode: dataItem.PosCode, pDocumentId: dataItem.DocumentId, pListId: dataItem.IdList, pProductGroupCode: $("#ProductGroupCodeView").val(), pFlagCall: sFlagCall}
+                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "14", pId: dataItem.Id }
             },
             resizable: false,
             visible: false,
             modal: true,
             close: onClose,
-            actions: ["Close"],
+            actions: ["Refresh","Close"],
             error: function (e) {
                 notification.show({
                     message: "Có lỗi xảy ra: " + e.xhr.statusText,
@@ -400,7 +401,6 @@
             }
         });
         mainWindow.data("kendoWindow").center().open();
-
     }
 
     function showEditIDC(e) {
@@ -533,7 +533,7 @@
                                     title = "Xóa người dùng IDC",
                                     @class = "btn-delete"
                                 });
-                                command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTidePenalRate").HtmlAttributes(new
+                                command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDC").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                                     title = "Xem chi tiết",
@@ -595,7 +595,7 @@
                             columns.Bound(c => c.RoleToTransferCashValue).Hidden(); *@
 
                         })
-                        .HtmlAttributes(new { style = "height: 700px;color: navy; border: 1px solid #ddd;" })
+                        .HtmlAttributes(new { style = "height: 600px;color: navy; border: 1px solid #ddd;" })
                         .ToolBar(toolbar =>
                         {
                             toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
