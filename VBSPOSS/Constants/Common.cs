@@ -810,7 +810,7 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_REJECT_BRANCH = new ValueConstModel { Value = 12, Code = "REJECT_BRANCH", Description = "Từ chối cấp chi nhánh" };
         
-        public static ValueConstModel FunctionTypeFlag_REJECT_MAIN = new ValueConstModel { Value = 12, Code = "REJECT_MAIN", Description = "Từ chối cấp trung ương" };
+        public static ValueConstModel FunctionTypeFlag_REJECT_MAIN = new ValueConstModel { Value = 13, Code = "REJECT_MAIN", Description = "Từ chối cấp trung ương" };
 
         public static ValueConstModel GetByValue(int value)
         {

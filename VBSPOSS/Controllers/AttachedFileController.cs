@@ -37,44 +37,62 @@ namespace VBSPOSS.Controllers
             RolePermissionModel userPermission = UserPermission;
             string role = UserRole.ToString();
 
+
             TempData["Role"] = role;
             TempData.Put("UserPermission", userPermission);
+
+            ViewBag.UserPosCode = UserPosCode;
             return View();
         }
 
         [HttpGet]
         public JsonResult GetFileType()
         {
-            var statuses = new List<object>
-            {
-                new { Value = "-1", Description = "Tất cả", Code = "ALL" },
+            List<object> statuses;
 
-                new { Value = "1", Description = "File cấu hình lãi suất Tide/Casa/DepositPenal", Code = "INT_RATE" },
-                new { Value = "2", Description = "File đính kèm của người dùng iDC", Code = "IDC" },
-                new { Value = "3", Description = "File đính kèm thay đổi/thêm mới điểm giao dịch", Code = "POS" },
-                new { Value = "4", Description = "File đính kèm thay đổi/thêm mới danh mục địa phương", Code = "LOCATION" },
-                new { Value = "5", Description = "File đính kèm bản cập nhật phần mềm Offline (Execution File)", Code = "OFFLINE_EXE" },
-                new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" },
-                new { Value = "7", Description = "File tài liệu khác", Code = "OTHER" }
-            };
+            if (UserPosCode == "000100")
+            {
+                statuses = new List<object>
+                {
+                    new { Value = "-1", Description = "Tất cả", Code = "ALL" },
+
+                    new { Value = "1", Description = "File cấu hình lãi suất Tide/Casa/DepositPenal", Code = "INT_RATE" },
+                    new { Value = "2", Description = "File đính kèm của người dùng iDC", Code = "IDC" },
+                    new { Value = "3", Description = "File đính kèm thay đổi/thêm mới điểm giao dịch", Code = "POS" },
+                    new { Value = "4", Description = "File đính kèm thay đổi/thêm mới danh mục địa phương", Code = "LOCATION" },
+                    new { Value = "5", Description = "File đính kèm bản cập nhật phần mềm Offline (Execution File)", Code = "OFFLINE_EXE" },
+                    new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" },
+                    new { Value = "7", Description = "File tài liệu khác", Code = "OTHER" }
+                };
+                    }
+                    else
+                    {
+                        statuses = new List<object>
+                {
+                    new { Value = "-1", Description = "Tất cả", Code = "ALL" },
+                    new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" }
+                };
+            }
 
             return Json(statuses);
+
         }
 
         public async Task<ActionResult> LoadAttachedFileGridData(
        [DataSourceRequest] DataSourceRequest request,
        string pPosCode,
-       string pFileType)
+       string pFileType,
+       string pTranDate_Find)
         {
            
             try
             {
-                if ((string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "-1") && pFileType !="6")
-                {
-                    return Json(new List<AttachedFileInfoView>().ToDataSourceResult(request));
-                }
+                //if ((string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "-1") && pFileType !="6")
+                //{
+                //    return Json(new List<AttachedFileInfoView>().ToDataSourceResult(request));
+                //}
 
-                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType);
+                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pTranDate_Find);
 
                 return Json(list.ToDataSourceResult(request));
             }
@@ -87,20 +105,17 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        public IActionResult DownloadFile(string fileName)
+        public IActionResult DownloadFile(long fileId, string fileName)
         {
-            string folder = @"D:\CBS\TXN";
-            string fullPath = Path.Combine(folder, fileName);
+            var result = _attachedFile.DownloadFile(fileId, fileName);
 
-            if (!System.IO.File.Exists(fullPath))
+            if (result == null)
                 return NotFound();
 
-            var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-
-            return File(stream, "application/octet-stream", fileName);
+            return File(result.Stream, "application/octet-stream", result.FileName);
         }
 
-        public ActionResult UploadFileInit()
+        public ActionResult UploadFileInit(string valueFileType, string nameFileType)
         {
             var model = new AttachedFileInfoView
             {
@@ -109,13 +124,15 @@ namespace VBSPOSS.Controllers
                 ContentDescription = "Random upload file",
                 CreatedDate = DateTime.Now
             };
+            ViewBag.UserPosCode = valueFileType;
+            ViewBag.nameFileType = nameFileType;
             return PartialView("_UploadFile", model);
         }
 
         [HttpPost]
-        public async Task<string> Upload(IFormFile files, string Mo_Ta)
+        public async Task<string> Upload(IFormFile files, string Mo_Ta, string valueFileType, string DocumentNumber)
         {
-            string result = await  _attachedFile.UploadFileAsync(files, Mo_Ta, User.Identity?.Name ?? "system");
+            string result = await  _attachedFile.UploadFileAsync(files, Mo_Ta, UserName, valueFileType, DocumentNumber);
             return result;
         }
 

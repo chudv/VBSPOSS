@@ -175,7 +175,8 @@
 
         var params = {
             pPosCode: $("#PosCode_Find").val() || "",
-            pFileType: fileType                          //
+            pFileType: fileType ,                         //
+            pTranDate_Find: $("#TranDate_Find").val(),
         };
 
         console.log("Params gửi lên server:", params);  //
@@ -276,28 +277,58 @@
     $(document).on("click", "#btnUploadFile", function (e) {
         e.preventDefault();
 
-        var mainWindow = $("#myPopup");
+        var combo = $("#FileType_Find").data("kendoComboBox");
+        var valueFileType = combo ? combo.value() : "";
 
+        var nameFileType = combo.text();
+
+        if (valueFileType === "6" || valueFileType === "-1") {
+            alert("Loại file này không được upload!");
+            return false;
+        }
+
+        var mainWindow = $("#myPopup");
         var wnd = mainWindow.data("kendoWindow");
 
         if (!wnd) {
             mainWindow.kendoWindow({
                 width: "900px",
-                height: "550px",
-                title: "Tập tin đính kèm",
-                content: "../AttachedFile/UploadFileInit",
+                height: "300px",
+                title: "Upload file - " + nameFileType,
+                content: {
+                    url: "../AttachedFile/UploadFileInit",
+                    data: { valueFileType: valueFileType,
+                        nameFileType: nameFileType
+                    }
+                },
                 resizable: true,
                 modal: true,
                 visible: false,
-                actions: ["Refresh", "Close"]
+                actions: ["Refresh", "Close"],
+                close: onUploadClose
             });
 
             wnd = mainWindow.data("kendoWindow");
         }
+        else {
+            wnd.refresh({
+                url: "../AttachedFile/UploadFileInit",
+                data: { valueFileType: valueFileType,
+                    nameFileType: nameFileType
+                }
+            });
+        }
 
-        wnd.wrapper.css({ height: 550, width: 900 });
         wnd.center().open();
     });
+
+    function onUploadClose(e) {
+        var grid = $("#gridMainCasaRate").data("kendoGrid");
+        if (grid) {
+            grid.dataSource.read();
+        }
+    }
+
 
     function onFileTypeChange() {
         var combo = $("#FileType_Find").data("kendoComboBox");
@@ -324,13 +355,17 @@
 
                 { field: "Orderby", title: "STT", width: 40, attributes: { style: "text-align:center" } },
 
-                { field: "PosCode", title: "Mã POS", width: 90 },
+                { field: "PosCode", title: "Mã POS", width: 70 },
 
-                { field: "PosName", title: "Tên POS", width: 150 },
+                { field: "PosName", title: "Tên POS", width: 120 },
+
+                {field: "TxnPointCode", title: "Mã ĐGD", width: 80 },
+
+                {field: "TxnPointName", title: "Tên ĐGD", width: 120 },
 
                 { field: "FileName", title: "Tên file", width: 220 },
 
-                { field: "SizeKB", title: "Size (MB)", width: 100, attributes: { style: "text-align:right" } },
+                { field: "SizeKB", title: "Size (MB)", width: 70, attributes: { style: "text-align:right" } },
 
                 { field: "TransactionDate", title: "Ngày GD", width: 110, attributes: { style: "text-align:center" } },
 
@@ -338,12 +373,12 @@
 
                 { field: "ExportTime", title: "Giờ xuất", width: 100, attributes: { style: "text-align:center" } },
 
-                { field: "DownloadCount", title: "Số lần tải", width: 100, attributes: { style: "text-align:center" } },
+                // { field: "DownloadCount", title: "Số lần tải", width: 60, attributes: { style: "text-align:center" } },
 
                 {
                     field: "FileName",
                     title: "Tải file",
-                    width: 100,
+                    width: 80,
                     attributes: { style: "text-align:center" },
                     template:
                         "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
@@ -400,7 +435,7 @@
                     attributes: { style: "text-align:center" },
                     headerAttributes: { style: "text-align:center" },
                     template:
-                        "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
+                        "<a href='/AttachedFile/DownloadFile?fileId=#=FileId#' " +
                         "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
                 }
 
@@ -412,6 +447,7 @@
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
 @Html.Hidden("ProductGroupCodeView", TempData["ProductGroupCode"])
+@Html.Hidden("UserPosCode", TempData["UserPosCode"])
 <hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
     <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
@@ -455,10 +491,11 @@
 
             <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Ngày giao dịch</label>
             @(Html.Kendo().DatePicker()
-                .Name("CircularDateBegin_Find")
+                .Name("TranDate_Find")
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
-                .Value(DateTime.Today.AddMonths(-1))
+                @* .Value(DateTime.Today.AddMonths(-1)) *@
+                .Value(new DateTime(2026, 4, 7))
                 )
 
             @(Html.Kendo().Button()
@@ -489,6 +526,14 @@
                     .Title("Tên POS")
                     .Width(150);
 
+                    columns.Bound(c => c.TxnPointCode)
+                    .Title("Mã ĐGD")
+                    .Width(90);
+
+                    columns.Bound(c => c.TxnPointName)
+                    .Title("Tên ĐGD")
+                    .Width(150);
+
                     columns.Bound(c => c.FileName)
                     .Title("Tên file")
                     .Width(220);
@@ -513,10 +558,10 @@
                     .Width(100)
                     .HtmlAttributes(new { style = "text-align:center" });
 
-                    columns.Bound(c => c.DownloadCount)
+                  @*   columns.Bound(c => c.DownloadCount)
                     .Title("Số lần tải")
                     .Width(100)
-                    .HtmlAttributes(new { style = "text-align:center" });
+                    .HtmlAttributes(new { style = "text-align:center" }); *@
 
                     columns.Bound(c => c.FileName)
                     .Title("Tải file")

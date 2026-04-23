@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
@@ -20,7 +21,7 @@ namespace VBSPOSS.Services.Implements
             _config = config;
             _logger = logger;
         }
-        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType)
+        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType, string pTranDate_Find)
         {
             try
             {
@@ -28,7 +29,7 @@ namespace VBSPOSS.Services.Implements
                 if (pFileType == "6")
                 {
                     var list = new List<AttachedFileInfoView>();
-                    string folderPath = _config["AttachedFileSettings:Folder"];
+                    string folderPath = _config["AttachedFileSettings:FolderTXN"];
 
                     if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
                         return list;
@@ -69,6 +70,7 @@ namespace VBSPOSS.Services.Implements
 
                         list.Add(new AttachedFileInfoView
                         {
+                            FileId =0,
                             Orderby = stt++,
                             PosCode = point?.PosCode,
                             PosName = point?.PosName,
@@ -82,12 +84,31 @@ namespace VBSPOSS.Services.Implements
 
                             DownloadCount = 1,
                             CreatedDate = fi.CreationTime,
-
+                            TxnPointCode = point.TxnPointCode,
+                            TxnPointName = point.TxnPointName,
+                            ProvinceCode = point.ProvinceCode,
+                            EffectiveDate = point.EffectiveDate,
                             DownloadUrl = "/AttachedFile/DownloadFile?fileName=" + fi.Name
                         });
                     }
 
-                    return list;
+                    string provinceCode = pPosCode.Substring(2, 2); // "05"
+                    DateTime tranDate;
+
+                    //DateTime.TryParseExact(
+                    //    pTranDate_Find,
+                    //    "dd/MM/yyyy",
+                    //    null,
+                    //    System.Globalization.DateTimeStyles.None,
+                    //    out tranDate
+                    //);
+                    var filtered = list
+                        .Where(x =>
+                            x.ProvinceCode == provinceCode &&
+                            x.TransactionDate == pTranDate_Find
+                        )
+                        .ToList();
+                    return filtered;
                 }
                 else
                 {
@@ -107,6 +128,7 @@ namespace VBSPOSS.Services.Implements
 
                     var result = data.Select(x => new AttachedFileInfoView
                     {
+                        FileId = x.FileId,
                         Orderby = order++,
                         FileName = x.FileName,
                         SizeKB = 0,
@@ -127,55 +149,147 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file, string description, string createdBy)
+        public async Task<string> UploadFileAsync(
+         IFormFile file,
+         string description,
+         string createdBy,
+         string valueFileType, string DocumentNumber)
         {
             try
             {
                 if (file == null || file.Length == 0)
-                    return "2"; // chưa chọn file
+                    return "2";
 
                 if (file.Length > 4 * 1024 * 1024)
-                    return "3"; // vượt 4MB
+                    return "3";
 
-                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "UploadFiles");
+                string uploadFolder = _config["AttachedFileSettings:FolderUpload"];
 
-                if (!Directory.Exists(folder))
-                    Directory.CreateDirectory(folder);
+                string rootFolder = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    uploadFolder);
 
-                string fileName = Path.GetFileName(file.FileName);
+                if (!Directory.Exists(rootFolder))
+                    Directory.CreateDirectory(rootFolder);
+
+                string originalFileName = Path.GetFileName(file.FileName);
                 string extension = Path.GetExtension(file.FileName);
-                string newFileName = Guid.NewGuid().ToString() + extension;
-                string fullPath = Path.Combine(folder, newFileName);
 
+                // tạo record trước để lấy FileId
+                var entity = new AttachedFileInfo
+                {
+                    DocumentId = 0,
+                    FileType = valueFileType,
+                    FileName = originalFileName,
+                    FileExtension = extension,
+                    PathFile = "",
+                    FileNameNew = "",
+                    ContentDescription = description,
+                    Status = 1,
+                    CreatedBy = createdBy,
+                    CreatedDate = DateTime.Now,
+                    DocumentNumber = DocumentNumber
+                };
+
+                _dbContext.AttachedFileInfos.Add(entity);
+                await _dbContext.SaveChangesAsync();
+
+                // =========================
+                // build FileNameNew
+                // =========================
+                string vv = valueFileType == "1" ? "IntRate" : "User";
+
+                string year = DateTime.Now.Year.ToString();
+
+                string seq = entity.FileId.ToString().PadLeft(10, '0');
+
+                string fileNameNew = $"{vv}_{valueFileType}_{year}_{seq}{extension}";
+
+                // path tương đối
+                string relativePath = "UploadFiles";
+
+                string fullPath = Path.Combine(rootFolder, fileNameNew);
+
+                // save file
                 using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                var attachedFile = new AttachedFileInfo
-                {
-                    DocumentId = 0, // gán theo logic của bạn
-                    FileType = file.ContentType,
-                    FileName = fileName,
-                    FileExtension = extension,
-                    PathFile = fullPath,
-                    FileNameNew = newFileName,
-                    ContentDescription = description,
-                    Status = 1,
-                    CreatedBy = createdBy,
-                    CreatedDate = DateTime.Now
-                };
+                // update lại record
+                entity.FileNameNew = fileNameNew;
+                entity.PathFile = relativePath;
+                entity.ModifiedDate = DateTime.Now;
 
-                _dbContext.AttachedFileInfos.Add(attachedFile);
                 await _dbContext.SaveChangesAsync();
 
-                return "0"; // success
+                return "0";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Upload file error");
-                return "1"; // lỗi
+                return "1";
             }
         }
+
+        public DownloadFileResult DownloadFile(long fileId, string fileName)
+        {
+            try
+            {
+                string fullPath = string.Empty;
+                string downloadName = fileName;
+
+                // file upload từ DB
+                if (fileId > 0)
+                {
+                    var file = _dbContext.AttachedFileInfos
+                        .FirstOrDefault(x => x.FileId == fileId);
+
+                    if (file == null)
+                        return null;
+
+                    string folder = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        _config["AttachedFileSettings:FolderUpload"] ?? "UploadFiles");
+
+                    fullPath = Path.Combine(folder, file.FileNameNew);
+                    downloadName = file.FileName;
+                }
+                else
+                {
+                    // file TXN (fileType = 6)
+                    string folderPath = _config["AttachedFileSettings:FolderTXN"];
+
+                    if (string.IsNullOrEmpty(folderPath))
+                        return null;
+
+                    fullPath = Path.Combine(folderPath, fileName);
+                    downloadName = fileName;
+                }
+
+                if (!System.IO.File.Exists(fullPath))
+                    return null;
+
+                var stream = new FileStream(
+                    fullPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read);
+
+                return new DownloadFileResult
+                {
+                    Stream = stream,
+                    FileName = downloadName
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DownloadFile error: fileId={fileId}, fileName={fileName}", fileId, fileName);
+                return null;
+            }
+        }
+    
     }
 }
