@@ -367,7 +367,6 @@ namespace VBSPOSS.Services.Implements
                     new OracleParameter("P_MKR_DT", OracleDbType.Varchar2) { Value = pMakerDate ?? (object)DBNull.Value },
                     new OracleParameter("P_CREATEDBY", OracleDbType.Varchar2) { Value = pCreatedBy ?? (object)DBNull.Value },
                     new OracleParameter("P_APPROVERBY", OracleDbType.Varchar2) { Value = pApproverBy ?? (object)DBNull.Value },
-
                     new OracleParameter("P_ROWS_ADD", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
                     new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
                     new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output }
@@ -405,8 +404,98 @@ namespace VBSPOSS.Services.Implements
         }
 
 
+        /// <summary>
+        /// Hàm lấy thông tin ngày giao dịch, EOD của hệ thống Core
+        /// </summary>
+        /// <param name="pFlagCall">Cờ xác định ngày muốn lấy. Giá trị: 
+        ///             '1': Giá trị trả về là ngày BUSINESS_DT (định dạng yyyyMMdd)
+        ///             '2': Giá trị trả về là ngày EOD_DT (định dạng yyyyMMdd)
+        ///             '3': Giá trị trả về là ngày cuối tháng trước MON_END_DT
+        ///             Còn lại là lấy ngày hiện thời hệ thống (máy chủ CSDL)
+        /// </param>
+        /// <returns></returns>
+        public DateTime GetDateInCoreIDC(string pFlagCall)
+        {
+            try
+            {
+                string sSQL = @"SELECT VBSP_OSS_GET.FN_GETVALUE_CTRL(:P_FLAGCALL) AS Value FROM DUAL";
 
-        
+                var result = _dbContextIDC.Set<QueryResult>().FromSqlRaw(sSQL,
+                                new OracleParameter(":P_FLAGCALL", OracleDbType.Varchar2) { Value = pFlagCall ?? "" }).FirstOrDefault();
+                string sValTemp = result?.Value ?? DateTime.Now.ToString(FormatParameters.FORMAT_DATE_INT);
+
+                return CustConverter.StringToDate(sValTemp, FormatParameters.FORMAT_DATE_INT).Date;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Có lỗi khi gọi hàm GetDateInCoreIDC('{pFlagCall}'). Chi tiết lỗi: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện thêm mới bản ghi Thay đổi ngày giao dịch vào bảng IDL_LMS.TXN_DATE_CHANGE_ITC
+        /// Ex: var resultChangeVisitDate = _serviceTransPoint.InsertTxnDateChangeIDC("TXN0234501", "17", "20260401", "19", "", "", "20260423");
+        /// </summary>
+        /// <param name="pTxnPointId">Mã điểm giao dịch</param>
+        /// <param name="pNewVisitDate">Ngày giao dịch cố định Mới</param>
+        /// <param name="pEffDate">Ngày hiệu lực. Định dạng yyyyMMdđ</param>
+        /// <param name="pOldVisitDate">Ngày giao dịch cố định Cũ</param>
+        /// <param name="pMsgResult">Thông tin cập nhật</param>
+        /// <param name="pChangeFlag">Cờ thay đổi</param>
+        /// <param name="pMakerDate">Ngày tạo lập yêu cầu thay đổi. Định dạng yyyyMMdđ</param>
+        /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ExecuteResultModelModel> InsertTxnDateChangeIDC(string pTxnPointId, string pNewVisitDate, string pEffDate, string pOldVisitDate, string pMsgResult,
+                                                                          string pChangeFlag, string pMakerDate)
+        {
+            try
+            {
+                var paramsInsert = new[]
+                {
+                    new OracleParameter("P_TXNPOINT_ID", OracleDbType.Varchar2) { Value = pTxnPointId ?? (object)DBNull.Value },
+                    new OracleParameter("P_NEW_VISIT_DATE", OracleDbType.Varchar2) { Value = pNewVisitDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_EFF_DATE", OracleDbType.Varchar2) { Value = pEffDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_OLD_VISIT_DATE", OracleDbType.Varchar2) { Value = pOldVisitDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_MSG_RESULT", OracleDbType.Varchar2) { Value = pMsgResult ?? (object)DBNull.Value },
+                    new OracleParameter("P_CHANGE_FLAG", OracleDbType.Varchar2) { Value = pChangeFlag ?? (object)DBNull.Value },
+                    new OracleParameter("P_MKR_DT", OracleDbType.Varchar2) { Value = pMakerDate ?? (object)DBNull.Value },
+                    new OracleParameter("P_ROWS_ADD", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                    new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output }
+                };
+
+                var sSQL = @"BEGIN VBSP_OSS_UPD.INSERT_TXN_DATE_CHANGE_ITC(:P_TXNPOINT_ID, :P_NEW_VISIT_DATE, :P_EFF_DATE, :P_OLD_VISIT_DATE, :P_MSG_RESULT, :P_CHANGE_FLAG,
+                                                :P_MKR_DT, :P_ROWS_ADD,:P_SUCCESS,:P_MESSAGE); END;";
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, paramsInsert);
+                // Lấy giá trị output
+                decimal rowsAdd = Utilities.GetOracleDecimal(paramsInsert[7]);
+                decimal successCode = Utilities.GetOracleDecimal(paramsInsert[8], -1);
+                string message = paramsInsert[9].Value?.ToString() ?? "";
+
+                var objExecuteResult = new ExecuteResultModelModel
+                {
+                    RowsAffected = (int)rowsAdd,
+                    Success = (int)successCode,
+                    Message = message,
+                    TxnStatus = successCode switch
+                    {
+                        1 => ResultValueAPI.ResultValue_Status_Success,
+                        0 => ResultValueAPI.ResultValue_Status_Failed,
+                        -1 => ResultValueAPI.ResultValue_Status_Errored,
+                        _ => ResultValueAPI.ResultValue_Status_Errored
+                    }
+                };
+
+                return objExecuteResult;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"InsertTxnDateChangeIDC('{pTxnPointId}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm thay đổi ngày giao dịch của điểm giao dịch " +
+                                        $"InsertTxnDateChangeIDC('{pTxnPointId}') => Error: {ex.Message}", ex);
+            }
+        }
 
         #endregion
     }

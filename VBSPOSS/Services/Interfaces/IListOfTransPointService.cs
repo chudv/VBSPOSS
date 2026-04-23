@@ -71,6 +71,34 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
         /// <exception cref="Exception"></exception>
         Task<ExecuteResultModelModel> CreateTransPointByBusinessDateIDC(string pMakerDate, string pCreatedBy, string pApproverBy);
+
+        /// <summary>
+        /// Hàm lấy thông tin ngày giao dịch, EOD của hệ thống Core
+        /// </summary>
+        /// <param name="pFlagCall">Cờ xác định ngày muốn lấy. Giá trị: 
+        ///             '1': Giá trị trả về là ngày BUSINESS_DT (định dạng yyyyMMdd)
+        ///             '2': Giá trị trả về là ngày EOD_DT (định dạng yyyyMMdd)
+        ///             '3': Giá trị trả về là ngày cuối tháng trước MON_END_DT
+        ///             Còn lại là lấy ngày hiện thời hệ thống (máy chủ CSDL)
+        /// </param>
+        /// <returns></returns>
+        DateTime GetDateInCoreIDC(string pFlagCall);
+
+        /// <summary>
+        /// Hàm thực hiện thêm mới bản ghi Thay đổi ngày giao dịch vào bảng IDL_LMS.TXN_DATE_CHANGE_ITC
+        /// Ex: var resultChangeVisitDate = _serviceTransPoint.InsertTxnDateChangeIDC("TXN0234501", "17", "20260401", "19", "", "", "20260423");
+        /// </summary>
+        /// <param name="pTxnPointId">Mã điểm giao dịch</param>
+        /// <param name="pNewVisitDate">Ngày giao dịch cố định Mới</param>
+        /// <param name="pEffDate">Ngày hiệu lực. Định dạng yyyyMMdđ</param>
+        /// <param name="pOldVisitDate">Ngày giao dịch cố định Cũ</param>
+        /// <param name="pMsgResult">Thông tin cập nhật</param>
+        /// <param name="pChangeFlag">Cờ thay đổi</param>
+        /// <param name="pMakerDate">Ngày tạo lập yêu cầu thay đổi. Định dạng yyyyMMdđ</param>
+        /// <returns>1: Thành công; 0: Không thêm mới được; -1: Lỗi</returns>
+        /// <exception cref="Exception"></exception>
+        Task<ExecuteResultModelModel> InsertTxnDateChangeIDC(string pTxnPointId, string pNewVisitDate, string pEffDate, string pOldVisitDate, string pMsgResult,
+                                                                          string pChangeFlag, string pMakerDate);
     }
         
 }

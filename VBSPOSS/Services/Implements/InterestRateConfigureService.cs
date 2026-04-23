@@ -3356,7 +3356,9 @@ namespace VBSPOSS.Services.Implements
                                 AccountType = accountType,                    // KHÔNG pad
                                 AccountSubType = accountSubType,
                                 CurrencyCode = rec.CurrencyCode ?? "VND",
-                                EffectiveDate = DateTime.UtcNow.AddDays(1).ToString("yyyyMMdd"), // giữ ngày mai
+                             //   EffectiveDate = DateTime.UtcNow.AddDays(1).ToString("yyyyMMdd"), // giữ ngày mai
+                                EffectiveDate = rec.EffectiveDate.ToString("yyyyMMdd"),
+                              //  EffectiveDate = "99991231",
                                 DebitCreditFlag = "C",
                                 PosCode = _lstPosApply[i] == PosValue.HEAD_POS ? "3" : _lstPosApply[i], // quay lại "3"
                                 PosRateExpiryDate = rec.ExpiryDate?.ToString("yyyyMMdd") ?? "",
