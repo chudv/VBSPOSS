@@ -97,7 +97,7 @@ namespace VBSPOSS.Controllers
             try
             {
                 if (string.IsNullOrEmpty(pMainPosCode))
-                    pMainPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
+                    pMainPosCode = "";
                 if (string.IsNullOrEmpty(pPosCode))
                     pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
                 if (string.IsNullOrEmpty(pUserId))
@@ -342,7 +342,7 @@ namespace VBSPOSS.Controllers
                 if (objUserIDCFull.EffectiveDate > objUserIDCFull.ExpiryDate && objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE) != "01/01/0001")
                     return 4;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
-
+                    return 5;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code ||  objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 {
@@ -364,6 +364,39 @@ namespace VBSPOSS.Controllers
                 if (string.IsNullOrWhiteSpace(objUserIDCFull.EmailAddress) || !objUserIDCFull.EmailAddress.Trim().ToLower().EndsWith("@vbsp.vn"))
                     return 11;
                 return iResult;
+            }
+            catch
+            {
+                return 99;
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
+        ///  6 - Kiểm tra mở sổ tiền mặt đầu ngày
+        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
+        /// </summary>
+        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData)
+        {
+            try
+            {
+                if (listData == null || !listData.Any())
+                    return 99;       
+                foreach (var item in listData)
+                {
+                    if (item == null)
+                        continue;        
+                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(item.UserId);        
+                    // Kiểm tra Trạng thái người dùng: 1 = Đóng/Khóa ; 2 = Mở/Active
+                    if (objViewUserIDCByApi.UserStatus == 1 && item.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                        return 9;
+                    //Kiểm tra đảm bảo user KHÔNG mở tiền mặt
+                    string startDate = item.StartDate?.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper();        
+                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(item.UserId,startDate);        
+                    if (iCheckOpenCash > 0)
+                        return 6;
+                }        
+                return 0;
             }
             catch
             {
@@ -438,12 +471,16 @@ namespace VBSPOSS.Controllers
             long iVal = 1; 
             try
             {
-                string result = "0";              
-                //if (string.IsNullOrEmpty(listApprovalData))
-                //    return new JsonResult("Không có dữ liệu");    
+                string result = "0";                
                 var listData = JsonConvert.DeserializeObject<List<UserManagementIDCViewModel>>(listApprovalData);       
                 if (listData == null || !listData.Any())
                     return new JsonResult("Không có dữ liệu");
+                var resultValue = await IsValidApprovalUserIDC(listData);
+                result = resultValue.ToString();  
+                if (result != "0")
+                {
+                    return new JsonResult(result);
+                }    
                 foreach (var objUserIDC in listData)
                 {
                     if (!TryValidateModel(objUserIDC))
