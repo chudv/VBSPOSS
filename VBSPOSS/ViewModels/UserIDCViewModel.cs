@@ -122,6 +122,7 @@ namespace VBSPOSS.ViewModels
         public string? IpSetCode { get; set; }
         public string? IpSetDetail { get; set; }
         public int? RestrictionFlag { get; set; }
+        public DateTime? EffectiveDate { get; set; }
     }
 
 

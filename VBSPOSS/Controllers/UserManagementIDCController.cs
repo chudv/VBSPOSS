@@ -81,6 +81,36 @@ namespace VBSPOSS.Controllers
             return View("IndexUserManagementIDC");
         }
 
+        public async Task<IActionResult> IndexUserIDCMaster()
+        {
+            string sessionUser = UserName;
+            string posCode = UserPosCode;
+            // Hoặc cách khác qua RouteData
+            var controllerFromRoute = RouteData.Values["controller"]?.ToString();
+            var actionFromRoute = RouteData.Values["action"]?.ToString();
+            SetPermitData(actionFromRoute, controllerFromRoute);
+
+            RolePermissionModel userPermission = UserPermission;
+
+            string role = UserRole.ToString();
+
+            TempData["Role"] = role;
+            TempData.Put("UserPermission", userPermission);
+            TempData["UserName"] = UserName;
+            TempData["UserPosCode"] = UserPosCode;
+            TempData["ProductGroupCode"] = ProductGroupCode.ProductGroupCode_DepositPenal;
+
+            TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
+            TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
+            TempData["EventFlag_Delete"] = EventFlag.EventFlag_Delete.Value.ToString();
+            TempData["EventFlag_MarkDeleted"] = EventFlag.EventFlag_MarkDeleted.Value.ToString();
+            TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
+            TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
+            TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
+            return View("IndexUserIDCMaster");
+        }
+
         /// <summary>
         /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
         /// </summary>
@@ -168,7 +198,7 @@ namespace VBSPOSS.Controllers
                     pUserId = "";
                 if (string.IsNullOrEmpty(pFullName))
                     pFullName = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCMasters(0,"",pPosCode, pUserId, pFullName, "");
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCMasters(0,"",pPosCode, pUserId, pFullName, "",pStatus);
 
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }
@@ -202,7 +232,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSPMaster = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, pUserId, pFullName, "").FirstOrDefault();
+            var listStaffVBSPMaster = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, pUserId, pFullName, "",3).FirstOrDefault();
             var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",-1)).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
@@ -329,8 +359,8 @@ namespace VBSPOSS.Controllers
             try
             {
                 var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
-                //if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId) && objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
-                //    return 10;
+                if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId) && objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
+                    return 10;
                 if (objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
                     return 9;       //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
                 if (string.IsNullOrEmpty(objUserIDCFull.PosCode))

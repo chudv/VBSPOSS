@@ -50,7 +50,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        public List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode)
+        public List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus)
         {
             try
             {
@@ -61,11 +61,12 @@ namespace VBSPOSS.Services.Implements
                                                             ).OrderBy(o => o.Code).Select(s => s.Code).ToList();
                 List<UserIDCMasterViewModel> listUserIDCMasters = new List<UserIDCMasterViewModel>();
                 List<UserIDCMasterViewModel> listUserIDCMasters01 = new List<UserIDCMasterViewModel>();
-
+                var listOfRoles = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
                 var listUserIDCMasterTemp = _dbContext.UserIDCMasters.Where(w => w.Id == pId || (pId == 0
                         && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
                         && (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || (w.PosCode == pPosCode))
                         && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                        && (pStatus == -1 || w.Status == pStatus)
                         && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode)))
                         .Where(delegate (UserIDCMaster c)
                         {
@@ -78,18 +79,19 @@ namespace VBSPOSS.Services.Implements
                                 return false;
                         }).OrderByDescending(o => o.PosCode).ThenBy(o => o.GroupName).ThenBy(o => o.UserId).ToList();
 
-                if (listUserIDCMasterTemp != null && listUserIDCMasterTemp.Count != 0)
+                if (listUserIDCMasterTemp != null && listUserIDCMasterTemp.Count != 0 && listOfRoles.Any())
                 {
                     int iCountTemp = 0;
                     foreach (var item in listUserIDCMasterTemp)
                     {
                         iCountTemp++;
                         UserIDCMasterViewModel objItem = new UserIDCMasterViewModel();
-
                         objItem = _mapper.Map<UserIDCMasterViewModel>(item);
                         objItem.OrderNo = iCountTemp;
                         objItem.StatusText = StatusBusinessFlow.Status_HeadOffice_Approved.Description;
-
+                        objItem.GroupNameDetail = item.GroupName + " - " + listOfRoles.Where(w=>w.Code == item.GroupName).Select(s=>s.Name).FirstOrDefault();
+                        objItem.RoleToTransferCashDescription = (listOfRoles.Where(w=>w.Code == item.GroupName).Select(s=>s.LevelCode).FirstOrDefault() == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+                        objItem.StatusText = StatusBusinessFlow.Status_HeadOffice_Approved.Description;
                         listUserIDCMasters.Add(objItem);
                     }
                 }
@@ -545,13 +547,18 @@ namespace VBSPOSS.Services.Implements
                             else if(objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code||objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                             {
                                 iCreateUserIDC++;
-                                //Trường hợp đổi quyền Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
+                                //Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
                                 if(objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                                 {
                                     TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                     listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
                                     listTellerRoleAssign.TellerRoleAllowed = 0;
-                                    var objTellerRoleAssign = ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);  
+                                    var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                    if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
+                                    {
+                                        iRetIdUpd = 5;
+                                        return iRetIdUpd;
+                                    }
                                 }
                                 //Gọi vào API chỉnh sửa người dùng trên IDC
                                 var objModifyUser = new ModifyUserRequestViewModel
@@ -596,7 +603,12 @@ namespace VBSPOSS.Services.Implements
                                                 TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                                 listTellerRoleAssign.TellerId = objViewUserIDCByApi.UserId;
                                                 listTellerRoleAssign.TellerRoleAllowed = 1;
-                                                var objTellerRoleAssign = ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                                var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                                if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
+                                                {
+                                                    iRetIdUpd = 5;
+                                                    return iRetIdUpd;
+                                                }
                                             }    
                                         }    
 
@@ -639,6 +651,17 @@ namespace VBSPOSS.Services.Implements
                             else if (objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
                             {
                                 iCreateUserIDC++;
+                                //Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
+                                TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
+                                listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
+                                listTellerRoleAssign.TellerRoleAllowed = 0;
+                                var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
+                                {
+                                    iRetIdUpd = 5;
+                                    return iRetIdUpd;
+                                }
+                                //Thực hiện gọi API để đổi POS người dùng iDC
                                 var objModifyUser = new ModifyUserRequestViewModel
                                 {
                                     AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest()
@@ -711,8 +734,8 @@ namespace VBSPOSS.Services.Implements
                             AddUserRequestViewModel objAddUser = new AddUserRequestViewModel();
                             objAddUser.Ticket = objUserManagementIDCsUpdNew.Ticket;
                             var random = new Random();
-                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId + random.Next(10, 99);
-                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName + random.Next(10, 99);
+                            objAddUser.UserId = objUserManagementIDCsUpdNew.UserId/* + random.Next(10, 99)*/;
+                            objAddUser.NickName = objUserManagementIDCsUpdNew.NickName/* + random.Next(10, 99)*/;
                             objAddUser.FirstName = objUserManagementIDCsUpdNew.FirstName;
                             objAddUser.LastName = objUserManagementIDCsUpdNew.LastName;
                             objAddUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
@@ -756,7 +779,12 @@ namespace VBSPOSS.Services.Implements
                                     TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                     listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
                                     listTellerRoleAssign.TellerRoleAllowed = 1;
-                                    var objTellerRoleAssign = ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                    var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                                    if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
+                                    {
+                                        iRetIdUpd = 5;
+                                        return iRetIdUpd;
+                                    }
                                 }    
                                 //Thực hiện Update vào bảng UserIDCManagement
                                 objUserManagementIDCsUpdNew.Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value;
@@ -781,6 +809,17 @@ namespace VBSPOSS.Services.Implements
                         else if (objUserManagementIDCsUpdNew.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
                         {
                             iCreateUserIDC++;
+                            //Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
+                            TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
+                            listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
+                            listTellerRoleAssign.TellerRoleAllowed = 0;
+                            var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
+                            if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
+                            {
+                                iRetIdUpd = 5;
+                                return iRetIdUpd;
+                            }
+                            //Thực hiện gọi API để đổi POS người dùng iDC
                             var objModifyUser = new ModifyUserRequestViewModel
                             {
                                 AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest()
