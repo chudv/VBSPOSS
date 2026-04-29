@@ -552,7 +552,7 @@ namespace VBSPOSS.Services.Implements
                                 {
                                     TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                     listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
-                                    listTellerRoleAssign.TellerRoleAllowed = 0;
+                                    listTellerRoleAssign.TellerRoleAllowed = 0;//Bỏ quyền tiền mặt
                                     var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
                                     if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
                                     {
@@ -602,7 +602,7 @@ namespace VBSPOSS.Services.Implements
                                             {
                                                 TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                                 listTellerRoleAssign.TellerId = objViewUserIDCByApi.UserId;
-                                                listTellerRoleAssign.TellerRoleAllowed = 1;
+                                                listTellerRoleAssign.TellerRoleAllowed = 1;//Gán quyền tiền mặt
                                                 var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
                                                 if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
                                                 {
@@ -654,7 +654,7 @@ namespace VBSPOSS.Services.Implements
                                 //Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
                                 TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                 listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
-                                listTellerRoleAssign.TellerRoleAllowed = 0;
+                                listTellerRoleAssign.TellerRoleAllowed = 0;//Bỏ quyền tiền mặt
                                 var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
                                 if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
                                 {
@@ -778,7 +778,7 @@ namespace VBSPOSS.Services.Implements
                                 {
                                     TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                                     listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
-                                    listTellerRoleAssign.TellerRoleAllowed = 1;
+                                    listTellerRoleAssign.TellerRoleAllowed = 1;//Gán quyền tiền mặt
                                     var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
                                     if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
                                     {
@@ -812,7 +812,7 @@ namespace VBSPOSS.Services.Implements
                             //Thực hiện bỏ quyền tiền mặt đối với tập quyền cũ của user
                             TellerRoleAssignRequestViewModel listTellerRoleAssign = new TellerRoleAssignRequestViewModel();
                             listTellerRoleAssign.TellerId = objUserManagementIDCsUpdNew.UserId;
-                            listTellerRoleAssign.TellerRoleAllowed = 0;
+                            listTellerRoleAssign.TellerRoleAllowed = 0;//Bỏ quyền tiền mặt
                             var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign,pUserNameUpd);
                             if (objTellerRoleAssign == null || objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000")
                             {
