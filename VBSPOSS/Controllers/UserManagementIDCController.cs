@@ -68,7 +68,7 @@ namespace VBSPOSS.Controllers
             TempData.Put("UserPermission", userPermission);
             TempData["UserName"] = UserName;
             TempData["UserPosCode"] = UserPosCode;
-            TempData["ProductGroupCode"] = ProductGroupCode.ProductGroupCode_DepositPenal;
+            //TempData["ProductGroupCode"] = ProductGroupCode.ProductGroupCode_DepositPenal;
 
             TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
             TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();

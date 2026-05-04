@@ -209,7 +209,6 @@ namespace VBSPOSS.Controllers
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
         {
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
-            //sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn đơn vị---" : pTitleChoice;
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
             ArrayList data = new ArrayList();
             if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199")
