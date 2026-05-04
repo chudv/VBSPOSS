@@ -243,6 +243,7 @@ namespace VBSPOSS.Constants
         public const string BeforeOfTerm = "B"; // Đầu ký
         public const string PartitalTerm = "P"; // Định kỳ
         public const string OnTerm = "E"; // Định kỳ
+        public const string Topup = "T"; // Định kỳ
     }
 
     /// <summary>

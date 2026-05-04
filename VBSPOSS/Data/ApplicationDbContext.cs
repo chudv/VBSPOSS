@@ -233,6 +233,12 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<UserIDCRestrictionAllowedDays>().ToTable("UserIDCRestrictionAllowedDays");
             modelBuilder.Entity<UserIDCRestrictionAllowedDays>().HasNoKey();
+
+
+            // Add ProductParameter: vView
+            modelBuilder.Entity<ProductParameterWithDefaultView>()
+            .HasNoKey()           // 
+             .ToView("vw_ProductParameterWithDefault");
         }
     }
 }

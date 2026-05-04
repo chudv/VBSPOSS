@@ -1004,10 +1004,10 @@
 
                 if ($currentCheckbox.is(":checked")) {
                     // Bỏ chọn toàn bộ checkbox khác
-                    grid.tbody.find(".depTermCheckSelect").not($currentCheckbox).prop("checked", false);
+                    //grid.tbody.find(".depTermCheckSelect").not($currentCheckbox).prop("checked", false);
 
                     // Bỏ highlight toàn bộ row khác
-                    grid.tbody.find("tr").not($currentRow).removeClass("row-selected-custom");
+                    //grid.tbody.find("tr").not($currentRow).removeClass("row-selected-custom");
 
                     // Highlight row hiện tại
                     $currentRow.addClass("row-selected-custom");
@@ -1434,8 +1434,8 @@
                             .HeaderHtmlAttributes(new { style = "text-align:center;" })
                             .HtmlAttributes(new { style = "text-align:center;" });
                             columns.Bound(c => c.Id).Title("Thứ tự").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.TermValue).Title("Giá trị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
-                            columns.Bound(c => c.TermUnitName).Title("Đơn vị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                            columns.Bound(c => c.TermValue).Hidden().Title("Giá trị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                                            columns.Bound(c => c.TermUnitName).Hidden().Title("Đơn vị").Width(60).HtmlAttributes(new { style = "text-align: center;" });
                             columns.Bound(c => c.TermDesc).Title("Mô tả").Width(200).HtmlAttributes(new { style = "text-align: left;" });
                             columns.Bound(c => c.TermUnitCode).Hidden();
                             columns.Bound(c => c.TermValue).Hidden();
@@ -1465,34 +1465,34 @@
 
         <div class="col-md-6">
             <div class="create_form row">
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label for="NewInterestRate">Lãi suất thay đổi (kỳ cuối, %/năm) </label>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     @Html.Kendo().NumericTextBoxFor(m => m.NewInterestRate).Format("n2").Decimals(2).Min(0).Max(10).Events(e => e.Change("onNewInterestRateChanged")).HtmlAttributes(new
                         {
                             style = "width: 80%;!important;max-width:100% !important;color:navy; background-color: #F3FFF0 !important;text-align:right;"
                         }).Spinners(false)
 
                 </div>
-                <div class="col-md-4">
-                    <label for="NewInterestRate">Số tháng gửi</label>
-                    @Html.Kendo().NumericTextBox().Name("DepositTermUnit").Format("n0").Min(0).Value(1).Max(60).Events(e => e.Change("onNewInterestRateChanged")).HtmlAttributes(new { @id = "DepositTermUnit", style = "width: 80px;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
+                <div class="col-md-2" style="display: none;">
+                    <label for="NewInterestRate" style="visibility:hidden;">Số tháng gửi</label>
+                    @Html.Kendo().NumericTextBox().Name("DepositTermUnit").Format("n0").Min(0).Value(1).Max(60).Events(e => e.Change("onNewInterestRateChanged")).HtmlAttributes(new { @id = "DepositTermUnit", style = "width: 80px;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;visibility:hidden;" })
                 </div>
             </div>
             <div class="create_form row">
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label for="NewInterestRate">quy đổi lãi suất trả trước</label>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     @Html.Kendo().NumericTextBoxFor(m => m.BeforeTermNewInterestRate).Spinners(false).Format("n2").Decimals(2).Min(0).Max(10).HtmlAttributes(new { @readonly = "readonly", style = "width: 80%;!important;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
                 </div>
             </div>
             <div class="create_form row">
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label for="NewInterestRate">quy đổi lãi suất định kỳ</label>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     @Html.Kendo().NumericTextBoxFor(m => m.PartialNewInterestRate).Spinners(false).Format("n2").Decimals(2).Min(0).Max(10).HtmlAttributes(new { @readonly = "readonly", style = "width: 80%;!important;max-width:100% !important;color:navy;background-color:#f0f0f0 !important;text-align:right;" })
                 </div>
 

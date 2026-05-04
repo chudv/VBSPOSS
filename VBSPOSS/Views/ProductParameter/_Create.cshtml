@@ -285,8 +285,9 @@
             .Name("gridCreateDetail")
             .Columns(columns =>
             {
-                columns.Bound(p => p.STT).Title("STT").Width(60).Locked(true);
+                columns.Bound(p => p.STT).Title("STT").Width(80).Locked(true);
                 columns.Bound(p => p.ProductCode).Title("Mã SP").Width(90).Locked(true);
+          
                 columns.Bound(p => p.ProductName).Title("Tên SP").Width(250).Locked(true);
 
                 columns.Group(group => group

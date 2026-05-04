@@ -130,6 +130,8 @@ namespace VBSPOSS.Mappings
                 .ForMember(dest => dest.ApplyPosList, opt => opt.MapFrom(src => src.ApplyPosList));  // Nếu có
              
 
+
+
         }            
     }
 }
