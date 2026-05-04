@@ -7,8 +7,10 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @{
+    var userPosCode = (ViewBag.UserPosCode ?? "").ToString().Trim();
     var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
     TempData.Keep("UserPermission");
+
 }
 <div id="myPopup"></div>
 <div id="notification"></div>
@@ -563,18 +565,29 @@
                     .Width(100)
                     .HtmlAttributes(new { style = "text-align:center" }); *@
 
-                    columns.Bound(c => c.FileName)
-                    .Title("Tải file")
-                    .Width(100)
-                    .HtmlAttributes(new { style = "text-align: center;" })
-                    .ClientTemplate(
-                    "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
-                    "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
-                    );
-                })
+                        columns.Bound(c => c.FileName)
+                            .Title("Tải file")
+                            .Width(100)
+                            .HtmlAttributes(new { style = "text-align: center;" })
+                            .ClientTemplate(
+                            "<a href='/AttachedFile/DownloadFile?fileName=#=FileName#' " +
+                            "style='color:blue;cursor:pointer'><u>Tải về</u></a>"
+                            );
+                    })
                 .ToolBar(toolbar =>
                 {
-                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Upload file").Name("btnUploadFile").HtmlAttributes(new { id = "btnUploadFile", style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+                    if (userPosCode == "000100" || userPosCode == "000196")
+                    {
+                        toolbar.Custom()
+                        .IconClass("k-icon k-i-plus")
+                        .Text("Upload file")
+                        .Name("btnUploadFile")
+                        .HtmlAttributes(new
+                        {
+                            id = "btnUploadFile",
+                            style = "width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;"
+                        });
+                    }
                 })
                 .HtmlAttributes(new { style = "height: 650px;color: navy; border: 1px solid #ddd;" })
                 .Editable(editable => editable.Mode(GridEditMode.InLine))
