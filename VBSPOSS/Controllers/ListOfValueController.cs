@@ -603,6 +603,7 @@ namespace VBSPOSS.Controllers
             data.Add(new { id = "B", value = "Đầu kỳ" });
             data.Add(new { id = "P", value = "Định kỳ" });
             data.Add(new { id = "E", value = "Cuối kỳ" });
+            data.Add(new { id = "T", value = "Top-up" });
 
             return Json(data);
         }

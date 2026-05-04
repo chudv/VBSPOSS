@@ -207,6 +207,7 @@ namespace VBSPOSS.Services.Implements
         }
 
 
+
         /// <summary>
         /// Hàm lấy danh sách kỳ hạn
         /// </summary>
@@ -217,171 +218,111 @@ namespace VBSPOSS.Services.Implements
         /// <returns></returns>
         public List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag, string depositType)
         {
-            var list = new List<DepositTermModel>();
-            int depositMaxTermMonth = 36;
+            bool isInclusive = inclusionFlag == "INCLUSIVE";
 
-            if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
+            var terms = GetTermRangesByDepositType(depositType);
+
+            return terms.Select((x, index) => new DepositTermModel
             {
-                depositMaxTermMonth = 36;
-            }
-
-            if (termBasis <= 0)
-                throw new ArgumentException("termBasis phải > 0");
-
-            //int depositMaxTermNo = depositMaxTermMonth / termBasis;
-            int depositMaxTermNo = (int)Math.Ceiling((double)depositMaxTermMonth / termBasis);
-
-            string termUnitDesc = "";
-            switch (termType)
-            {
-                case "M":
-                    termUnitDesc = "Tháng";
-                    break;
-                case "Q":
-                    termUnitDesc = "Quý";
-                    break;
-                case "Y":
-                    termUnitDesc = "Năm";
-                    break;
-            }
-
-            for (int i = 0; i <= depositMaxTermNo; i++)
-            {
-                string termDesc = "";
-                int termValue = 0;
-                int minTermValue = 0;   
-
-                if (i == 0)
-                {
-                    if (inclusionFlag == "INCLUSIVE")
-                    {
-                        termDesc = $"Nhỏ hơn hoặc bằng 1 {termUnitDesc}";
-                    }    
-                    else
-                    {
-                        termDesc = $"Nhỏ hơn 1 {termUnitDesc}";
-                    }
-                    termValue = 1;
-                    minTermValue = 1;
-                }
-                else
-                {
-                    if (termBasis == 1)
-                    {
-                        if (inclusionFlag == "INCLUSIVE")
-                        {
-                            termDesc = $"Lớn hơn {(i - 1) * termBasis+1 } {termUnitDesc} Và Nhỏ hơn hoặc bằng {i * termBasis+1} {termUnitDesc}";
-                        }
-                        else
-                        {
-                            termDesc = $"Lớn hơn hoặc bằng {(i - 1) * termBasis+1} {termUnitDesc} Và Nhỏ hơn {i * termBasis+1} {termUnitDesc}";
-                        }
-                        termValue = i * termBasis + 1;
-                        minTermValue = (i - 1) * termBasis + 1;
-                    }
-                    else
-                    {
-                        if (inclusionFlag == "INCLUSIVE")
-                        {
-                            termDesc = $"Lớn hơn {Math.Max((i - 1) * termBasis, 1)} {termUnitDesc} Và Nhỏ hơn hoặc bằng {i * termBasis} {termUnitDesc}";
-                        }
-                        else
-                        {
-                            termDesc = $"Lớn hơn hoặc bằng {Math.Max((i - 1) * termBasis, 1)} {termUnitDesc} Và Nhỏ hơn {i * termBasis} {termUnitDesc}";
-                        }
-                        termValue = i * termBasis;
-                        minTermValue = Math.Max((i - 1) * termBasis, 1);
-                    }
-                    
-                    
-                }
-
-                var model = new DepositTermModel
-                {
-                    Id = i + 1,
-                    TermCode = i.ToString(),
-                    TermDesc = termDesc,
-                    TermUnitCode = termType,
-                    TermUnitName = termUnitDesc,
-                    TermValue = termValue,
-                    InclusionFlag = inclusionFlag,
-                    MinTermValue = minTermValue
-                };
-
-                list.Add(model);
-
-
-
-
-            }
-
-
-            if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
-            {
-                var model = new DepositTermModel
-                {
-                    Id = depositMaxTermNo + 2,
-                    TermCode = (depositMaxTermNo + 1).ToString(),
-                    TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn hoặc bằng 36 Tháng",
-                    TermUnitCode = termType,
-                    TermUnitName = termUnitDesc,
-                    TermValue = 36,
-                    InclusionFlag = inclusionFlag,
-                    MinTermValue = 36
-                };
-
-                list.Add(model);
-            }
-            else
-            {
-                var model = new DepositTermModel
-                {
-                    Id = 37,
-                    TermCode = "37",
-                    TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn 48 Tháng",
-                    TermUnitCode = termType,
-                    TermUnitName = termUnitDesc,
-                    TermValue = 48,
-                    InclusionFlag = inclusionFlag,
-                    MinTermValue = 36
-                };
-
-                list.Add(model);
-
-                model = new DepositTermModel
-                {
-                    Id = 38,
-                    TermCode = "38",
-                    TermDesc = "Lớn hơn hoặc bằng 48 Tháng Và Nhỏ hơn 60 Tháng",
-                    TermUnitCode = termType,
-                    TermUnitName = termUnitDesc,
-                    TermValue = 60,
-                    InclusionFlag = inclusionFlag,
-                    MinTermValue = 48
-                };
-
-                list.Add(model);
-
-                model = new DepositTermModel
-                {
-                    Id = 39,
-                    TermCode = "39",
-                    TermDesc = "Lớn hơn hoặc bằng 60 Tháng Và Nhỏ hơn hoặc bằng 60 Tháng",
-                    TermUnitCode = termType,
-                    TermUnitName = termUnitDesc,
-                    TermValue = 60,
-                    InclusionFlag = inclusionFlag,
-                    MinTermValue = 60
-                };
-
-                list.Add(model);
-            }
-
-
-            return list;
+                Id = index + 1,
+                TermCode = (index + 1).ToString(),
+                TermDesc = BuildTermDesc(x.Min, x.Max, isInclusive),
+                TermUnitCode = termType,
+                TermUnitName = GetTermUnitName(termType),
+                TermValue = x.Max,
+                InclusionFlag = index == terms.Count - 1 ? "INCLUSIVE" : inclusionFlag,
+                MinTermValue = x.Min == 0 ? x.Max : x.Min
+            }).ToList();
         }
 
+        string BuildTermDesc(int min, int max, bool isInclusive)
+        {
+            if (min == 0)
+                return $"Nhỏ hơn {max} Tháng";
 
+            if (min == max)
+                return isInclusive
+                    ? $"Lớn hơn {min} Tháng Và Nhỏ hơn hoặc bằng {max} Tháng"
+                    : $"Lớn hơn hoặc bằng {min} Tháng Và Nhỏ hơn hoặc bằng {max} Tháng";
+
+            return isInclusive
+                ? $"Lớn hơn {min} Tháng Và Nhỏ hơn hoặc bằng {max} Tháng"
+                : $"Lớn hơn hoặc bằng {min} Tháng Và Nhỏ hơn {max} Tháng";
+        }
+
+        List<(int Min, int Max)> GetTermRangesByDepositType(string depositType)
+        {
+            if (depositType == DepositType.BeforeOfTerm ||
+                depositType == DepositType.PartitalTerm)
+            {
+                return new List<(int Min, int Max)>
+        {
+            (0, 1),
+            (1, 3),
+            (3, 6),
+            (6, 9),
+            (9, 12),
+            (12, 15),
+            (15, 18),
+            (18, 21),
+            (21, 24),
+            (24, 27),
+            (27, 30),
+            (30, 33),
+            (33, 36),
+            (36, 36)
+        };
+            }
+
+            if (depositType == DepositType.Topup)
+            {
+                return new List<(int Min, int Max)>
+        {
+            (0, 1),
+            (1, 6),
+            (6, 9),
+            (9, 12),
+            (12, 18),
+            (18, 24),
+            (24, 36),
+            (36, 48),
+            (48, 60),
+            (60, 60)
+        };
+            }
+
+            return GenerateDefaultTermRanges();
+        }
+
+        List<(int Min, int Max)> GenerateDefaultTermRanges()
+        {
+            var terms = new List<(int Min, int Max)>
+    {
+        (0, 1)
+    };
+
+            for (int i = 1; i < 36; i++)
+            {
+                terms.Add((i, i + 1));
+            }
+
+            terms.Add((36, 48));
+            terms.Add((48, 60));
+            terms.Add((60, 60));
+
+            return terms;
+        }
+
+        string GetTermUnitName(string termType)
+        {
+            return termType switch
+            {
+                "M" => "Tháng",
+                "D" => "Ngày",
+                "Y" => "Năm",
+                _ => "Tháng"
+            };
+        }
         /// <summary>
         /// Lấy danh sách cấu hình sản phẩm (ProductParameter) theo productCode và effectedDate
         /// </summary>
@@ -451,3 +392,161 @@ namespace VBSPOSS.Services.Implements
 
     }
 }
+
+
+
+//int depositMaxTermMonth = 36;
+
+//if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
+//{
+//    depositMaxTermMonth = 36;
+//}
+
+//if (termBasis <= 0)
+//    throw new ArgumentException("termBasis phải > 0");
+
+////int depositMaxTermNo = depositMaxTermMonth / termBasis;
+//int depositMaxTermNo = (int)Math.Ceiling((double)depositMaxTermMonth / termBasis);
+
+//string termUnitDesc = "";
+//switch (termType)
+//{
+//    case "M":
+//        termUnitDesc = "Tháng";
+//        break;
+//    case "Q":
+//        termUnitDesc = "Quý";
+//        break;
+//    case "Y":
+//        termUnitDesc = "Năm";
+//        break;
+//}
+
+//for (int i = 0; i <= depositMaxTermNo; i++)
+//{
+//    string termDesc = "";
+//    int termValue = 0;
+//    int minTermValue = 0;   
+
+//    if (i == 0)
+//    {
+//        if (inclusionFlag == "INCLUSIVE")
+//        {
+//            termDesc = $"Nhỏ hơn hoặc bằng 1 {termUnitDesc}";
+//        }    
+//        else
+//        {
+//            termDesc = $"Nhỏ hơn 1 {termUnitDesc}";
+//        }
+//        termValue = 1;
+//        minTermValue = 1;
+//    }
+//    else
+//    {
+//        if (termBasis == 1)
+//        {
+//            if (inclusionFlag == "INCLUSIVE")
+//            {
+//                termDesc = $"Lớn hơn {(i - 1) * termBasis+1 } {termUnitDesc} Và Nhỏ hơn hoặc bằng {i * termBasis+1} {termUnitDesc}";
+//            }
+//            else
+//            {
+//                termDesc = $"Lớn hơn hoặc bằng {(i - 1) * termBasis+1} {termUnitDesc} Và Nhỏ hơn {i * termBasis+1} {termUnitDesc}";
+//            }
+//            termValue = i * termBasis + 1;
+//            minTermValue = (i - 1) * termBasis + 1;
+//        }
+//        else
+//        {
+//            if (inclusionFlag == "INCLUSIVE")
+//            {
+//                termDesc = $"Lớn hơn {Math.Max((i - 1) * termBasis, 1)} {termUnitDesc} Và Nhỏ hơn hoặc bằng {i * termBasis} {termUnitDesc}";
+//            }
+//            else
+//            {
+//                termDesc = $"Lớn hơn hoặc bằng {Math.Max((i - 1) * termBasis, 1)} {termUnitDesc} Và Nhỏ hơn {i * termBasis} {termUnitDesc}";
+//            }
+//            termValue = i * termBasis;
+//            minTermValue = Math.Max((i - 1) * termBasis, 1);
+//        }
+
+
+//    }
+
+//var model = new DepositTermModel
+//{
+//    Id = i + 1,
+//    TermCode = i.ToString(),
+//    TermDesc = termDesc,
+//    TermUnitCode = termType,
+//    TermUnitName = termUnitDesc,
+//    TermValue = termValue,
+//    InclusionFlag = inclusionFlag,
+//    MinTermValue = minTermValue
+//};
+
+//    list.Add(model);
+
+//}
+
+
+//if (depositType == DepositType.BeforeOfTerm || depositType == DepositType.PartitalTerm)
+//{
+//    var model = new DepositTermModel
+//    {
+//        Id = depositMaxTermNo + 2,
+//        TermCode = (depositMaxTermNo + 1).ToString(),
+//        TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn hoặc bằng 36 Tháng",
+//        TermUnitCode = termType,
+//        TermUnitName = termUnitDesc,
+//        TermValue = 36,
+//        InclusionFlag = inclusionFlag,
+//        MinTermValue = 36
+//    };
+
+//    list.Add(model);
+//}
+//else
+//{
+//    var model = new DepositTermModel
+//    {
+//        Id = 37,
+//        TermCode = "37",
+//        TermDesc = "Lớn hơn hoặc bằng 36 Tháng Và Nhỏ hơn 48 Tháng",
+//        TermUnitCode = termType,
+//        TermUnitName = termUnitDesc,
+//        TermValue = 48,
+//        InclusionFlag = inclusionFlag,
+//        MinTermValue = 36
+//    };
+
+//    list.Add(model);
+
+//    model = new DepositTermModel
+//    {
+//        Id = 38,
+//        TermCode = "38",
+//        TermDesc = "Lớn hơn hoặc bằng 48 Tháng Và Nhỏ hơn 60 Tháng",
+//        TermUnitCode = termType,
+//        TermUnitName = termUnitDesc,
+//        TermValue = 60,
+//        InclusionFlag = inclusionFlag,
+//        MinTermValue = 48
+//    };
+
+//    list.Add(model);
+
+//    model = new DepositTermModel
+//    {
+//        Id = 39,
+//        TermCode = "39",
+//        TermDesc = "Lớn hơn hoặc bằng 60 Tháng Và Nhỏ hơn hoặc bằng 60 Tháng",
+//        TermUnitCode = termType,
+//        TermUnitName = termUnitDesc,
+//        TermValue = 60,
+//        InclusionFlag = inclusionFlag,
+//        MinTermValue = 60
+//    };
+
+//    list.Add(model);
+//}
