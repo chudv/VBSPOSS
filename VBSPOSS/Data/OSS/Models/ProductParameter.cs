@@ -112,5 +112,46 @@ namespace VBSPOSS.Data.OSS.Models
 
     }
 
+    ///
 
+
+    // ==================== VIEW MỚI - DÙNG CHO CẤU HÌNH LÃI SUẤT ====================
+    /// <summary>
+    /// View kết hợp ListOfProducts + ProductParameters
+    /// </summary>
+    /// <summary>
+    /// View kết hợp ListOfProducts + ProductParameters
+    /// </summary>
+    public class ProductParameterWithDefaultView
+    {
+        public int ListOfProductId { get; set; }
+        public string ProductGroupCode { get; set; }
+        public string ProductCode { get; set; }
+        public string ProductName { get; set; }
+        public string PosCode { get; set; }
+        public string PosName { get; set; }
+
+        public string AccountTypeCode { get; set; }
+        public string AccountTypeName { get; set; }
+        public string AccountSubTypeCode { get; set; }
+        public string AccountSubTypeName { get; set; }
+        public string CurrencyCode { get; set; }
+        public decimal? DefaultInterestRate { get; set; }
+
+        // Từ ProductParameters
+        public long? ParameterId { get; set; }
+        public DateTime? CurrentEffectedDate { get; set; }
+        public int? ApplyPosFlag { get; set; }
+        public decimal? CurrentMinSpread { get; set; }
+        public decimal? CurrentMaxSpread { get; set; }
+        public int? CurrentStatus { get; set; }
+        public string CurrentRemark { get; set; }
+
+        [NotMapped]
+        public bool IsNewRecord => ParameterId == null;
+
+        [NotMapped]
+        public string ApplyPosDisplay => ApplyPosFlag == 1 ? "X" : "";
     }
+
+}

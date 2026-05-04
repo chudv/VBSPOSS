@@ -259,6 +259,71 @@ namespace VBSPOSS.Controllers
         //}
 
         // sửa al
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
+        //{
+        //    try
+        //    {
+        //        var remarkChung = request.Remark?.Trim() ?? "";
+
+        //        if (string.IsNullOrEmpty(request.Items))
+        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
+
+        //        var items = JsonSerializer.Deserialize<List<ProductParameterDetailViewModel>>(request.Items);
+
+        //        if (items == null || items.Count == 0)
+        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
+
+        //        var recordCount = await _service.SaveBatchProductParameterAsync(
+        //            request.ProductGroupCode,
+        //            request.EffectedDate,
+        //            remarkChung,
+        //            items
+        //        );
+
+        //        if (recordCount > 0)
+        //        {
+        //            return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
+        //        }
+        //        else
+        //        {
+        //            return Json(new { success = false, message = "Lưu không thành công!" });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Lỗi khi lưu batch ProductParameter");
+
+        //        string message = ex.Message;
+
+        //        // Xử lý riêng trường hợp trùng ngày hiệu lực
+        //        if (message.Contains("Đã tồn tại cấu hình") || message.Contains("trùng"))
+        //        {
+        //            // Làm cho thông báo ngắn gọn và rõ ràng hơn
+        //            if (message.Contains("Không thể tạo trùng"))
+        //            {
+        //                // Giữ nguyên thông báo từ Service
+        //                return Json(new { success = false, message = message });
+        //            }
+        //            else
+        //            {
+        //                return Json(new
+        //                {
+        //                    success = false,
+        //                    message = $"Đã tồn tại cấu hình cho phân loại {request.ProductGroupCode} với ngày hiệu lực {request.EffectedDate:dd/MM/yyyy}. Không thể tạo trùng."
+        //                });
+        //            }
+        //        }
+
+        //        // Các lỗi khác (DbUpdateException, lỗi database, v.v.)
+        //        return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
+        //    }
+        //}
+
+
+
+        // Debug hàm Save sau thay đổi 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
@@ -275,6 +340,8 @@ namespace VBSPOSS.Controllers
                 if (items == null || items.Count == 0)
                     return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
 
+                _logger.LogInformation($"Bắt đầu lưu batch - ProductGroup: {request.ProductGroupCode}, EffectedDate: {request.EffectedDate:dd/MM/yyyy}, Số items: {items.Count}");
+
                 var recordCount = await _service.SaveBatchProductParameterAsync(
                     request.ProductGroupCode,
                     request.EffectedDate,
@@ -282,13 +349,15 @@ namespace VBSPOSS.Controllers
                     items
                 );
 
+                _logger.LogInformation($"Kết quả lưu: recordCount = {recordCount}");
+
                 if (recordCount > 0)
                 {
-                    return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
+                    return Json(new { success = true, message = $"Đã lưu thành công {recordCount} đề xuất!" });
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Lưu không thành công!" });
+                    return Json(new { success = false, message = "Lưu không thành công! Không có bản ghi nào được thêm." });
                 }
             }
             catch (Exception ex)
@@ -296,30 +365,18 @@ namespace VBSPOSS.Controllers
                 _logger.LogError(ex, "Lỗi khi lưu batch ProductParameter");
 
                 string message = ex.Message;
-
-                // Xử lý riêng trường hợp trùng ngày hiệu lực
                 if (message.Contains("Đã tồn tại cấu hình") || message.Contains("trùng"))
                 {
-                    // Làm cho thông báo ngắn gọn và rõ ràng hơn
-                    if (message.Contains("Không thể tạo trùng"))
-                    {
-                        // Giữ nguyên thông báo từ Service
-                        return Json(new { success = false, message = message });
-                    }
-                    else
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            message = $"Đã tồn tại cấu hình cho phân loại {request.ProductGroupCode} với ngày hiệu lực {request.EffectedDate:dd/MM/yyyy}. Không thể tạo trùng."
-                        });
-                    }
+                    return Json(new { success = false, message = message });
                 }
 
-                // Các lỗi khác (DbUpdateException, lỗi database, v.v.)
                 return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
             }
         }
+
+
+
+
 
     }
 }

@@ -40,7 +40,7 @@ namespace VBSPOSS.Controllers
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
         /// <param name="service">The service<see cref="IListOfCommunesService"/>.</param>
         /// <param name="internalServiceAPI">The internalServiceAPI<see cref="IApiInternalService"/>.</param>
-        public ListOfCommunesController( ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper, 
+        public ListOfCommunesController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
                 IMapper mapper, IListOfCommunesService service, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
 
         {
@@ -69,7 +69,7 @@ namespace VBSPOSS.Controllers
         ///   6 = Tên tỉnh - Tên huyện - Tên xã
         /// </summary>
         [HttpGet]
-        public JsonResult GetListCommunes( string pProvinceCode = "", string pDistrictCode = "", string pCommuneCode = "", string pPosCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
+        public JsonResult GetListCommunes(string pProvinceCode = "", string pDistrictCode = "", string pCommuneCode = "", string pPosCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
         {
             try
             {
@@ -88,7 +88,7 @@ namespace VBSPOSS.Controllers
                 foreach (var item in listCommunes)
                 {
                     bool statusMatch = pStatus == "0"
-                        || (pStatus == "1" && item.Status == StatusValue.StatusOpenPOS);
+                        || (pStatus == "1" && item.Status.ToString() == StatusValue.StatusOpenPOS);
 
                     if (!statusMatch) continue;
 

@@ -111,7 +111,7 @@
 
     //Hàm dùng khi khởi động màn hình
     function Change_RoleOfUserIDCStart() {
-        var objGroupId = $("#GroupName").val();
+        var objGroupId = $("#GroupNameOld").val();
         if (objGroupId != null) {
             $.ajax({
                 type: "GET",
@@ -124,9 +124,9 @@
                     if (roleLists != null && roleLists.length != 0) {
                         $("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
                         $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
-                        $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
+                        // $("#RoleToTransferCashDescriptionDetail").val(roleLists[0].RoleToTransferCashDescription);
                         $("#UserRoleName").val(roleLists[0].UserRoleName);
-                        $("#UserRoleNameChange").val(roleLists[0].UserRoleName);
+                        // $("#UserRoleNameChange").val(roleLists[0].UserRoleName);
                     }
                 }
             });
@@ -377,8 +377,8 @@
  *@    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
     @Html.HiddenFor(m => m.StaffId, new { @Value = Model == null ? "" : Model.StaffId })
     @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
-@*     @Html.HiddenFor(m => m.PosCode, new { id = "PosCodeChild" })    
- *@    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    @Html.HiddenFor(m => m.GroupNameOld, new { @Value = Model == null ? "" : Model.GroupNameOld })
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
 
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @(TempData["FlagCall"]?.ToString() == "2" ? "TRÌNH DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "PHÊ DUYỆT THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC")
@@ -420,9 +420,9 @@
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Chức vụ</label>
                 @Html.Kendo().TextBox().Name("StaffPositionName").HtmlAttributes(new { @readonly = "readonly", style = " width: 80px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 10px!important;">Phòng ban</label>
-                @Html.Kendo().TextBox().Name("StaffDepartmentName").HtmlAttributes(new { @readonly = "readonly", style = " width: 120px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("StaffDepartmentName").HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Nhóm quyền</label>
-                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBox().Name("UserRoleName").HtmlAttributes(new { @readonly = "readonly", style = " width: 190px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:left;width:20px;padding-top: 7px;"></label>
                 @Html.Kendo().TextBox().Name("RoleToTransferCashDescription").HtmlAttributes(new { @readonly = "readonly", style = " width: 150px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
 
@@ -469,11 +469,11 @@
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:150px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
-                @Html.Kendo().TextBoxFor(m=>m.FunctionTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 350px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBoxFor(m=>m.FunctionTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 320px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:center;width:120px;padding-top: 7px;padding-right: 10px!important;">Ngày hiệu lực</label>
-                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                @(Html.Kendo().TextBoxFor(m => m.EffectiveDate).HtmlAttributes(new {@readonly = "readonly",style = "width:110px;color:blueviolet;border:0;border-bottom:1px dotted;"}))                
                 <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
-                @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 85px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;" })
+                @(Html.Kendo().TextBoxFor(m => m.ExpiryDate).HtmlAttributes(new { @readonly = "readonly", style = "width:90px;color:blueviolet;border:0;border-bottom:1px dotted;" }))
             </div>
         </div>
 
@@ -608,9 +608,10 @@
 
     $(document).ready(function () {
         Change_RoleOfUserIDCStart();
+        Change_RoleOfUserIDC();
         LoadStaffInfoDetail();
         var lcFunctionType = $("#FunctionType").val();
-        if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER") {
+        if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER" || lcFunctionType == "DELETE_USER") {
             $("#divPosCode").hide();
             $("#divModify").hide();
             $("#divRole").hide();

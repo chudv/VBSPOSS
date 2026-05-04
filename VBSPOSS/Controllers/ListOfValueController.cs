@@ -461,7 +461,7 @@ namespace VBSPOSS.Controllers
                 //Xử lý loại người dùng đã khởi tạo trong IDC
                 else if(pFlagCall == "2")
                 {
-                    var listStaffIDC = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "").Select(s => s.StaffId).ToHashSet();
+                    var listStaffIDC = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "",3).Select(s => s.StaffId).ToHashSet();
                     listStaffVBSPTemp = listStaffVBSP.Result.Where(s => !listStaffIDC.Contains(s.StaffId)).ToList();
                 }    
                 else listStaffVBSPTemp = listStaffVBSP.Result;

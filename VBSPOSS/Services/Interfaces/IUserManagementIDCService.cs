@@ -17,7 +17,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode);
+        List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus);
 
         /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu người dùng trên Intellect iDC UserIDCMaster
@@ -240,5 +240,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId);
+        Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+        string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate);
+
     }
 }
