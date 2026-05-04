@@ -59,7 +59,7 @@
 
     function paramLoadListStaffFind() {
         return {
-            pPosCode: $("#PosCode").val(),
+            pPosCode: $("#PosCode").data("kendoComboBox").value(),
             pTitleChoice: "",
             pFlagTextShow: "2",
             pFlagCall: "2"
@@ -87,17 +87,24 @@
         if (staffIdReload != null) {
             staffIdReload.dataSource.read();
         }
-
+        var lcButtonType = $("#ButtonTypeView").val();
         var comboGroup = $("#GroupName").data("kendoComboBox");
         if (comboGroup) {
-            comboGroup.value("");
-            comboGroup.dataSource.read();
-            comboGroup.one("dataBound", function () {
-                if (this.dataSource.data().length > 0) {
-                    this.select(0);
-                    Change_RoleOfUserIDC();
-                }
-            });
+            // Nếu edit dữ liệu thì giữ nguyên
+            if (lcButtonType == "") {
+                return;
+            }
+            else {
+                // Nếu thêm mới thì load theo PosCode
+                comboGroup.value("");
+                comboGroup.dataSource.read();
+                comboGroup.one("dataBound", function () {
+                    if (this.dataSource.data().length > 0) {
+                        this.select(0);
+                        Change_RoleOfUserIDC();
+                    }
+                });
+            }
         }
     }
 
@@ -371,8 +378,7 @@
                                 .HtmlAttributes(new { style = "width: 780px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                                 .Events(e => e.Change("LoadStaffInfoDetail"))
                                 .Suggest(true)
-                                .AutoBind(true)
-                                .SelectedIndex(0))
+                                .AutoBind(false))
             </div>
         </div>
         <div class="row" style="padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
@@ -636,8 +642,9 @@
 
     $(document).ready(function () {
             setTimeout(function () {
-            Change_RoleOfUserIDC();
-            LoadStaffInfoDetail();
+                Change_PosCode();
+                Change_RoleOfUserIDC();
+                LoadStaffInfoDetail();
         }, 300); // delay nhẹ để đảm bảo Kendo init xong
     });
 

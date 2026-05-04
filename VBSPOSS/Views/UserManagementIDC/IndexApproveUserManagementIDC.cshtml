@@ -99,7 +99,7 @@
         border: none;
     }
 
-    .k-grid .btn-auth.k-button {
+    .k-grid .btn-auth-main.k-button {
         background: url('../images/icon_auth.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -107,7 +107,7 @@
         border: none;
     }
 
-    .k-grid .btn-approval.k-button {
+    .k-grid .btn-approval-main.k-button {
         background: url('../images/icon_approval.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -168,6 +168,16 @@
             var row = $(rows[j]);
             var dataItem = e.sender.dataItem(row);
             var trangthaiRow = dataItem.get("Status");
+
+            var lcUserView = $("#UserPosCodeView").val();
+                if (lcUserView != "000196" && lcUserView != "000100") {
+                    row.find(".btn-auth-main").hide();
+                    row.find(".btn-approval-main").show();
+                }
+                else {
+                    row.find(".btn-approval-main").show();
+                    row.find(".btn-auth-main").show();
+                }
             // if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0)
             // {
             //     row.css("background-color", "white");
@@ -459,14 +469,14 @@
                         .Name("EffectDate_Find")
                         .Format("dd/MM/yyyy")
                         .HtmlAttributes(new { style = "background-color: While !important; width: 105px !important; color: green; !important;", title = "Từ ngày cần tìm kiếm" })
-                        .Value(DateTime.Today.AddDays(-2))
+                        .Value(DateTime.Today.AddDays(-1))
                         )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()
                         .Name("ExpiryDate_Find")
                         .Format("dd/MM/yyyy")
                         .HtmlAttributes(new { style = "background-color: While !important; width: 105px !important; color: green; !important;", title = "Đến ngày cần tìm kiếm" })
-                        .Value(DateTime.Today)
+                        .Value(DateTime.Today.AddDays(+1))
                         )
 
             &nbsp;&nbsp;
@@ -493,13 +503,13 @@
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                                     title = "Trình duyệt người dùng IDC",
-                                    @class = "btn-approval"
+                                    @class = "btn-approval-main"
                                 });
                                 command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorize").HtmlAttributes(new
                                 {
                                     style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                                     title = "Phê duyệt người dùng IDC",
-                                    @class = "btn-auth"
+                                    @class = "btn-auth-main"
                                 });
                             }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 

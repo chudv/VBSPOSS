@@ -514,7 +514,7 @@ namespace VBSPOSS.Services.Implements
                 sLevel = VBSPOSS.Constants.PosGrade.MAIN_POS;
             else
             {
-                sSQL = string.Format($"Select Top 1 X.Code Code From ListOfPos X Where X.Code = '{pPosCode}' Order By X.Status Desc");
+                sSQL = string.Format($"Select Top 1 X.MainPosCode Code From ListOfPos X Where X.Code = '{pPosCode}' Order By X.Status Desc");
                 var detailPosCode = _dbContext.CellValues.FromSqlRaw(sSQL).FirstOrDefault();
                 if (detailPosCode != null)
                 {

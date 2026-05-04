@@ -17,7 +17,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode);
+        List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus);
 
         /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu người dùng trên Intellect iDC UserIDCMaster

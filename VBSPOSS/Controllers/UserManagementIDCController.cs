@@ -81,6 +81,36 @@ namespace VBSPOSS.Controllers
             return View("IndexUserManagementIDC");
         }
 
+        public async Task<IActionResult> IndexUserIDCMaster()
+        {
+            string sessionUser = UserName;
+            string posCode = UserPosCode;
+            // Hoặc cách khác qua RouteData
+            var controllerFromRoute = RouteData.Values["controller"]?.ToString();
+            var actionFromRoute = RouteData.Values["action"]?.ToString();
+            SetPermitData(actionFromRoute, controllerFromRoute);
+
+            RolePermissionModel userPermission = UserPermission;
+
+            string role = UserRole.ToString();
+
+            TempData["Role"] = role;
+            TempData.Put("UserPermission", userPermission);
+            TempData["UserName"] = UserName;
+            TempData["UserPosCode"] = UserPosCode;
+            TempData["ProductGroupCode"] = ProductGroupCode.ProductGroupCode_DepositPenal;
+
+            TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
+            TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
+            TempData["EventFlag_Delete"] = EventFlag.EventFlag_Delete.Value.ToString();
+            TempData["EventFlag_MarkDeleted"] = EventFlag.EventFlag_MarkDeleted.Value.ToString();
+            TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
+            TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
+            TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
+            ViewBag.FunctionTypes = FunctionTypeFlag.GetAll();
+            return View("IndexUserIDCMaster");
+        }
+
         /// <summary>
         /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
         /// </summary>
@@ -97,7 +127,7 @@ namespace VBSPOSS.Controllers
             try
             {
                 if (string.IsNullOrEmpty(pMainPosCode))
-                    pMainPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
+                    pMainPosCode = "";
                 if (string.IsNullOrEmpty(pPosCode))
                     pPosCode = (UserPosCode == "000100") ? "" : UserPosCode;
                 if (string.IsNullOrEmpty(pUserId))
@@ -168,7 +198,7 @@ namespace VBSPOSS.Controllers
                     pUserId = "";
                 if (string.IsNullOrEmpty(pFullName))
                     pFullName = "";
-                var listStaffVBSP = _userManagementIDCService.GetListUserIDCMasters(0,"",pPosCode, pUserId, pFullName, "");
+                var listStaffVBSP = _userManagementIDCService.GetListUserIDCMasters(0,"",pPosCode, pUserId, pFullName, "",pStatus);
 
                 return Json(listStaffVBSP.ToDataSourceResult(request, ModelState));
             }
@@ -202,7 +232,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pUserId))
                 pUserId = "";
             string sNameView = "";
-            var listStaffVBSPMaster = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, pUserId, pFullName, "").FirstOrDefault();
+            var listStaffVBSPMaster = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, pUserId, pFullName, "",3).FirstOrDefault();
             var listStaffVBSP = (_userManagementIDCService.GetListUserIDCManagement(pId,"",pPosCode, pUserId,pFullName, "","",-1)).FirstOrDefault();
             if (pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Value.ToString())
             {
@@ -329,8 +359,8 @@ namespace VBSPOSS.Controllers
             try
             {
                 var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserIDCFull.UserId);
-                //if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId) && objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
-                //    return 10;
+                if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId) && objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
+                    return 10;
                 if (objViewUserIDCByApi.UserStatus == 1 && objUserIDCFull.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
                     return 9;       //Trạng thái người dùng. Giá trị: 1- Đóng/Khóa; 2 - Mở/Active
                 if (string.IsNullOrEmpty(objUserIDCFull.PosCode))
@@ -342,7 +372,7 @@ namespace VBSPOSS.Controllers
                 if (objUserIDCFull.EffectiveDate > objUserIDCFull.ExpiryDate && objUserIDCFull.ExpiryDate.ToString(FormatParameters.FORMAT_DATE) != "01/01/0001")
                     return 4;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code && objUserIDCFull.AuthsecType == AuthSecType.AuthSecType_ARXOTP.Code)
-
+                    return 5;
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code ||  objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 if (objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code || objUserIDCFull.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
                 {
@@ -364,6 +394,39 @@ namespace VBSPOSS.Controllers
                 if (string.IsNullOrWhiteSpace(objUserIDCFull.EmailAddress) || !objUserIDCFull.EmailAddress.Trim().ToLower().EndsWith("@vbsp.vn"))
                     return 11;
                 return iResult;
+            }
+            catch
+            {
+                return 99;
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
+        ///  6 - Kiểm tra mở sổ tiền mặt đầu ngày
+        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
+        /// </summary>
+        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData)
+        {
+            try
+            {
+                if (listData == null || !listData.Any())
+                    return 99;       
+                foreach (var item in listData)
+                {
+                    if (item == null)
+                        continue;        
+                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(item.UserId);        
+                    // Kiểm tra Trạng thái người dùng: 1 = Đóng/Khóa ; 2 = Mở/Active
+                    if (objViewUserIDCByApi.UserStatus == 1 && item.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                        return 9;
+                    //Kiểm tra đảm bảo user KHÔNG mở tiền mặt
+                    string startDate = item.StartDate?.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper();        
+                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(item.UserId,startDate);        
+                    if (iCheckOpenCash > 0)
+                        return 6;
+                }        
+                return 0;
             }
             catch
             {
@@ -438,12 +501,16 @@ namespace VBSPOSS.Controllers
             long iVal = 1; 
             try
             {
-                string result = "0";              
-                //if (string.IsNullOrEmpty(listApprovalData))
-                //    return new JsonResult("Không có dữ liệu");    
+                string result = "0";                
                 var listData = JsonConvert.DeserializeObject<List<UserManagementIDCViewModel>>(listApprovalData);       
                 if (listData == null || !listData.Any())
                     return new JsonResult("Không có dữ liệu");
+                var resultValue = await IsValidApprovalUserIDC(listData);
+                result = resultValue.ToString();  
+                if (result != "0")
+                {
+                    return new JsonResult(result);
+                }    
                 foreach (var objUserIDC in listData)
                 {
                     if (!TryValidateModel(objUserIDC))
