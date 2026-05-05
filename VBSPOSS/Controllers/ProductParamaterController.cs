@@ -181,7 +181,7 @@ namespace VBSPOSS.Controllers
                 DateTime effectedDt;
                 if (string.IsNullOrEmpty(effectedDateStr) || !DateTime.TryParseExact(effectedDateStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out effectedDt))
                 {
-                    effectedDt = new DateTime(2026, 1, 1); // Fallback đúng DB của anh
+                    effectedDt = new DateTime(2026, 1, 1); // 
                 }
 
                 var result = await _service.LoadProductsForCreateAsync(productGroupCode, effectedDt);
