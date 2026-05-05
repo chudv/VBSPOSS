@@ -61,6 +61,8 @@ namespace VBSPOSS.ViewModels
 
         // Ghi chú riêng cho sản phẩm (nếu cần)
         public string Remark { get; set; }
+        //add Thêm 
+        public string AccountTypeCode { get; set; }
 
         // Các trường phụ trợ (tính toán thay đổi, không hiển thị)
         public bool HasChange =>
