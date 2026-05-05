@@ -2235,8 +2235,8 @@ namespace VBSPOSS.Services.Implements
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="pUserId">Tài khoản người dùng cần hủy xác thực 2 bước (Xóa xác thực bằng OTP)</param>
+        /// <returns>Kết quả</returns>
         public async Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string pUserId)
         {
             try
@@ -2272,6 +2272,53 @@ namespace VBSPOSS.Services.Implements
                 Console.WriteLine($"DeleteAuthSecTypeByUserIdAsync('{pUserId}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm xóa AuthSecType theo UserId " +
                                         $"DeleteAuthSecTypeByUserIdAsync('{pUserId}') => Error: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Hàm thực hiện đăng ký hoặc hủy đăng ký xác thực 2 lớp (Lớp user/password và OTP) cho người dùng (Tương đương hàm IDL_ARX.PRC_OTP_REG của Intellect)
+        ///     Nếu đăng ký: Thêm bản ghi vào bảng IDL_ARX.TB_ARM_USER_AUTH_TYPE với AUTH_TYPE_ID = 17
+        ///     Nếu hủy đăng ký: Xóa bản ghi bảng IDL_ARX.TB_ARM_USER_AUTH_TYPE với AUTH_TYPE_ID = 17
+        /// </summary>
+        /// <param name="pUserId">Tài khoản người dùng cần đăng ký/hủy đăng ký xác thực 2 bước (Xác thực lớp 2 bằng OTP)</param>
+        /// <param name="pRegisterFlag">Cờ xác định: 1-Đăng ký; 0 - Hủy đăng ký</param>
+        /// <returns>Kết quả</returns>
+        public async Task<ExecuteResultModelModel> ChangeOTPRegisterByUserId(string pUserId, int pRegisterFlag)
+        {
+            try
+            {
+                var sUserIdInput = new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId };
+                var iRegisterFlagInput = new OracleParameter("P_REG_FLAG", OracleDbType.Int32) { Direction = ParameterDirection.Input, Value = pRegisterFlag };
+                var iRowsChangeOut = new OracleParameter("P_ROWS_CHANGE", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
+                var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
+                var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
+
+                var sSQL = @"BEGIN VBSP_OSS_UPD.PRC_CHANGE_OTP_REGISTER_BY_USERID(:P_USERID, :P_REG_FLAG, :P_ROWS_CHANGE, :P_SUCCESS, :P_MESSAGE); END;";
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRegisterFlagInput, iRowsChangeOut, iSuccessOut, sMessageOut);
+
+                // Mapping kết quả
+                var objExecuteResult = new ExecuteResultModelModel
+                {
+                    RowsAffected = iRowsChangeOut.Value == DBNull.Value ? 0 : Convert.ToInt32(iRowsChangeOut.Value),
+                    Success = iSuccessOut.Value == DBNull.Value ? -1 : Convert.ToInt32(iSuccessOut.Value),
+                    Message = sMessageOut.Value?.ToString()
+                };
+
+                // Map TxnStatus chuẩn hoá
+                objExecuteResult.TxnStatus = objExecuteResult.Success switch
+                {
+                    1 => ResultValueAPI.ResultValue_Status_Success,
+                    0 => ResultValueAPI.ResultValue_Status_Failed,
+                    -1 => ResultValueAPI.ResultValue_Status_Errored,
+                    _ => ResultValueAPI.ResultValue_Status_Errored
+                };
+                return objExecuteResult;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ChangeOTPRegisterByUserId('{pUserId}',{pRegisterFlag.ToString()}) => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm xóa AuthSecType theo UserId " +
+                                        $"ChangeOTPRegisterByUserId('{pUserId}',{pRegisterFlag.ToString()}) => Error: {ex.Message}", ex);
             }
         }
 

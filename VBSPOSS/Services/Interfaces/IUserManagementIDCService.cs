@@ -229,18 +229,30 @@ namespace VBSPOSS.Services.Interfaces
         ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
         /// </returns>
         int CheckOpenCashByUserId(string pUserId, string pReportDate);
+        
         Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId);
+
         List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai);
-
-
 
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string userId);
+        /// <param name="pUserId">Tài khoản người dùng cần hủy xác thực 2 bước (Xóa xác thực bằng OTP)</param>
+        /// <returns>Kết quả</returns>
+        Task<ExecuteResultModelModel> DeleteAuthSecTypeByUserIdAsync(string pUserId);
+
+        /// <summary>
+        /// Hàm thực hiện đăng ký hoặc hủy đăng ký xác thực 2 lớp (Lớp user/password và OTP) cho người dùng (Tương đương hàm IDL_ARX.PRC_OTP_REG của Intellect)
+        ///     Nếu đăng ký: Thêm bản ghi vào bảng IDL_ARX.TB_ARM_USER_AUTH_TYPE với AUTH_TYPE_ID = 17
+        ///     Nếu hủy đăng ký: Xóa bản ghi bảng IDL_ARX.TB_ARM_USER_AUTH_TYPE với AUTH_TYPE_ID = 17
+        /// </summary>
+        /// <param name="pUserId">Tài khoản người dùng cần đăng ký/hủy đăng ký xác thực 2 bước (Xác thực lớp 2 bằng OTP)</param>
+        /// <param name="pRegisterFlag">Cờ xác định: 1-Đăng ký; 0 - Hủy đăng ký</param>
+        /// <returns>Kết quả</returns>
+        Task<ExecuteResultModelModel> ChangeOTPRegisterByUserId(string pUserId, int pRegisterFlag);
+
         Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+
         string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate);
 
     }
