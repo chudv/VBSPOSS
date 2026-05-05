@@ -38,6 +38,10 @@ namespace VBSPOSS.Data
         public virtual DbSet<InterestRateTermDetail> InterestRateTermDetails { get; set; }
         public virtual DbSet<ListOfTransPoint> ListOfTransPoints { get; set; }
 
+        public virtual DbSet<ListOfTransPointHist> ListOfTransPointHists { get; set; }
+        
+        public virtual DbSet<ListOfTransPointWork> ListOfTransPointWorks { get; set; }
+        
         public virtual DbSet<UserOfflineSendOTTHist> ListUserOfflineSendOTTHists { get; set; }
 
         public virtual DbSet<InterestRateConfigMasterView> InterestRateConfigMasterViews { get; set; }
@@ -103,7 +107,13 @@ namespace VBSPOSS.Data
             modelBuilder.Entity<AttachedFileInfo>().HasKey(x => new { x.FileId });
 
             modelBuilder.Entity<ListOfTransPoint>().ToTable("ListOfTransPoint");
-            modelBuilder.Entity<ListOfTransPoint>().HasKey(x => new { x.ProvinceCode, x.PosCode, x.CommuneCode, x.TxnPointCode, x.EffectiveDate, x.TxnStatus });
+            modelBuilder.Entity<ListOfTransPoint>().HasKey(x => new { x.ProvinceCode, x.PosCode, x.DistrictCode, x.CommuneCode, x.TxnPointCode, x.EffectiveDate});
+            
+            modelBuilder.Entity<ListOfTransPointHist>().ToTable("ListOfTransPointHist");
+            modelBuilder.Entity<ListOfTransPointHist>().HasKey(x => new { x.EventCode, x.Id, x.DateSync, x.ProvinceCode, x.PosCode, x.DistrictCode, x.CommuneCode, x.TxnPointCode, x.EffectiveDate, x.TxnStatus, x.BusinessDate });
+
+            modelBuilder.Entity<ListOfTransPointWork>().ToTable("ListOfTransPointWork");
+            modelBuilder.Entity<ListOfTransPointWork>().HasKey(x => new { x.EventCode, x.ParentId, x.ProvinceCode, x.TxnPointCode, x.EffectiveDate, x.BusinessDate });
 
             modelBuilder.Entity<InterestRateConfigMaster>().ToTable("InterestRateConfigMaster");
             modelBuilder.Entity<InterestRateConfigMaster>().HasKey(x => new { x.Id });

@@ -209,7 +209,6 @@ namespace VBSPOSS.Controllers
                                          string pFlagTextShow = "1", string pUserPosCode = "", string pFlagAllBank = "0")
         {
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
-            //sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn đơn vị---" : pTitleChoice;
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
             ArrayList data = new ArrayList();
             if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199")
@@ -603,6 +602,7 @@ namespace VBSPOSS.Controllers
             data.Add(new { id = "B", value = "Đầu kỳ" });
             data.Add(new { id = "P", value = "Định kỳ" });
             data.Add(new { id = "E", value = "Cuối kỳ" });
+            data.Add(new { id = "T", value = "Top-up" });
 
             return Json(data);
         }

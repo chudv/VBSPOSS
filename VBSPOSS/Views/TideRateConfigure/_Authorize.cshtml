@@ -125,7 +125,7 @@
 
 
     function onDownloadFile(e) {
-        e.preventDefault(); // ⛔ chặn postback
+        e.preventDefault();
 
         var grid = $("#tideFileUploadGrid").data("kendoGrid");
         var dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
@@ -367,6 +367,16 @@
             var action = this.action;
             var contentType;
             var processData;
+
+
+            var rejectFlag = parseInt(("#RejectFlag").val());
+            var rejectReason = $("#RejectReason").val();
+
+            if (rejectFlag == 1 && rejectReason.trim() === '') {
+                alert('Bạn chưa nhập lý do từ chối!');
+                return;
+            }   
+
             if (this.enctype == "multipart/form-data") {
                 dataString = new FormData($(this).get(0));
                 //contentType = false;
@@ -378,8 +388,8 @@
                 url: this.action,
                 type: this.method,
                 data: dataString,
-                contentType: false,   // BẮT BUỘC
-                processData: false,   // BẮT BUỘC
+                contentType: false,   
+                processData: false,   
                 success: function (result) {
 
                     if (result && result.Errors) {                        
