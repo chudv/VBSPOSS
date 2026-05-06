@@ -50,16 +50,16 @@ namespace VBSPOSS.Controllers
         {
             List<object> statuses;
 
-            if (UserPosCode == "000100")
+            if (UserPosCode == "000100" || UserPosCode == "000196")
             {
                 statuses = new List<object>
                 {
                     new { Value = "-1", Description = "Tất cả", Code = "ALL" },
 
-                    new { Value = "1", Description = "File cấu hình lãi suất Tide/Casa/DepositPenal", Code = "INT_RATE" },
-                    new { Value = "2", Description = "File đính kèm của người dùng iDC", Code = "IDC" },
-                    new { Value = "3", Description = "File đính kèm thay đổi/thêm mới điểm giao dịch", Code = "POS" },
-                    new { Value = "4", Description = "File đính kèm thay đổi/thêm mới danh mục địa phương", Code = "LOCATION" },
+                    //new { Value = "1", Description = "File cấu hình lãi suất Tide/Casa/DepositPenal", Code = "INT_RATE" },
+                    //new { Value = "2", Description = "File đính kèm của người dùng iDC", Code = "IDC" },
+                    //new { Value = "3", Description = "File đính kèm thay đổi/thêm mới điểm giao dịch", Code = "POS" },
+                    //new { Value = "4", Description = "File đính kèm thay đổi/thêm mới danh mục địa phương", Code = "LOCATION" },
                     new { Value = "5", Description = "File đính kèm bản cập nhật phần mềm Offline (Execution File)", Code = "OFFLINE_EXE" },
                     new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" },
                     new { Value = "7", Description = "File tài liệu khác", Code = "OTHER" }
@@ -82,7 +82,7 @@ namespace VBSPOSS.Controllers
        [DataSourceRequest] DataSourceRequest request,
        string pPosCode,
        string pFileType,
-       string pTranDate_Find)
+       string pTranDate_Find, string pFileName)
         {
            
             try
@@ -92,7 +92,7 @@ namespace VBSPOSS.Controllers
                 //    return Json(new List<AttachedFileInfoView>().ToDataSourceResult(request));
                 //}
 
-                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pTranDate_Find);
+                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pTranDate_Find, pFileName);
 
                 return Json(list.ToDataSourceResult(request));
             }

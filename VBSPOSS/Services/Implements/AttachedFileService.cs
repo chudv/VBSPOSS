@@ -21,7 +21,7 @@ namespace VBSPOSS.Services.Implements
             _config = config;
             _logger = logger;
         }
-        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType, string pTranDate_Find)
+        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType, string pTranDate_Find, string pFileName)
         {
             try
             {
@@ -34,8 +34,15 @@ namespace VBSPOSS.Services.Implements
                     if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
                         return list;
 
-                    var files = Directory.GetFiles(folderPath, "TXN*.*")
-                                         .OrderByDescending(f => new FileInfo(f).LastWriteTime);
+                    //var files = Directory.GetFiles(folderPath, "TXN*.*")
+                    //                     .OrderByDescending(f => new FileInfo(f).LastWriteTime);
+
+                    var files = Directory.GetFiles(
+                        folderPath,
+                        "TXN*.*",
+                        SearchOption.AllDirectories 
+                    )
+                    .OrderByDescending(f => new FileInfo(f).LastWriteTime);
 
                     int stt = 1;
 
@@ -91,23 +98,30 @@ namespace VBSPOSS.Services.Implements
                             DownloadUrl = "/AttachedFile/DownloadFile?fileName=" + fi.Name
                         });
                     }
+                    if(pPosCode == "000100")
+                    {
+                        var filteredAll = list
+                            .Where(x =>
+                            x.TransactionDate == pTranDate_Find
+                            && (string.IsNullOrEmpty(pFileName)
+                                || (!string.IsNullOrEmpty(x.FileName) &&
+                                    x.FileName.ToUpper().Contains(pFileName.ToUpper())))
+                        )
+                        .ToList();
+                        return filteredAll;
+                    }    
 
                     string provinceCode = pPosCode.Substring(2, 2); // "05"
                     DateTime tranDate;
-
-                    //DateTime.TryParseExact(
-                    //    pTranDate_Find,
-                    //    "dd/MM/yyyy",
-                    //    null,
-                    //    System.Globalization.DateTimeStyles.None,
-                    //    out tranDate
-                    //);
                     var filtered = list
-                        .Where(x =>
-                            x.ProvinceCode == provinceCode &&
-                            x.TransactionDate == pTranDate_Find
-                        )
-                        .ToList();
+                    .Where(x =>
+                        x.ProvinceCode == provinceCode
+                        && x.TransactionDate == pTranDate_Find
+                        && (string.IsNullOrEmpty(pFileName)
+                            || (!string.IsNullOrEmpty(x.FileName) &&
+                                x.FileName.ToUpper().Contains(pFileName.ToUpper())))
+                    )
+                    .ToList();
                     return filtered;
                 }
                 else
@@ -118,6 +132,13 @@ namespace VBSPOSS.Services.Implements
                     if (!string.IsNullOrEmpty(pFileType) && pFileType != "-1")
                     {
                         query = query.Where(x => x.FileType == pFileType);
+                    }
+
+                    if (!string.IsNullOrEmpty(pFileName))
+                    {
+                        query = query.Where(x =>
+                            x.FileName != null &&
+                            x.FileName.ToLower().Contains(pFileName.ToLower()));
                     }
 
                     var data = await query
@@ -150,19 +171,23 @@ namespace VBSPOSS.Services.Implements
         }
 
         public async Task<string> UploadFileAsync(
-         IFormFile file,
-         string description,
-         string createdBy,
-         string valueFileType, string DocumentNumber)
+    IFormFile file,
+    string description,
+    string createdBy,
+    string valueFileType,
+    string DocumentNumber)
         {
             try
             {
                 if (file == null || file.Length == 0)
                     return "2";
 
-                if (file.Length > 4 * 1024 * 1024)
+                if (file.Length > 50 * 1024 * 1024)
                     return "3";
 
+                // =========================
+                // ROOT FOLDER
+                // =========================
                 string uploadFolder = _config["AttachedFileSettings:FolderUpload"];
 
                 string rootFolder = Path.Combine(
@@ -170,9 +195,33 @@ namespace VBSPOSS.Services.Implements
                     "wwwroot",
                     uploadFolder);
 
-                if (!Directory.Exists(rootFolder))
-                    Directory.CreateDirectory(rootFolder);
+                // =========================
+                // SUB FOLDER theo FileType
+                // =========================
+                string subFolder = "";
 
+                switch (valueFileType)
+                {
+                    case "5":
+                        subFolder = "ExeFile";
+                        break;
+
+                    case "7":
+                        subFolder = "OtherFile";
+                        break;
+                }
+
+                // folder cuối cùng
+                string finalFolder = string.IsNullOrEmpty(subFolder)
+                    ? rootFolder
+                    : Path.Combine(rootFolder, subFolder);
+
+                if (!Directory.Exists(finalFolder))
+                    Directory.CreateDirectory(finalFolder);
+
+                // =========================
+                // FILE INFO
+                // =========================
                 string originalFileName = Path.GetFileName(file.FileName);
                 string extension = Path.GetExtension(file.FileName);
 
@@ -196,7 +245,7 @@ namespace VBSPOSS.Services.Implements
                 await _dbContext.SaveChangesAsync();
 
                 // =========================
-                // build FileNameNew
+                // BUILD FILE NAME
                 // =========================
                 string vv = valueFileType == "1" ? "IntRate" : "User";
 
@@ -206,16 +255,22 @@ namespace VBSPOSS.Services.Implements
 
                 string fileNameNew = $"{vv}_{valueFileType}_{year}_{seq}{extension}";
 
-                // path tương đối
-                string relativePath = "UploadFiles";
+                // =========================
+                // SAVE FILE
+                // =========================
+                string fullPath = Path.Combine(finalFolder, fileNameNew);
 
-                string fullPath = Path.Combine(rootFolder, fileNameNew);
-
-                // save file
                 using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
+
+                // =========================
+                // SAVE PATH (relative)
+                // =========================
+                string relativePath = string.IsNullOrEmpty(subFolder)
+                    ? uploadFolder
+                    : Path.Combine(uploadFolder, subFolder);
 
                 // update lại record
                 entity.FileNameNew = fileNameNew;
@@ -240,7 +295,9 @@ namespace VBSPOSS.Services.Implements
                 string fullPath = string.Empty;
                 string downloadName = fileName;
 
-                // file upload từ DB
+                // =========================
+                // FILE từ DB (upload)
+                // =========================
                 if (fileId > 0)
                 {
                     var file = _dbContext.AttachedFileInfos
@@ -249,26 +306,45 @@ namespace VBSPOSS.Services.Implements
                     if (file == null)
                         return null;
 
-                    string folder = Path.Combine(
+                    string rootFolder = Path.Combine(
                         Directory.GetCurrentDirectory(),
-                        "wwwroot",
-                        _config["AttachedFileSettings:FolderUpload"] ?? "UploadFiles");
+                        "wwwroot");
 
-                    fullPath = Path.Combine(folder, file.FileNameNew);
+                    // 🔥 QUAN TRỌNG: dùng PathFile (có thể là UploadFiles\OtherFile)
+                    fullPath = Path.Combine(
+                        rootFolder,
+                        file.PathFile ?? "",
+                        file.FileNameNew ?? "");
+
                     downloadName = file.FileName;
                 }
                 else
                 {
-                    // file TXN (fileType = 6)
+                    // =========================
+                    // FILE TXN (fileType = 6)
+                    // =========================
                     string folderPath = _config["AttachedFileSettings:FolderTXN"];
 
-                    if (string.IsNullOrEmpty(folderPath))
+                    if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
                         return null;
 
-                    fullPath = Path.Combine(folderPath, fileName);
-                    downloadName = fileName;
+                    //  tìm file trong toàn bộ subfolder
+                    var filePath = Directory.GetFiles(
+                            folderPath,
+                            fileName,
+                            SearchOption.AllDirectories)
+                        .FirstOrDefault();
+
+                    if (string.IsNullOrEmpty(filePath))
+                        return null;
+
+                    fullPath = filePath;
+                    downloadName = Path.GetFileName(filePath);
                 }
 
+                // =========================
+                // CHECK FILE
+                // =========================
                 if (!System.IO.File.Exists(fullPath))
                     return null;
 
@@ -286,10 +362,13 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "DownloadFile error: fileId={fileId}, fileName={fileName}", fileId, fileName);
+                _logger.LogError(ex,
+                    "DownloadFile error: fileId={fileId}, fileName={fileName}",
+                    fileId, fileName);
+
                 return null;
             }
         }
-    
+
     }
 }
