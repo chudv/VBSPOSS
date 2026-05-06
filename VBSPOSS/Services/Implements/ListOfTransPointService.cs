@@ -58,22 +58,28 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
         /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
-        /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>
+        /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
+        /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
-        /// <returns>Danh sách bản ghi</returns>
+        /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
         public List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int iVisitDateBegin, int iVisitDateEnd, string pTxnStatus)
+                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus)
         {
             var answer = new List<ListOfTransPointViewModel>();
+            if (pVisitDateBegin <= 0 || pVisitDateBegin > 31)
+                pVisitDateBegin = 0;
+            if (pVisitDateEnd <= 0 || pVisitDateEnd > 31)
+                pVisitDateEnd = 31;
             try
             {
                 int iCountTMP = 0;
                 var listOfTransPointTmp = _dbContext.ListOfTransPoints.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
-                                        && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
-                                        && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
-                                        && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
-                                        && (string.IsNullOrEmpty(pTxnStatus) || w.TxnStatus.Contains(pTxnStatus))
-                                        && (w.VisitDate >= iVisitDateBegin && w.VisitDate <= iVisitDateEnd))
+                                            && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
+                                            && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
+                                            && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
+                                            && (string.IsNullOrEmpty(pTxnStatus) || w.TxnStatus.Contains(pTxnStatus))
+                                        && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
+                                        )
                                         .Where(delegate (ListOfTransPoint c)
                                         {
                                             if (string.IsNullOrEmpty(pTxnPointName)
@@ -86,6 +92,7 @@ namespace VBSPOSS.Services.Implements
                                                 return false;
                                         }
                                         ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
+
                 if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
                 {
                     foreach (var item in listOfTransPointTmp)
@@ -94,6 +101,10 @@ namespace VBSPOSS.Services.Implements
                         ListOfTransPointViewModel objItem = new ListOfTransPointViewModel();
                         objItem = _mapper.Map<ListOfTransPointViewModel>(item);
                         objItem.OrderNo = iCountTMP;
+                        objItem.VisitDateText = item.VisitDate.ToString("D2");
+                        objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
+                        objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                        objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
                         answer.Add(objItem);
                     }
                 }
@@ -116,14 +127,14 @@ namespace VBSPOSS.Services.Implements
             int iResultId = 0, iSaveChanges = 0;
             try
             {
-                DateTime currentDateVal = DateTime.Now;
+                
                 var objTranspoint = _dbContext.ListOfTransPoints.Where(m => m.TxnPointCode == model.TxnPointCode).FirstOrDefault();
-
+                DateTime dCurrentDateVal = DateTime.Now;
                 if (objTranspoint != null)
                 {
-                    objTranspoint.ProvinceCode = model.ProvinceCode;
+                    //objTranspoint.ProvinceCode = model.ProvinceCode;
                     objTranspoint.ProvinceName = model.ProvinceName;
-                    objTranspoint.PosCode = model.PosCode;
+                    //objTranspoint.PosCode = model.PosCode;
                     objTranspoint.PosName = model.PosName;
                     objTranspoint.DistrictCode = model.DistrictCode;
                     objTranspoint.DistrictName = model.DistrictName;
@@ -156,12 +167,12 @@ namespace VBSPOSS.Services.Implements
                     objTranspoint.TxnStatus = model.TxnStatus;
                     objTranspoint.Status = model.Status;
                     objTranspoint.Remark = model.Remark;
-                    objTranspoint.CreatedBy = model.CreatedBy;
-                    objTranspoint.CreatedDate = model.CreatedDate;
+                    //objTranspoint.CreatedBy = model.CreatedBy;
+                    //objTranspoint.CreatedDate = dCurrentDateVal;
                     objTranspoint.ModifiedBy = pUserName;
-                    objTranspoint.ModifiedDate = DateTime.Now;
-                    objTranspoint.ApproverBy = model.ApproverBy;
-                    objTranspoint.ApprovalDate = model.ApprovalDate;
+                    objTranspoint.ModifiedDate = dCurrentDateVal;
+                    //objTranspoint.ApproverBy = model.ApproverBy;
+                    //objTranspoint.ApprovalDate = dCurrentDateVal;
                     _dbContext.Entry(objTranspoint).State = EntityState.Modified;
                     iSaveChanges = _dbContext.SaveChanges();
                     if (iSaveChanges > 0)
@@ -170,47 +181,49 @@ namespace VBSPOSS.Services.Implements
                 else
                 {
                     ListOfTransPoint objModelTranspoint = new ListOfTransPoint();
-                    objModelTranspoint.ProvinceCode = model.ProvinceCode;
-                    objModelTranspoint.ProvinceName = model.ProvinceName;
-                    objModelTranspoint.PosCode = model.PosCode;
-                    objModelTranspoint.PosName = model.PosName;
-                    objModelTranspoint.DistrictCode = model.DistrictCode;
-                    objModelTranspoint.DistrictName = model.DistrictName;
-                    objModelTranspoint.CommuneCode = model.CommuneCode;
-                    objModelTranspoint.CommuneName = model.CommuneName;
-                    objModelTranspoint.TxnPointCode = model.TxnPointCode;
-                    objModelTranspoint.TxnPointName = model.TxnPointName;
-                    objModelTranspoint.VisitDate = model.VisitDate;
-                    objModelTranspoint.Times = model.Times;
-                    objModelTranspoint.TimeBegin = model.TimeBegin;
-                    objModelTranspoint.TimeEnd = model.TimeEnd;
-                    objModelTranspoint.TimeBeginNum = model.TimeBeginNum;
-                    objModelTranspoint.TimeEndNum = model.TimeEndNum;
-                    objModelTranspoint.Hours = model.Hours;
-                    objModelTranspoint.Minutes = model.Minutes;
-                    objModelTranspoint.Longitude = model.Longitude;
-                    objModelTranspoint.Latitude = model.Latitude;
-                    objModelTranspoint.IsInCommune = model.IsInCommune;
-                    objModelTranspoint.IsInPos = model.IsInPos;
-                    objModelTranspoint.IsInterWard = model.IsInterWard;
-                    objModelTranspoint.InterWardName = model.InterWardName;
-                    objModelTranspoint.EffectiveDate = model.EffectiveDate;
-                    objModelTranspoint.TxnLocation = model.TxnLocation;
-                    objModelTranspoint.AddressDetail = model.AddressDetail;
-                    objModelTranspoint.AddressCode = model.AddressCode;
-                    objModelTranspoint.AddressFull = model.AddressFull;
-                    objModelTranspoint.PhoneSupport = model.PhoneSupport;
-                    objModelTranspoint.PhoneSupport01 = model.PhoneSupport01;
-                    objModelTranspoint.PhoneSupport02 = model.PhoneSupport02;
-                    objModelTranspoint.TxnStatus = model.TxnStatus;
-                    objModelTranspoint.Status = model.Status;
-                    objModelTranspoint.Remark = model.Remark;
+                    objModelTranspoint = _mapper.Map<ListOfTransPoint>(model);
+
+                    //objModelTranspoint.ProvinceCode = model.ProvinceCode;
+                    //objModelTranspoint.ProvinceName = model.ProvinceName;
+                    //objModelTranspoint.PosCode = model.PosCode;
+                    //objModelTranspoint.PosName = model.PosName;
+                    //objModelTranspoint.DistrictCode = model.DistrictCode;
+                    //objModelTranspoint.DistrictName = model.DistrictName;
+                    //objModelTranspoint.CommuneCode = model.CommuneCode;
+                    //objModelTranspoint.CommuneName = model.CommuneName;
+                    //objModelTranspoint.TxnPointCode = model.TxnPointCode;
+                    //objModelTranspoint.TxnPointName = model.TxnPointName;
+                    //objModelTranspoint.VisitDate = model.VisitDate;
+                    //objModelTranspoint.Times = model.Times;
+                    //objModelTranspoint.TimeBegin = model.TimeBegin;
+                    //objModelTranspoint.TimeEnd = model.TimeEnd;
+                    //objModelTranspoint.TimeBeginNum = model.TimeBeginNum;
+                    //objModelTranspoint.TimeEndNum = model.TimeEndNum;
+                    //objModelTranspoint.Hours = model.Hours;
+                    //objModelTranspoint.Minutes = model.Minutes;
+                    //objModelTranspoint.Longitude = model.Longitude;
+                    //objModelTranspoint.Latitude = model.Latitude;
+                    //objModelTranspoint.IsInCommune = model.IsInCommune;
+                    //objModelTranspoint.IsInPos = model.IsInPos;
+                    //objModelTranspoint.IsInterWard = model.IsInterWard;
+                    //objModelTranspoint.InterWardName = model.InterWardName;
+                    //objModelTranspoint.EffectiveDate = model.EffectiveDate;
+                    //objModelTranspoint.TxnLocation = model.TxnLocation;
+                    //objModelTranspoint.AddressDetail = model.AddressDetail;
+                    //objModelTranspoint.AddressCode = model.AddressCode;
+                    //objModelTranspoint.AddressFull = model.AddressFull;
+                    //objModelTranspoint.PhoneSupport = model.PhoneSupport;
+                    //objModelTranspoint.PhoneSupport01 = model.PhoneSupport01;
+                    //objModelTranspoint.PhoneSupport02 = model.PhoneSupport02;
+                    //objModelTranspoint.TxnStatus = model.TxnStatus;
+                    //objModelTranspoint.Status = model.Status;
+                    //objModelTranspoint.Remark = model.Remark;
                     objModelTranspoint.CreatedBy = pUserName;
-                    objModelTranspoint.CreatedDate = DateTime.Now;
+                    objModelTranspoint.CreatedDate = dCurrentDateVal;
                     objModelTranspoint.ModifiedBy = pUserName;
-                    objModelTranspoint.ModifiedDate = DateTime.Now;
+                    objModelTranspoint.ModifiedDate = dCurrentDateVal;
                     objModelTranspoint.ApproverBy = model.ApproverBy;
-                    objModelTranspoint.ApprovalDate = model.ApprovalDate;
+                    objModelTranspoint.ApprovalDate = dCurrentDateVal;
 
                     _dbContext.ListOfTransPoints.Add(objModelTranspoint);
                     iSaveChanges = _dbContext.SaveChanges();
@@ -263,6 +276,13 @@ namespace VBSPOSS.Services.Implements
             }
             return bResult;
         }
+
+
+
+
+
+
+
 
 
 

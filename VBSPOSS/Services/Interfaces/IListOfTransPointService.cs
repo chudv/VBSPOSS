@@ -14,10 +14,13 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
         /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
-        /// <param name="pEffectiveDate">Ngày hiệu lực (Không bắt buộc)</param>
+        /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
+        /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
-        /// <returns>Danh sách bản ghi</returns>
-        List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode,string pTxnPointName, int iVisitDateBegin,int iVisitDateEnd, string pTxnStatus);
+        /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
+        List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus);
+        
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch
         /// </summary>
