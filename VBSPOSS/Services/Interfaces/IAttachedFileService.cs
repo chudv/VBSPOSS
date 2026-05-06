@@ -8,7 +8,7 @@ namespace VBSPOSS.Services.Interfaces
     public interface IAttachedFileService
     {
         Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode,
-       string pFileType, string pTranDate_Find);
+       string pFileType, string pTranDate_Find, string pFileName);
 
         Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType, string DocumentNumber);
 

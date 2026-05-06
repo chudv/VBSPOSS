@@ -37,7 +37,7 @@ namespace VBSPOSS.ViewModels
 
         public int VisitDate { get; set; }
 
-        public int VisitDateText { get; set; }          //Thêm
+        public string VisitDateText { get; set; }          //Thêm
 
         public string Times { get; set; }
 

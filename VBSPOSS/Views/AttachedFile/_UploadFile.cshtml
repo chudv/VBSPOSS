@@ -35,21 +35,44 @@
            value="@valueFileType" />
     <div style="padding:10px">
 
+        <div class="row" style="margin-bottom:8px;">
+            <div class="col-md-4">
+                <label style="color:navy;">Loại file</label>
+            </div>
+
+            <div class="col-md-8">
+                @(Html.Kendo().ComboBox()
+                    .Name("FileType")
+                    .DataTextField("Description")
+                    .DataValueField("Value")
+                    .BindTo(new List<object>
+                {
+                new { Value = "5", Description = "File cập nhật phần mềm Offline (EXE)" },
+                @* new { Value = "6", Description = "File dữ liệu đầu ngày Offline" }, *@
+                new { Value = "7", Description = "File tài liệu khác" }
+                })
+                    .Placeholder("-- Chọn loại file --")
+                    .HtmlAttributes(new { style = "width:100%;width: 350px;color:blue;" })
+                    )
+            </div>
+        </div>
+
+        <hr>
         <!-- chọn file -->
         <div class="row" style="margin-bottom:8px;">
             <div class="col-md-2">
                 <label style="color:navy;">Chọn file</label>
             </div>
 
-            <div class="col-md-4" style="width:600px;">
+            <div class="col-md-3" style="width:600px;">
                 <input type="file"
                        id="files"
                        name="files"
                        style="width:100%;color:blue;" />
             </div>
 
-            <div class="col-md-1">
-                <label style="color:navy;">Số VB</label>
+            <div class="col-md-2">
+                <label style="color:navy;">Số VB / Trích yếu</label>
             </div>
 
             <div class="col-md-4">
@@ -82,7 +105,7 @@
 
             <div class="col-md-2" style="padding-top:6px;">
                 <label style="color:orangered;white-space:nowrap;width:150px">
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(File <= 4MB)
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(File <= 50MB)
                 </label>
             </div>
         </div>
@@ -108,13 +131,26 @@
         var mota = $("#Mo_Ta").val();
         var documentNumber = $("#DocumentNumber").val();
 
+        var combo = $("#FileType").data("kendoComboBox");
+        var valueFileType = combo ? combo.value() : "";
+
+        if (!valueFileType) {
+            alert("Chưa chọn loại file");
+            return;
+        }
+
+        if (valueFileType === "6") {
+            alert("Loại file này không được upload!");
+            return;
+        }
+
         if (!file) {
             alert("Chưa chọn file");
             return;
         }
 
-        if (file.size > 4 * 1024 * 1024) {
-            alert("File vượt quá 4MB");
+        if (file.size > 50 * 1024 * 1024) {
+            alert("File vượt quá 50MB");
             return;
         }
 
@@ -124,6 +160,9 @@
         }
 
         var formData = new FormData(this);
+
+        formData.set("valueFileType", valueFileType);
+        formData.set("DocumentNumber", documentNumber);
 
         $.ajax({
             url: "/AttachedFile/Upload",
@@ -150,6 +189,5 @@
                 alert("Lỗi hệ thống");
             }
         });
-
     });
 </script>

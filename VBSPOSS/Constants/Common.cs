@@ -645,14 +645,17 @@ namespace VBSPOSS.Constants
         public const string StatusUnAcceptTH = "4";
         public const string StatusTW = "5";
 
-        public const string StatusOpenText = "1";
+        //public const string StatusOpenText = "1";
 
-        public const string StatusCloseText = "0";
+        //public const string StatusCloseText = "0";
 
         public const string StatusOpenStr = "Hoạt động";
 
         public const string StatusOpenCls = "Không hoạt động";
 
+        public const string StatusOpenText = "Mở";//  Mở
+
+        public const string StatusClosedText = "Đóng";//  Mở
 
     }
 
