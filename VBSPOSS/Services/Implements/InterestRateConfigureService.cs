@@ -4399,5 +4399,76 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+
+        /// <summary>
+        /// Hàm lưu file tờ trình của cấu hình lãi suất tiên gửi có kỳ hạn (TIDE)
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> SaveTideRateAttachedFile(string circularRefNum, string idList, string userName, IFormFile fileUpload)
+        {
+            try
+            {
+
+                var extension = Path.GetExtension(fileUpload.FileName).ToLower();
+
+                var uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    Common.ToTrinh_UploadDir);
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                var fileName = $"ToTrinh_LS_CKH_{Guid.NewGuid()}.pdf";
+                var filePath = Path.Combine(uploadPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    fileUpload.CopyTo(stream);
+                }
+
+                var saveFileStatus = await SaveAttachedFiles(0, new List<AttachedFileInfo>
+                {
+                    new AttachedFileInfo
+                    {
+                        FileType = FileType.FileType_ConfigIntRate.Value.ToString(), //extension.Replace('.',' ').Trim(),
+                        FileName = fileUpload.FileName,
+                        PathFile = Common.ToTrinh_UploadDir,
+                        FileExtension = extension,
+                        FileNameNew = fileName,
+                        DocumentNumber = circularRefNum,
+                        Status = 1,
+                        CreatedBy = userName,
+                        CreatedDate = DateTime.Now,
+                        ModifiedBy = userName,
+                        ModifiedDate = DateTime.Now,
+                    }
+                }, userName);
+
+                var lstId = StringHelper.ConvertToLongList(idList, ';');
+                var documentId = saveFileStatus != null ? saveFileStatus.FirstOrDefault() : 0;
+
+                var updateStatus = await UpdateInterestRateConfigMasterStatus(userName, lstId, ConfigStatus.PROCESS.Value, documentId);
+
+                if (saveFileStatus != null && saveFileStatus.Any() && updateStatus > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                    
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving TIDE rate attached file");
+                return false;
+            }
+        }
+
+
     }
 }

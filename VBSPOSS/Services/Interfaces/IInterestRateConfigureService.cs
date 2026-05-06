@@ -319,6 +319,13 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<List<CasaRateProductViewModel>> GetCasaRateByProductsAndTypesAsyncWithHO(List<string> productCodes, List<string> accountTypes, string posCode,
       DateTime referenceDate);
+
+
+        /// <summary>
+        /// Hàm lưu file tờ trình của cấu hình lãi suất tiên gửi có kỳ hạn (TIDE)
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> SaveTideRateAttachedFile(string circularRefNum, string idList, string userName, IFormFile fileUpload);
     }
 
 }

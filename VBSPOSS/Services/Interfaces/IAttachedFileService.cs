@@ -13,5 +13,8 @@ namespace VBSPOSS.Services.Interfaces
         Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType, string DocumentNumber);
 
         DownloadFileResult DownloadFile(long fileId, string fileName);
+
+        
+        
     }
 }
