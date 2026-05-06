@@ -347,7 +347,8 @@ namespace VBSPOSS.Controllers
             {
                 if (pControlFlag == "1")
                     dataListOfProducts.Add(new { id = "", value = sTitleChoice });
-                else dataListOfProducts.Add(new { Value = "", Text = sTitleChoice });
+                else 
+                    dataListOfProducts.Add(new { Value = "", Text = sTitleChoice });
             }
             List<ListOfProducts> listListOfProducts = new List<ListOfProducts>();
             if (pFlagCallList == 1)
