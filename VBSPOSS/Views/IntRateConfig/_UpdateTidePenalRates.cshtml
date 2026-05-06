@@ -227,6 +227,13 @@
             padding-top: 5px;
             color: green;
         } */
+
+
+    .create_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
 </style>
 
 <script>
@@ -276,7 +283,7 @@
             pProductGroupCode: "TIDE",
             pProductCode: "",
             pAccountTypeCode: "",
-            pTitleChoice: "--- Chọn tất cả ---",
+            //pTitleChoice: "--- Chọn tất cả ---",
             pFlagTextShow: "0",
             pControlFlag: "1",
             pProductGroupCodeParams: "DEPOSITPENAL"
@@ -317,6 +324,7 @@
         var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
         var lcExpiredDate = $("#ExpiredDate").val();
         var dExpiredDate = stringToDate(lcExpiredDate, "dd/MM/yyyy", "/");
+        
         if (CircularRefNum == null || CircularRefNum == "") {
             alert('Bạn số quyết định và tiêu đề quyết định thay đổi lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn cần thêm mới. Vui lòng kiểm tra lại!');
             $('#CircularRefNum').focus();
@@ -336,6 +344,9 @@
             return false;
         }
 
+
+
+
         var selectedPosCodes = [];
         $('#ListPosCode :selected').each(function (i, selected) {
             selectedPosCodes[i] = $(selected).val();
@@ -344,6 +355,19 @@
             alert('Bạn chưa chọn đơn vị áp dụng để khai báo lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!');
             e.preventDefault();
             $("#ListPosCode").focus();
+            return false;
+        }
+
+
+        var checked = $("#ckb_checkallProduct").is(":checked");
+        var selectedProductCodes = [];
+        $('#ListProductCode :selected').each(function (i, selected) {
+            selectedProductCodes[i] = $(selected).val();
+        });
+        if (selectedProductCodes.length <= 0 && !checked) {
+            alert('Bạn chưa chọn sản phẩm áp dụng để khai báo lãi suất rút trước hạn sản phẩm tiền gửi có kỳ hạn. Vui lòng kiểm tra lại!');
+            e.preventDefault();
+            $("#ListProductCode").focus();
             return false;
         }
 
@@ -656,16 +680,33 @@
     }
 
     function Checked_ChoiceAllProduct() {
-        var isCheckVal = $("#ckb_checkallProduct").is(":checked");
-        var multislListProduct = $("#ListProductCode").data("kendoMultiSelect");
-        if (isCheckVal == true) {
-            var values = $.map(multislListProduct.dataSource.data(), function (dataItem) {
-                return dataItem.id;
-            });
-            multislListProduct.value(values);
-        }
-        else
-            multislListProduct.value([]);
+        var checked = $("#ckb_checkallProduct").is(":checked");
+        // var multislListProduct = $("#ListProductCode").data("kendoMultiSelect");
+        // if (isCheckVal == true) {
+        //     var values = $.map(multislListProduct.dataSource.data(), function (dataItem) {
+        //         return dataItem.id;
+        //     });
+        //     multislListProduct.value(values);
+        // }
+        // else
+        //     multislListProduct.value([]);
+        //var checked = this.checked;
+            var multiSelect = $("#ListProductCode").data("kendoMultiSelect");
+
+            if (multiSelect) {
+                if (checked) {
+                    // var dataSource = multiSelect.dataSource.data();
+                    // var allValues = dataSource.map(function(item) { return item.id; });
+                    // multiSelect.value(allValues);
+                    // Disable MultiSelect khi chọn "Select All"
+                    multiSelect.enable(false);
+                    multiSelect.value([]);
+
+                } else {
+                    multiSelect.enable(true);
+                    multiSelect.value([]);
+                }
+            }
     }
 
     function onEdit_TidePenalRateConfig(e) {
@@ -802,11 +843,14 @@
     @Html.Hidden("FlagCallView", TempData["FlagCall"])
     @Html.AntiForgeryToken()
 
-    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
-        <div class="col-md-12" style="display: inline-flex;">
+    <div class="create_form row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-1" style="display: inline-flex;">
             <label class="lbcontrol" style="color: navy;text-align:left;width:70px;padding-top: 7px;">Đơn vị</label>
-            @(Html.Kendo().CheckBox().Name("ckb_checkallPos").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllPos();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả đơn vị (POS)" }))
-            &nbsp;
+        </div>
+        <div class="col-md-11" style="display: inline-flex;">
+            
+            @* @(Html.Kendo().CheckBox().Name("ckb_checkallPos").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllPos();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả đơn vị (POS)" }))
+            &nbsp; *@
             @(Html.Kendo().MultiSelectFor(m => m.ListPosCode)
                 .Filter(FilterType.Contains)
                 .Placeholder("--- Chọn Đơn vị áp dụng ---")
@@ -821,11 +865,14 @@
                 .AutoBind(true))
         </div>
     </div>
-    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
-        <div class="col-md-12" style="display: inline-flex;">
+    <div class="create_form row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-1" style="display: inline-flex;">
             <label class="lbcontrol" style="color: navy;text-align:left;width:70px;padding-top: 7px;">Sản phẩm</label>
-            @(Html.Kendo().CheckBox().Name("ckb_checkallProduct").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllProduct();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả sản phẩm hoặc không cần tích chọn nếu muốn chọn tất cả" }))
-            &nbsp;
+        </div>
+        <div class="col-md-11" style="display: inline-flex;">
+            
+           @*  @(Html.Kendo().CheckBox().Name("ckb_checkallProduct").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllProduct();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả sản phẩm hoặc không cần tích chọn nếu muốn chọn tất cả" })) *@
+            
             @(Html.Kendo().MultiSelectFor(m => m.ListProductCode)
                 .Filter(FilterType.Contains)
                 .Placeholder("--- Chọn Sản phẩm ---")
@@ -840,47 +887,64 @@
                 .AutoBind(true))
         </div>
     </div>
-    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
-        <div class="col-md-12" style="display: inline-flex;">
-            <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top: 7px;padding-right: 5px!important;">Loại tiền</label>
-            @Html.Kendo().TextBoxFor(m => m.CurrencyCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px; !important;max-width:100% !important;color: navy;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;">Ngày hiệu lực</label>
-            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 5px!important;">Ngày hết hiệu lực</label>
-            @Html.Kendo().DatePickerFor(m => m.ExpiredDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 5px!important;">Số quyết định</label>
-            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { placeholder = "Số và tiêu đề quyết định", style = " width: 200px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top: 7px;padding-right: 5px!important;">Ngày ký</label>
-            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+    <div class="create_form row" style="padding-top: 10px; align-items: center;" id="selectAllProductDiv">
+        <div class="col-md-1">
+            
+        </div>
+        <div class="col-md-11">
+
+            @(Html.Kendo().CheckBox().Name("ckb_checkallProduct").Label(" ").HtmlAttributes(new { onchange = "Checked_ChoiceAllProduct();", style = "color: red;text-align: center;padding-right: 5px;", title = "Chọn tất cả sản phẩm hoặc không cần tích chọn nếu muốn chọn tất cả" }))            
+            <label for="selectAllPos" style="color: navy; font-weight: bold; cursor: pointer; margin: 0;">
+                Áp dụng toàn bộ sản phẩm
+            </label>
         </div>
     </div>
-    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
-        <div class="col-md-12" style="display: inline-flex;">
-            <label class="lbcontrol" style="color: navy;text-align:left;width:110px;padding-top: 7px;">Lãi suất cấu hình</label>
-            @Html.Kendo().NumericTextBoxFor(m => m.InterestRateNew).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 95px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 5px!important;">Lãi phạt</label>
-            @Html.Kendo().NumericTextBoxFor(m => m.PenalIntRate).Enable(false).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 115px; !important;max-width:100% !important;font-family:Tahoma;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
-            <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 5px!important;">Trạng thái</label>
-            @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: green;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;" })
-            <label class="lbcontrol" style="color: navy;text-align:left;width:35px;padding-top: 7px;"></label>
-            &nbsp;&nbsp;
+    <div class="create_form row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-6" style="display: inline-flex; ">
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-right: 3px!important;">Loại tiền</label>
+            @Html.Kendo().TextBoxFor(m => m.CurrencyCode).HtmlAttributes(new { @readonly = "readonly", style = " width: 40px; !important;max-width:100% !important;color: navy;padding-left: 2px!important;padding-right: 2px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-left: 3px!important; margin-left: 5px;">Ngày HL</label>
+            @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-left: 3px!important; margin-left: 5px;">Ngày hết HL</label>
+            @Html.Kendo().DatePickerFor(m => m.ExpiredDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;color: navy;padding-left: 3px!important;padding-right: 3px!important;" })            
+        </div>
+        <div class="col-md-6" style="display: inline-flex; ">            
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-right: 5px!important; margin-left: 5px;">Số quyết định</label>
+            @Html.Kendo().TextBoxFor(m => m.CircularRefNum).HtmlAttributes(new { placeholder = "Số và tiêu đề quyết định", style = " width: 200px; !important;max-width:100% !important;color: blue;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-right: 5px!important; margin-left: 5px;">Ngày ký</label>
+            @Html.Kendo().DatePickerFor(m => m.CircularDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 113px; !important;max-width:100% !important;color: blue;padding-left: 3px!important;padding-right: 3px!important;" })
+        </div>
+    </div>
+    <div class="create_form row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+        <div class="col-md-9" style="display: inline-flex; ">
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px; padding-right: 5px;">Lãi suất cấu hình</label>
+            @Html.Kendo().NumericTextBoxFor(m => m.InterestRateNew).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 95px; !important;max-width:100% !important;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-right: 5px!important; margin-left: 10px;">Lãi phạt</label>
+            @Html.Kendo().NumericTextBoxFor(m => m.PenalIntRate).Enable(false).Format("n2").Decimals(2).Min(0).Max(10).Step(0.1m).HtmlAttributes(new { style = "width: 115px; !important;max-width:100% !important;color: blue;padding-left: 3px!important;padding-right: 3px!important;text-align:right;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;padding-right: 5px!important;margin-left: 10px;">Trạng thái</label>
+            @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: green;padding-left: 2px!important;padding-right: 0px!important;" })
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top: 7px;"></label>
+            
+            
+        </div>
+        <div class="col-md-3 d-flex justify-content-end">
             @(Html.Kendo().Button()
-                .Name("btnLoadTidePenalRate")
-                .Events(ev => ev.Click("onLoadData_TidePenalRate"))
-                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:105px; color: blue;padding-left: 0px; height: 25px;", title = "Tải danh sách sản phẩm Tide để cấu hình lãi suất rút trước hạn" })
-                .ImageUrl(Url.Content("~/images/xem_bao_cao.png"))
-                .Content("Tải dữ liệu"))
-            &nbsp;&nbsp;
+                        .Name("btnLoadTidePenalRate")
+                        .Events(ev => ev.Click("onLoadData_TidePenalRate"))
+                        .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:105px; color: blue;padding-left: 0px; height: 25px;", title = "Tải danh sách sản phẩm Tide để cấu hình lãi suất rút trước hạn" })
+                        .ImageUrl(Url.Content("~/images/xem_bao_cao.png"))
+                        .Content("Tải dữ liệu"))
+
             @(Html.Kendo().Button()
-                .Name("btnSaveTidePenalRate")
-                .Events(ev => ev.Click("onSave_TidePenalRate"))
-                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:90px; color: blue;padding-left: 0px; height: 25px;", title = "Cập nhật thông tin cấu hình lãi suất rút trước hạn sản phẩm Tide" })
-                .ImageUrl(Url.Content("~/images/save.png"))
-                .Content("Lưu lại"))
+                        .Name("btnSaveTidePenalRate")
+                        .Events(ev => ev.Click("onSave_TidePenalRate"))
+                        .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:90px; color: blue;padding-left: 0px; height: 25px;", title = "Cập nhật thông tin cấu hình lãi suất rút trước hạn sản phẩm Tide" })
+                        .ImageUrl(Url.Content("~/images/save.png"))
+                        .Content("Lưu lại"))
         </div>
     </div>
     <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
-    <div class="row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
+    <div class="create_form row" style="padding-top: 2px; padding-left: 0px; padding-bottom: 0px;">
         <div class="col-md-12" style="display: inline-flex;">
             @(Html.Kendo().Grid<UpdateTidePenalRateConfigViewModel>()
                 .Name("gridUpdateTidePenalRateConfig")
