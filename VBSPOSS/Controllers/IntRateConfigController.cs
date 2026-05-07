@@ -532,7 +532,7 @@ namespace VBSPOSS.Controllers
             if (string.IsNullOrEmpty(pListProductCodeChoice))
                 pListProductCodeChoice = "";
             string[] listProductCodes = Utilities.Splip_Strings(pListProductCodeChoice, ";");
-
+            string[] listExcludeProducts = Utilities.Splip_Strings(IntRateConfigValue.ExcludeProduct_TidePanel, ";");
             if (posCode == PosValue.HEAD_POS)
             {
                 if (listPosCodes == null || listPosCodes.Length <= 0)
@@ -577,7 +577,13 @@ namespace VBSPOSS.Controllers
                             listResult.AddRange(listResultTemp);
                     }
                 }
-                var result = listResult.ToDataSourceResult(request, ModelState);
+                List<UpdateTidePenalRateConfigViewModel> listResultTidePenalRates = new List<UpdateTidePenalRateConfigViewModel>();
+                if (listResult != null && listResult.Count != 0)
+                {
+                    listResultTidePenalRates = listResult.Where(w => !listExcludeProducts.Contains(w.ProductCode)).ToList();
+                }
+                else listResultTidePenalRates.AddRange(listResult);
+                var result = listResultTidePenalRates.ToDataSourceResult(request, ModelState);
                 return Json(result);
             }
             catch (Exception ex)

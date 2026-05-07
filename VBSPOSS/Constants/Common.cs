@@ -16,6 +16,15 @@ namespace VBSPOSS.Constants
         public const string ToTrinh_UploadDir = @"Uploads/ToTrinh"; 
     }
 
+    public class IntRateConfigValue
+    {
+        /// <summary>
+        /// Danh sách sản phẩm loại trừ khi cấu hình lãi suất rút trước hạn của sản phẩm Tide
+        /// </summary>
+        public const string ExcludeProduct_TidePanel = "491;492;493;494;495;496;576;589;595;596";
+
+    }
+
     /// <summary>
     /// Cờ xác định sự kiện
     /// </summary>

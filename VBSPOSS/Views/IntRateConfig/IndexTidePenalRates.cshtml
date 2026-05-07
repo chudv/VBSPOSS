@@ -582,7 +582,7 @@
                             title = "Xem chi tiết",
                             @class = "btn-view"
                         });
-                    }).Width(160).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(170).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
                     //columns.Bound(c => c.IdList).Title("Xem CT").Width(55).HtmlAttributes(new { style = "text-align: center;" }).ClientTemplate("<a onclick=showDetailTidePenalRate('#= IdList #',#= PosCode #,'#= ProductGroupCode #','#= CircularRefNum #','#= Status #') title='Xem chi tiết thông tin cán bộ' style='cursor:pointer;text-decoration:none;'>#= getAssignedImage(Id,PosCode) #  <u></u></a>");
                     columns.Bound(c => c.DocumentId).Hidden();
                     columns.Bound(c => c.IdList).Hidden();
@@ -594,7 +594,7 @@
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(110).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.UserId).Hidden();
                     columns.Bound(c => c.CircularDate).Hidden();
-                    columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(140).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.CircularRefNum).Title("Quyết định").Width(110).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.ProductList).Title("Danh sách sản phẩm cấu hình").HtmlAttributes(new { style = "text-align: left;" });
