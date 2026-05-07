@@ -345,7 +345,7 @@
         columns.Bound(p => p.EffectedDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(120);
         columns.Bound(p => p.Status).Title("Trạng thái mã").Hidden();
      
-        columns.Bound(p => p.ProductCodeList).Title("Danh sách Mã SP").Width(180);
+       
         columns.Bound(p => p.ProductCodeList)
        .Title("Danh sách Mã SP")
        .Width(420)
@@ -376,7 +376,7 @@
         .HtmlAttributes(new { style = "text-align:center;" });   
 
         columns.Bound(p => p.ProductCountNotApplyPos)
-               .Title("SL không áp dụng POS")
+               .Title("SL K AD POS")
                .Width(110)
                .HtmlAttributes(new { style = "text-align:center;" });   
 

@@ -87,7 +87,7 @@ namespace VBSPOSS.Controllers
         }
 
 
-     
+
 
         [HttpPost]
         public async Task<ActionResult> LoadProductParametersGrid([DataSourceRequest] DataSourceRequest request,
@@ -101,7 +101,7 @@ namespace VBSPOSS.Controllers
                 DateTime? fromDate = null;
                 DateTime? toDate = null;
 
-              
+
                 if (!string.IsNullOrEmpty(effectDateBegin)
                     && DateTime.TryParseExact(effectDateBegin, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFrom))
                 {
@@ -147,7 +147,7 @@ namespace VBSPOSS.Controllers
 {
     new SelectListItem { Value = "CASA", Text = "Casa" },
     new SelectListItem { Value = "TIDE", Text = "Tide" },
-    new SelectListItem { Value = "DEPOSITPENAL", Text = "Rút trước hạn (Penal Tide)" } 
+    new SelectListItem { Value = "DEPOSITPENAL", Text = "Rút trước hạn (Penal Tide)" }
 };
 
 
@@ -165,7 +165,7 @@ namespace VBSPOSS.Controllers
         }
 
 
-      
+
 
         [HttpPost]
         public async Task<JsonResult> LoadProductsForCreate([FromBody] LoadProductRequest request)
@@ -195,7 +195,7 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        
+
 
         // sửa hàm lưu thay đổi 
 
@@ -258,68 +258,6 @@ namespace VBSPOSS.Controllers
         //    }
         //}
 
-        // sửa al
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
-        //{
-        //    try
-        //    {
-        //        var remarkChung = request.Remark?.Trim() ?? "";
-
-        //        if (string.IsNullOrEmpty(request.Items))
-        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
-
-        //        var items = JsonSerializer.Deserialize<List<ProductParameterDetailViewModel>>(request.Items);
-
-        //        if (items == null || items.Count == 0)
-        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
-
-        //        var recordCount = await _service.SaveBatchProductParameterAsync(
-        //            request.ProductGroupCode,
-        //            request.EffectedDate,
-        //            remarkChung,
-        //            items
-        //        );
-
-        //        if (recordCount > 0)
-        //        {
-        //            return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = "Lưu không thành công!" });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Lỗi khi lưu batch ProductParameter");
-
-        //        string message = ex.Message;
-
-        //        // Xử lý riêng trường hợp trùng ngày hiệu lực
-        //        if (message.Contains("Đã tồn tại cấu hình") || message.Contains("trùng"))
-        //        {
-        //            // Làm cho thông báo ngắn gọn và rõ ràng hơn
-        //            if (message.Contains("Không thể tạo trùng"))
-        //            {
-        //                // Giữ nguyên thông báo từ Service
-        //                return Json(new { success = false, message = message });
-        //            }
-        //            else
-        //            {
-        //                return Json(new
-        //                {
-        //                    success = false,
-        //                    message = $"Đã tồn tại cấu hình cho phân loại {request.ProductGroupCode} với ngày hiệu lực {request.EffectedDate:dd/MM/yyyy}. Không thể tạo trùng."
-        //                });
-        //            }
-        //        }
-
-        //        // Các lỗi khác (DbUpdateException, lỗi database, v.v.)
-        //        return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
-        //    }
-        //}
 
 
 
