@@ -12,6 +12,8 @@ namespace VBSPOSS.Constants
         public const string FirstNameFile = "FinlitPhotoInContent";
         public const string UploadDirPhotoInContent = @"Upload/PhotoInContents";
 
+
+        public const string ToTrinh_UploadDir = @"Uploads/ToTrinh"; 
     }
 
     /// <summary>
