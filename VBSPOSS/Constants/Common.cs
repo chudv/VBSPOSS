@@ -12,6 +12,17 @@ namespace VBSPOSS.Constants
         public const string FirstNameFile = "FinlitPhotoInContent";
         public const string UploadDirPhotoInContent = @"Upload/PhotoInContents";
 
+
+        public const string ToTrinh_UploadDir = @"Uploads/ToTrinh"; 
+    }
+
+    public class IntRateConfigValue
+    {
+        /// <summary>
+        /// Danh sách sản phẩm loại trừ khi cấu hình lãi suất rút trước hạn của sản phẩm Tide
+        /// </summary>
+        public const string ExcludeProduct_TidePanel = "491;492;493;494;495;496;576;589;595;596";
+
     }
 
     /// <summary>
@@ -643,15 +654,20 @@ namespace VBSPOSS.Constants
         public const string StatusUnAcceptTH = "4";
         public const string StatusTW = "5";
 
-        public const string StatusOpenText = "1";
+        //public const string StatusOpenText = "1";
 
-        public const string StatusCloseText = "0";
+        //public const string StatusCloseText = "0";
 
         public const string StatusOpenStr = "Hoạt động";
 
         public const string StatusOpenCls = "Không hoạt động";
 
+        public const string StatusOpenText = "Mở";//  Mở
 
+        public const string StatusClosedText = "Đóng";//  Mở
+
+        public const int MinDate = 19000101;
+        public const int MaxDate = 20501231;
     }
 
     /// <summary>
@@ -1073,6 +1089,22 @@ namespace VBSPOSS.Constants
                 11 => EventCode_TransPoint_Change_VisitDate,
                 12 => EventCode_TransPoint_Change_Name,
                 13 => EventCode_TransPoint_Change_OtherInfor,
+                _ => null
+            };
+        }
+
+        public static ValueConstModel GetByCode(string pCodeEvent)
+        {
+            return pCodeEvent switch
+            {
+                "LOCALITY_ADDNEW" => EventCode_Locality_AddNew,
+                "LOCALITY_CHANGE_NAME" => EventCode_Locality_Change_Name,
+                "LOCALITY_CHANGE_ECON_ZONE" => EventCode_Locality_Change_Econ_Zone,
+                "LOCALITY_TRANSFER_SUB_COMMUNE" => EventCode_Locality_Transfer_Sub_Commune,
+                "TRANSPOINT_ADDNEW" => EventCode_TransPoint_AddNew,
+                "TRANSPOINT_CHANGE_VISITDATE" => EventCode_TransPoint_Change_VisitDate,
+                "TRANSPOINT_CHANGE_NAME" => EventCode_TransPoint_Change_Name,
+                "TRANSPOINT_CHANGE_OTHERINFOR" => EventCode_TransPoint_Change_OtherInfor,
                 _ => null
             };
         }

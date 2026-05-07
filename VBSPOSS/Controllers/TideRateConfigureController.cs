@@ -130,14 +130,12 @@ namespace VBSPOSS.Controllers
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // ===== CHECK FILE UPLOAD =====
                 if (fileUpload == null || fileUpload.Length == 0)
                 {
                     ModelState.AddModelError("fileUpload", "Vui lòng chọn file PDF");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // 1️⃣ Check extension
                 var extension = Path.GetExtension(fileUpload.FileName).ToLower();
                 if (extension != ".pdf")
                 {
@@ -145,14 +143,12 @@ namespace VBSPOSS.Controllers
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // 2️⃣ Check MIME type
                 if (fileUpload.ContentType != "application/pdf")
                 {
                     ModelState.AddModelError("fileUpload", "File không đúng định dạng PDF");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // 3️⃣ Check dung lượng (ví dụ: 5MB)
                 long maxSize = 5 * 1024 * 1024;
                 if (fileUpload.Length > maxSize)
                 {
@@ -160,50 +156,52 @@ namespace VBSPOSS.Controllers
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // ===== LƯU FILE =====
-                var uploadPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "uploads",
-                    "ToTrinh");
+                //var uploadPath = Path.Combine(
+                //    Directory.GetCurrentDirectory(),
+                //    "wwwroot",
+                //    "uploads",
+                //    "ToTrinh");
 
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
+                //if (!Directory.Exists(uploadPath))
+                //{
+                //    Directory.CreateDirectory(uploadPath);
+                //}
 
-                var fileName = $"{Guid.NewGuid()}.pdf";
-                var filePath = Path.Combine(uploadPath, fileName);
+                //var fileName = $"{Guid.NewGuid()}.pdf";
+                //var filePath = Path.Combine(uploadPath, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    fileUpload.CopyTo(stream);
-                }
+                //using (var stream = new FileStream(filePath, FileMode.Create))
+                //{
+                //    fileUpload.CopyTo(stream);
+                //}
 
-                var saveFileStatus = await _interestRateConfigureService.SaveAttachedFiles(0, new List<AttachedFileInfo>
-                {
-                    new AttachedFileInfo
-                    {
-                        FileType = extension.Replace('.',' ').Trim(),
-                        FileName = fileUpload.FileName,
-                        PathFile = filePath,
-                        FileExtension = extension,
-                        FileNameNew = fileName,
-                        DocumentNumber = model.CircularRefNum,
-                        Status = 1,
-                        CreatedBy = UserName,
-                        CreatedDate = DateTime.Now,
-                        ModifiedBy = UserName,
-                        ModifiedDate = DateTime.Now,
-                    }
-                }, UserName);
+                //var saveFileStatus = await _interestRateConfigureService.SaveAttachedFiles(0, new List<AttachedFileInfo>
+                //{
+                //    new AttachedFileInfo
+                //    {
+                //        FileType = extension.Replace('.',' ').Trim(),
+                //        FileName = fileUpload.FileName,
+                //        PathFile = filePath,
+                //        FileExtension = extension,
+                //        FileNameNew = fileName,
+                //        DocumentNumber = model.CircularRefNum,
+                //        Status = 1,
+                //        CreatedBy = UserName,
+                //        CreatedDate = DateTime.Now,
+                //        ModifiedBy = UserName,
+                //        ModifiedDate = DateTime.Now,
+                //    }
+                //}, UserName);
 
-                var lstId = StringHelper.ConvertToLongList(model.IdList, ';');
-                var documentId = saveFileStatus != null ? saveFileStatus.FirstOrDefault() : 0;
+                //var lstId = StringHelper.ConvertToLongList(model.IdList, ';');
+                //var documentId = saveFileStatus != null ? saveFileStatus.FirstOrDefault() : 0;
 
-                var updateStatus = await _interestRateConfigureService.UpdateInterestRateConfigMasterStatus(UserName, lstId, ConfigStatus.PROCESS.Value, documentId);
+                //var updateStatus = await _interestRateConfigureService.UpdateInterestRateConfigMasterStatus(UserName, lstId, ConfigStatus.PROCESS.Value, documentId);
 
-                if (saveFileStatus != null && saveFileStatus.Any() && updateStatus > 0)
+                var saveFileStatus = await _interestRateConfigureService.SaveTideRateAttachedFile(model.CircularRefNum, model.IdList, UserName, fileUpload);  
+
+                
+                if (saveFileStatus)
                 {
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
@@ -550,6 +548,10 @@ namespace VBSPOSS.Controllers
                     interestRate = request.BeforeTermInterestRate;
                 }
                 else if (request.DepositType == DepositType.PartitalTerm)
+                {
+                    interestRate = request.PartialInterestRate;
+                }
+                else if (request.DepositType == DepositType.Topup)
                 {
                     interestRate = request.PartialInterestRate;
                 }

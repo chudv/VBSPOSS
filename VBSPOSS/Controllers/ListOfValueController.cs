@@ -347,7 +347,8 @@ namespace VBSPOSS.Controllers
             {
                 if (pControlFlag == "1")
                     dataListOfProducts.Add(new { id = "", value = sTitleChoice });
-                else dataListOfProducts.Add(new { Value = "", Text = sTitleChoice });
+                else 
+                    dataListOfProducts.Add(new { Value = "", Text = sTitleChoice });
             }
             List<ListOfProducts> listListOfProducts = new List<ListOfProducts>();
             if (pFlagCallList == 1)
@@ -869,7 +870,7 @@ namespace VBSPOSS.Controllers
             string sTitleChoice = "";
             sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Xã/Phường/Thị trấn---" : pTitleChoice;
             ArrayList data = new ArrayList();
-            var listTransPoints = _listOfTransPointService.GetListOfTransPointSearch(pProvinceCode, pPosCode, pCommuneCode, pTxnPointCode,"",1,31, pStatus);
+            var listTransPoints = _listOfTransPointService.GetListOfTransPointSearch(pProvinceCode, pPosCode, pCommuneCode, pTxnPointCode, "", 1, 31, pStatus, "");
 
             if (sTitleChoice != "" && string.IsNullOrEmpty(pTxnPointCode))
                 data.Add(new { id = "", value = sTitleChoice });
