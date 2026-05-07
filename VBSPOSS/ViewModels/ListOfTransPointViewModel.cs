@@ -220,7 +220,7 @@ namespace VBSPOSS.ViewModels
 
         public int Status { get; set; }
 
-        public int StatusText { get; set; }                     //Thêm
+        public string StatusText { get; set; }                     //Thêm
 
         public string Remark { get; set; }
 
@@ -238,7 +238,7 @@ namespace VBSPOSS.ViewModels
 
         public DateTime BusinessDate { get; set; }
         
-        public DateTime BusinessDateText { get; set; }      //Thêm
+        public string BusinessDateText { get; set; }      //Thêm
         
         public long DocumentId { get; set; }
 

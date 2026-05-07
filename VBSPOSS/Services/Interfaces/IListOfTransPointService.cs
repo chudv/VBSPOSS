@@ -7,6 +7,7 @@ namespace VBSPOSS.Services.Interfaces
 {
     public interface IListOfTransPointService
     {
+        
         /// <summary>
         /// Hàm trả về Danh sách điểm giao dịch theo những điều kiện truyền vào, lấy từ nguồn bảng ListOfTransPoint
         /// </summary>
@@ -17,10 +18,11 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
         /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
+        /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
         List<ListOfTransPointViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus);
-        
+                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pTxnLocation);
+
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch
         /// </summary>
@@ -40,6 +42,88 @@ namespace VBSPOSS.Services.Interfaces
 
 
 
+        /// <summary>
+        /// Hàm lấy Danh sách điểm giao dịch ghi nhận thông tin Thêm mới/Thay đổi thông tin (Nguồn bảng ListOfTransPointWork)
+        /// </summary>
+        /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
+        /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
+        /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
+        /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy điểm GD hoạt động</param>
+        /// <param name="pEffectiveDateBegin">Ngày hiệu lực bắt đầu. Định dạng yyyyMMdd (Không bắt buộc)</param>
+        /// <param name="pEffectiveDateEnd">Ngày hiệu lực kết thúc. Định dạng yyyyMMdd (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
+        /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
+        /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
+        List<ListOfTransPointWorkViewModel> GetListOfTransPointWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pEffectiveDateBegin, string pEffectiveDateEnd,
+                                            int pStatus, string pTxnLocation);
+
+        /// <summary>
+        /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch (Bảng ListOfTransPointWork)
+        /// </summary>
+        /// <param name="pTransPointWorkUpd">Thông tin điểm giao dịch cập nhật theo Model ListOfTransPointWorkViewModel</param>
+        /// <param name="pUserNameUpd">Người cập nhật</param>
+        /// <param name="pFlagCall">Cờ xác định sự kiện: 1 - Thêm mới; 2 - Chỉnh sửa (EventFlag.EventFlag_Edit.Value)</param>
+        /// <returns>Số bản ghi được thêm/sửa</returns>
+        int UpdateListOfTransPointWork(ListOfTransPointWorkViewModel pTransPointWorkUpd, string pUserNameUpd, string pFlagCall);
+
+        /// <summary>
+        /// Hàm Xóa/Đánh dấu xóa bản ghi Điểm giao dịch (Bảng ListOfTransPointWork)
+        /// </summary>
+        /// <param name="pEventCode">Nghiệp vụ của bản ghi cần xóa</param>
+        /// <param name="pParentId">Chỉ số bản ghi ở bảng HIST (Chỉ số Id ở bảng ListOfTransPointHist) - Bản ghi trước khi được cập nhật vào bảng ListOfTransPointWork</param>
+        /// <param name="pProvinceCode">Mã Tỉnh/TP</param>
+        /// <param name="pPosCode">Mã POS</param>
+        /// <param name="pTxnPointCode">Chỉ số xác định danh mục</param>
+        /// <param name="pEffectiveDate">Ngày hiệu lực của điểm giao dịch</param>
+        /// <param name="pBusinessDate">Ngày hệ thống Intellect iDC (Ngày hiệu lực thay đổi thông tin của điểm giao dịch của bản ghi)</param>
+        /// <param name="pUserNameDelete">Người cập nhật</param>
+        /// <param name="pFlagDelete">Trạng thái quy ước: 1 - Xóa bản ghi; 2 - Đánh dấu xóa (Chuyển trạng thại về 0)</param>
+        /// <returns>True - Thành công; False - Thất bại</returns>
+        bool DeleteListOfTransPointWork(string pEventCode, long pParentId, string pProvinceCode, string pPosCode, string pTxnPointCode,
+                            DateTime pEffectiveDate, DateTime pBusinessDate, string pUserNameDelete, int pFlagDelete);
+
+        /// <summary>
+        /// Hàm lấy Danh sách điểm giao dịch ghi nhận thông tin Lịch sử Thêm mới/Thay đổi thông tin (Nguồn bảng ListOfTransPointHist)
+        /// </summary>
+        /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
+        /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
+        /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
+        /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy điểm GD hoạt động</param>
+        /// <param name="pEffectiveDateBegin">Ngày hiệu lực bắt đầu. Định dạng yyyyMMdd (Không bắt buộc)</param>
+        /// <param name="pEffectiveDateEnd">Ngày hiệu lực kết thúc. Định dạng yyyyMMdd (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
+        /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
+        /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
+        List<ListOfTransPointHistViewModel> GetListOfTransPointHistSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pEffectiveDateBegin, string pEffectiveDateEnd,
+                                            int pStatus, string pTxnLocation);
+
+        /// <summary>
+        /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch (Bảng ListOfTransPointHist)
+        /// </summary>
+        /// <param name="pTransPointHistUpd">Thông tin điểm giao dịch cập nhật theo Model ListOfTransPointHistViewModel</param>
+        /// <param name="pUserNameUpd">Người cập nhật. Nếu truyền vào rỗng lấy theo người cập nhật từ pTransPointHistUpd</param>
+        /// <param name="pFlagCall">Cờ xác định sự kiện: 1 - Thêm mới; 2 - Chỉnh sửa (EventFlag.EventFlag_Edit.Value)</param>
+        /// <returns>Chỉ số Id bản ghi được Thêm/Chỉnh sửa</returns>
+        long UpdateListOfTransPointHist(ListOfTransPointHistViewModel pTransPointHistUpd, string pUserNameUpd, string pFlagCall);
+
+        /// <summary>
+        /// Hàm Xóa/Đánh dấu xóa bản ghi Điểm giao dịch trong bảng lịch sử thay đổi (Bảng ListOfTransPointHist)
+        /// </summary>
+        /// <param name="pEventCode">Nghiệp vụ của bản ghi cần xóa</param>
+        /// <param name="pId">Chỉ số khóa bản ghi ở bảng HIST (Chỉ số Id ở bảng ListOfTransPointHist)</param>
+        /// <param name="pTxnPointCode">Chỉ số xác định danh mục</param>
+        /// <param name="pUserNameDelete">Người cập nhật</param>
+        /// <param name="pFlagDelete">Trạng thái quy ước: 1 - Xóa bản ghi; 2 - Đánh dấu xóa (Chuyển trạng thại về 0)</param>
+        /// <returns>True - Thành công; False - Thất bại</returns>
+        bool DeleteListOfTransPointHist(string pEventCode, long pId, string pTxnPointCode, string pUserNameDelete, int pFlagDelete);
 
 
 

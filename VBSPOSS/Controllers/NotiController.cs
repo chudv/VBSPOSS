@@ -507,7 +507,7 @@ namespace VBSPOSS.Controllers
             if (!string.IsNullOrWhiteSpace(sPosCode))
             {
                 //sTranspointCode chuyển thành pCommuneCode
-                var tranpointLists = _transpointService.GetListOfTransPointSearch("", sPosCode, sTranspointCode, "", sTranspointName, 1, 31, "");
+                var tranpointLists = _transpointService.GetListOfTransPointSearch("", sPosCode, sTranspointCode, "", sTranspointName, 1, 31, "", "");
                 var pointActive = new List<ListOfTransPointViewModel>();
                 foreach (var tranpoint in tranpointLists)
                 {

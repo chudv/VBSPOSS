@@ -441,10 +441,27 @@ namespace VBSPOSS.Data.OSS.Models
 
         [Column("ApprovalDate")]
         public DateTime ApprovalDate { get; set; }
-
+        
+        [Column("BusinessDate")]
         public DateTime? BusinessDate { get; set; }
-
+        
+        [Column("DocumentId")]
         public long? DocumentId { get; set; }
+
+        [Column("StatusUpdateCore")]
+        public int? StatusUpdateCore { get; set; }
+
+        [Column("CallApiTxnStatus")]
+        public string? CallApiTxnStatus { get; set; }
+
+        [Column("CallApiResRecords")]
+        public int? CallApiResRecords { get; set; }
+
+        [Column("CallApiResponseCode")]
+        public string? CallApiResponseCode { get; set; }
+
+        [Column("CallApiResponseMsg")]
+        public string? CallApiResponseMsg { get; set; }
     }
     #endregion
 
