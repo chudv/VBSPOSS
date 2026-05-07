@@ -4,7 +4,7 @@
 @using VBSPOSS.Models
 @using VBSPOSS.ViewModels
 @{
-    ViewBag.Title = "KHAI BÁO CẤU HÌNH SẢN PHẨM TIỀN GỬI / THANH TOÁN";
+    ViewBag.Title = "KHAI BÁO CẤU HÌNH SẢN PHẨM TIỀN GỬI ";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @{
@@ -34,7 +34,7 @@
 
     .status-pending {
         background-color: #fff5f5 !important;
-        color: #dc3545 !important;
+        color: black !important;
     }
 
     .status-approved {
@@ -263,7 +263,7 @@
 
 <div class="row" style="margin-bottom: 10px;">
     <div class="col-md-12">
-        <label style="color: navy;">Phân loại:</label>
+        <label style="color: navy; padding-top: 10px;padding-right: 10px;">Phân loại </label>
         @(Html.Kendo().ComboBox()
             .Name("ProductGroup_Find")
             .Filter(FilterType.Contains)
@@ -279,13 +279,13 @@
         })
             .HtmlAttributes(new { style = "width: 200px;" })
             )
-        <label style="color: navy; margin-left: 20px;">Mã SP:</label>
+        <label style="color: navy; margin-left: 20px; padding-top: 10px;padding-right: 10px;">Mã SP </label>
         @(Html.Kendo().TextBox()
             .Name("ProductCode_Find")
             .HtmlAttributes(new { placeholder = "Nhập mã SP", style = "width: 150px;" })
             )
         <!-- Phần Ngày hiệu lực -->
-        <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top:3px; padding-right:6px; margin-left: 20px;">
+        <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top: 10px;padding-right: 10px; margin-left: 20px;">
             Ngày hiệu lực
         </label>
         @(Html.Kendo().DatePicker()
@@ -301,13 +301,20 @@
             .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Đến ngày" })
             .Value(DateTime.Today.AddDays(1))
             )
-
+@* 
         @(Html.Kendo().Button()
             .Name("btnSearch")
             .Content("Tìm kiếm")
             .Events(e => e.Click("onSearch"))
             .HtmlAttributes(new { @class = "k-button k-primary", style = "margin-left: 10px;" })
-            )
+            ) *@
+
+        @(Html.Kendo().Button()
+            .Name("btnSearch")
+            .Events(ev => ev.Click("onSearch"))
+            .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất rút trước hạn TG CKH" })
+            .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+            .Content(" Tìm kiếm "))
 
 
       
@@ -337,17 +344,48 @@
         columns.Bound(p => p.ProductGroupCode).Title("Phân loại").Width(80);
         columns.Bound(p => p.EffectedDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(120);
         columns.Bound(p => p.Status).Title("Trạng thái mã").Hidden();
-        columns.Bound(p => p.StatusDesc).Title("Trạng thái").Width(110);
+     
         columns.Bound(p => p.ProductCodeList).Title("Danh sách Mã SP").Width(180);
+        columns.Bound(p => p.ProductCodeList)
+       .Title("Danh sách Mã SP")
+       .Width(420)
+       .HtmlAttributes(new { style = "text-align:left; white-space: normal !important; word-break: break-word;" })
+       .Encoded(false);
       //  columns.Bound(p => p.ProductNameList).Title("Danh sách Tên SP").Width(250);
-        columns.Bound(p => p.MinInterestRateSpread).Title("LS ĐC tối thiểu").Format("{0:N2}").Width(140);
-        columns.Bound(p => p.MaxInterestRateSpread).Title("LS ĐC tối đa").Format("{0:N2}").Width(140);
-        columns.Bound(p => p.ProductCount).Title("Tổng SL").Width(70);
-        columns.Bound(p => p.ProductCountApplyPos).Title("SL AD POS").Width(100);
-        columns.Bound(p => p.ProductCountNotApplyPos).Title("SL không áp dụng POS").Width(100);
-        columns.Bound(p => p.Remark).Title("Ghi chú").Width(80);
-       // columns.Bound(p => p.CreatedBy).Title("Người tạo").Width(120);
-       // columns.Bound(p => p.ApprovalDate).Title("Ngày phê duyệt").Format("{0:dd/MM/yyyy HH:mm}").Width(160);
+      //  columns.Bound(p => p.MinInterestRateSpread).Title("LS ĐC tối thiểu").Format("{0:N2}").Width(140);
+     //  columns.Bound(p => p.MaxInterestRateSpread).Title("LS ĐC tối đa").Format("{0:N2}").Width(140);
+       // columns.Bound(p => p.ProductCount).Title("Tổng SL").Width(70);
+        columns.Bound(p => p.MinInterestRateSpread)
+                .Title("LS ĐC tối thiểu")
+                .Format("{0:N2}")
+                .Width(140)
+                .HtmlAttributes(new { style = "text-align:center;" });   // 
+
+        columns.Bound(p => p.MaxInterestRateSpread)
+               .Title("LS ĐC tối đa")
+               .Format("{0:N2}")
+               .Width(140)
+               .HtmlAttributes(new { style = "text-align:center;" });
+        columns.Bound(p => p.ProductCount)
+               .Title("Tổng SL")
+               .Width(80)
+               .HtmlAttributes(new { style = "text-align:center;" });
+        columns.Bound(p => p.ProductCountApplyPos)
+        .Title("SL AD POS")
+        .Width(100)
+        .HtmlAttributes(new { style = "text-align:center;" });   
+
+        columns.Bound(p => p.ProductCountNotApplyPos)
+               .Title("SL không áp dụng POS")
+               .Width(110)
+               .HtmlAttributes(new { style = "text-align:center;" });   
+
+        columns.Bound(p => p.Remark)
+               .Title("Ghi chú")
+               .Width(120);
+     
+        columns.Bound(p => p.StatusDesc).Title("Trạng thái").Width(110);
+     
     })
     .ToolBar(toolbar =>
     {
