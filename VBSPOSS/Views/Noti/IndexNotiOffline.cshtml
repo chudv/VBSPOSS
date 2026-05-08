@@ -356,7 +356,7 @@
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddMonths(-1)) *@
-                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-1))
+                .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-0))
                 )
             <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
             @(Html.Kendo().DatePicker()
@@ -365,7 +365,7 @@
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Đến ngày cần tìm kiếm" })
                 @* .Value(DateTime.Today.AddDays(1)) *@
                 .Value(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
-                .AddMonths(0)
+                .AddMonths(1)
                 .AddDays(-1))
                 )
             &nbsp;&nbsp;

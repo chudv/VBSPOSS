@@ -685,67 +685,68 @@ namespace VBSPOSS.Controllers
         {
             //var tranpointLists = _transpointService.GetListOfTransPointSearch("", posCode, "", "", "", 1, 31, "");
 
-            var listCommunes = _serviceLOV.GetLovCommuneList("", "", "", posCode, "");
-            var statuses = new List<object>();
-            statuses.Add(new { Value = "-1", Description = "Tất cả", Code = "ALL" });
-
-            if (listCommunes == null || listCommunes.Count == 0)
-            {
-                statuses.Add(new { Value = "1", Description = "Danh sách xã rỗng", Code = "ALL" });
-            }
-
-            foreach (var item in listCommunes)
-            {
-                statuses.Add(new
-                {
-                    Value = item.TxnPointCode,
-                    Description = item.TxnPointName,
-                    Code = "1"
-                });
-            }
-            return Json(statuses);
+            //var listCommunes = _serviceLOV.GetLovCommuneList("", "", "", posCode, "");
             //var statuses = new List<object>();
             //statuses.Add(new { Value = "-1", Description = "Tất cả", Code = "ALL" });
 
-            ////statuses.Add(new { Value = "0", Description = "Chưa có dữ liệu", Code = "ALL" });
+            //if (listCommunes == null || listCommunes.Count == 0)
+            //{
+            //    statuses.Add(new { Value = "1", Description = "Danh sách xã rỗng", Code = "ALL" });
+            //}
 
-            //statuses.Add(new { Value = "06001G", Description = "Ba Vì", Code = "06001G" });
-            //statuses.Add(new { Value = "06001G", Description = "Hợp Nhất", Code = "06001G" });
-            //statuses.Add(new { Value = "06001G", Description = "Khánh Thượng", Code = "06001G" });
-
-            //statuses.Add(new { Value = "06001H", Description = "Bất Bạt", Code = "06001H" });
-            //statuses.Add(new { Value = "06001H", Description = "Cẩm Lĩnh", Code = "06001H" });
-            //statuses.Add(new { Value = "06001H", Description = "Thuần Mỹ", Code = "06001H" });
-            //statuses.Add(new { Value = "06001H", Description = "Tòng Bạt", Code = "06001H" });
-
-            //statuses.Add(new { Value = "06001I", Description = "Cổ Đô", Code = "06001I" });
-            //statuses.Add(new { Value = "06001I", Description = "Kiều Mộc", Code = "06001I" });
-            //statuses.Add(new { Value = "06001I", Description = "Phong Vân", Code = "06001I" });
-            //statuses.Add(new { Value = "06001I", Description = "Phú Cường", Code = "06001I" });
-            //statuses.Add(new { Value = "06001I", Description = "Phú Đông", Code = "06001I" });
-            //statuses.Add(new { Value = "06001I", Description = "Phú Hồng", Code = "06001I" });
-
-            //statuses.Add(new { Value = "06001J", Description = "Minh Châu", Code = "06001J" });
-
-            //statuses.Add(new { Value = "06001K", Description = "Cam Thượng", Code = "06001K" });
-            //statuses.Add(new { Value = "06001K", Description = "Chu Minh", Code = "06001K" });
-            //statuses.Add(new { Value = "06001K", Description = "Đông Quang", Code = "06001K" });
-            //statuses.Add(new { Value = "06001K", Description = "Quảng Oai", Code = "06001K" });
-            //statuses.Add(new { Value = "06001K", Description = "Thuỵ An", Code = "06001K" });
-            //statuses.Add(new { Value = "06001K", Description = "Tiên Phong", Code = "06001K" });
-
-            //statuses.Add(new { Value = "06001L", Description = "Ba Trại", Code = "06001L" });
-            //statuses.Add(new { Value = "06001L", Description = "Suối Hai", Code = "06001L" });
-
-            //statuses.Add(new { Value = "06001M", Description = "Cộng Hòa", Code = "06001M" });
-            //statuses.Add(new { Value = "06001M", Description = "Đồng Thái", Code = "06001M" });
-            //statuses.Add(new { Value = "06001M", Description = "Phú Châu", Code = "06001M" });
-            //statuses.Add(new { Value = "06001M", Description = "Phú Sơn", Code = "06001M" });
-            //statuses.Add(new { Value = "06001M", Description = "Vật Lại", Code = "06001M" });
-
-            //statuses.Add(new { Value = "06001N", Description = "Thôn Bài", Code = "06001N" });
-            //statuses.Add(new { Value = "06001N", Description = "Yên Bài", Code = "06001N" });
+            //foreach (var item in listCommunes)
+            //{
+            //    statuses.Add(new
+            //    {
+            //        Value = item.TxnPointCode,
+            //        Description = item.TxnPointName,
+            //        Code = "1"
+            //    });
+            //}
             //return Json(statuses);
+
+            var statuses = new List<object>();
+            statuses.Add(new { Value = "-1", Description = "Tất cả", Code = "ALL" });
+
+            //statuses.Add(new { Value = "0", Description = "Chưa có dữ liệu", Code = "ALL" });
+
+            statuses.Add(new { Value = "06001G", Description = "Ba Vì", Code = "06001G" });
+            statuses.Add(new { Value = "06001G", Description = "Hợp Nhất", Code = "06001G" });
+            statuses.Add(new { Value = "06001G", Description = "Khánh Thượng", Code = "06001G" });
+
+            statuses.Add(new { Value = "06001H", Description = "Bất Bạt", Code = "06001H" });
+            statuses.Add(new { Value = "06001H", Description = "Cẩm Lĩnh", Code = "06001H" });
+            statuses.Add(new { Value = "06001H", Description = "Thuần Mỹ", Code = "06001H" });
+            statuses.Add(new { Value = "06001H", Description = "Tòng Bạt", Code = "06001H" });
+
+            statuses.Add(new { Value = "06001I", Description = "Cổ Đô", Code = "06001I" });
+            statuses.Add(new { Value = "06001I", Description = "Kiều Mộc", Code = "06001I" });
+            statuses.Add(new { Value = "06001I", Description = "Phong Vân", Code = "06001I" });
+            statuses.Add(new { Value = "06001I", Description = "Phú Cường", Code = "06001I" });
+            statuses.Add(new { Value = "06001I", Description = "Phú Đông", Code = "06001I" });
+            statuses.Add(new { Value = "06001I", Description = "Phú Hồng", Code = "06001I" });
+
+            statuses.Add(new { Value = "06001J", Description = "Minh Châu", Code = "06001J" });
+
+            statuses.Add(new { Value = "06001K", Description = "Cam Thượng", Code = "06001K" });
+            statuses.Add(new { Value = "06001K", Description = "Chu Minh", Code = "06001K" });
+            statuses.Add(new { Value = "06001K", Description = "Đông Quang", Code = "06001K" });
+            statuses.Add(new { Value = "06001K", Description = "Quảng Oai", Code = "06001K" });
+            statuses.Add(new { Value = "06001K", Description = "Thuỵ An", Code = "06001K" });
+            statuses.Add(new { Value = "06001K", Description = "Tiên Phong", Code = "06001K" });
+
+            statuses.Add(new { Value = "06001L", Description = "Ba Trại", Code = "06001L" });
+            statuses.Add(new { Value = "06001L", Description = "Suối Hai", Code = "06001L" });
+
+            statuses.Add(new { Value = "06001M", Description = "Cộng Hòa", Code = "06001M" });
+            statuses.Add(new { Value = "06001M", Description = "Đồng Thái", Code = "06001M" });
+            statuses.Add(new { Value = "06001M", Description = "Phú Châu", Code = "06001M" });
+            statuses.Add(new { Value = "06001M", Description = "Phú Sơn", Code = "06001M" });
+            statuses.Add(new { Value = "06001M", Description = "Vật Lại", Code = "06001M" });
+
+            statuses.Add(new { Value = "06001N", Description = "Thôn Bài", Code = "06001N" });
+            statuses.Add(new { Value = "06001N", Description = "Yên Bài", Code = "06001N" });
+            return Json(statuses);
         }
 
         [HttpGet]
