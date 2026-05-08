@@ -1,4 +1,6 @@
-﻿namespace VBSPOSS.Utils
+﻿using System.Globalization;
+
+namespace VBSPOSS.Utils
 {
     public class CustConverter
     {
@@ -68,6 +70,9 @@
             }
         }
 
-
+        public static decimal ParseDecimal(string value)
+        {
+            return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0m;
+        }
     }
 }
