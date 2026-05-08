@@ -1557,6 +1557,133 @@ namespace VBSPOSS.Controllers
         //    }
 
 
+        // đóng tạm 08/05
+        //    [HttpPost]
+        //    [ValidateAntiForgeryToken]
+        //    public async Task<IActionResult> SaveApprovalForm(
+        //[DataSourceRequest] DataSourceRequest request,
+        //InterestRateConfigMasterViewModel model,
+        //IFormFile fileUpload)
+        //    {
+        //        var logPrefix = $"SaveApprovalForm CASA - CircularRefNum: '{model?.CircularRefNum}', IdList: '{model?.IdList}'";
+        //        WriteLog(LogType.INFOR, logPrefix + " - Bắt đầu xử lý trình duyệt");
+
+        //        try
+        //        {
+        //            if (model == null || string.IsNullOrEmpty(model.IdList))
+        //            {
+        //                WriteLog(LogType.ERROR, logPrefix + " - Model null hoặc IdList rỗng");
+        //                ModelState.AddModelError("ERROR", "Dữ liệu không hợp lệ hoặc không có bản ghi để trình duyệt.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            // Kiểm tra file PDF bắt buộc
+        //            if (fileUpload == null || fileUpload.Length == 0)
+        //            {
+        //                WriteLog(LogType.ERROR, logPrefix + " - Không có file upload");
+        //                ModelState.AddModelError("ERROR", "Vui lòng chọn file tờ trình PDF.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            var extension = Path.GetExtension(fileUpload.FileName).ToLowerInvariant();
+        //            if (extension != ".pdf" || fileUpload.ContentType != "application/pdf")
+        //            {
+        //                WriteLog(LogType.ERROR, logPrefix + " - File không phải PDF");
+        //                ModelState.AddModelError("ERROR", "Chỉ chấp nhận file định dạng PDF.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            if (fileUpload.Length > 5 * 1024 * 1024)
+        //            {
+        //                ModelState.AddModelError("ERROR", "Dung lượng file tối đa 5MB.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            // Tạo DocumentId mới
+        //            long documentId = await _interestRateConfigureService.CreateNewDocumentId();
+        //            WriteLog(LogType.INFOR, logPrefix + $" - Tạo DocumentId mới: {documentId}");
+
+        //            // Lưu file vật lý
+        //            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "ToTrinh");
+        //            Directory.CreateDirectory(uploadPath);
+
+        //            var fileNameNew = $"{Guid.NewGuid()}.pdf";
+        //            var filePath = Path.Combine(uploadPath, fileNameNew);
+
+        //            await using (var stream = new FileStream(filePath, FileMode.Create))
+        //            {
+        //                await fileUpload.CopyToAsync(stream);
+        //            }
+        //            WriteLog(LogType.INFOR, logPrefix + $" - Lưu file vật lý thành công: {filePath}");
+
+        //            // Fallback DocumentNumber nếu CircularRefNum rỗng
+        //            var documentNumber = string.IsNullOrWhiteSpace(model.CircularRefNum)
+        //                ? $"CASA_TRINHDUYET_{documentId}"
+        //                : model.CircularRefNum.Trim();
+
+        //            // Tạo object AttachedFileInfo
+        //            var attachedFile = new AttachedFileInfo
+        //            {
+        //                DocumentId = documentId,
+        //                FileType = "application/pdf",
+        //                FileName = fileUpload.FileName,
+        //                PathFile = filePath,
+        //                FileExtension = ".pdf",
+        //                FileNameNew = fileNameNew,
+        //                DocumentNumber = documentNumber,
+        //                Status = 1,
+        //                CreatedBy = UserName ?? "System",
+        //                CreatedDate = DateTime.Now,
+        //                ModifiedBy = UserName ?? "System",
+        //                ModifiedDate = DateTime.Now
+        //            };
+
+        //            // Lưu file vào bảng AttachedFileInfo
+        //            var saveResult = await _interestRateConfigureService.SaveAttachedFiles(
+        //                0,
+        //                new List<AttachedFileInfo> { attachedFile },
+        //                UserName ?? "System");
+
+        //            if (saveResult == null || !saveResult.Any())
+        //            {
+        //                WriteLog(LogType.ERROR, logPrefix + " - SaveAttachedFiles thất bại (return null/empty)");
+        //                ModelState.AddModelError("ERROR", "Lưu file tờ trình vào hệ thống thất bại.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            WriteLog(LogType.INFOR, logPrefix + $" - Lưu file DB thành công, FileId: {saveResult.FirstOrDefault()}");
+
+        //            // Cập nhật trạng thái các bản ghi → Chờ duyệt (Value = 2)
+        //            var lstId = StringHelper.ConvertToLongList(model.IdList, ';');
+
+        //            var updateCount = await _interestRateConfigureService.UpdateInterestRateConfigMasterStatus(
+        //                UserName ?? "System",
+        //                lstId,
+        //                ConfigStatus.PROCESS.Value,  // ← Value = 2 → "Chờ duyệt"
+        //                documentId);
+
+        //            if (updateCount <= 0)
+        //            {
+        //                WriteLog(LogType.ERROR, logPrefix + $" - Cập nhật trạng thái thất bại, updateCount = {updateCount}");
+        //                ModelState.AddModelError("ERROR", "Cập nhật trạng thái 'Chờ duyệt' thất bại.");
+        //                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //            }
+
+        //            WriteLog(LogType.INFOR, logPrefix + $" - TRÌNH DUYỆT THÀNH CÔNG - DocumentId: {documentId}, Cập nhật {updateCount} bản ghi → Status = Chờ duyệt");
+
+        //            // Thành công hoàn toàn
+        //            return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            //WriteLog(LogType.ERROR, logPrefix + $" - EXCEPTION: {ex.Message} | Inner: {ex.InnerException?.Message ?? "null"}", ex);
+        //            ModelState.AddModelError("ERROR", "Có lỗi xảy ra trong quá trình trình duyệt: " + ex.Message);
+        //            return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+        //        }
+        //    }
+
+
+        // thay đổi phần lưu lại file tờ trình 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveApprovalForm(
@@ -1576,11 +1703,10 @@ namespace VBSPOSS.Controllers
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // Kiểm tra file PDF bắt buộc
                 if (fileUpload == null || fileUpload.Length == 0)
                 {
                     WriteLog(LogType.ERROR, logPrefix + " - Không có file upload");
-                    ModelState.AddModelError("ERROR", "Vui lòng chọn file tờ trình PDF.");
+                    ModelState.AddModelError("fileUpload", "Vui lòng chọn file tờ trình PDF.");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
@@ -1588,98 +1714,44 @@ namespace VBSPOSS.Controllers
                 if (extension != ".pdf" || fileUpload.ContentType != "application/pdf")
                 {
                     WriteLog(LogType.ERROR, logPrefix + " - File không phải PDF");
-                    ModelState.AddModelError("ERROR", "Chỉ chấp nhận file định dạng PDF.");
+                    ModelState.AddModelError("fileUpload", "Chỉ chấp nhận file định dạng PDF.");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
                 if (fileUpload.Length > 5 * 1024 * 1024)
                 {
-                    ModelState.AddModelError("ERROR", "Dung lượng file tối đa 5MB.");
+                    ModelState.AddModelError("fileUpload", "Dung lượng file tối đa 5MB.");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
 
-                // Tạo DocumentId mới
-                long documentId = await _interestRateConfigureService.CreateNewDocumentId();
-                WriteLog(LogType.INFOR, logPrefix + $" - Tạo DocumentId mới: {documentId}");
-
-                // Lưu file vật lý
-                var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "ToTrinh");
-                Directory.CreateDirectory(uploadPath);
-
-                var fileNameNew = $"{Guid.NewGuid()}.pdf";
-                var filePath = Path.Combine(uploadPath, fileNameNew);
-
-                await using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await fileUpload.CopyToAsync(stream);
-                }
-                WriteLog(LogType.INFOR, logPrefix + $" - Lưu file vật lý thành công: {filePath}");
-
-                // Fallback DocumentNumber nếu CircularRefNum rỗng
-                var documentNumber = string.IsNullOrWhiteSpace(model.CircularRefNum)
-                    ? $"CASA_TRINHDUYET_{documentId}"
-                    : model.CircularRefNum.Trim();
-
-                // Tạo object AttachedFileInfo
-                var attachedFile = new AttachedFileInfo
-                {
-                    DocumentId = documentId,
-                    FileType = "application/pdf",
-                    FileName = fileUpload.FileName,
-                    PathFile = filePath,
-                    FileExtension = ".pdf",
-                    FileNameNew = fileNameNew,
-                    DocumentNumber = documentNumber,
-                    Status = 1,
-                    CreatedBy = UserName ?? "System",
-                    CreatedDate = DateTime.Now,
-                    ModifiedBy = UserName ?? "System",
-                    ModifiedDate = DateTime.Now
-                };
-
-                // Lưu file vào bảng AttachedFileInfo
-                var saveResult = await _interestRateConfigureService.SaveAttachedFiles(
-                    0,
-                    new List<AttachedFileInfo> { attachedFile },
-                    UserName ?? "System");
-
-                if (saveResult == null || !saveResult.Any())
-                {
-                    WriteLog(LogType.ERROR, logPrefix + " - SaveAttachedFiles thất bại (return null/empty)");
-                    ModelState.AddModelError("ERROR", "Lưu file tờ trình vào hệ thống thất bại.");
-                    return Json(new[] { model }.ToDataSourceResult(request, ModelState));
-                }
-
-                WriteLog(LogType.INFOR, logPrefix + $" - Lưu file DB thành công, FileId: {saveResult.FirstOrDefault()}");
-
-                // Cập nhật trạng thái các bản ghi → Chờ duyệt (Value = 2)
-                var lstId = StringHelper.ConvertToLongList(model.IdList, ';');
-
-                var updateCount = await _interestRateConfigureService.UpdateInterestRateConfigMasterStatus(
+                // Gọi Service giống sếp
+                var saveFileStatus = await _interestRateConfigureService.SaveCasaRateAttachedFile(
+                    model.CircularRefNum,
+                    model.IdList,
                     UserName ?? "System",
-                    lstId,
-                    ConfigStatus.PROCESS.Value,  // ← Value = 2 → "Chờ duyệt"
-                    documentId);
+                    fileUpload);
 
-                if (updateCount <= 0)
+                if (saveFileStatus)
                 {
-                    WriteLog(LogType.ERROR, logPrefix + $" - Cập nhật trạng thái thất bại, updateCount = {updateCount}");
-                    ModelState.AddModelError("ERROR", "Cập nhật trạng thái 'Chờ duyệt' thất bại.");
+                    WriteLog(LogType.INFOR, logPrefix + " - TRÌNH DUYỆT THÀNH CÔNG");
                     return Json(new[] { model }.ToDataSourceResult(request, ModelState));
                 }
-
-                WriteLog(LogType.INFOR, logPrefix + $" - TRÌNH DUYỆT THÀNH CÔNG - DocumentId: {documentId}, Cập nhật {updateCount} bản ghi → Status = Chờ duyệt");
-
-                // Thành công hoàn toàn
-                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+                else
+                {
+                    WriteLog(LogType.ERROR, logPrefix + " - SaveCasaRateAttachedFile trả về false");
+                    ModelState.AddModelError("ERROR", "Lưu phê duyệt thất bại.");
+                    return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+                }
             }
             catch (Exception ex)
             {
-                //WriteLog(LogType.ERROR, logPrefix + $" - EXCEPTION: {ex.Message} | Inner: {ex.InnerException?.Message ?? "null"}", ex);
+               // WriteLog(LogType.ERROR, logPrefix + $" - EXCEPTION: {ex.Message}", ex);
                 ModelState.AddModelError("ERROR", "Có lỗi xảy ra trong quá trình trình duyệt: " + ex.Message);
                 return Json(new[] { model }.ToDataSourceResult(request, ModelState));
             }
         }
+
+
 
 
 

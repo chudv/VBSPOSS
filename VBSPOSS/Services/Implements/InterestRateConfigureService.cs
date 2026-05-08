@@ -4470,5 +4470,76 @@ namespace VBSPOSS.Services.Implements
         }
 
 
+        // thêm hàm gọi riêng trong service 
+        public async Task<bool> SaveCasaRateAttachedFile(string circularRefNum, string idList, string userName, IFormFile fileUpload)
+        {
+            try
+            {
+                var extension = Path.GetExtension(fileUpload.FileName).ToLowerInvariant();
+
+                var uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    Common.ToTrinh_UploadDir);   //
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                // Tên file 
+                var fileNameNew = $"ToTrinh_LS_CASA_{Guid.NewGuid()}.pdf";
+                var filePath = Path.Combine(uploadPath, fileNameNew);
+
+                await using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await fileUpload.CopyToAsync(stream);
+                }
+
+                // Lưu thông tin file vào DB
+                var saveFileStatus = await SaveAttachedFiles(0, new List<AttachedFileInfo>
+        {
+            new AttachedFileInfo
+            {
+                FileType = FileType.FileType_ConfigIntRate.Value.ToString(),
+                FileName = fileUpload.FileName,
+                PathFile = Common.ToTrinh_UploadDir,        // 
+                FileExtension = extension,
+                FileNameNew = fileNameNew,
+                DocumentNumber = circularRefNum,
+                Status = 1,
+                CreatedBy = userName,
+                CreatedDate = DateTime.Now,
+                ModifiedBy = userName,
+                ModifiedDate = DateTime.Now,
+            }
+        }, userName);
+
+                var lstId = StringHelper.ConvertToLongList(idList, ';');
+                var documentId = saveFileStatus != null && saveFileStatus.Any()
+                                 ? saveFileStatus.FirstOrDefault()
+                                 : 0;
+
+                var updateStatus = await UpdateInterestRateConfigMasterStatus(
+                    userName,
+                    lstId,
+                    ConfigStatus.PROCESS.Value,
+                    documentId);
+
+                if (saveFileStatus != null && saveFileStatus.Any() && updateStatus > 0)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving CASA rate attached file for CircularRefNum: {CircularRefNum}", circularRefNum);
+                return false;
+            }
+        }
+
+
     }
 }

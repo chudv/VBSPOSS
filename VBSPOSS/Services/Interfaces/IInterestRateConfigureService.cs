@@ -326,6 +326,7 @@ namespace VBSPOSS.Services.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<bool> SaveTideRateAttachedFile(string circularRefNum, string idList, string userName, IFormFile fileUpload);
+        Task<bool> SaveCasaRateAttachedFile(string circularRefNum, string idList, string userName, IFormFile fileUpload);
     }
 
 }
