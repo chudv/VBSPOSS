@@ -1036,6 +1036,8 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class EventBusinessCode
     {
+        public static ValueConstModel EventCode_None = new ValueConstModel { Value = 0, Code = "", Description = "Chọn yêu cầu nghiệp vụ" };
+
         /// <summary>
         /// Thêm mới Xã hoặc Thôn: EventCode_Locality_AddNew = new ValueConstModel { Value = 1, Code = "LOCALITY_ADDNEW", Description = "Thêm mới Thôn/Xã" };
         /// </summary>
@@ -1113,6 +1115,7 @@ namespace VBSPOSS.Constants
         {
             return new List<ValueConstModel>
             {
+                EventCode_None,
                 EventCode_Locality_AddNew,
                 EventCode_Locality_Change_Name,
                 EventCode_Locality_Change_Econ_Zone,
@@ -1124,6 +1127,7 @@ namespace VBSPOSS.Constants
         {
             return new List<ValueConstModel>
             {
+                EventCode_None,
                 EventCode_TransPoint_AddNew,
                 EventCode_TransPoint_Change_VisitDate,
                 EventCode_TransPoint_Change_Name,
