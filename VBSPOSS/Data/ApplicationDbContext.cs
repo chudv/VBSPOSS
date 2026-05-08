@@ -25,7 +25,8 @@ namespace VBSPOSS.Data
         public virtual DbSet<Permission> Permissions { get; set; }
         public virtual DbSet<RolePermission> RolePermissions { get; set; }
         public virtual DbSet<ListOfCommune> ListOfCommunes { get; set; }
-
+        public virtual DbSet<ListOfCommuneHist> ListOfCommuneHists { get; set; }
+        public virtual DbSet<ListOfCommuneWork> ListOfCommuneWorks { get; set; }
         public DbSet<TideTermWorking> TideTermWorkings { get; set; }
 
         public DbSet<InterestRatePosApply> InterestRatePosApplys { get; set; }
@@ -96,6 +97,12 @@ namespace VBSPOSS.Data
             
             modelBuilder.Entity<ListOfCommune>().ToTable("ListOfCommune");
             modelBuilder.Entity<ListOfCommune>().HasKey(x => new { x.ProvinceCode, x.DistrictCode, x.CommuneCode, x.SubCommuneCode });
+
+            modelBuilder.Entity<ListOfCommuneHist>().ToTable("ListOfCommuneHist");
+            modelBuilder.Entity<ListOfCommuneHist>().HasKey(x => new { x.EventCode, x.Id, x.DateSync, x.PosCode, x.ProvinceCode, x.DistrictCode, x.CommuneCode, x.RecordStatus , x.EffectDate });
+
+            modelBuilder.Entity<ListOfCommuneWork>().ToTable("ListOfCommuneWork");
+            modelBuilder.Entity<ListOfCommuneWork>().HasKey(x => new { x.EventCode, x.ParentId, x.PosCode, x.ProvinceCode, x.CommuneCode, x.EffectDate });
 
             modelBuilder.Entity<StaffView>().ToTable("vStaff");
             modelBuilder.Entity<StaffView>().HasKey(x => new { x.Id });

@@ -1,0 +1,663 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@using Kendo.Mvc
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
+@{
+    ViewData["Title"] = "Thêm mới/Thay đổi thông tin Danh mục địa phương";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="myPopup"></div>
+
+<style>
+    #gridMainCommuneWork div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridMainCommuneWork .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+   
+    #gridMainCommuneWork .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid-header .k-header > .k-link {
+        font-family: Tahoma !important;
+        font-weight: bold !important;
+        color: navy;
+    }
+
+    #Status_Find .k-input *, .k-input *::before, .k-input *::after, .k-picker *, .k-picker *::before, .k-picker *::after {
+        box-sizing: border-box;
+        padding-top: 3px;
+        padding-bottom: 0px;
+        height: 23px;
+    }
+
+     .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+    .k-grid .k-grid-header .k-header {
+        overflow: visible !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .k-column-title {
+        min-width: 0;
+        text-overflow: ellipsis;
+        white-space: normal;
+        flex-shrink: 1;
+        overflow: hidden;
+        text-wrap: auto;
+    }
+
+    .k-grid th, .k-grid td {
+        font-family: tahoma;
+        color: navy;
+    }
+
+    .k-grid * {
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    red {
+        color: red;
+    }
+
+    green {
+        color: green;
+    }
+
+    .style0 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style1 {
+        font-weight: bold;
+        color: blueviolet;
+    }
+
+    .style2 {
+        font-style: italic;
+    }
+
+    .style3 {
+    }
+
+    .style4 {
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .style5 {
+        text-decoration: underline;
+    }
+
+    .k-dropdown .k-dropdown-wrap {
+        height: 21px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-auth.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-approval.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-EditIDC.k-button {
+        background: url('../images/sua_doi.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-dropdown .k-dropdown-wrap {
+        height: 21px;
+    }
+</style>
+
+<script>
+    var mainWindow = $("#myPopup");
+</script>
+
+<script>
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadGridData() {
+        return {
+            pPosCode: $("#PosCode_Find").val(),
+            pEventCode: $("#EventCode_Find").val(),
+            pTxnPointCode: $("#TxnPointCode_Find").val(),
+            pTxnPointName: $("#TxnPointName_Find").val(),
+            pStatus: $("#Status_Find").val()
+        };
+    }
+
+    function refreshGridCommuneWork() {
+        var gridMainCommuneWork = $("#gridMainCommuneWork").data("kendoGrid");
+        if (gridMainCommuneWork != null) {
+            gridMainCommuneWork.dataSource.read();
+        }
+    }
+
+    function onSearchCommuneWork(e) {
+        refreshGridCommuneWork();
+    }
+
+    function onRowBoundCommuneWork(e) {
+        var rows = e.sender.tbody.children();
+        var isRed = true;
+        for (var j = 0; j < rows.length; j++) {
+            var row = $(rows[j]);
+            var dataItem = e.sender.dataItem(row);
+            var trangthaiRow = dataItem.get("Status");
+            if (trangthaiRow == "C" || trangthaiRow == null || trangthaiRow == 0)
+            {
+                row.css("background-color", "white");
+                row.find("td").css("color", "red");
+            }
+        }
+    }
+
+
+    var dataChangeCommuneWork = false;
+
+    $(document).on('click', '#btnCreateCommuneWork', function (e)
+    {
+        e.preventDefault();
+        var pPosCode = $("#PosCode_Find").val();
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        mainWindow.kendoWindow({
+            width: "1024px",
+            height: "650px",
+            title: "Thêm mới cấu hình thông tin người dùng IDC",
+            content: {
+                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                data: { pPosCode: pPosCode, pStaffId: "", pButtonType: "1" }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseCommuneWork,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show( { message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error"}, "error");
+            mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    });
+
+    function onCloseCommuneWork() {
+        if (dataChangeCommuneWork == true) {
+            refreshGridCommuneWork();
+            dataChangeCommuneWork = false;
+        }
+    }
+
+    function doCompleteWindow() {
+        mainWindow.data("kendoWindow").close();
+    }
+
+    function showEdit(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
+        if (dataItem.Status.toString() == "0") {
+            alert(sMessInfor + " đã được đánh dấu xóa nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "3") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "4") {
+            alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.FunctionType != "ADDNEW_USER") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+        else
+        {
+            var sFlagCall = $("#EventFlag_EditTemp").val();
+            mainWindow.kendoWindow({
+                width: "1024px",
+                height: "650px",
+                title: "Chỉnh sửa thông tin người dùng IDC",
+                content: {
+                    url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                    data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2", pButtonType: "" }
+                },
+                resizable: false,
+                visible: false,
+                modal: true,
+                close: onCloseCommuneWork,
+                actions: ["Refresh", "Close"]
+            });
+            mainWindow.data("kendoWindow").wrapper.css({ height: 650, width: 1024 });
+            mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa thông tin người dùng IDC");
+        }
+    }
+
+    function deleteItem(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
+        if (dataItem.Status.toString() == "0") {
+            alert(sMessInfor + " đã được đánh dấu xóa nên không thể xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "3") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "4") {
+            alert(sMessInfor + " đã được từ chối nên không thể xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.FunctionType != "ADDNEW_USER") {
+            alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
+        }
+
+        else {
+            var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin thành viên " + sMessInfor + " không?");
+            if (isConfirm == true) {
+                $.ajax({
+                    data: { pStaffId: dataItem.StaffId,pEffectDate: formatDDMMYYYY(dataItem.EffectDate),pExpireDate: formatDDMMYYYY(dataItem.ExpireDate),pStatus: 1},
+                    type: "POST",
+                    url: "../PosRepresentative/DeleteMarkPosRepresentative",
+                    success: function (resultVal) {
+                        if (resultVal == "1") {
+                            alert("Bạn đã xóa thành công thông tin thành viên " + sMessInfor + "!");
+                            refreshGridIDC();
+                        }
+                        else alert("Đánh dấu xóa thông tin thành viên " + sMessInfor + " thất bại!");
+                    },
+                    error: function () {
+                        alert(" dấu xóa thông tin thành viên " + sMessInfor + " có lỗi!");
+                    }
+                });
+
+            } else {
+                alert("Thao tác bị hủy bỏ!");
+            }
+        }
+    }
+
+    function showDetailUserIDC(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var grid = $("#gridMainIDC").data("kendoGrid");
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "500px",
+            title: "Xem chi tiết thông tin người dùng IDC",
+            content: {
+                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "14", pId: dataItem.Id }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCommuneWork,
+            actions: ["Refresh","Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    }
+
+    function showEditIDC(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sMessInfor = "[" + dataItem.FullName + "]";
+        var grid = $("#gridMainIDC").data("kendoGrid");
+        // Kiểm tra trạng thái trước khi trình duyệt
+        var deletedStatuses = [0, 1, 2, 4, 5];
+        if (deletedStatuses.includes(dataItem.Status)) {
+            if (dataItem.Status == 0) {
+                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
+            }
+            else if (dataItem.Status == 1 || dataItem.Status == 5) {
+                alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 2) {
+                alert("Người dùng " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+            }
+            else if (dataItem.Status == 4) {
+                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+            }
+            return;
+        }
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "700px",
+            title: "Yêu cầu chỉnh sửa thông tin người dùng IDC",
+            content: {
+                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
+                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10", pId: dataItem.Id }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseCommuneWork,
+            actions: ["Refresh","Close"],
+            error: function (e) {
+                notification.show({
+                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
+                    type: "error"
+                }, "error");
+                mainWindow.data("kendoWindow").close();
+            }
+        });
+        mainWindow.data("kendoWindow").center().open();
+    }
+</script>
+
+@Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+@Html.Hidden("UserNameView", TempData["UserName"])
+
+<hr style='margin-top: 0.1em; margin-bottom: 0.1em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+        <div class="col-md-12">
+            <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top: 7px;padding-right:0px;padding-left:5px;font-family:Tahoma;font-size:12px;">Đơn vị</label>
+            @(Html.Kendo().ComboBox().Name("PosCode_Find")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 210px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+            <label class="lbcontrol" style="color: navy;text-align:right;width:140px;padding-top: 7px;padding-right:5px;">Yêu cầu nghiệp vụ</label>
+            @(Html.Kendo().ComboBox().Name("EventCode_Find")
+                .Filter(FilterType.Contains)
+                .DataTextField("Description")
+                .DataValueField("Code")
+                .BindTo((List<ValueConstModel>)ViewBag.EventBusinessCodes)
+                .Placeholder("Chọn nghiệp vụ yêu cầu")
+                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                .Filter("contains")
+                .SelectedIndex(0))
+            <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
+            @(Html.Kendo().TextBox().Name("TxnPointCode_Find")
+                .Placeholder("Mã điểm GD")
+                .HtmlAttributes(new { style = "width: 90px;padding-left: 3px;padding-right: 2px;color: green;" }))
+            @(Html.Kendo().TextBox().Name("TxnPointName_Find")
+                .Placeholder("Tên điểm giao dịch")
+                .HtmlAttributes(new { style = "width: 140px;padding-left: 3px;padding-right: 2px;color: green;" }))
+            <label class="lbcontrol" style="width: 85px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
+            @(Html.Kendo().DropDownList().Name("Status_Find")
+                .DataTextField("Text")
+                .DataValueField("Value")
+                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Phê duyệt", Value = "3" }, new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" } })
+                .HtmlAttributes(new { style = "color: green;width: 130px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
+                .SelectedIndex(0)
+                )
+
+            &nbsp;&nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnSearchCommuneWork")
+                .Events(ev => ev.Click("onSearchCommuneWork"))
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm yêu cầu về điểm giao dịch" })
+                .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                .Content(" Tìm kiếm "))
+        </div>
+    </div>
+
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+            @(Html.Kendo().Grid<VBSPOSS.ViewModels.ListOfCommuneWorksViewModel>()
+                .Name("gridMainCommuneWork")
+                .Events(e => e.DataBound("onRowBoundCommuneWork"))
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+                        command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
+                        {
+                            @class = "btn-view-edit",
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                            title = "Chỉnh sửa thông tin điểm giao dịch"
+                        });
+                        command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                            title = "Đóng (đánh dấu xóa) điểm giao dịch",
+                            @class = "btn-delete"
+                        });
+                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDC").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Xem chi tiết iddeemr giao dịch",
+                            @class = "btn-view"
+                        });
+                    }).Width(100).Title("Sửa/Xóa/Xem").HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Command(command =>
+                    {
+                        command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Yêu cầu thay đổi điểm giao dịch",
+                            @class = "btn-EditIDC"
+                        });
+                    }).Width(60).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EventName).Title("Yêu cầu nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EventCode).Hidden();
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(140).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosCode).Hidden();
+                    columns.Bound(c => c.ProvinceCode).Hidden();
+                    columns.Bound(c => c.ProvinceName).Hidden();
+                    columns.Bound(c => c.DistrictCode).Hidden();
+                    columns.Bound(c => c.DistrictName).Hidden();
+                    columns.Bound(c => c.CommuneCode).Hidden();
+                    columns.Bound(c => c.SubCommuneCode).Hidden();
+                    columns.Bound(c => c.SubCommuneName).Title("Thôn/ bản/ làng").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.VisitDate).Hidden();
+                    columns.Bound(c => c.BusinessDateText).Title("Ngày hiệu lực thay đổi thông tin").Width(60).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.BusinessDate).Hidden();
+                    columns.Bound(c => c.DistrictFlag30A).Hidden();
+                    columns.Bound(c => c.AreaEconomic).Hidden();
+                    columns.Bound(c => c.CommuneFlag135).Hidden();
+                    columns.Bound(c => c.IsNewCountryside).Hidden();
+                    columns.Bound(c => c.DiffAreaCode).Title("Vùng khó khăn").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Bound(c => c.TimeBegin).Hidden();
+                    columns.Bound(c => c.TimeEnd).Hidden();
+                    columns.Bound(c => c.TimeBeginNum).Hidden();
+                    columns.Bound(c => c.TimeEndNum).Hidden();
+                    columns.Bound(c => c.Hours).Hidden();
+                    columns.Bound(c => c.Minutes).Hidden();
+                    columns.Bound(c => c.Longitude).Hidden();
+                    columns.Bound(c => c.Latitude).Hidden();
+
+                    columns.Bound(c => c.IsInCommune).Hidden();
+                    columns.Bound(c => c.IsInPos).Hidden();
+                    columns.Bound(c => c.IsInterWard).Hidden();
+                    columns.Bound(c => c.InterWardName).Hidden();
+                    columns.Bound(c => c.EffectDate).Hidden();
+                    columns.Bound(c => c.EffectDateText).Title("Ngày hiệu lực").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+@*                     columns.Bound(c => c.TxnLocation).Title("Địa điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Bound(c => c.AddressDetail).Hidden();
+                    columns.Bound(c => c.AddressCode).Hidden();
+                    columns.Bound(c => c.AddressFull).Hidden();
+                    columns.Bound(c => c.PhoneSupport).Hidden();
+                    columns.Bound(c => c.PhoneSupport01).Hidden();
+                    columns.Bound(c => c.PhoneSupport02).Hidden(); *@
+                    columns.Bound(c => c.Status).Hidden();
+                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(100).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.RecordStatus).Hidden();
+@*                     columns.Bound(c => c.Remark).Title("Ghi chú").HtmlAttributes(new { style = "text-align: left;" }); *@
+
+                    columns.Bound(c => c.CreatedBy).Hidden();
+                    columns.Bound(c => c.CreatedDate).Hidden();
+                    columns.Bound(c => c.ModifiedBy).Hidden();
+                    columns.Bound(c => c.ModifiedDate).Hidden();
+                    columns.Bound(c => c.ApproverBy).Hidden();
+                    columns.Bound(c => c.ApprovalDate).Hidden();
+
+                    columns.Bound(c => c.BusinessDate).Hidden();
+                    columns.Bound(c => c.DocumentId).Hidden();
+                    columns.Bound(c => c.StatusUpdateCore).Hidden();
+                    columns.Bound(c => c.CallApiTxnStatus).Hidden();
+                    columns.Bound(c => c.CallApiResRecords).Hidden();
+                    columns.Bound(c => c.CallApiResponseCode).Hidden();
+                    columns.Bound(c => c.CallApiResponseMsg).Hidden();
+                })
+                .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreateCommuneWork").HtmlAttributes(new { id = "btnCreateCommuneWork", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
+                    toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
+                })
+                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi Diem GD.xlsx").AllPages(true))
+                .Editable(editable => { editable.Mode(GridEditMode.InLine); })
+                .Sortable()
+                .Scrollable()
+                .Pageable(pageable => pageable.Refresh(true).ButtonCount(5))
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Batch(false)
+                .ServerOperation(false)
+                .Model(model => model.Id(p => p.TxnPointCode))
+                .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
+                .Read(read => read.Action("LoadGridData_CommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
+                .PageSize(100)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .AutoBind(true)
+                )
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+<script>
+     function onSaveGridIDC(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handlerIDC(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
+        }
+    }
+
+    $(document).ready(function () {
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH YÊU CẦU NGHIỆP VỤ VỀ ĐIỂM GIAO DỊCH</label>");
+    });
+</script>

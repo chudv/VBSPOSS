@@ -1,5 +1,4 @@
-﻿// ListOfCommunesController.cs
-using AutoMapper;
+﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +9,7 @@ using VBSPOSS.Constants;
 using VBSPOSS.Controllers;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
+using VBSPOSS.Extensions;
 using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Implements.Helpers;
@@ -24,7 +24,7 @@ namespace VBSPOSS.Controllers
 {
     public class ListOfCommunesController : BaseController
     {
-        private readonly IListOfCommunesService _service;
+        private readonly IListOfCommunesService _serviceCommune;
         private readonly ILogger<ListOfCommunesController> _logger;
         private readonly IListOfValueService _serviceLOV;
         private readonly IApiInternalService _internalServiceAPI;
@@ -41,166 +41,84 @@ namespace VBSPOSS.Controllers
         /// <param name="service">The service<see cref="IListOfCommunesService"/>.</param>
         /// <param name="internalServiceAPI">The internalServiceAPI<see cref="IApiInternalService"/>.</param>
         public ListOfCommunesController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
-                IMapper mapper, IListOfCommunesService service, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
+                IMapper mapper, IListOfCommunesService serviceCommune, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
 
         {
             _serviceLOV = serviceLOV;
-            _service = service;
+            _serviceCommune = serviceCommune;
             _internalServiceAPI = internalServiceAPI;
             _mapper = mapper;
         }
-        public IActionResult Index()
+        public IActionResult IndexListOfCommune()
         {
-            return View();
+            string sessionUser = UserName;
+            string posCode = UserPosCode;
+            // Hoặc cách khác qua RouteData
+            var controllerFromRoute = RouteData.Values["controller"]?.ToString();
+            var actionFromRoute = RouteData.Values["action"]?.ToString();
+            SetPermitData(actionFromRoute, controllerFromRoute);
+
+            RolePermissionModel userPermission = UserPermission;
+
+            string role = UserRole.ToString();
+
+            TempData["Role"] = role;
+            TempData.Put("UserPermission", userPermission);
+            TempData["UserName"] = UserName;
+            TempData["UserPosCode"] = UserPosCode;
+
+            TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
+            TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
+            TempData["EventFlag_Delete"] = EventFlag.EventFlag_Delete.Value.ToString();
+            TempData["EventFlag_MarkDeleted"] = EventFlag.EventFlag_MarkDeleted.Value.ToString();
+            TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
+            TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
+            TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
+
+            ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfTransPoint();
+
+            return View("IndexListOfCommuneWork");
         }
 
-        // ───────────────────────────────────────────────────────────
-        // GET - JSON CHO COMBOBOX / LOV
-        // ───────────────────────────────────────────────────────────
+
 
         /// <summary>
-        /// Trả về JSON cho ComboBox chọn Xã/Phường/Thị trấn.
-        /// pFlagTextShow:
-        ///   1 = Tên
-        ///   2 = [Mã - Tên]
-        ///   3 = Mã => Tên huyện - Tên xã
-        ///   4 = Mã => Tên tỉnh - Tên huyện - Tên xã
-        ///   5 = Tên huyện - Tên xã
-        ///   6 = Tên tỉnh - Tên huyện - Tên xã
+        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
         /// </summary>
-        [HttpGet]
-        public JsonResult GetListCommunes(string pProvinceCode = "", string pDistrictCode = "", string pCommuneCode = "", string pPosCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
-        {
-            try
-            {
-                string sTitleChoice = string.IsNullOrEmpty(pTitleChoice)
-                    ? "---Chọn Xã/Phường/Thị trấn---"
-                    : pTitleChoice;
-
-                ArrayList data = new ArrayList();
-
-                var listCommunes = _service.GetLovCommuneList(
-                    pProvinceCode, pDistrictCode, pCommuneCode, pPosCode, "");
-
-                if (!string.IsNullOrEmpty(sTitleChoice) && string.IsNullOrEmpty(pCommuneCode))
-                    data.Add(new { id = "", value = sTitleChoice });
-
-                foreach (var item in listCommunes)
-                {
-                    bool statusMatch = pStatus == "0"
-                        || (pStatus == "1" && item.Status.ToString() == StatusValue.StatusOpenPOS);
-
-                    if (!statusMatch) continue;
-
-                    string displayValue = pFlagTextShow switch
-                    {
-                        "2" => $"{item.CommuneCode} - {item.CommuneName}",
-                        "3" => $"{item.CommuneCode} => {item.DistrictName} - {item.CommuneName}",
-                        "4" => $"{item.CommuneCode} => {item.ProvinceName} - {item.DistrictName} - {item.CommuneName}",
-                        "5" => $"{item.DistrictName} - {item.CommuneName}",
-                        "6" => $"{item.ProvinceName} - {item.DistrictName} - {item.CommuneName}",
-                        _ => item.CommuneName?.Trim()
-                    };
-
-                    data.Add(new { id = item.CommuneCode, value = displayValue });
-                }
-
-                return Json(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi GetListCommunes");
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi tải danh sách xã/phường." });
-            }
-        }
-
-        // ───────────────────────────────────────────────────────────
-        // CREATE
-        // ───────────────────────────────────────────────────────────
-
-        [HttpPost]
-        public JsonResult CreateCommune([FromBody] ListOfCommunesViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-                string currentUser = User.Identity?.Name ?? "System";
-                bool result = _service.CreateCommune(model, currentUser);
-                return Json(new
-                {
-                    success = result,
-                    message = result ? "Thêm mới thành công." : "Thêm mới thất bại."
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi CreateCommune");
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi thêm mới." });
-            }
-        }
-
-        // ───────────────────────────────────────────────────────────
-        // UPDATE
-        // ───────────────────────────────────────────────────────────
-
-        [HttpPost]
-        public JsonResult UpdateCommune([FromBody] ListOfCommunesViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
-
-                string currentUser = User.Identity?.Name ?? "System";
-                bool result = _service.UpdateCommune(model, currentUser);
-                return Json(new
-                {
-                    success = result,
-                    message = result ? "Cập nhật thành công." : "Cập nhật thất bại."
-                });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi UpdateCommune");
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật." });
-            }
-        }
-
-        // ───────────────────────────────────────────────────────────
-        // DELETE
-        // ───────────────────────────────────────────────────────────
-
-        [HttpPost]
-        public JsonResult DeleteCommune(string pCommuneCode, string pPosCode)
-        {
-            try
-            {
-                bool result = _service.DeleteCommune(pCommuneCode, pPosCode);
-                return Json(new
-                {
-                    success = result,
-                    message = result ? "Xóa thành công." : "Xóa thất bại."
-                });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi DeleteCommune: {Code}", pCommuneCode);
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi xóa." });
-            }
-        }
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Mã đơn vị</param>
+        /// <param name="pUserId">Mã UserId</param>
+        /// <param name="pFunctionType">Loại chức năng chọn</param>
+        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
+        /// <param name="pStatus">Trạng thái</param>
+        /// <returns>Danh sách người đại diện các đơn vị</returns>
+        //public ActionResult LoadGridData_CommunedWorks([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus)
+        //{
+        //    try
+        //    {
+        //        string sTxnPointCode = "", sTxnPointName = "";
+        //        if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+        //            pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+        //        if (string.IsNullOrEmpty(pEventCode))
+        //            pEventCode = "";
+        //        if (string.IsNullOrEmpty(pTxnPointCode))
+        //            pTxnPointCode = "";
+        //        if (string.IsNullOrEmpty(pTxnPointName))
+        //            pTxnPointName = "";
+        //        if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
+        //        {
+        //            if (!string.IsNullOrEmpty(pPosCode))
+        //                pPosCode = pPosCode.Substring(0, 4);
+        //        }
+        //        var listTransPointWorks = _serviceCommune.GetListOfCommunesSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
+        //        return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger?.LogError(ex, $"LoadGridData_TransPointWorks('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+        //        ModelState.AddModelError("ERROR", $"{ex.Message}");
+        //        return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+        //    }
+        //}
     }
 }
