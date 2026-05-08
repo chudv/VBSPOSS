@@ -25,7 +25,7 @@ namespace VBSPOSS.Mappings
 
             CreateMap<ListOfCommune, ListOfCommuneViewModel>();
             CreateMap<ListOfCommuneViewModel, ListOfCommune>();
-            
+
             CreateMap<UserIDCMaster, UserIDCMasterViewModel>();
             CreateMap<UserIDCMasterViewModel, UserIDCMaster>();
 
@@ -40,6 +40,15 @@ namespace VBSPOSS.Mappings
             CreateMap<ListOfTransPoint, ListOfTransPointViewModel>();
             CreateMap<ListOfTransPointViewModel, ListOfTransPoint>();
 
+            CreateMap<ListOfTransPoint, ListOfTransPointWorkViewModel>();
+            CreateMap<ListOfTransPointWorkViewModel, ListOfTransPoint>();
+
+            CreateMap<ListOfTransPointWork, ListOfTransPointWorkViewModel>();
+            CreateMap<ListOfTransPointWorkViewModel, ListOfTransPointWork>();
+
+            CreateMap<ListOfTransPointHist, ListOfTransPointHistViewModel>();
+            CreateMap<ListOfTransPointHistViewModel, ListOfTransPointHist>();
+
             CreateMap<PosRepresentative, PosRepresentativeViewModel>()
                .ForMember(dest => dest.MainPosName, opt => opt.MapFrom(src => src.MainPosName))
                .ForMember(dest => dest.PosName, opt => opt.MapFrom(src => src.PosName))
@@ -53,6 +62,7 @@ namespace VBSPOSS.Mappings
                .ForMember(dest => dest.StatusText, opt => opt.MapFrom(src => src.Status == 1 ? "Hoạt động" : "Đóng"))
                .ForMember(dest => dest.RepresentativeTypeText, opt => opt.MapFrom(src => src.RepresentativeType == "1" ? "Chính" : "Phụ"))
                .ForMember(dest => dest.OrderNo, opt => opt.Ignore());
+            
             CreateMap<PosRepresentativeViewModel, PosRepresentative>()
                 .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id > 0))
                 .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
@@ -76,7 +86,7 @@ namespace VBSPOSS.Mappings
             CreateMap<PosRepresentativeViewModel, StaffVbspInforViewModel>();
 
             CreateMap<UserIDCApproval, UserIDCApprovalViewModel>();
-           
+
             CreateMap<AddCasaProductViewModel, InterestRateConfigMaster>()
                .ForMember(dest => dest.ModifiedDate, opt => opt.Ignore())
                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
@@ -89,23 +99,16 @@ namespace VBSPOSS.Mappings
                .ForMember(dest => dest.ExpiryDate, opt => opt.MapFrom(src => src.ExpiredDate));
 
             CreateMap<InterestRateConfigMasterView, InterestRateConfigMasterModel>()
-     .ForMember(dest => dest.ProductList, opt => opt.MapFrom(src => src.ProductList ?? ""))  // Đã có, nhưng confirm tên src.ProductList đúng
-     .ForMember(dest => dest.IsSelected, opt => opt.Ignore());  // Ignore vì default false ở code
+                 .ForMember(dest => dest.ProductList, opt => opt.MapFrom(src => src.ProductList ?? ""))  // Đã có, nhưng confirm tên src.ProductList đúng
+                 .ForMember(dest => dest.IsSelected, opt => opt.Ignore());  // Ignore vì default false ở code
             // Reverse map nếu cần (từ Model sang View entity, ví dụ cho Save/Update)
             CreateMap<InterestRateConfigMasterModel, InterestRateConfigMasterView>();
 
-
             CreateMap<InterestRateConfigMasterView, InterestRateConfigMasterViewModel>();
 
-
-
             CreateMap<ProductParameter, ProductParameterComparisonViewModel>()
-    .ForMember(dest => dest.ProductGroupDisplay, opt => opt.MapFrom(src => src.ProductGroupDisplay))
-    .ForMember(dest => dest.CurrentApplyPos, opt => opt.MapFrom(src => src.ApplyPosDisplay))
- 
-    ;
-
-
+                    .ForMember(dest => dest.ProductGroupDisplay, opt => opt.MapFrom(src => src.ProductGroupDisplay))
+                    .ForMember(dest => dest.CurrentApplyPos, opt => opt.MapFrom(src => src.ApplyPosDisplay));
 
             CreateMap<AddCasaProductViewModel, InterestRateConfigMasterViewModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -128,10 +131,10 @@ namespace VBSPOSS.Mappings
                 .ForMember(dest => dest.DocumentId, opt => opt.MapFrom(src => src.DocumentId))
                 .ForMember(dest => dest.IdList, opt => opt.MapFrom(src => src.IdList))  // Nếu có
                 .ForMember(dest => dest.ApplyPosList, opt => opt.MapFrom(src => src.ApplyPosList));  // Nếu có
-             
 
 
 
-        }            
+
+        }
     }
 }

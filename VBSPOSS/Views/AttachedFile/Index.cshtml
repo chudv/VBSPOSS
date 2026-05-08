@@ -163,7 +163,7 @@
     var mainWindow = $("#myPopup");
     function paramLoadListBranchFind() {
         return {
-            pFlagCondi: "2",
+            pFlagCondi: "5",
             pStatus: "O",
             pShortName: "1",
             pTitleChoice: "",
@@ -182,7 +182,8 @@
         var params = {
             pPosCode: $("#PosCode_Find").val() || "",
             pFileType: fileType ,                         //
-            pTranDate_Find: $("#TranDate_Find").val(),
+            pFromTranDateFind: $("#FromTranDate_Find").val(),
+            pToTranDateFind: $("#ToTranDate_Find").val(),
             pFileName: $("#FileName_Find").val()
         };
 
@@ -340,19 +341,22 @@
     function onFileTypeChange() {
         var combo = $("#FileType_Find").data("kendoComboBox");
         var type = combo.value();
-        var datePicker = $("#TranDate_Find").data("kendoDatePicker");
+        var fromDatePicker = $("#FromTranDate_Find").data("kendoDatePicker");
+        var toDatePicker = $("#ToTranDate_Find").data("kendoDatePicker");
         var posCode = $("#PosCode_Find").data("kendoComboBox");
         var grid = $("#gridMainAttachedFile").data("kendoGrid");
 
         if (!grid) return;
 
         if (type == "6") {
-            datePicker.enable(true);
+            fromDatePicker.enable(true);
+            toDatePicker.enable(true);
             posCode.enable(true);
             buildGridType1(grid);
         }
         else {
-            datePicker.enable(false);
+            fromDatePicker.enable(false);
+            toDatePicker.enable(false);
             posCode.enable(false);
             buildGridType2(grid);
         }
@@ -478,7 +482,7 @@
                 .Events(e => e.Change("onFileTypeChange"))
                 .HtmlAttributes(new
                 {
-                    style = "background-color:white;width: 350px;padding-left:3px;padding-right: 2px;!important;"
+                    style = "background-color:white;width: 290px;padding-left:3px;padding-right: 2px;!important;"
                 })
                 .AutoBind(true)
                 .SelectedIndex(2)  //
@@ -500,13 +504,24 @@
                 .AutoBind(true)
                 .SelectedIndex(0))
 
-
             &nbsp;&nbsp;
 
-            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Ngày giao dịch</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Từ ngày</label>
             &nbsp;&nbsp;
             @(Html.Kendo().DatePicker()
-                .Name("TranDate_Find")
+                .Name("FromTranDate_Find")
+                .Format("dd/MM/yyyy")
+                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Ngày cần tìm kiếm" })
+                .Value(DateTime.Today.AddDays(-1))
+                @* .Value(new DateTime(2026, 4, 7)) *@
+                )
+
+            &nbsp;&nbsp;
+
+            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Đến ngày</label>
+            &nbsp;&nbsp;
+            @(Html.Kendo().DatePicker()
+                .Name("ToTranDate_Find")
                 .Format("dd/MM/yyyy")
                 .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Ngày cần tìm kiếm" })
                 .Value(DateTime.Today.AddMonths(-0))
@@ -525,7 +540,7 @@
             <label class="lbcontrol" style="color: navy;text-align:left;width:60px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Tên file</label>
             @(Html.Kendo().TextBox()
                 .Name("FileName_Find")
-                .HtmlAttributes(new { placeholder = "Tên file chứa ký tự", style = "background-color:white;width: 100px;width:360px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
+                .HtmlAttributes(new { placeholder = "Tên file chứa ký tự", style = "background-color:white;width: 100px;width:260px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
                 .Value("")
                 )
         </div>

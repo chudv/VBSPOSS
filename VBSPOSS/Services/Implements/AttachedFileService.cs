@@ -23,7 +23,8 @@ namespace VBSPOSS.Services.Implements
             _config = config;
             _logger = logger;
         }
-        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType, string pTranDate_Find, string pFileName)
+        public async Task<List<AttachedFileInfoView>> GetttachedFileSync(string pPosCode, string pFileType,
+            string pFromTranDateFind, string pToTranDateFind, string pFileName)
         {
             try
             {
@@ -100,29 +101,64 @@ namespace VBSPOSS.Services.Implements
                             DownloadUrl = "/AttachedFile/DownloadFile?fileName=" + fi.Name
                         });
                     }
-                    if(pPosCode == "000100")
+                    DateTime fromDate = DateTime.ParseExact(
+                    pFromTranDateFind,
+                    "dd/MM/yyyy",
+                    System.Globalization.CultureInfo.InvariantCulture);
+
+                    DateTime toDate = DateTime.ParseExact(
+                        pToTranDateFind,
+                        "dd/MM/yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture);
+
+
+                    if (pPosCode == "000100")
                     {
                         var filteredAll = list
                             .Where(x =>
-                            x.TransactionDate == pTranDate_Find
-                            && (string.IsNullOrEmpty(pFileName)
-                                || (!string.IsNullOrEmpty(x.FileName) &&
-                                    x.FileName.ToUpper().Contains(pFileName.ToUpper())))
-                        )
-                        .ToList();
-                        return filteredAll;
-                    }    
+                            {
+                                DateTime tranDate;
 
-                    string provinceCode = pPosCode.Substring(2, 2); // "05"
-                    DateTime tranDate;
+                                return DateTime.TryParseExact(
+                                           x.TransactionDate,
+                                           "dd/MM/yyyy",
+                                           System.Globalization.CultureInfo.InvariantCulture,
+                                           System.Globalization.DateTimeStyles.None,
+                                           out tranDate)
+
+                                       && tranDate >= fromDate
+                                       && tranDate <= toDate
+
+                                       && (string.IsNullOrEmpty(pFileName)
+                                           || (!string.IsNullOrEmpty(x.FileName) &&
+                                               x.FileName.ToUpper().Contains(pFileName.ToUpper())));
+                            })
+                            .ToList();
+                        return filteredAll;
+                    }
+                    //var posNew = _dbContext.ListOfPoss.FirstOrDefaultAsync(x => x.Code == pPosCode);
+                    //string provinceCode = posNew.Result.Code.Substring(2, 2); // "05"
                     var filtered = list
                     .Where(x =>
-                        x.ProvinceCode == provinceCode
-                        && x.TransactionDate == pTranDate_Find
-                        && (string.IsNullOrEmpty(pFileName)
-                            || (!string.IsNullOrEmpty(x.FileName) &&
-                                x.FileName.ToUpper().Contains(pFileName.ToUpper())))
-                    )
+                    {
+                        DateTime tranDate;
+
+                        return x.PosCode == pPosCode
+
+                            && DateTime.TryParseExact(
+                                x.TransactionDate,
+                                "dd/MM/yyyy",
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                System.Globalization.DateTimeStyles.None,
+                                out tranDate)
+
+                            && tranDate >= fromDate
+                            && tranDate <= toDate
+
+                            && (string.IsNullOrEmpty(pFileName)
+                                || (!string.IsNullOrEmpty(x.FileName) &&
+                                    x.FileName.ToUpper().Contains(pFileName.ToUpper())));
+                    })
                     .ToList();
                     return filtered;
                 }

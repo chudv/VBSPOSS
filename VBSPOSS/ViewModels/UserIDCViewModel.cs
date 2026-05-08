@@ -24,6 +24,7 @@ namespace VBSPOSS.ViewModels
         public string MobileNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string GroupName { get; set; }
+        public string GroupNameText { get; set; }       //Thêm
         public string EntityList { get; set; }
         public string AuthType { get; set; }
         public string UserType { get; set; }

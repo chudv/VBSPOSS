@@ -70,6 +70,7 @@ namespace VBSPOSS.Controllers
                         statuses = new List<object>
                 {
                     new { Value = "-1", Description = "Tất cả", Code = "ALL" },
+                    new { Value = "5", Description = "File đính kèm bản cập nhật phần mềm Offline (Execution File)", Code = "OFFLINE_EXE" },
                     new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" }
                 };
             }
@@ -82,7 +83,7 @@ namespace VBSPOSS.Controllers
        [DataSourceRequest] DataSourceRequest request,
        string pPosCode,
        string pFileType,
-       string pTranDate_Find, string pFileName)
+       string pFromTranDateFind, string pToTranDateFind, string pFileName)
         {
            
             try
@@ -92,7 +93,7 @@ namespace VBSPOSS.Controllers
                 //    return Json(new List<AttachedFileInfoView>().ToDataSourceResult(request));
                 //}
 
-                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pTranDate_Find, pFileName);
+                var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pFromTranDateFind, pToTranDateFind, pFileName);
 
                 return Json(list.ToDataSourceResult(request));
             }

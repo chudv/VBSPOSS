@@ -191,7 +191,8 @@
         return {
             pPosCode: $("#PosCode_Find").val(),
             pEventCode: $("#EventCode_Find").val(),
-            pTxnPoint: $("#TxnPoint_Find").val(),
+            pTxnPointCode: $("#TxnPointCode_Find").val(),
+            pTxnPointName: $("#TxnPointName_Find").val(),
             pStatus: $("#Status_Find").val()
         };
     }
@@ -442,7 +443,7 @@
                 .DataValueField("id")
                 .ClearButton(false)
                 .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-                .HtmlAttributes(new { style = "width: 240px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .HtmlAttributes(new { style = "width: 210px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                 .Suggest(true)
                 .AutoBind(true)
                 .SelectedIndex(0))
@@ -453,13 +454,16 @@
                 .DataValueField("Code")
                 .BindTo((List<ValueConstModel>)ViewBag.EventBusinessCodes)
                 .Placeholder("Chọn nghiệp vụ yêu cầu")
-                .HtmlAttributes(new { style = "width: 330px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
-            @(Html.Kendo().TextBox().Name("TxnPoint_Find")
-                .Placeholder("Tên/mã điểm giao dịch")
-                .HtmlAttributes(new { style = "width: 160px;padding-left: 3px;padding-right: 2px;color: green;" }))
+            <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
+            @(Html.Kendo().TextBox().Name("TxnPointCode_Find")
+                .Placeholder("Mã điểm GD")
+                .HtmlAttributes(new { style = "width: 90px;padding-left: 3px;padding-right: 2px;color: green;" }))
+            @(Html.Kendo().TextBox().Name("TxnPointName_Find")
+                .Placeholder("Tên điểm giao dịch")
+                .HtmlAttributes(new { style = "width: 140px;padding-left: 3px;padding-right: 2px;color: green;" }))
             <label class="lbcontrol" style="width: 85px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("Status_Find")
                 .DataTextField("Text")
@@ -497,7 +501,7 @@
                         command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                            title = "Xóa điểm giao dịch",
+                            title = "Đóng (đánh dấu xóa) điểm giao dịch",
                             @class = "btn-delete"
                         });
                         command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDC").HtmlAttributes(new
@@ -521,15 +525,15 @@
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.EventName).Title("Yêu cầu nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.EventCode).Hidden();
-                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(150).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(140).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosCode).Hidden();
                     columns.Bound(c => c.ProvinceCode).Hidden();
                     columns.Bound(c => c.ProvinceName).Hidden();
                     columns.Bound(c => c.DistrictCode).Hidden();
                     columns.Bound(c => c.DistrictName).Hidden();
                     columns.Bound(c => c.CommuneCode).Hidden();
-                    columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(120).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDate).Hidden();
@@ -552,7 +556,6 @@
                     columns.Bound(c => c.EffectiveDateText).Title("Ngày hiệu lực").Width(80).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TxnLocation).Title("Địa điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: center;" });
 
-
                     columns.Bound(c => c.AddressDetail).Hidden();
                     columns.Bound(c => c.AddressCode).Hidden();
                     columns.Bound(c => c.AddressFull).Hidden();
@@ -560,7 +563,7 @@
                     columns.Bound(c => c.PhoneSupport01).Hidden();
                     columns.Bound(c => c.PhoneSupport02).Hidden();
                     columns.Bound(c => c.Status).Hidden();
-                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(100).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.TxnStatus).Hidden();
                     columns.Bound(c => c.Remark).Title("Ghi chú").HtmlAttributes(new { style = "text-align: left;" });
 
@@ -578,7 +581,6 @@
                     columns.Bound(c => c.CallApiResRecords).Hidden();
                     columns.Bound(c => c.CallApiResponseCode).Hidden();
                     columns.Bound(c => c.CallApiResponseMsg).Hidden();
-               
                 })
                 .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
@@ -597,11 +599,11 @@
                 .ServerOperation(false)
                 .Model(model => model.Id(p => p.TxnPointCode))
                 .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                .Read(read => read.Action("LoadGridData_UserIDCManagement", "UserManagementIDC").Data("paramLoadGridData"))
+                .Read(read => read.Action("LoadGridData_TransPointWorks", "ListOfTransPoint").Data("paramLoadGridData"))
                 .PageSize(100)
                 )
                 .Resizable(resize => resize.Columns(true))
-                .AutoBind(false)
+                .AutoBind(true)
                 )
         </div>
     </div>

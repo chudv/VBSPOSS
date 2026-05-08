@@ -1179,7 +1179,7 @@ namespace VBSPOSS.Services.Implements
                 var request = new CasaIntRateRequestViewModel
                 {
                     PosCode = posCode,
-                    EffectiveDate = referenceDate.ToString("yyyyMMdd"),
+                    EffectiveDate = referenceDate.ToString(FormatParameters.FORMAT_DATE_INT),
                     UserId = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') Code From ListOfValue Where Code='UserIdCallAPIIDC' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}"),//                    ConstValueAPI.UserId_Call_ApiIDC,
                     DebitCreditFlag = "C",
                     Currency = "VND"
@@ -1237,11 +1237,13 @@ namespace VBSPOSS.Services.Implements
                             RateProductAccountSubTypeCode = (data.SubType ?? "").Trim(),
                             RateProductCurrencyCode = data.Currency ?? "VND",
                             RateProductDebitCreditFlag = data.DebitCreditFlag ?? "C",
-                            RateProductEffectiveDate = ParseDate(data.EffectiveDate) ?? referenceDate,
-                            RateProductInterestRate = ParseDecimal(data.InterestRate),
-                            RateProductNewInterestRate = ParseDecimal(data.InterestRate),
-                            RateProductPenalRate = ParseDecimal(data.PenalRate),
-                            RateProductExpiredDate = ParseExpiryDate(data.PosRateExpiryDate),
+                            //RateProductEffectiveDate = ParseDate(data.EffectiveDate) ?? referenceDate,
+                            RateProductEffectiveDate = CustConverter.StringToDate(data.EffectiveDate, FormatParameters.FORMAT_DATE_TIME_LONG_UPD),
+                            RateProductInterestRate = CustConverter.ParseDecimal(data.InterestRate),
+                            RateProductNewInterestRate = CustConverter.ParseDecimal(data.InterestRate),
+                            RateProductPenalRate = CustConverter.ParseDecimal(data.PenalRate),
+                            RateProductExpiredDate = CustConverter.StringToDate(data.PosRateExpiryDate, FormatParameters.FORMAT_DATE_INT),
+                            //RateProductExpiredDate = ParseExpiryDate(data.PosRateExpiryDate),
                             RateProductPosCode = data.PosCode ?? posCode,
                             RateProductAmoutSlab = 0m,
                             MinInterestRateSpread = minInterestRateSpread,
@@ -1263,26 +1265,7 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        // Helper để code sạch hơn
-        private DateTime? ParseDate(string dateStr)
-        {
-            if (string.IsNullOrEmpty(dateStr)) return null;
-            return DateTime.TryParseExact(dateStr, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                ? dt : (DateTime?)null;
-        }
-
-        private DateTime? ParseExpiryDate(string dateStr)
-        {
-            if (string.IsNullOrEmpty(dateStr)) return null;
-            return DateTime.TryParseExact(dateStr, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                ? dt : (DateTime?)null;
-        }
-
-        private decimal ParseDecimal(string value)
-        {
-            return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0m;
-        }
-
+ 
 
         //add 
         // Thêm method: GetCasaTermsAsync 

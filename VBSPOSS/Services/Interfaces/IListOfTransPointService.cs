@@ -7,14 +7,14 @@ namespace VBSPOSS.Services.Interfaces
 {
     public interface IListOfTransPointService
     {
-        
         /// <summary>
         /// Hàm trả về Danh sách điểm giao dịch theo những điều kiện truyền vào, lấy từ nguồn bảng ListOfTransPoint
         /// </summary>
         /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
-        /// <param name="pPosCode">Mã Pos (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc). Nếu lấy cả chi nhánh thì truyền vào 4 ký tự đầu POS Chi nhánh</param>
         /// <param name="pCommuneCode">Mã xã (Không bắt buộc)</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pTxnPointName">Tên điểm gioa dịch</param>
         /// <param name="pVisitDateBegin">Ngày giao dịch cố định bắt đầu (Không bắt buộc)</param>
         /// <param name="pVisitDateEnd">Ngày giao dịch cố định kết thúc (Không bắt buộc)</param>
         /// <param name="pTxnStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
@@ -60,6 +60,20 @@ namespace VBSPOSS.Services.Interfaces
         List<ListOfTransPointWorkViewModel> GetListOfTransPointWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
                                             int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pEffectiveDateBegin, string pEffectiveDateEnd,
                                             int pStatus, string pTxnLocation);
+
+        /// <summary>
+        /// Hàm lấy danh sách điểm giao dịch để cho Lựa chọn thay đổi theo yêu cầu nghiệp vụ
+        /// </summary>
+        /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc). Nếu lấy cả chi nhánh thì truyền vào 4 ký tự đầu của POS Chi nhánh</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pTxnPointName">Tên điểm gioa dịch</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào -1</param>
+        /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
+        /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
+        List<ListOfTransPointWorkViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
+                                int pStatus, string pTxnLocation, string pEventCode);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch (Bảng ListOfTransPointWork)

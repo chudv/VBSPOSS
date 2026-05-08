@@ -803,6 +803,8 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class FunctionTypeFlag
     {
+        public static ValueConstModel FunctionTypeFlag_None = new ValueConstModel { Value = 0, Code = "", Description = "--Chọn nghiệp vụ về người dùng iDC" };
+
         public static ValueConstModel FunctionTypeFlag_ADDNEW_USER = new ValueConstModel { Value = 1, Code = "ADDNEW_USER", Description = "Thêm mới người dùng" };
 
         public static ValueConstModel FunctionTypeFlag_ResetPassword = new ValueConstModel { Value = 2, Code = "RESET_PASSWORD", Description = "Thay đổi mật khẩu người dùng" };
@@ -864,6 +866,7 @@ namespace VBSPOSS.Constants
         {
            return new List<ValueConstModel>
            {
+               FunctionTypeFlag_None,
                FunctionTypeFlag_ADDNEW_USER,
                FunctionTypeFlag_ResetPassword,
                FunctionTypeFlag_ENABLE_USER,
@@ -1036,6 +1039,8 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class EventBusinessCode
     {
+        public static ValueConstModel EventCode_None = new ValueConstModel { Value = 0, Code = "", Description = "Chọn yêu cầu nghiệp vụ" };
+
         /// <summary>
         /// Thêm mới Xã hoặc Thôn: EventCode_Locality_AddNew = new ValueConstModel { Value = 1, Code = "LOCALITY_ADDNEW", Description = "Thêm mới Thôn/Xã" };
         /// </summary>
@@ -1113,6 +1118,7 @@ namespace VBSPOSS.Constants
         {
             return new List<ValueConstModel>
             {
+                EventCode_None,
                 EventCode_Locality_AddNew,
                 EventCode_Locality_Change_Name,
                 EventCode_Locality_Change_Econ_Zone,
@@ -1124,6 +1130,7 @@ namespace VBSPOSS.Constants
         {
             return new List<ValueConstModel>
             {
+                EventCode_None,
                 EventCode_TransPoint_AddNew,
                 EventCode_TransPoint_Change_VisitDate,
                 EventCode_TransPoint_Change_Name,

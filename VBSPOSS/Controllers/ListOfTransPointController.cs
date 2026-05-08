@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
+using VBSPOSS.Services.Implements;
 using VBSPOSS.Services.Interfaces;
+using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Controllers
 {
@@ -61,6 +65,47 @@ namespace VBSPOSS.Controllers
             ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfTransPoint();
 
             return View("IndexListOfTransPointWork");
+        }
+
+
+
+        /// <summary>
+        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Mã đơn vị</param>
+        /// <param name="pUserId">Mã UserId</param>
+        /// <param name="pFunctionType">Loại chức năng chọn</param>
+        /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
+        /// <param name="pStatus">Trạng thái</param>
+        /// <returns>Danh sách người đại diện các đơn vị</returns>
+        public ActionResult LoadGridData_TransPointWorks([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus)
+        {
+            try
+            {
+                string sTxnPointCode = "", sTxnPointName = "";
+                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+                if (string.IsNullOrEmpty(pEventCode))
+                    pEventCode = "";
+                if (string.IsNullOrEmpty(pTxnPointCode))
+                    pTxnPointCode = "";
+                if (string.IsNullOrEmpty(pTxnPointName))
+                    pTxnPointName = "";
+                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
+                {
+                    if (!string.IsNullOrEmpty(pPosCode))
+                        pPosCode = pPosCode.Substring(0, 4);
+                }
+                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
+                return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_TransPointWorks('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+            }
         }
 
 
