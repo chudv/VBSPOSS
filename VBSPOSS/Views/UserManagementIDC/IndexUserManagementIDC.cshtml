@@ -124,6 +124,15 @@
         border: none;
     }
 
+
+    .k-column-title {
+        min-width: 0;
+        text-overflow: ellipsis;
+        white-space: normal;
+        flex-shrink: 1;
+        overflow: hidden;
+        text-wrap: auto;
+    }
 </style>
 <script>
     var mainWindow = $("#myPopup");
@@ -457,7 +466,7 @@
 
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
-<hr style='margin-top: 0.2em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+<hr style='margin-top: 0.1em; margin-bottom: 0.1em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
     <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
@@ -548,19 +557,20 @@
                             title = "Yêu cầu chỉnh sửa người dùng",
                             @class = "btn-EditIDC"
                         });
-                    }).Width(90).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(80).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
 
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.PosName).Title("Đơn vị").HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(90).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.FullName).Title("Họ tên").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.DateOfBirth).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.MobileNumber).Title("Số điện thoại").Width(110).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.GroupName).Title("Nhóm quyền").Width(150).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.ExpiryDate).Title("Ngày hết HL").Format("{0:dd/MM/yyyy}").Width(95).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.DateOfBirth).Title("Ngày sinh").Format("{0:dd/MM/yyyy}").Width(85).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.MobileNumber).Title("Số điện thoại").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").Width(110).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.GroupName).Hidden();
+                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(85).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.ExpiryDate).Title("Ngày hết hiệu lực").Format("{0:dd/MM/yyyy}").Width(85).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(130).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.Id).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
                     columns.Bound(c => c.StaffId).Hidden(); ;
@@ -594,7 +604,7 @@
                     columns.Bound(c => c.RoleToTransferCashValue).Hidden(); *@
 
                 })
-                .HtmlAttributes(new { style = "height: 600px;color: navy; border: 1px solid #ddd;" })
+                .HtmlAttributes(new { style = "height: 660px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
                 {
                     toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreate").HtmlAttributes(new { id = "btnCreate", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
@@ -656,6 +666,6 @@
     }
 
     $(document).ready(function () {
-        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC</label>");
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC</label>");
     });
 </script>

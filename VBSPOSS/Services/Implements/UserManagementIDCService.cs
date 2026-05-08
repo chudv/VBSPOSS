@@ -1953,6 +1953,7 @@ namespace VBSPOSS.Services.Implements
                 if (listUserIDCManagementTemp != null && listUserIDCManagementTemp.Count != 0)
                 {
                     int iCountTemp = 0;
+                    var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
                     foreach (var item in listUserIDCManagementTemp)
                     {
                         iCountTemp++;
@@ -1975,10 +1976,12 @@ namespace VBSPOSS.Services.Implements
                             { FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Code, FunctionTypeFlag.FunctionTypeFlag_APPROVAL.Description },
                             { FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code, FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Description },
                         };
-
-                        objItem.FunctionTypeName = pFunctionTypeMap.ContainsKey(objItem.FunctionType)
-                            ? pFunctionTypeMap[objItem.FunctionType]
-                            : "";
+                        objItem.GroupNameText = item.GroupName;
+                        objItem.FunctionTypeName = pFunctionTypeMap.ContainsKey(objItem.FunctionType) ? pFunctionTypeMap[objItem.FunctionType] : "";
+                        if (listRoleUsers != null && listRoleUsers.Count != 0)
+                        {
+                            objItem.GroupNameText = $"{item.GroupName} - {listRoleUsers.Where(w => w.Code == item.GroupName).Select(s => s.ShortName).FirstOrDefault()}";
+                        }
                         listUserIDCManagement.Add(objItem);
                     }
                 }

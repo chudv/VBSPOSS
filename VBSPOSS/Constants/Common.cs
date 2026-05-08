@@ -803,6 +803,8 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class FunctionTypeFlag
     {
+        public static ValueConstModel FunctionTypeFlag_None = new ValueConstModel { Value = 0, Code = "", Description = "--Chọn nghiệp vụ về người dùng iDC" };
+
         public static ValueConstModel FunctionTypeFlag_ADDNEW_USER = new ValueConstModel { Value = 1, Code = "ADDNEW_USER", Description = "Thêm mới người dùng" };
 
         public static ValueConstModel FunctionTypeFlag_ResetPassword = new ValueConstModel { Value = 2, Code = "RESET_PASSWORD", Description = "Thay đổi mật khẩu người dùng" };
@@ -864,6 +866,7 @@ namespace VBSPOSS.Constants
         {
            return new List<ValueConstModel>
            {
+               FunctionTypeFlag_None,
                FunctionTypeFlag_ADDNEW_USER,
                FunctionTypeFlag_ResetPassword,
                FunctionTypeFlag_ENABLE_USER,
