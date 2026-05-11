@@ -496,18 +496,18 @@
                         {
                             @class = "btn-view-edit",
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                            title = "Chỉnh sửa thông tin điểm giao dịch"
+                            title = "Chỉnh sửa thông tin địa phương"
                         });
                         command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                            title = "Đóng (đánh dấu xóa) điểm giao dịch",
+                            title = "Đóng (đánh dấu xóa) địa phương",
                             @class = "btn-delete"
                         });
                         command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDC").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Xem chi tiết iddeemr giao dịch",
+                            title = "Xem chi tiết thông tin địa phương",
                             @class = "btn-view"
                         });
                     }).Width(100).Title("Sửa/Xóa/Xem").HtmlAttributes(new { style = "text-align: center;" });
@@ -517,7 +517,7 @@
                         command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Yêu cầu thay đổi điểm giao dịch",
+                            title = "Yêu cầu thay đổi thông tin địa phương",
                             @class = "btn-EditIDC"
                         });
                     }).Width(60).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
