@@ -64,6 +64,17 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
 
+
+        public virtual DbSet<ScriptExecutionQueue> ScriptExecutionQueues { get; set; }
+
+        public virtual DbSet<ScriptExecutionLog> ScriptExecutionLogs { get; set; }
+
+        public virtual DbSet<ScriptExecutionParameter> ScriptExecutionParameters { get; set; }
+
+        public virtual DbSet<ScriptExecutionSchedule> ScriptExecutionSchedules { get; set; }
+
+        public virtual DbSet<ScriptExecutionAudit> ScriptExecutionAudits { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -246,6 +257,297 @@ namespace VBSPOSS.Data
             modelBuilder.Entity<ProductParameterWithDefaultView>()
             .HasNoKey()           // 
              .ToView("vw_ProductParameterWithDefault");
+
+
+            modelBuilder.Entity<ScriptExecutionQueue>(entity =>
+            {
+                entity.ToTable("ScriptExecutionQueue");
+
+                entity.HasKey(x => new { x.Id });
+
+                entity.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.ModuleCode)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)")
+                    .IsRequired();
+
+                entity.Property(x => x.BusinessId);
+
+                entity.Property(x => x.ScriptName)
+                    .HasMaxLength(500)
+                    .HasColumnType("nvarchar(500)")
+                    .IsRequired();
+
+                entity.Property(x => x.DbType)
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)")
+                    .IsRequired();
+
+                entity.Property(x => x.ExecuteType)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.ExecuteMode)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.ScriptContent)
+                    .HasColumnType("nvarchar(max)")
+                    .IsRequired();
+
+                entity.Property(x => x.RollbackScript)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.EffectiveDate)
+                    .HasColumnType("date")
+                    .IsRequired();
+
+                entity.Property(x => x.ScheduleTime)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ExecuteTime)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.Status)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.RetryCount)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.IsAutoExecuted)
+                    .HasDefaultValue(false)
+                    .IsRequired();
+
+                entity.Property(x => x.PriorityLevel)
+                    .HasDefaultValue(1)
+                    .IsRequired();
+
+                entity.Property(x => x.OracleSessionId)
+                    .HasMaxLength(100)
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(x => x.ErrorMessage)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.CreatedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)")
+                    .IsRequired();
+
+                entity.Property(x => x.CreatedDate)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ModifiedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.ModifiedDate)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ApprovedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.ApprovedDate)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ExecutedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.ExecutedDate)
+                    .HasColumnType("datetime");
+
+                // Index
+                entity.HasIndex(x => x.Status);
+
+                entity.HasIndex(x => x.EffectiveDate);
+
+                entity.HasIndex(x => new
+                {
+                    x.ExecuteType,
+                    x.Status
+                });
+
+                entity.HasIndex(x => x.ScheduleTime);
+
+                entity.HasIndex(x => x.ModuleCode);
+            });
+
+
+            modelBuilder.Entity<ScriptExecutionLog>(entity =>
+            {
+                entity.ToTable("ScriptExecutionLog");
+
+                entity.HasKey(x => new { x.Id });
+
+                entity.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.QueueId)
+                    .IsRequired();
+
+                entity.Property(x => x.StartTime)
+                    .HasColumnType("datetime")
+                    .IsRequired();
+
+                entity.Property(x => x.EndTime)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ExecutionStatus)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.OracleExecutionTimeMs);
+
+                entity.Property(x => x.AffectedRows)
+                    .HasDefaultValue(0);
+
+                entity.Property(x => x.OracleMessage)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.ExecutionLogContent)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.ErrorCode)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.ErrorMessage)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.CreatedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedDate)
+                    .HasColumnType("datetime");
+
+                entity.HasIndex(x => x.QueueId);
+
+                entity.HasIndex(x => x.ExecutionStatus);
+            });
+
+
+            modelBuilder.Entity<ScriptExecutionParameter>(entity =>
+            {
+                entity.ToTable("ScriptExecutionParameter");
+
+                entity.HasKey(x => new { x.Id });
+
+                entity.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.QueueId)
+                    .IsRequired();
+
+                entity.Property(x => x.ParamKey)
+                    .HasMaxLength(100)
+                    .HasColumnType("varchar(100)")
+                    .IsRequired();
+
+                entity.Property(x => x.ParamValue)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.OracleDataType)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedDate)
+                    .HasColumnType("datetime");
+
+                entity.HasIndex(x => x.QueueId);
+            });
+
+
+            modelBuilder.Entity<ScriptExecutionSchedule>(entity =>
+            {
+                entity.ToTable("ScriptExecutionSchedule");
+
+                entity.HasKey(x => new { x.Id });
+
+                entity.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.QueueId)
+                    .IsRequired();
+
+                entity.Property(x => x.CronExpression)
+                    .HasMaxLength(100)
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(x => x.NextRunTime)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.LastRunTime)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.IsActive)
+                    .HasDefaultValue(true)
+                    .IsRequired();
+
+                entity.Property(x => x.CreatedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedDate)
+                    .HasColumnType("datetime");
+
+                entity.Property(x => x.ModifiedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.ModifiedDate)
+                    .HasColumnType("datetime");
+
+                entity.HasIndex(x => x.QueueId);
+
+                entity.HasIndex(x => x.NextRunTime);
+            });
+
+
+            modelBuilder.Entity<ScriptExecutionAudit>(entity =>
+            {
+                entity.ToTable("ScriptExecutionAudit");
+
+                entity.HasKey(x => new { x.Id });
+
+                entity.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.QueueId)
+                    .IsRequired();
+
+                entity.Property(x => x.ActionType)
+                    .HasDefaultValue(0)
+                    .IsRequired();
+
+                entity.Property(x => x.ActionContent)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.ClientIp)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedBy)
+                    .HasMaxLength(50)
+                    .HasColumnType("varchar(50)");
+
+                entity.Property(x => x.CreatedDate)
+                    .HasColumnType("datetime");
+
+                entity.HasIndex(x => x.QueueId);
+
+                entity.HasIndex(x => x.ActionType);
+            });
         }
     }
 }

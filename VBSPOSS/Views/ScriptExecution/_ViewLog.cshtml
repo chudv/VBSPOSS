@@ -1,0 +1,38 @@
+﻿@model List<VBSPOSS.Data.OSS.Models.ScriptExecutionLog>
+
+@(Html.Kendo().Grid<VBSPOSS.Data.OSS.Models.ScriptExecutionLog>()
+    .Name("gridScriptLog")
+
+    .Columns(columns =>
+    {
+        columns.Bound(x => x.StartTime)
+            .Title("Start Time")
+            .Format("{0:dd/MM/yyyy HH:mm:ss}")
+            .Width(180);
+
+        columns.Bound(x => x.EndTime)
+            .Title("End Time")
+            .Format("{0:dd/MM/yyyy HH:mm:ss}")
+            .Width(180);
+
+        columns.Bound(x => x.ExecutionStatus)
+            .Title("Status")
+            .Width(120);
+
+        columns.Bound(x => x.ErrorCode)
+            .Title("Error Code")
+            .Width(120);
+
+        columns.Bound(x => x.ErrorMessage)
+            .Title("Error Message");
+    })
+
+    .Scrollable()
+
+    .Sortable()
+
+    .Resizable(resize =>
+        resize.Columns(true))
+
+    .BindTo(Model)
+)
