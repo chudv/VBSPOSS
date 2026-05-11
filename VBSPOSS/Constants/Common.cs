@@ -109,6 +109,11 @@ namespace VBSPOSS.Constants
     public class StatusBusinessFlow
     {
         /// <summary>
+        /// Trạng thái rỗng: Status_None = new ValueConstModel { Value = -1, Code = "", Description = "---Chọn trạng thái---" };
+        /// </summary>
+        public static ValueConstModel Status_None = new ValueConstModel { Value = -1, Code = "", Description = "---Chọn trạng thái---" };
+
+        /// <summary>
         /// Trạng thái đóng: Status_Closed = new ValueConstModel { Value = 0, Code = "Closed", Description = "Đóng" };
         /// </summary>
         public static ValueConstModel Status_Closed = new ValueConstModel { Value = 0, Code = "Closed", Description = "Đóng" };
@@ -166,6 +171,27 @@ namespace VBSPOSS.Constants
                 _ => null
             };
         }
+
+        /// <summary>
+        /// Danh sách trạng thái để chọn hiển thị đối với bản ghi nghiệp vụ Người dùng Intellect iDC
+        /// </summary>
+        /// <returns></returns>
+        public static List<ValueConstModel> GetListStatusOfUserIDC()
+        {
+            return new List<ValueConstModel>
+           {
+                Status_None,
+                Status_Closed,
+                Status_Created,
+                Status_Modified,
+                Status_Submitted,
+                Status_Branch_Approved,
+                Status_Branch_Rejected,
+                Status_HeadOffice_Approved,
+                Status_HeadOffice_Rejected
+           };
+        }
+
     }
 
     /// <summary>
@@ -803,7 +829,7 @@ namespace VBSPOSS.Constants
     /// </summary>
     public class FunctionTypeFlag
     {
-        public static ValueConstModel FunctionTypeFlag_None = new ValueConstModel { Value = 0, Code = "", Description = "--Chọn nghiệp vụ về người dùng iDC" };
+        public static ValueConstModel FunctionTypeFlag_None = new ValueConstModel { Value = 0, Code = "", Description = "---Chọn yêu cầu người dùng iDC---" };
 
         public static ValueConstModel FunctionTypeFlag_ADDNEW_USER = new ValueConstModel { Value = 1, Code = "ADDNEW_USER", Description = "Thêm mới người dùng" };
 
@@ -842,8 +868,23 @@ namespace VBSPOSS.Constants
                 5 => FunctionTypeFlag_MODIFY_USER,
                 6 => FunctionTypeFlag_CHANGE_POS,
                 7 => FunctionTypeFlag_CHANGE_ROLE,
-                11 => FunctionTypeFlag_DELETE_USER,
-
+                11 => FunctionTypeFlag_REJECT_BRANCH,
+                12 => FunctionTypeFlag_DELETE_USER,
+                13 => FunctionTypeFlag_REJECT_MAIN,
+                _ => null
+            };
+        }
+        public static ValueConstModel GetDescriptionByCode(string pCode)
+        {
+            return pCode switch
+            {
+                "ADDNEW_USER" => FunctionTypeFlag_ADDNEW_USER,
+                "RESET_PASSWORD" => FunctionTypeFlag_ResetPassword,
+                "ENABLE_USER" => FunctionTypeFlag_ENABLE_USER,
+                "DISABLE_USER" => FunctionTypeFlag_DISABLE_USER,
+                "MODIFY_USER" => FunctionTypeFlag_MODIFY_USER,
+                "CHANGE_POS" => FunctionTypeFlag_CHANGE_POS,
+                "CHANGE_ROLE" => FunctionTypeFlag_CHANGE_ROLE,
                 _ => null
             };
         }
@@ -857,8 +898,7 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_DISABLE_USER,
                 FunctionTypeFlag_MODIFY_USER,
                 FunctionTypeFlag_CHANGE_POS,
-                FunctionTypeFlag_CHANGE_ROLE,
-                FunctionTypeFlag_DELETE_USER
+                FunctionTypeFlag_CHANGE_ROLE
             };
         }
 
@@ -878,9 +918,9 @@ namespace VBSPOSS.Constants
            };
         }
 
-        public static ValueConstModel GetByCode(string code)
+        public static ValueConstModel GetByCode(string pCode)
         {
-            return GetAll().FirstOrDefault(x => x.Code == code);
+            return GetAll().FirstOrDefault(x => x.Code == pCode);
         }
     }
 
