@@ -152,7 +152,7 @@ builder.Services.AddScoped<IApiInternalService, ApiInternalService>();
 
 builder.Services.AddScoped<INotiService, NotiService>();
 builder.Services.AddScoped<IPosRepresentativeService, PosRepresentativeService>();
-builder.Services.AddScoped<IListOfCommunesService, ListOfCommunesService>();
+builder.Services.AddScoped<IListOfCommuneService, ListOfCommuneService>();
 builder.Services.AddScoped<IUserManagementIDCService, UserManagementIDCService>();
 builder.Services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
 builder.Services.AddControllers().AddControllersAsServices();

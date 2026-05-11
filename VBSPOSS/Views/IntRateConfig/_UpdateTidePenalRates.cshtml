@@ -291,7 +291,6 @@
         };
     }
 
-
     function paramDonViQL() {
         return {
             pFlagCondi: "5",
@@ -304,7 +303,7 @@
         };
     }
 
-     function paramProductLoadUpdMultiSelect() {
+    function paramProductLoadUpdMultiSelect() {
         return {
             pFlagCallList: 1,
             pProductGroupCode: "TIDE",
@@ -344,10 +343,6 @@
             e.preventDefault();
             return false;
         }
-
-
-
-
         var selectedPosCodes = [];
         $('#ListPosCode :selected').each(function (i, selected) {
             selectedPosCodes[i] = $(selected).val();

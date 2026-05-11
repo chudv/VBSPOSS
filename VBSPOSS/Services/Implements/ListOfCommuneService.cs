@@ -16,7 +16,7 @@ using VBSPOSS.Data.OSS.Models;
 
 namespace VBSPOSS.Services.Implements
 {
-    public class ListOfCommunesService : IListOfCommunesService
+    public class ListOfCommuneService : IListOfCommuneService
     {
         /// <summary>
         /// Defines the _dbContext.
@@ -29,22 +29,22 @@ namespace VBSPOSS.Services.Implements
         private readonly IMapper _mapper;
 
         private readonly IListOfValueService _serviceLOV;
-        private readonly ILogger<ListOfCommunesService> _logger;
+        private readonly ILogger<ListOfCommuneService> _logger;
         private readonly IApiInternalService _internalServiceAPI;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListOfCommunesService"/> class.
+        /// Initializes a new instance of the <see cref="ListOfCommuneService"/> class.
         /// </summary>
         /// <param name="dbContext">The dbContext<see cref="ApplicationDbContext"/>.</param>
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
         /// <param name="serviceLOV">The serviceLOV<see cref="IListOfValueService"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger{ListOfCommunesService}"/>.</param>
         /// <param name="internalServiceAPI">The internalServiceAPI<see cref="IApiInternalService"/>.</param>
-        public ListOfCommunesService(
+        public ListOfCommuneService(
             ApplicationDbContext dbContext,
             IMapper mapper,
             IListOfValueService serviceLOV,
-            ILogger<ListOfCommunesService> logger,
+            ILogger<ListOfCommuneService> logger,
             IApiInternalService internalServiceAPI)
         {
             _dbContext = dbContext;
