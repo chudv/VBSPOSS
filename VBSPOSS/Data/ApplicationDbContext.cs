@@ -75,6 +75,10 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<ScriptExecutionAudit> ScriptExecutionAudits { get; set; }
 
+        public virtual DbSet<TransferDataPosMaster> TransferDataPosMasters { get; set; }
+
+        public virtual DbSet<TransferDataPosDetail> TransferDataPosDetails { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -138,6 +142,12 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<UserOfflineSendOTTHist>().ToTable("UserOfflineSendOTTHist");
             //modelBuilder.Entity<UserOfflineSendOTTHist>().HasKey(x => new { x.Id });
+
+            modelBuilder.Entity<TransferDataPosMaster>().ToTable("TransferDataPosMaster");
+            modelBuilder.Entity<TransferDataPosMaster>().HasKey(x => new { x.Id });
+
+            modelBuilder.Entity<TransferDataPosDetail>().ToTable("TransferDataPosDetail");
+            modelBuilder.Entity<TransferDataPosDetail>().HasKey(x => new { x.Id });
 
             //add Index
             modelBuilder.Entity<InterestRateConfigMasterView>(eb =>
