@@ -8,6 +8,9 @@ namespace VBSPOSS.Models
         [Column("Id")]
         public long Id { get; set; }
 
+        [Column("MainPos")]
+        public string MainPos { get; set; }
+
         [Column("FromPosCode")]
         public string FromPosCode { get; set; }
 

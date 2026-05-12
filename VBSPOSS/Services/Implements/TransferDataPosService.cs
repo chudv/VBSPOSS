@@ -29,17 +29,20 @@ namespace VBSPOSS.Services.Implements
 
         private readonly ILogger<ListOfTransPointService> _logger;
 
+        private readonly IConfiguration _config;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ListOfValueService"/> class.
         /// </summary>
         /// <param name="dbContext">The dbContext<see cref="ApplicationDbContext"/>.</param>
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
-        public TransferDataPosService(ApplicationDbContext dbContext, IMapper mapper, IntellectIDCDbContext dbContextIDC, ILogger<ListOfTransPointService> logger)
+        public TransferDataPosService(ApplicationDbContext dbContext, IConfiguration config, IMapper mapper, IntellectIDCDbContext dbContextIDC, ILogger<ListOfTransPointService> logger)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _dbContextIDC = dbContextIDC;
             _logger = logger;
+            _config = config;
         }
 
 
@@ -56,53 +59,69 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
         public List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
-                                int pStatus, string pTxnLocation, string pEventCode)
+                                int pStatus, string pTxnLocation, string pEventCode, string pUserGrade)
         {
             var transferDataPosMasterViews = new List<TransferDataPosMasterViewModel>();
 
             try
             {
                 int orderNo = 0;
-                var listOfTransferDataPosMaster = _dbContext.TransferDataPosMasters
-                    .Where(w => (w.IsDeleted == false))
-                    .ToList();
+                var query = _dbContext.TransferDataPosMasters.AsQueryable();
+
+                if (pUserGrade == "3")
+                {
+                    query = query.Where(w =>
+                        w.IsDeleted == false
+                        &&
+                        (
+                            w.Status == 2 || w.Status == 3 || w.Status == 4 || w.Status == 1
+                        )
+                        && w.MainPos.StartsWith(pPosCode));
+                }
+                else if (pUserGrade == "2")
+                {
+                    query = query.Where(w =>
+                        w.IsDeleted == false
+                        && w.MainPos.StartsWith(pPosCode));
+                }
+                else
+                {
+                    query = query.Where(w =>
+                        w.IsDeleted == false);
+                }
+
+                var listOfTransferDataPosMaster =
+                    query
+                        .OrderByDescending(o => o.CreatedDate)
+                        .ToList();
 
                 transferDataPosMasterViews = listOfTransferDataPosMaster
                     .Select(x => new TransferDataPosMasterViewModel
                     {
                         OrderNo = ++orderNo,
                         Id = x.Id,
-
                         FromPosCode = x.FromPosCode,
                         FromPosName = GetPosName(x.FromPosCode),
                         ToPosCode = x.ToPosCode,
                         ToPosName = GetPosName(x.ToPosCode),
                         EffectiveDate = x.EffectiveDate,
-
                         Remark = x.Remark,
-
                         Status = x.Status,
-
                         TotalVillage = x.TotalVillage,
-
                         CreatedBy = x.CreatedBy,
                         CreatedDate = x.CreatedDate,
-
                         ModifiedBy = x.ModifiedBy,
                         ModifiedDate = x.ModifiedDate,
-
                         ApproverBy = x.ApproverBy,
                         ApprovalDate = x.ApprovalDate,
-
                         RejectReason = x.RejectReason,
-
                         IsDeleted = x.IsDeleted
                     })
                     .ToList();
 
                 return transferDataPosMasterViews;
             }
-           
+
             catch (Exception ex)
             {
                 throw ex;
@@ -160,7 +179,7 @@ namespace VBSPOSS.Services.Implements
     TransferDataPosMasterViewModel tranferMaster,
     string pUserNameUpd,
     string pFlagCall,
-    string pButtonType)
+    string pButtonType, string mainPos)
         {
             int iSaveChanges = 0;
 
@@ -180,6 +199,7 @@ namespace VBSPOSS.Services.Implements
                 {
                     var entity = new TransferDataPosMaster
                     {
+                        MainPos = mainPos,
                         FromPosCode = tranferMaster.FromPosCode,
                         ToPosCode = tranferMaster.ToPosCode,
 
@@ -254,7 +274,7 @@ namespace VBSPOSS.Services.Implements
                 .Select(x => new ValueConstModel
                 {
                     Code = x.SubCommuneCode,
-                    Description = x.CommuneCode + " - " + x.CommuneName + " -> " + x.SubCommuneCode +" - " + x.SubCommuneName
+                    Description = x.CommuneCode + " - " + x.CommuneName + " -> " + x.SubCommuneCode + " - " + x.SubCommuneName
                 })
                 .ToList();
 
@@ -295,6 +315,249 @@ namespace VBSPOSS.Services.Implements
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        public async Task<long> SaveAttachedFile(
+    long documentId,
+    IFormFile file,
+    string documentNumber,
+    string userName)
+        {
+            long fileId = 0;
+
+            try
+            {
+                if (file == null || file.Length <= 0)
+                {
+                    return 0;
+                }
+
+                // =========================
+                // ROOT FOLDER
+                // =========================
+                string uploadFolder =
+                    _config["AttachedFileSettings:FolderUpload"];
+
+                string rootFolder = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    uploadFolder);
+
+                // =========================
+                // SUB FOLDER
+                // =========================
+                string subFolder = "TranferDataPos";
+
+                string fullFolder = Path.Combine(
+                    rootFolder,
+                    subFolder);
+
+                // tạo folder nếu chưa có
+                if (!Directory.Exists(fullFolder))
+                {
+                    Directory.CreateDirectory(fullFolder);
+                }
+
+                // =========================
+                // FILE INFO
+                // =========================
+                string fileExtension =
+                    Path.GetExtension(file.FileName);
+
+                string fileNameOrigin =
+                    Path.GetFileName(file.FileName);
+
+                // tên file tạm
+                string fileNameNew =
+                    Guid.NewGuid().ToString("N")
+                    + fileExtension;
+
+                // full path
+                string fullPath = Path.Combine(
+                    fullFolder,
+                    fileNameNew);
+
+                // =========================
+                // SAVE FILE PHYSICAL
+                // =========================
+                using (var stream = new FileStream(
+                    fullPath,
+                    FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // =========================
+                // SAVE DB
+                // =========================
+                var entity = new AttachedFileInfo
+                {
+                    DocumentId = documentId,
+
+                    FileType = "8",
+
+                    FileName = fileNameOrigin,
+
+                    FileExtension = fileExtension,
+
+                    PathFile = Path.Combine(
+                        uploadFolder,
+                        subFolder),
+
+                    FileNameNew = fileNameNew,
+
+                    DocumentNumber = documentNumber,
+
+                    Status = 1,
+
+                    CreatedBy = userName,
+
+                    CreatedDate = DateTime.Now
+                };
+
+                await _dbContext.AttachedFileInfos
+                    .AddAsync(entity);
+
+                await _dbContext.SaveChangesAsync();
+
+                fileId = entity.FileId;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return fileId;
+        }
+
+        public async Task<AttachedFileInfo> DownloadTransferAttachFile(
+    long documentId)
+        {
+            try
+            {
+                return await _dbContext.AttachedFileInfos
+
+                    .Where(x =>
+
+                        x.DocumentId == documentId
+                        && x.FileType == "8"
+                        && x.Status == 1)
+
+                    .OrderByDescending(x => x.FileId)
+
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteTransferDataPos(
+    long pId,
+    string userName)
+        {
+            try
+            {
+                var entity =
+                    await _dbContext.TransferDataPosMasters
+                        .FirstOrDefaultAsync(x =>
+                            x.Id == pId);
+
+                if (entity == null)
+                {
+                    return false;
+                }
+
+                entity.IsDeleted = true;
+
+                entity.ModifiedBy = userName;
+
+                entity.ModifiedDate = DateTime.Now;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public TransferDataPosMaster GetTransferDataPosMasterById(long pId)
+        {
+            try
+            {
+                return _dbContext.TransferDataPosMasters
+                    .FirstOrDefault(x =>
+                        x.Id == pId
+                        && x.IsDeleted == false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<int> ApproveTransferDataPos(long pId, string pRemark, string pAction, string pUserName)
+        {
+            try
+            {
+                var entity =
+                    await _dbContext
+                        .TransferDataPosMasters
+                        .FirstOrDefaultAsync(x =>
+                            x.Id == pId);
+
+                if (entity == null)
+                {
+                    return 0;
+                }
+
+                // =========================
+                // PHÊ DUYỆT
+                // =========================
+                if (pAction == "APPROVE")
+                {
+                    entity.Status = 2;
+                }
+
+                // =========================
+                // TỪ CHỐI
+                // =========================
+                else if (pAction == "REJECT")
+                {
+                    if (string.IsNullOrWhiteSpace(
+                        pRemark))
+                    {
+                        return 2;
+                    }
+
+                    entity.Status = 3;
+                }
+
+                entity.Remark = pRemark;
+
+                entity.ModifiedBy =
+                    pUserName;
+
+                entity.ModifiedDate =
+                    DateTime.Now;
+
+                await _dbContext
+                    .SaveChangesAsync();
+
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "ApproveTransferDataPos");
+
+                return 0;
             }
         }
     }

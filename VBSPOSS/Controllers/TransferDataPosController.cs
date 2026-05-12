@@ -3,14 +3,13 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis.Differencing;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Extensions;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
-using VBSPOSS.Services.Implements;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
 
@@ -80,10 +79,8 @@ namespace VBSPOSS.Controllers
             return View("IndexTransferDataPosMaster");
         }
 
-
-
         /// <summary>
-        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
+        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... yêu cầu điều chuyển dữ liệu khác pos => Tải dừ bảng dữ liệu TransferDataPosMaster
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
@@ -98,7 +95,9 @@ namespace VBSPOSS.Controllers
             {
                 string sTxnPointCode = "", sTxnPointName = "";
                 if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                {
                     pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+                }
                 if (string.IsNullOrEmpty(pEventCode))
                     pEventCode = "";
                 if (string.IsNullOrEmpty(pTxnPointCode))
@@ -110,12 +109,12 @@ namespace VBSPOSS.Controllers
                     if (!string.IsNullOrEmpty(pPosCode))
                         pPosCode = pPosCode.Substring(0, 4);
                 }
-                var listTransPointWorks = _serviceTranferDataPos.GetListOfTranferDataPosSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
+                var listTransPointWorks = _serviceTranferDataPos.GetListOfTranferDataPosSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode, UserGrade.ToString());
                 return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, $"LoadGridData_TransPointWorks('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+                _logger?.LogError(ex, $"LoadGridData_TranferDataPos('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
                 ModelState.AddModelError("ERROR", $"{ex.Message}");
                 return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
             }
@@ -135,29 +134,57 @@ namespace VBSPOSS.Controllers
         ///             8 - Phê duyệt
         ///             9 - Trình duyệt
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public ActionResult ShowTransferDataPosMaster(long pId, string pPosCode, string pUserId, string pFlagCall, string pFullName, string pButtonType)
+        public ActionResult ShowTransferDataPosMaster(long pId, string pPosCode, string pUserId, string pFlagCall,
+            string pFullName, string pButtonType)
         {
-            TransferDataPosMasterViewModel transferDataPosDetailView = new TransferDataPosMasterViewModel();
+            TransferDataPosMasterViewModel model = new TransferDataPosMasterViewModel();
+            try
+            {
+                //CREATE NEW
+                if (pId <= 0)
+                {
+                    model.Id = 0;
+                    model.EffectiveDate = DateTime.Now;
+                    model.CreatedBy = "";
+                    model.CreatedDate = DateTime.Now;
+                    model.ModifiedBy = "";
+                    model.ModifiedDate = DateTime.Now;
+                }
+                //EDIT
+                else
+                {
+                    var entity = _serviceTranferDataPos.GetTransferDataPosMasterById(pId);
 
-            transferDataPosDetailView.Id = 0;
-            transferDataPosDetailView.EffectiveDate = DateTime.Now;
-            transferDataPosDetailView.CreatedBy = "";
-            transferDataPosDetailView.CreatedDate = DateTime.Now;
-            transferDataPosDetailView.ModifiedBy = "";
-            transferDataPosDetailView.ModifiedDate = DateTime.Now;
+                    if (entity != null)
+                    {
+                        model.Id = entity.Id;
+                        model.FromPosCode = entity.FromPosCode;
+                        model.ToPosCode = entity.ToPosCode;
+                        model.EffectiveDate = entity.EffectiveDate;
+                        model.Remark = entity.Remark;
+                        model.Status = entity.Status;
+                        model.CreatedBy = entity.CreatedBy;
+                        model.CreatedDate = entity.CreatedDate;
+                        model.ModifiedBy = entity.ModifiedBy;
+                        model.ModifiedDate = entity.ModifiedDate;
+                    }
+                }
 
+                ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
+                ViewBag.MailIdFlags = MailIdFlag.GetAll();
+                ViewBag.AuthSecTypes = AuthSecType.GetAll();
+                ViewBag.PosList = _serviceTranferDataPos.GetListPosOfBranch(UserPosCode);
 
-
-            ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
-            ViewBag.MailIdFlags = MailIdFlag.GetAll();
-            ViewBag.AuthSecTypes = AuthSecType.GetAll();
-            TempData["FlagCall"] = pFlagCall;
-            TempData["UserPosCode"] = UserPosCode;
-            TempData["ButtonType"] = pButtonType;
-            //var pos = _serviceListOfalues.GetBranchSearch("4",0, UserPosCode,"","", UserPosCode,"");
-
-            ViewBag.PosList = _serviceTranferDataPos.GetListPosOfBranch(UserPosCode);
-            return PartialView("CreateTransferDataPosMaster", transferDataPosDetailView);
+                TempData["FlagCall"] = pFlagCall;
+                TempData["UserPosCode"] = UserPosCode;
+                TempData["ButtonType"] = pButtonType;
+                return PartialView("CreateTransferDataPosMaster", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ShowTransferDataPosMaster Error");
+                return PartialView("CreateTransferDataPosMaster", model);
+            }
         }
 
         /// <summary>
@@ -166,13 +193,11 @@ namespace VBSPOSS.Controllers
         ///             1 - Thêm mới
         ///             2 - Chỉnh sửa
         ///             8 - Phê duyệt
-        ///             9 - Trình duyệt 
+        ///             9 - Trình duyệt
         /// </summary>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdate([DataSourceRequest] DataSourceRequest request, TransferDataPosMasterViewModel objTranferMaster,
-            IFormFile files,
-            string pFlagCall,
-            string pButtonType)
+            IFormFile files, string pFlagCall, string pButtonType)
         {
             try
             {
@@ -183,8 +208,14 @@ namespace VBSPOSS.Controllers
                     return new JsonResult(sValid.ToString());
                 }
 
-
-                long iVal = await _serviceTranferDataPos.SaveTranferPosMaster(objTranferMaster, UserName, pFlagCall, pButtonType);
+                long iVal = await _serviceTranferDataPos.SaveTranferPosMaster(objTranferMaster, UserName, pFlagCall, pButtonType, UserPosCode);
+                if (iVal > 0) 
+                {
+                    if (files != null)
+                    {
+                        await _serviceTranferDataPos.SaveAttachedFile(iVal, files, "", UserName);
+                    }
+                }
                 result = (iVal > 0) ? "0" : "99";
 
                 return new JsonResult(result);
@@ -215,82 +246,73 @@ namespace VBSPOSS.Controllers
             return iResult;
         }
 
-        public IActionResult TransferDataPosDetail(long pId)
+        public IActionResult TransferDataPosDetail(long pId, string pTypeAction)
         {
             var master = _context.TransferDataPosMasters
                 .FirstOrDefault(x => x.Id == pId);
-
             if (master == null)
             {
                 return PartialView("_TransferDataPosDetail");
             }
-
             var model = new TransferDataPosMasterViewModel
             {
                 Id = master.Id,
-
                 FromPosCode = master.FromPosCode,
                 ToPosCode = master.ToPosCode,
-
                 FromPosName = _serviceTranferDataPos.GetPosName(master.FromPosCode),
                 ToPosName = _serviceTranferDataPos.GetPosName(master.ToPosCode)
             };
 
             // THÔN NGUỒN
             ViewData["FromVillages"] = _serviceTranferDataPos
-             .GetListSubCommuneOfPos(master.FromPosCode)
-             .Select(x => new SelectListItem
-             {
-                 Value = x.Code,
-                 Text = x.Description
-             })
-             .ToList();
+                 .GetListSubCommuneOfPos(master.FromPosCode)
+                 .Select(x => new SelectListItem
+                 {
+                     Value = x.Code,
+                     Text = x.Description
+                 })
+                 .ToList();
 
             // THÔN ĐÍCH
 
             ViewData["ToVillages"] = _serviceTranferDataPos
-            .GetListSubCommuneOfPos(master.ToPosCode)
-            .Select(x => new SelectListItem
-            {
-                Value = x.Code,
-                Text = x.Description
-            })
-            .ToList();
+                .GetListSubCommuneOfPos(master.ToPosCode)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.Code,
+                    Text = x.Description
+                })
+                .ToList();
 
-
-            return PartialView("_TransferDataPosDetail", model);
+            TempData["UserPosCode"] = UserPosCode;
+            if(pTypeAction=="2")
+                return PartialView("_ApproveTransferDataPos", model);
+            else
+                return PartialView("_TransferDataPosDetail", model);
         }
 
-        public IActionResult ReadTransferVillage(
-    [DataSourceRequest] DataSourceRequest request,
-    long masterId)
+        public IActionResult ReadTransferVillage([DataSourceRequest] DataSourceRequest request, long masterId)
         {
             var data = _context.TransferDataPosDetails
                 .Where(x => x.MasterId == masterId)
                 .Select(x => new TransferDataPosDetailViewModel
                 {
                     Id = x.Id,
-
                     MasterId = x.MasterId,
-
                     FromVillageId = x.FromVillageId,
                     ToVillageId = x.ToVillageId
                 })
                 .ToList();
-
             return Json(data.ToDataSourceResult(request));
         }
 
-
         [HttpPost]
-        public IActionResult SaveTransferVillage(
-    [FromBody] SaveTransferVillageRequest request)
+        public IActionResult SaveTransferVillage([FromBody] SaveTransferVillageRequest request)
         {
             try
             {
                 var master = _context.TransferDataPosMasters
                     .FirstOrDefault(x => x.Id == request.MasterId);
-
                 if (master == null)
                 {
                     return Json(new
@@ -299,34 +321,26 @@ namespace VBSPOSS.Controllers
                         message = "Không tìm thấy master"
                     });
                 }
-
                 // xóa detail cũ
                 var oldDetails = _context.TransferDataPosDetails
                     .Where(x => x.MasterId == request.MasterId)
                     .ToList();
-
                 _context.TransferDataPosDetails.RemoveRange(oldDetails);
-
                 // insert mới
                 foreach (var item in request.Details)
                 {
                     var entity = new TransferDataPosDetail
                     {
                         MasterId = request.MasterId,
-
                         FromVillageId = item.FromVillageId,
                         ToVillageId = item.ToVillageId,
-
                         CreatedBy = User.Identity.Name,
                         CreatedDate = DateTime.Now
                     };
-
                     _context.TransferDataPosDetails.Add(entity);
                 }
-
                 // update master
                 master.TotalVillage = request.Details.Count;
-
                 master.ModifiedBy = User.Identity.Name;
                 master.ModifiedDate = DateTime.Now;
 
@@ -348,7 +362,73 @@ namespace VBSPOSS.Controllers
             }
         }
 
+        public async Task<IActionResult> DownloadTransferFile(long documentId)
+        {
+            try
+            {
+                var fileInfo = await _serviceTranferDataPos.DownloadTransferAttachFile(documentId);
+                if (fileInfo == null)
+                {
+                    return NotFound("Không tìm thấy file");
+                }
+                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", fileInfo.PathFile, fileInfo.FileNameNew);
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    return NotFound("File không tồn tại");
+                }
+
+                byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+                return File(fileBytes, "application/octet-stream", fileInfo.FileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DownloadTransferFile Error");
+                return BadRequest("Có lỗi xảy ra");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteTransferDataPos(long pId)
+        {
+            try
+            {
+                bool isDeleted = await _serviceTranferDataPos.DeleteTransferDataPos(pId, UserName);
+                return new JsonResult(isDeleted ? "1" : "0");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DeleteTransferDataPos Error");
+                return new JsonResult("0");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult>
+    ApproveTransferDataPos(
+        long pId,
+        string pRemark,
+        string pAction)
+        {
+            try
+            {
+                int result =
+                    await _serviceTranferDataPos
+                        .ApproveTransferDataPos(
+                            pId,
+                            pRemark,
+                            pAction,
+                            UserName);
+
+                return Json(result.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "ApproveTransferDataPos");
+
+                return Json("0");
+            }
+        }
     }
-
-
 }
