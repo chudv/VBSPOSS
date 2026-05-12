@@ -88,8 +88,180 @@
         border: none !important;
     }
 </style>
-
 <script>
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+
+    var notification = $("#notification").kendoNotification({
+        position: { top: 20, right: 20 },
+        autoHideAfter: 5000
+    }).data("kendoNotification");
+
+    var mainWindow = $("#myPopup");
+
+    // ====================== PARAM & REFRESH GRID ======================
+    function paramLoadGridData() {
+        return {
+            productGroupCode: $("#ProductGroup_Find").val() || "",
+            productCode: $("#ProductCode_Find").val() || "",
+            effectDateBegin: $("#EffectDateBegin_Find").val() || "",
+            effectDateEnd: $("#EffectDateEnd_Find").val() || ""
+        };
+    }
+
+    // ★★★ HÀM LOAD LẠI GRID ★★★
+    function refreshGrid() {
+        var grid = $("#gridProductParameter").data("kendoGrid");
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+
+    function onSearch() {
+        refreshGrid();
+    }
+
+    // Biến flag kiểm tra có thay đổi dữ liệu không
+    var dataChangeProductParameter = false;
+
+    // Hàm đóng popup - load lại grid khi có thay đổi
+       // Thay hàm onCloseProductParameter cũ
+    function onCloseProductParameter() {
+        // Refresh trong mọi trường hợp khi đóng (an toàn hơn)
+        refreshGrid();
+        dataChangeProductParameter = false;
+    }
+
+    // ====================== CÁC HÀM XỬ LÝ ======================
+    $(document).on('click', '#btnCreate', function (e) {
+        e.preventDefault();
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow.data("kendoWindow").destroy();
+        }
+
+        mainWindow.kendoWindow({
+            width: "1200px",
+            height: "680px",
+            title: "Thêm mới cấu hình sản phẩm tiền gửi/thanh toán",
+            content: {
+                url: '@Url.Action("ShowCreateConfig", "ProductParameter")',
+                data: { pId: 0, pFlagCall: "1" }
+            },
+            resizable: true,
+            visible: false,
+            close: onCloseProductParameter,
+            modal: true,
+            actions: ["Refresh", "Close"],
+            error: function (e) {
+                notification.show({ message: "Có lỗi xảy ra: " + e.xhr.statusText, type: "error" });
+                mainWindow.data("kendoWindow").close();
+            }
+        }).data("kendoWindow").center().open();
+    });
+
+    function showDetail(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        mainWindow.kendoWindow({
+            width: "1000px",
+            height: "650px",
+            title: "Chi tiết cấu hình",
+            content: {
+                url: '@Url.Action("ShowDetail", "ProductParameter")',
+                data: { id: dataItem.Id }
+            },
+            modal: true,
+            close: onCloseProductParameter,   // Dùng hàm chung
+            actions: ["Close"]
+        }).data("kendoWindow").center().open();
+    }
+
+    function showEdit(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "680px",
+            title: "Sửa cấu hình",
+            content: {
+                url: '@Url.Action("ShowEdit", "ProductParameter")',
+                data: { id: dataItem.Id }
+            },
+            modal: true,
+            close: onCloseProductParameter,
+            actions: ["Close"]
+        }).data("kendoWindow").center().open();
+    }
+
+    function deleteItem(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        if (!confirm("Bạn có chắc muốn xóa cấu hình này?")) return;
+
+        $.ajax({
+            url: '@Url.Action("Delete", "ProductParameter")',
+            type: "POST",
+            data: { id: dataItem.Id },
+            success: function (res) {
+                if (res.success) {
+                    notification.show({ message: "Xóa thành công!", type: "success" });
+                    refreshGrid();           // Load lại ngay sau khi xóa
+                } else {
+                    notification.show({ message: res.message || "Xóa thất bại!", type: "error" });
+                }
+            },
+            error: function () {
+                notification.show({ message: "Lỗi hệ thống khi xóa!", type: "error" });
+            }
+        });
+    }
+
+    function showApproval(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        mainWindow.kendoWindow({
+            width: "1100px",
+            height: "680px",
+            title: "Phê duyệt cấu hình",
+            content: {
+                url: '@Url.Action("ShowApproval", "ProductParameter")',
+                data: { id: dataItem.Id }
+            },
+            modal: true,
+            close: onCloseProductParameter,
+            actions: ["Close"]
+        }).data("kendoWindow").center().open();
+    }
+
+    // ====================== ROW BOUND ======================
+    function onRowBound(e) {
+        var grid = e.sender;
+        grid.tbody.find("tr").each(function () {
+            var dataItem = grid.dataItem(this);
+            var status = dataItem.Status;
+
+            if (status == 0 || status == 4 || status == null) {
+                $(this).addClass("status-closed");
+            } else if (status == 3) {
+                $(this).addClass("status-approved");
+            } else if (status == 1 || status == 2) {
+                $(this).addClass("status-pending");
+            }
+
+            // Ẩn/hiện nút theo quyền
+            if (userPermission.EditPermissionFlag == 0) $(this).find(".k-grid-Edit").hide();
+            if (userPermission.DeletePermissionFlag == 0) $(this).find(".k-grid-Delete").hide();
+            if (userPermission.AuthorizePermissionFlag == 0) $(this).find(".k-grid-Auth").hide();
+            if (userPermission.ReportPermissionFlag == 0) $(this).find(".k-grid-Approval").hide();
+        });
+    }
+</script>
+
+
+@* <script>
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
     var notification = $("#notification").kendoNotification({
         position: { top: 20, right: 20 },
@@ -260,7 +432,7 @@
         }).data("kendoWindow").center().open();
     }
 </script>
-
+ *@
 <div class="row" style="margin-bottom: 10px;">
     <div class="col-md-12">
         <label style="color: navy; padding-top: 10px;padding-right: 10px;">Phân loại </label>

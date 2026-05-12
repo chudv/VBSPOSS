@@ -144,11 +144,11 @@ namespace VBSPOSS.Controllers
 
 
                 model.ProductGroupOptions = new List<SelectListItem>
-{
-    new SelectListItem { Value = "CASA", Text = "Casa" },
-    new SelectListItem { Value = "TIDE", Text = "Tide" },
-    new SelectListItem { Value = "DEPOSITPENAL", Text = "Rút trước hạn (Penal Tide)" }
-};
+                {
+                     new SelectListItem { Value = "CASA", Text = "Casa" },
+                     new SelectListItem { Value = "TIDE", Text = "Tide" },
+                     new SelectListItem { Value = "DEPOSITPENAL", Text = "Rút trước hạn (Penal Tide)" }
+                 };
 
 
 
@@ -199,64 +199,6 @@ namespace VBSPOSS.Controllers
 
         // sửa hàm lưu thay đổi 
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<JsonResult> SaveBatchProductParameter([FromForm] SaveBatchRequest request)
-        //{
-        //    try
-        //    {
-        //        var remarkChung = request.Remark?.Trim() ?? "";
-
-        //        if (string.IsNullOrEmpty(request.Items))
-        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
-
-        //        var items = JsonSerializer.Deserialize<List<ProductParameterDetailViewModel>>(request.Items);
-
-        //        if (items == null || items.Count == 0)
-        //            return Json(new { success = false, message = "Không có dữ liệu thay đổi để lưu" });
-
-        //        var recordCount = await _service.SaveBatchProductParameterAsync(
-        //            request.ProductGroupCode,
-        //            request.EffectedDate,
-        //            remarkChung,
-        //            items
-        //        );
-
-        //        if (recordCount > 0)
-        //        {
-        //            return Json(new { success = true, message = $"Đã lưu thành công {items.Count} đề xuất!" });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = "Lưu không thành công!" });
-        //        }
-        //    }
-        //    catch (DbUpdateException dbEx)   // ← Bắt riêng DbUpdateException
-        //    {
-        //        var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-        //        var innerInner = dbEx.InnerException?.InnerException?.Message;
-
-        //        _logger.LogError(dbEx, "DbUpdateException khi lưu batch. Inner: {Inner} | InnerInner: {InnerInner}",
-        //            innerMessage, innerInner);
-
-        //        Console.WriteLine($"=== DbUpdateException ===");
-        //        Console.WriteLine($"Message: {dbEx.Message}");
-        //        Console.WriteLine($"Inner: {innerMessage}");
-        //        if (!string.IsNullOrEmpty(innerInner))
-        //            Console.WriteLine($"Inner Inner: {innerInner}");
-
-        //        return Json(new
-        //        {
-        //            success = false,
-        //            message = $"Lỗi lưu dữ liệu: {innerMessage}"
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Lỗi không xác định khi lưu batch");
-        //        return Json(new { success = false, message = "Lỗi hệ thống khi lưu: " + ex.Message });
-        //    }
-        //}
 
 
 
