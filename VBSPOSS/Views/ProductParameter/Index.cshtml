@@ -77,14 +77,14 @@
     }
 
     .k-grid .k-command-cell .k-button {
-        text-indent: -9999px !important; /* Ẩn text hoàn toàn bằng cách đẩy ra ngoài màn hình */
+        text-indent: -9999px !important; 
         overflow: hidden !important;
         white-space: nowrap !important;
         background-position: center !important;
-        width: 28px !important; /* kích thước icon, điều chỉnh nếu icon nhỏ/lớn */
+        width: 28px !important; 
         height: 28px !important;
         padding: 0 !important;
-        margin: 0 4px !important; /* khoảng cách giữa các icon */
+        margin: 0 4px !important; 
         border: none !important;
     }
 </style>
@@ -108,7 +108,7 @@
         };
     }
 
-    // ★★★ HÀM LOAD LẠI GRID ★★★
+    //  HÀM LOAD LẠI GRID 
     function refreshGrid() {
         var grid = $("#gridProductParameter").data("kendoGrid");
         if (grid != null) {
@@ -123,8 +123,8 @@
     // Biến flag kiểm tra có thay đổi dữ liệu không
     var dataChangeProductParameter = false;
 
-    // Hàm đóng popup - load lại grid khi có thay đổi
-       // Thay hàm onCloseProductParameter cũ
+
+       // Thay hàm đóng popup - load lại grid khi có thay đổi onCloseProductParameter
     function onCloseProductParameter() {
         // Refresh trong mọi trường hợp khi đóng (an toàn hơn)
         refreshGrid();
@@ -171,7 +171,7 @@
                 data: { id: dataItem.Id }
             },
             modal: true,
-            close: onCloseProductParameter,   // Dùng hàm chung
+            close: onCloseProductParameter,   
             actions: ["Close"]
         }).data("kendoWindow").center().open();
     }
