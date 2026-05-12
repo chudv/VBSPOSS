@@ -1,0 +1,352 @@
+﻿@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+
+@{
+    ViewData["Title"] =
+        "THỰC THI SCRIPT HỆ THỐNG";
+}
+
+<style>
+    #gridScriptExecution div a, table tr, td {
+        font-size: 12px;
+    }
+
+    .btn-view-edit,
+    .btn-delete {
+        padding: 0 2px !important;
+        min-width: 20px !important;
+    }
+
+    #gridScriptExecution .k-grid td {
+        border-right: 1px solid #ddd !important;
+    }
+
+    #gridScriptExecution .k-grid-header th {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .k-grid .btn-view.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-view-edit.k-button {
+        background: url('../images/icon_edit.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-delete.k-button {
+        background: url('../images/icon_delete.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-auth.k-button {
+        background: url('../images/icon_auth.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-approval.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    #FromDate_Find {
+        flex: 0 0 120px !important;
+        max-width: 120px !important;
+        min-width: 120px !important;
+    }
+
+    #ToDate_Find {
+        flex: 0 0 120px !important;
+        max-width: 120px !important;
+        min-width: 120px !important;
+    }
+
+
+    .k-grid .btn-detail.k-button {
+        background: url('../images/icon_view.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+
+    .k-grid .btn-log.k-button {
+        background: url('../images/icon_approval.png') no-repeat center center;
+        background-size: 15px 15px;
+        width: 15px;
+        height: 15px;
+        border: none;
+    }
+</style>
+
+<div id="scriptPopup"></div>
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; ">
+
+    <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
+
+            <div class="col-md-5">
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:0px;">Module</label>
+                @(Html.Kendo().TextBox()
+                                .Name("ModuleCode_Find")
+                        .HtmlAttributes(new { placeholder = "Nhập tên", style = "background-color:white;width: 150px;color:green !important;margin-left: 10px;" })
+                )
+
+           
+            <label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:6px; margin-left: 10px;">Trạng thái</label>
+                @(Html.Kendo().DropDownList()
+                                .Name("Status_Find")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                        .HtmlAttributes(new { placeholder = "Trạng thái", style = "background-color:white;width: 150px;color:green !important;margin-left: 10px;" })
+                        .DataTextField("Text")  // Hiển thị "Tạo lập", "Đóng",...
+                        .DataValueField("Value") // Lọc theo Description (gửi pStatusDesc = "Tạo lập")
+                        .DataSource(source => source
+                        .Read(read => read.Action("GetScriptExecutionStatus", "ListOfValue")))
+                                @* .BindTo(new List<SelectListItem>()
+                                {
+                                new SelectListItem()
+                                {
+                                Text = "WAITING",
+                                Value = "0"
+                                },
+                                new SelectListItem()
+                                {
+                                Text = "SUCCESS",
+                                Value = "2"
+                                },
+                                new SelectListItem()
+                                {
+                                Text = "FAILED",
+                                Value = "3"
+                                }
+                                }) *@
+                                )
+
+           </div>
+        <div class="col-md-5">
+            <label class="lbcontrol" style="color: navy;text-align:right;padding-top:3px;padding-right:6px;margin-left: 10px;">Ngày hiệu lực</label>
+                @(Html.Kendo().DatePicker()
+                                .Name("FromDate_Find")
+                                .Format("dd/MM/yyyy")
+                        .Value(DateTime.Today.AddDays(-1))
+                        .HtmlAttributes(new { style = "background-color:white !important; width: 150px !important;", title = "Đến ngày cần tìm kiếm" })
+                )
+
+            <span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
+            @(Html.Kendo().DatePicker()
+                        .Name("ToDate_Find")
+                        .Format("dd/MM/yyyy")
+                        .Value(DateTime.Today)
+                        .HtmlAttributes(new { style = "background-color:white !important; width: 150px !important;", title = "Đến ngày cần tìm kiếm" })
+            )
+
+            </div>
+           
+            <div class="col-2">
+                @(Html.Kendo().Button()
+                                .Name("btnSearch")
+                        .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách script cần thực hiện" })
+                        .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                        .Content(" Tìm kiếm ").Events(e =>e.Click("searchData")))
+
+        </div>
+        </div>
+
+    <div style="color: navy; padding-top: 0px; display:flex;" class="row">
+        <div class="col-md-12">
+        @(Html.Kendo().Grid<ScriptExecutionViewModel>()
+                .Name("gridScriptExecution")
+                .Columns(columns =>
+                {
+                            columns.Select().Width(50).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(x => x.Id).Hidden();
+
+                    columns.Bound(x => x.ModuleCode)
+                    .Title("Module")
+                            .Width(120).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Bound(x => x.ScriptName)
+                    .Title("Tên script")
+                    .Width(350);
+
+                    columns.Bound(x => x.EffectiveDate)
+                    .Title("Ngày hiệu lực")
+                    .Format("{0:dd/MM/yyyy}")
+                    .Width(120);
+
+                    columns.Bound(x => x.StatusDesc)
+                    .Title("Trạng thái")
+                            .Width(120).HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Command(command =>
+                    {
+                        //command.Custom("Detail").Text("Chi tiết").Click("showDetail");
+                                command.Custom("Detail").Text("<span style='color: blue;'></span>").Click("showDetail").HtmlAttributes(new
+                                {
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                                    title = "Xem chi tiết",
+                                    @class = "btn-detail"
+                                });
+                                command.Custom("Log").Text("<span style='color: blue;'></span>").Click("viewLog").HtmlAttributes(new
+                                {
+                                    style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                                    title = "Log",
+                                    @class = "btn-log"
+                                });
+                        //command.Custom("Log").Text("Log").Click("viewLog");
+                            }).Width(200).Title("").HtmlAttributes(new { style = "text-align: center;" });
+
+                })
+                .ToolBar(toolbar =>
+                {
+                            toolbar.Custom().IconClass("k-icon k-i-play").Name("btnExecute").Text("Thực thi").HtmlAttributes(new { id = "btnExecute", style = "height: 25px;width: 110px; font-weight:bold; color: blue;" });
+                            toolbar.Excel().HtmlAttributes(new { style = "height: 25px;width: 120px; font-weight:bold; color: blue;" });
+                })
+                .Excel(excel =>excel.FileName("ScriptExecution.xlsx"))
+                .Scrollable()
+                .Pageable()
+                .Sortable()
+                .Filterable()
+                .Resizable(resize =>resize.Columns(true))
+                .DataSource(dataSource => dataSource.Ajax().PageSize(100).Read(read =>read.Action("LoadScriptQueue","ScriptExecution").Data("paramSearch")))
+                        .AutoBind(true)
+                )
+                </div>
+                </div>
+</div>
+
+<script>
+    function paramSearch() {
+
+        return {
+            moduleCode:
+                $("#ModuleCode_Find").val(),
+            status:
+                $("#Status_Find").val(),
+            fromDate:
+                $("#FromDate_Find").val(),
+            toDate:
+                $("#ToDate_Find").val()
+        };
+    }
+
+    function searchData() {
+        $("#gridScriptExecution").data("kendoGrid").dataSource.read();
+    }
+
+    $("#btnExecute").click(function () {
+        
+        var grid =$("#gridScriptExecution").data("kendoGrid");
+
+        var rows =grid.select();
+
+        var ids = [];
+
+        rows.each(function () {
+            var item = grid.dataItem(this);
+            ids.push(item.Id);
+        });
+
+        $.ajax({
+            url:'@Url.Action("ExecuteScripts", "ScriptExecution")',
+            type: 'POST',
+            data: {ids: ids},
+
+            success: function (rs) {
+                if (rs.success) {
+                    alert("Execute thành công");
+                    searchData();
+                }
+                else {
+                    alert(rs.message);
+                }
+            }
+        });
+    });
+
+    function viewLog(e) {
+
+        e.preventDefault();
+
+        var dataItem =
+            this.dataItem(
+                $(e.currentTarget)
+                    .closest("tr"));
+
+        $("#scriptPopup")
+            .kendoWindow({
+                width: "1200px",
+                height: "700px",
+                title: "Execution Log",
+                modal: true,
+                content: {
+                    url:
+                        '@Url.Action("ViewLog", "ScriptExecution")',
+                    data: {queueId: dataItem.Id}
+                }
+            })
+            .data("kendoWindow")
+            .center()
+            .open();
+    }
+
+    function showDetail(e) {
+        e.preventDefault();
+        var dataItem =
+            this.dataItem(
+                $(e.currentTarget)
+                    .closest("tr"));
+        var mainWindow =
+            $("#scriptPopup");
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow
+                .data("kendoWindow")
+                .destroy();
+        }
+        mainWindow.kendoWindow({
+            width: "1300px",
+            height: "750px",
+            title: "CHI TIẾT SCRIPT",
+            modal: true,
+            visible: false,
+            resizable: true,
+            actions: ["Refresh", "Close"],
+            content: {
+                url:
+                    '@Url.Action("ScriptDetail", "ScriptExecution")',
+                data: {
+                    id: dataItem.Id
+                }
+            },
+            error: function (e) {
+                alert(
+                    "Có lỗi xảy ra: "
+                    + e.xhr.statusText);
+                mainWindow
+                    .data("kendoWindow")
+                    .close();
+            }
+        });
+        mainWindow
+            .data("kendoWindow")
+            .center()
+            .open();
+    }
+</script>

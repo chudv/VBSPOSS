@@ -1,0 +1,351 @@
+﻿@model VBSPOSS.ViewModels.TransferDataPosMasterViewModel
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
+
+<div id="mySppLocality"></div>
+
+<style>
+    .k-animation-container {
+        z-index: 100000 !important;
+    }
+
+    .readonly-field input,
+    .readonly-field .k-input,
+    .readonly-field textarea {
+        background-color: #f0f0f0 !important;
+        color: #28a745 !important; /* Màu xanh lá */
+        cursor: not-allowed !important;
+    }
+
+    .editable-field input,
+    .editable-field .k-input {
+        color: navy !important;
+    }
+
+    #StartDate, #ExpiryDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .hidden-block {
+        display: none !important;
+    }
+</style>
+
+<script>
+
+    var isEditMode = false;
+
+
+    (function() {
+        var flagCallView = '@TempData["FlagCall"]';
+        if (flagCallView === "2") {
+            isEditMode = true;
+        }
+    })();
+
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "2",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadListStaffFind() {
+        return {
+            pPosCode: $("#PosCode").val(),
+            pTitleChoice: "",
+            pFlagTextShow: "2",
+            pFlagCall: "2"
+        };
+    }
+
+    function paramLoadListRoleOfUserIDC() {
+        return {
+            pPosCode: $("#UserPosCodeView").val(),
+            pTitleChoice: "",
+            pFlagShow: "3"
+        };
+    }
+
+    function Change_PosCode() {
+        var combo = $("#PosCode").data("kendoComboBox");
+        var dataItem = combo.dataItem();
+        if (dataItem) {
+            $("#PosName").val(dataItem.value);
+        }
+    }
+
+
+   
+
+    function onCloseDetail(ev) {
+        mainWindow.data("kendoWindow").close();
+    }
+
+
+    function Change_Status(e) {
+
+        if (!isEditMode) return;
+
+        var statusDDL = $("#Status").data("kendoDropDownList");
+        var statusValue = statusDDL.value();
+
+
+        if (statusValue === "0") {
+            var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+            if (expirePicker) {
+
+                expirePicker.value(new Date());
+
+
+                expirePicker.enable(true);
+            }
+        }
+    }
+
+    var lcButton = "";
+    function onClickDetail(e) {
+
+        var fromPos = $("#FromPosCode").data("kendoComboBox").value();
+        var toPos = $("#ToPosCode").data("kendoComboBox").value();
+
+        // Check POS
+        if (fromPos === toPos) {
+
+            alert("POS nguồn và POS đích không được trùng nhau");
+
+            e.preventDefault();
+
+            return false;
+        }
+
+        // Check ngày hiệu lực
+        var effectivePicker = $("#EffectiveDate").data("kendoDatePicker");
+
+        if (effectivePicker) {
+
+            var effectiveDate = effectivePicker.value();
+
+            if (!effectiveDate) {
+
+                alert("Ngày hiệu lực không hợp lệ, vui lòng chọn lại");
+
+                $("#EffectiveDate").focus();
+
+                e.preventDefault();
+
+                return false;
+            }
+        }
+
+        // Check upload file
+        var fileInput = $("#files");
+
+        if (fileInput.length > 0) {
+
+            var fileValue = fileInput.val();
+
+            if (!fileValue) {
+
+                alert("Bạn chưa upload tờ trình");
+
+                $("#files").focus();
+
+                e.preventDefault();
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+</script>
+
+<form asp-controller="TransferDataPos" asp-action="SaveUpdate" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
+    <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
+    @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
+    @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+    @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+    
+    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
+    
+    @Html.HiddenFor(m => m.CreatedBy, new { @Value = Model == null ? "" : Model.CreatedBy })
+    @Html.HiddenFor(m => m.CreatedDate, new { @Value = Model == null ? Model.CreatedDate : Model.CreatedDate })
+    @Html.HiddenFor(m => m.ModifiedBy, new { @Value = Model == null ? "" : Model.ModifiedBy })
+    @Html.HiddenFor(m => m.ModifiedDate, new { @Value = Model == null ? Model.ModifiedDate : Model.ModifiedDate })
+    
+    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
+        @(TempData["FlagCall"]?.ToString() == "2" ? "THAY ĐỔI THÔNG TIN NGƯỜI DÙNG IDC" : "ĐIỀU CHUYỂN DỮ LIỆU KHÁC POS")
+    </div>
+    <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="align-items-center">
+
+            <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="display: inline-flex;">
+                    <label class="lbcontrol" style="color: navy;text-align:left;width:106px;padding-top: 7px;">Pos nguồn</label>
+                    @(Html.Kendo().ComboBoxFor(m => m.FromPosCode)
+                                    .DataTextField("Description")
+                                    .DataValueField("Code")
+                    .BindTo((List<ValueConstModel>)ViewBag.PosList)
+                                    .Placeholder("Chọn nghiệp vụ yêu cầu")
+                                    .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                                    .Filter("contains")
+                                    .SelectedIndex(0))
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;">Pos đích</label>
+                @(Html.Kendo().ComboBoxFor(m => m.ToPosCode)
+                    .DataTextField("Description")
+                    .DataValueField("Code")
+                    .BindTo((List<ValueConstModel>)ViewBag.PosList)
+                    .Placeholder("Chọn nghiệp vụ yêu cầu")
+                    .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                    .Filter("contains")
+                    .SelectedIndex(0))
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                    <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
+                    @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                </div>
+            </div>
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+           
+                <label style="color:navy;text-align:left;width:150px">Upload tờ trình</label>
+         
+
+          
+                <input type="file"
+                       id="files"
+                       name="files"
+                       style="width:100%;color:blue;" />
+            </div>
+        </div>
+
+            <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                    <label class="lbcontrol" style="width: 105px; vertical-align: middle;color: navy;text-align:left;">Ghi chú</label>
+                    @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "min-height:30px;width:865px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2", placeholder = "Ghi chú thay đổi" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+            <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
+                <label class="control-label" id="lblMessageInfor" style="width: 740px; text-align: left; color: red;"></label>
+                &nbsp;&nbsp;
+                @(Html.Kendo().Button()
+                                .Name("btnSave")
+                                .Events(ev => ev.Click("onClickDetail"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin điều chuyển dữ liệu khác pos" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Lưu lại"))
+                &nbsp;
+                @(Html.Kendo().Button().Name("btnThoatDetail").Events(ev => ev.Click("onCloseDetail")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+<script>
+    $(function () {
+        $("#form0").submit(function (event) {
+            event.preventDefault();
+
+            var nextDay = new Date();
+            nextDay.setDate(nextDay.getDate() + 3);
+            $("#ExpiryDate").val(kendo.toString(nextDay, "yyyy-MM-dd"));
+
+            // $("#UserId").val($("#StaffCode").val());
+            // $("#NickName").val($("#StaffCode").val());
+            var form = this;
+            var posCode = $("#PosCode").val();
+            $("#pFlagCall").val($("#FlagCallView").val());
+            $("#pButtonType").val($("#ButtonTypeView").val());
+            submitFormAjax(form);
+            return false;
+        });
+    });
+
+    function submitFormAjax(form) {
+        var dataString;
+        var contentType;
+        var processData;
+        if (form.enctype === "multipart/form-data") {
+            dataString = new FormData($(form).get(0));
+            contentType = false;
+            processData = false;
+        }
+        $.ajax({
+            url: form.action,
+            type: form.method,
+            dataType: "json",
+            contentType: contentType,
+            processData: processData,
+            data: dataString,
+            success: function (result) {
+                if (result == "0") {
+                    alert("Bạn đã cập nhật thành công yêu cầu điều chuyển dữ liệu!");
+                    dataChange = true;
+                    onCloseDetail();
+                } else {
+                    dataChange = false;
+                    if (result == "1")
+                        alert("Đã tồn tại dữ liệu trình điều chuyển (trùng pos đi, pos đến, ngày hiệu lực), vui lòng kiểm tra lại");
+                    else if (result == "2")
+                        alert("Cán bộ được phân giao người đại diện không được để trống!");
+                    
+
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        Change_RoleOfUserIDCStart();
+        LoadStaffInfoDetail(); 
+        var lcButtonType = $("#ButtonTypeView").val();
+        var lcFunctionType = $("#FunctionType").val();
+        if(lcButtonType == "14"){
+            $("#divChange").hide();
+        }
+        else {
+            if(lcFunctionType == "ADDNEW_USER" || lcFunctionType == "RESET_PASSWORD" || lcFunctionType == "ENABLE_USER" || lcFunctionType == "DISABLE_USER") {
+                $("#divPosCode").hide();
+                $("#divModify").hide();
+                $("#divRole").hide();
+            }
+            else if (lcFunctionType == "MODIFY_USER"){
+                $("#divPosCode").hide();
+                $("#divModify").show();
+                $("#divRole").hide();
+            }
+            else if (lcFunctionType == "CHANGE_POS"){
+                $("#divPosCode").show();
+                $("#divModify").hide();
+                $("#divRole").hide();
+            }
+            else if (lcFunctionType == "CHANGE_ROLE"){
+                $("#divPosCode").hide();
+                $("#divModify").hide();
+                $("#divRole").show();
+            }
+        }
+    });
+
+</script>

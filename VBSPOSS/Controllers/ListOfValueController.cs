@@ -1,6 +1,7 @@
 ﻿using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections;
@@ -1695,6 +1696,21 @@ namespace VBSPOSS.Controllers
                     }
                 }
             }
+            return Json(data);
+        }
+
+
+
+        [HttpGet]
+        public JsonResult GetScriptExecutionStatus()
+        {
+            List<SelectListItem> data = new List<SelectListItem>();
+
+            data.Add(new SelectListItem { Value = "", Text = "Tất cả" });
+            data.Add(new SelectListItem { Value = "0", Text = "WAITING" });
+            data.Add(new SelectListItem { Value = "2", Text = "SUCCESS" });
+            data.Add(new SelectListItem { Value = "3", Text = "FAILED" });
+
             return Json(data);
         }
 

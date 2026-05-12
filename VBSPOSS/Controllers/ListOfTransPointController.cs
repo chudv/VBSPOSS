@@ -107,8 +107,5 @@ namespace VBSPOSS.Controllers
                 return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
             }
         }
-
-
-
     }
 }

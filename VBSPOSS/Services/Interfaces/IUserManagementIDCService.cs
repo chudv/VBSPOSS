@@ -20,6 +20,33 @@ namespace VBSPOSS.Services.Interfaces
         List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus);
 
         /// <summary>
+        /// Hàm lấy danh sách bản ghi trong bảng UserManagementIDC Thông tin tài khoản người dùng Intellect iDC
+        /// </summary>
+        /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
+        /// <param name="pUserId">Tên đăng nhập người dùng</param>
+        /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
+        /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
+        /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <param name="pIsJoinUserIDCMaster">Cờ xác định có Union Với UserIDCMaster không</param>
+        /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
+        List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus, string pFunctionType, bool pIsJoinUserIDCMaster);
+
+        /// <summary>
+        /// Hàm thực hiện Xóa (Đóng) bản ghi nghiệp vụ thêm mới hoặc thay đổi thông tin tài khoản người dùng Intellect iDC (Bảng UserManagementIDC)
+        /// </summary>
+        /// <param name="pId">Chỉ số khóa bản ghi</param>
+        /// <param name="pUserId">Tài khoản người dùng Intellect iDC</param>
+        /// <param name="pStaffId">Id Cán bộ Có tài khoản</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1</param>
+        /// <param name="pFunctionType">Nghiệp vụ thêm mới hoặc thay đổi thông tin người dùng Intellect iDC (Bắt buộc)</param>
+        /// <param name="pModifiedBy">Username thực hiện</param>
+        /// <param name="pFlagDelete">Cờ xác định Xóa/Đánh dấu xóa: 1: Xóa hẳn; 2: Đánh dấu xóa;</param>
+        /// <returns>True - Thành công; False - Không thành công</returns>
+        bool DeleteUserManagementIDC(long pId, string pUserId, string pStaffId, int pStatus, string pFunctionType, string pModifiedBy, int pFlagDelete);
+
+        /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu người dùng trên Intellect iDC UserIDCMaster
         /// </summary>
         /// <param name="pUserIDCMasterUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>
@@ -213,8 +240,17 @@ namespace VBSPOSS.Services.Interfaces
         /// <exception cref="Exception"></exception>
         Task<ChangeInforUserIDCAPIResponseViewModel> ModifyUserByApiModifyUser(ModifyUserRequestViewModel requestInput, string pUserNameUpd);
         List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai);
-        List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType, int iStatus);
-        Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+
+        //List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType, int iStatus);
+
+        /// <summary>
+        /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bản ghi bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
+        /// </summary>
+        /// <param name="pUserManagementUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>
+        /// <param name="pUserNameUpd">Người dùng thực hiện</param>
+        /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
+        /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
+        Task<long> SaveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall);
 
         /// <summary>
         /// Hàm kiểm tra xem người dùng có mở sổ tiền mặt đầu ngày không
