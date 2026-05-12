@@ -1,7 +1,9 @@
 ﻿using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
+using VBSPOSS.Extensions;
 using VBSPOSS.Helpers.Interfaces;
+using VBSPOSS.Models;
 using VBSPOSS.Services.Implements;
 using VBSPOSS.Services.Interfaces;
 
@@ -16,6 +18,16 @@ namespace VBSPOSS.Controllers
 
         public IActionResult Index()
         {
+            var controllerFromRoute = RouteData.Values["controller"]?.ToString();
+            var actionFromRoute = RouteData.Values["action"]?.ToString();
+            SetPermitData(actionFromRoute, controllerFromRoute);
+
+            RolePermissionModel userPermission = UserPermission;
+
+            string role = UserRole.ToString();
+
+            TempData["Role"] = role;
+            TempData.Put("UserPermission", userPermission);
             return View();
         }
 

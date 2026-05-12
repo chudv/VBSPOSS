@@ -1,10 +1,18 @@
 ﻿@using Kendo.Mvc.UI
 @using VBSPOSS.ViewModels
+@using VBSPOSS.Extensions
+@using VBSPOSS.Models
 
 @{
     ViewData["Title"] =
         "THỰC THI SCRIPT HỆ THỐNG";
 }
+
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
+
 
 <style>
     #gridScriptExecution div a, table tr, td {
@@ -233,6 +241,9 @@
 </div>
 
 <script>
+
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+
     function paramSearch() {
 
         return {
@@ -251,36 +262,7 @@
         $("#gridScriptExecution").data("kendoGrid").dataSource.read();
     }
 
-    $("#btnExecute").click(function () {
-        
-        var grid =$("#gridScriptExecution").data("kendoGrid");
-
-        var rows =grid.select();
-
-        var ids = [];
-
-        rows.each(function () {
-            var item = grid.dataItem(this);
-            ids.push(item.Id);
-        });
-
-        $.ajax({
-            url:'@Url.Action("ExecuteScripts", "ScriptExecution")',
-            type: 'POST',
-            data: {ids: ids},
-
-            success: function (rs) {
-                if (rs.success) {
-                    alert("Execute thành công");
-                    searchData();
-                }
-                else {
-                    alert(rs.message);
-                }
-            }
-        });
-    });
-
+    
     function viewLog(e) {
 
         e.preventDefault();
@@ -349,4 +331,40 @@
             .center()
             .open();
     }
+
+
+
+    $(document).on('click', '#btnExecute', function (e) {
+        e.preventDefault();
+        if (userPermission && userPermission.CreatePermissionFlag == 0) {
+            alert('Bạn không có quyền thực thi script');
+            return;
+        }
+
+
+        var grid =$("#gridScriptExecution").data("kendoGrid");
+        var rows =grid.select();
+        var ids = [];
+
+        rows.each(function () {
+            var item = grid.dataItem(this);
+            ids.push(item.Id);
+        });
+
+        $.ajax({
+            url:'@Url.Action("ExecuteScripts", "ScriptExecution")',
+            type: 'POST',
+            data: {ids: ids},
+
+            success: function (rs) {
+                if (rs.success) {
+                    alert("Execute thành công");
+                    searchData();
+                }
+                else {
+                    alert(rs.message);
+                }
+            }
+        });
+    });
 </script>
