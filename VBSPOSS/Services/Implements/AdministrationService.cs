@@ -1580,5 +1580,42 @@ namespace VBSPOSS.Services.Implements
                 return null;
             }
         }
+
+
+        /// <summary>
+        /// Hàm lấy danh sách Menu cho phần site map
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public List<Menu> GetBreadcrumb(string controller,string action)
+        {
+            var menu =
+                _dbContext.Menus
+                    .FirstOrDefault(x =>
+                        x.Controller == controller
+                        && x.Action == action);
+
+            if (menu == null)
+                return new List<Menu>();
+
+            var result =
+                new List<Menu>();
+
+            while (menu != null)
+            {
+                result.Insert(0, menu);
+
+                if (menu.ParentId == null || menu.ParentId == 0)
+                    break;
+
+                menu =
+                    _dbContext.Menus
+                        .FirstOrDefault(x =>
+                            x.Id == menu.ParentId);
+            }
+
+            return result;
+        }
     }
 }

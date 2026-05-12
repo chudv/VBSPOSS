@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Hệ thống -> Quản lý tài khoản người dùng -> Danh sách người dùng";
+    ViewBag.Title = "Quản lý tài khoản người dùng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div id="myPopup"></div>
@@ -137,7 +137,7 @@
             toBirthDay: "",
             findFullName: $("#HoTen_TimKiem").val(),
             findSex: $("#GioiTinh_TimKiem").val(),
-            findUserName: $("#TenNd_TimKiem").val(),
+            findUserName: $("#HoTen_TimKiem").val(),
             findRoleCode: $("#NhomNd_HT_TimKiem").val()
         };
     }
@@ -175,29 +175,31 @@
             .AutoBind(true)
             .SelectedIndex(0)
             )
-        <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Họ tên</label>
+        <label class="lbcontrol" style="color: navy;text-align:right;width:95px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Nhóm quyền</label>
+        @(Html.Kendo().ComboBox().Name("NhomNd_HT_TimKiem")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Nhóm quyền ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .DataSource(source => { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("paramRole"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 280px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .Suggest(true)
+                .AutoBind(true)
+                .SelectedIndex(0))
+
+        <label class="lbcontrol" style="color: navy;text-align:right;width:70px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Từ khóa</label>
         @(Html.Kendo().TextBox()
             .Name("HoTen_TimKiem")
-            .HtmlAttributes(new { placeholder = "Nhập họ tên", style = "background-color:white;width: 180px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
+            .HtmlAttributes(new { placeholder = "Nhập tên đăng nhập hoặc họ tên", style = "background-color:white;width: 200px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
             .Value(""))
        
-        <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Tên đăng nhập</label>
+        @* <label class="lbcontrol" style="color: navy;text-align:right;width:105px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Tên đăng nhập</label>
         @(Html.Kendo().TextBox()
             .Name("TenNd_TimKiem")
             .HtmlAttributes(new { placeholder = "Tên đăng nhập", style = "background-color:white;width: 130px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
-            .Value(""))
+            .Value("")) *@
 
-        <label class="lbcontrol" style="color: navy;text-align:right;width:95px;padding-top:3px;padding-right:6px;font-family:Tahoma;font-size:12px;">Nhóm quyền</label>
-        @(Html.Kendo().ComboBox().Name("NhomNd_HT_TimKiem")
-            .Filter(FilterType.Contains)
-            .Placeholder("--- Nhóm quyền ---")
-            .DataTextField("value")
-            .DataValueField("id")
-            .DataSource(source => { source.Read(read => { read.Action("GetRoles", "RoleManagement").Data("paramRole"); }).ServerFiltering(false); })
-            .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-            .Suggest(true)
-            .AutoBind(true)
-            .SelectedIndex(0))
+        
 
             <div style="padding-right: 10px; padding: 10px;">
             @(Html.Kendo().Button()
