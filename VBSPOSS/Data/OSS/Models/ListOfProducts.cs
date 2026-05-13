@@ -26,7 +26,10 @@
 
         public decimal InterestRate { get; set; } // Thêm trường InterestRate
 
-        public string DepositeType { get; set; }
+        public string DepositType { get; set; }
+
+        public string GroupType { get; set; }
+
         public string ApplyCustomerType { get; set; }
     }
 

@@ -1002,7 +1002,7 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-        public async Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double interestRate, string sessionId, string userName, string userPosCode)
+        public async Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double onTermInterestRate, double beforeTermInterestRate, double partialInterestRate, string sessionId, string userName, string userPosCode)
         {
             try
             {
@@ -1010,10 +1010,33 @@ namespace VBSPOSS.Services.Implements
                 {
                     var existingTerms = await _dbContext.TideTermWorkings
                         .Where(x => x.SessionId == sessionId && x.TermValue == term.TermValue && x.TermUnit == term.TermUnitCode).ToListAsync();
+
+
                     if (existingTerms != null && existingTerms.Count > 0)
                     {
                         for (int i = 0; i < existingTerms.Count; i++)
                         {
+
+                            var depositType = _dbContext.ListOfProducts.Where(w => w.ProductCode == existingTerms[i].TermProductCode).Select(s => s.DepositType).Distinct().ToList().FirstOrDefault();   
+
+                            double interestRate = 0;
+
+                            if (depositType != null)
+                            { 
+                                if (depositType == DepositType.OnTerm)
+                                {
+                                    interestRate = onTermInterestRate;
+                                }
+                                else if (depositType == DepositType.BeforeOfTerm)
+                                {
+                                    interestRate = beforeTermInterestRate;
+                                }
+                                else if (depositType == DepositType.PartialTerm || depositType == DepositType.TopUp)
+                                {
+                                    interestRate = partialInterestRate;
+                                }
+                            }
+
                             //Bổ sung phần validation khi nhập lãi suất
                             double minInterestRate =
                                 (double)(existingTerms[i].TermIntRate - existingTerms[i].MinInterestRateSpread ?? 0);
