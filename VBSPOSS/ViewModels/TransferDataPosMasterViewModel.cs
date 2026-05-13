@@ -12,6 +12,8 @@
 
         public long Id { get; set; }
 
+        public string MainPos { get; set; }
+
         public string FromPosCode { get; set; }
 
         public string FromPosName { get; set; }

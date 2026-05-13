@@ -78,26 +78,9 @@
                     "Text")
                     .Title("Xã đích - Thôn đích")
                     .Width(320);
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
-                        columns.Command(command =>
-                        {
-                            command.Destroy()
-                    .Text("Xóa");
-                        })
-                        .Title("Xóa")
-                        .Width(80);
-                    }
                 })
 
-                .ToolBar(toolbar =>
-                {
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
-                        toolbar.Create()
-                        .Text("Thêm thôn");
-                    }
-                })
+
                 .Editable(editable =>
                 editable.Mode(GridEditMode.InCell)
                 )
@@ -116,40 +99,84 @@
                 new { masterId = Model.Id }
                 ))
                 )
-           )
+                )
 
         </div>
 
     </div>
 
     <!-- FOOTER -->
-    @if (userPosCode != "000100" && userPosCode != "000196")
-    {
-        <div class="row" style="margin-top:15px;">
-            <div class="col-md-12" style="text-align:right;">
-                @(Html.Kendo().Button()
-                    .Name("btnSaveVillage")
-                    .Content("Lưu lại")
-                    .HtmlAttributes(new
-                    {
-                        type = "button",
-                        style = "width:100px;color:blue;font-weight:bold;"
-                    })
-                    )
-                &nbsp;
 
-                @(Html.Kendo().Button()
-                    .Name("btnCloseVillage")
-                    .Content("Đóng")
-                    .HtmlAttributes(new
-                    {
-                        type = "button",
-                        style = "width:100px;color:blue;font-weight:bold;"
-                    })
-                    )
-            </div>
-        </div>
-    }
+
+
+    <div style="
+     display:flex;
+     align-items:center;
+     gap:10px;
+     margin-top:10px;">
+
+        <textarea id="txtApproveRemark"
+                  class="k-textbox"
+                  style="
+              width:350px;
+              height:60px;
+              resize:none;
+              color:blue;"
+                  placeholder="Lý do từ chối..."></textarea>
+
+        @(Html.Kendo().Button()
+            .Name("btnApproveVillage")
+            .Content("Phê duyệt")
+            .HtmlAttributes(new
+            {
+                type = "button",
+
+                style =
+            "width:110px;" +
+            "color:blue;" +
+            "font-weight:bold;",
+
+                onclick =
+            "onApproveTransferDataPos()"
+            })
+            )
+
+        @(Html.Kendo().Button()
+            .Name("btnRejectVillage")
+            .Content("Từ chối")
+            .HtmlAttributes(new
+            {
+                type = "button",
+
+                style =
+            "width:110px;" +
+            "color:red;" +
+            "font-weight:bold;",
+
+                onclick =
+            "onRejectTransferDataPos()"
+            })
+            )
+
+        @(Html.Kendo().Button()
+            .Name("btnCloseVillage")
+            .Content("Đóng")
+            .HtmlAttributes(new
+            {
+                type = "button",
+
+                style =
+            "width:100px;" +
+            "color:blue;" +
+            "font-weight:bold;",
+
+                onclick =
+            "onCloseTransferVillage()"
+            })
+            )
+
+    </div>
+
 </div>
 
 <script>
@@ -220,5 +247,66 @@
             });
         });
     });
+
+    function onApproveTransferDataPos() {
+        var remark = $("#txtApproveRemark").val();
+
+        $.ajax({
+            url: '../TransferDataPos/ApproveTransferDataPos',
+            type: 'POST',
+            data: {
+                pId: '@Model.Id',
+                pRemark: remark,
+                pAction: 'APPROVE'
+            },
+            success: function (res) {
+                if (res == "1") {
+                    alert("Phê duyệt thành công");
+                    refreshGridIDC();
+                    onCloseTransferVillage();
+                }
+                else {
+                    alert("Phê duyệt thất bại");
+                }
+            },
+            error: function () {
+                alert("Có lỗi xảy ra");
+            }
+        });
+    }
+
+    function onRejectTransferDataPos() {
+        var remark = $("#txtApproveRemark").val();
+
+        if (!remark) {
+            alert("Bạn phải nhập lý do từ chối");
+            $("#txtApproveRemark").focus();
+            return;
+        }
+
+        $.ajax({
+            url: '../TransferDataPos/ApproveTransferDataPos',
+            type: 'POST',
+            data: {
+                pId: '@Model.Id',
+                pRemark: remark,
+                pAction: 'REJECT'
+            },
+            success: function (res) {
+                if (res == "1") {
+                    alert("Từ chối thành công");
+                    refreshGridIDC();
+                    onCloseTransferVillage();
+                }
+                else {
+                    alert("Từ chối thất bại");
+                }
+            },
+
+            error: function () {
+                alert("Có lỗi xảy ra");
+            }
+        });
+    }
 
 </script>
