@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Oracle.ManagedDataAccess.Client;
+using System.Text.RegularExpressions;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.ViewModels;
+using System.Text.RegularExpressions;
 
 namespace VBSPOSS.Services.Implements
 {
@@ -86,7 +88,8 @@ namespace VBSPOSS.Services.Implements
                         Status = x.Status,
                         EffectiveDate = x.EffectiveDate,
                         CreatedBy = x.CreatedBy,
-                        CreatedDate = x.CreatedDate
+                        CreatedDate = x.CreatedDate,
+                        PriorityLevel = x.PriorityLevel
                     }).ToListAsync();
             }
             catch (Exception ex)
@@ -121,9 +124,7 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        private async Task ExecuteScript(
-    long id,
-    string executedBy)
+        private async Task ExecuteScript(long id, string executedBy)
         {
             var queue =
                 await _context.ScriptExecutionQueues
@@ -132,13 +133,18 @@ namespace VBSPOSS.Services.Implements
             if (queue == null)
                 return;
 
-            if (queue.Status == 1)
+            // Lưu trạng thái ban đầu
+            var originalStatus = queue.Status;
+
+            if (queue.Status != 0)
                 throw new Exception(
-                    "Script đang được thực thi.");
+                    "Bạn chỉ được phép thực hiện các Script ở trạng thái WAITING!!!");
+
+            var executeTime = DateTime.Now;
 
             queue.Status = 1;
 
-            queue.ExecuteTime = DateTime.Now;
+            queue.ExecuteTime = executeTime;
 
             queue.ErrorMessage = null;
 
@@ -162,11 +168,46 @@ namespace VBSPOSS.Services.Implements
                 var rawScript =
                     queue.ScriptContent ?? "";
 
-                // Normalize script
                 var script =
                     NormalizeOracleScript(
                         rawScript,
                         queue.ExecuteMode);
+
+                //Phần validate script có chứa câu lệnh nguy hiểm hay không, nếu có thì sẽ chặn thực thi và trả về lỗi
+                var validation = ValidateDangerousOracleScript(script);
+
+                if (!validation.IsValid)
+                {
+                    queue.Status = originalStatus;
+
+                    queue.ErrorMessage =
+                        validation.Message;
+
+                    _context.ScriptExecutionLogs.Add(
+                        new ScriptExecutionLog
+                        {
+                            QueueId = queue.Id,
+                            StartTime = executeTime,
+                            EndTime = DateTime.Now,
+                            ExecutionStatus = 1,
+                            ErrorMessage = validation.Message,
+                            ExecutionLog = script,
+                            CreatedBy = executedBy,
+                            CreatedDate = DateTime.Now
+                        });
+
+                    await _context.SaveChangesAsync();
+
+                    throw new Exception(
+                        validation.Message);
+                }
+
+                if (validation.HasWarning)
+                {
+                    queue.ErrorMessage =
+                        $"[WARNING-{validation.RiskLevel}] "
+                        + validation.Message;
+                }
 
                 await using var command =
                     conn.CreateCommand();
@@ -195,17 +236,17 @@ namespace VBSPOSS.Services.Implements
 
                 queue.ErrorMessage = null;
 
-                // Insert log
                 _context.ScriptExecutionLogs.Add(
                     new ScriptExecutionLog
                     {
                         QueueId = queue.Id,
-                        StartTime = queue.ExecuteTime ?? DateTime.Now,
+                        StartTime = executeTime,
                         EndTime = DateTime.Now,
                         ExecutionStatus = 0,
                         AffectedRows = affectedRows,
                         OracleMessage = "SUCCESS",
-                        ExecutionLogContent = script,
+                        ExecutionLog = script,
+                        CreatedBy = executedBy,
                         CreatedDate = DateTime.Now
                     });
             }
@@ -220,22 +261,24 @@ namespace VBSPOSS.Services.Implements
 
                 }
 
-                queue.Status = 3;
-
+                // rollback trạng thái cũ
+                queue.Status = originalStatus;
                 queue.RetryCount += 1;
-
-                queue.ErrorMessage = ex.ToString();
+                queue.ErrorMessage = ex.Message;
+                queue.ExecutedBy = null;
+                queue.ExecutedDate = null;
 
                 _context.ScriptExecutionLogs.Add(
                     new ScriptExecutionLog
                     {
                         QueueId = queue.Id,
-                        StartTime = queue.ExecuteTime ?? DateTime.Now,
+                        StartTime = executeTime,
                         EndTime = DateTime.Now,
                         ExecutionStatus = 1,
                         ErrorCode = ex.HResult.ToString(),
                         ErrorMessage = ex.Message,
-                        ExecutionLogContent = ex.ToString(),
+                        ExecutionLog = ex.ToString(),
+                        CreatedBy = executedBy,
                         CreatedDate = DateTime.Now
                     });
 
@@ -252,9 +295,127 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        private string NormalizeOracleScript(
-    string script,
-    int executeMode)
+        private ScriptValidationResult ValidateDangerousOracleScript(string script)
+        {
+            if (string.IsNullOrWhiteSpace(script))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = false,
+                    Message = "Script rỗng."
+                };
+            }
+
+            var normalized =
+                script
+                    .ToUpper()
+                    .Replace("\r", " ")
+                    .Replace("\n", " ");
+
+            // =========================================
+            // BLOCK DROP TABLE
+            // =========================================
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\bDROP\s+TABLE\b"))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = false,
+                    RiskLevel = "CRITICAL",
+                    Message =
+                        "Không cho phép thực hiện DROP TABLE."
+                };
+            }
+
+            // =========================================
+            // BLOCK TRUNCATE
+            // =========================================
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\bTRUNCATE\s+TABLE\b"))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = false,
+                    RiskLevel = "CRITICAL",
+                    Message =
+                        "Không cho phép thực hiện TRUNCATE TABLE."
+                };
+            }
+
+            // =========================================
+            // DELETE KHÔNG WHERE
+            // =========================================
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\bDELETE\s+FROM\b")
+                &&
+                !Regex.IsMatch(
+                    normalized,
+                    @"\bWHERE\b"))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = false,
+                    RiskLevel = "CRITICAL",
+                    Message =
+                        "DELETE không có WHERE. Script bị chặn."
+                };
+            }
+
+            // =========================================
+            // UPDATE KHÔNG WHERE
+            // =========================================
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\bUPDATE\b")
+                &&
+                !Regex.IsMatch(
+                    normalized,
+                    @"\bWHERE\b"))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = true,
+                    HasWarning = true,
+                    RiskLevel = "HIGH",
+                    Message =
+                        "UPDATE không có WHERE. Cần kiểm tra kỹ."
+                };
+            }
+
+            // =========================================
+            // ALTER TABLE
+            // =========================================
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\bALTER\s+TABLE\b"))
+            {
+                return new ScriptValidationResult
+                {
+                    IsValid = true,
+                    HasWarning = true,
+                    RiskLevel = "HIGH",
+                    Message =
+                        "Script ALTER TABLE. Cần kiểm tra kỹ."
+                };
+            }
+
+            return new ScriptValidationResult
+            {
+                IsValid = true,
+                HasWarning = false,
+                RiskLevel = "LOW"
+            };
+        }
+
+        private string NormalizeOracleScript(string script, int executeMode)
         {
             if (string.IsNullOrWhiteSpace(script))
                 return "";

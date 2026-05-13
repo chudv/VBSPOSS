@@ -101,6 +101,34 @@
         height: 15px;
         border: none;
     }
+
+    .priority-badge {
+        display: inline-block;
+        min-width: 90px;
+        min-height: 25px;
+        max-height: 25px;
+        text-align: center;
+        padding: 2px 2px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .priority-normal {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .priority-high {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .priority-critical {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
 </style>
 
 <div id="scriptPopup"></div>
@@ -123,29 +151,10 @@
                                 .DataTextField("Text")
                                 .DataValueField("Value")
                         .HtmlAttributes(new { placeholder = "Trạng thái", style = "background-color:white;width: 150px;color:green !important;margin-left: 10px;" })
-                        .DataTextField("Text")  // Hiển thị "Tạo lập", "Đóng",...
-                        .DataValueField("Value") // Lọc theo Description (gửi pStatusDesc = "Tạo lập")
+                        .DataTextField("Text")  
+                        .DataValueField("Value") 
                         .DataSource(source => source
-                        .Read(read => read.Action("GetScriptExecutionStatus", "ListOfValue")))
-                                @* .BindTo(new List<SelectListItem>()
-                                {
-                                new SelectListItem()
-                                {
-                                Text = "WAITING",
-                                Value = "0"
-                                },
-                                new SelectListItem()
-                                {
-                                Text = "SUCCESS",
-                                Value = "2"
-                                },
-                                new SelectListItem()
-                                {
-                                Text = "FAILED",
-                                Value = "3"
-                                }
-                                }) *@
-                                )
+                        .Read(read => read.Action("GetScriptExecutionStatus", "ListOfValue"))))
 
            </div>
         <div class="col-md-5">
@@ -198,6 +207,23 @@
                     .Title("Ngày hiệu lực")
                     .Format("{0:dd/MM/yyyy}")
                     .Width(120);
+
+                    columns.Bound(x => x.PriorityLevelDesc)
+                    .Title("Mức độ")
+                    .Width(130)
+                    .ClientTemplate(
+                    "# if (PriorityLevelDesc == 'NORMAL') { #" +
+                    "<span class='priority-badge priority-normal'>NORMAL</span>" +
+                    "# } else if (PriorityLevelDesc == 'HIGH') { #" +
+                    "<span class='priority-badge priority-high'>HIGH</span>" +
+                    "# } else { #" +
+                    "<span class='priority-badge priority-critical'>CRITICAL</span>" +
+                    "# } #"
+                    )
+                    .HtmlAttributes(new
+                    {
+                        style = "text-align:center;"
+                    });
 
                     columns.Bound(x => x.StatusDesc)
                     .Title("Trạng thái")
@@ -272,10 +298,17 @@
                 $(e.currentTarget)
                     .closest("tr"));
 
-        $("#scriptPopup")
-            .kendoWindow({
-                width: "1200px",
-                height: "700px",
+                    var mainWindow =
+            $("#scriptPopup");
+        if (mainWindow.data("kendoWindow")) {
+            mainWindow
+                .data("kendoWindow")
+                .destroy();
+        }
+
+        mainWindow.kendoWindow({
+                width: "1024px",
+                height: "768px",
                 title: "Execution Log",
                 modal: true,
                 content: {
@@ -303,8 +336,8 @@
                 .destroy();
         }
         mainWindow.kendoWindow({
-            width: "1300px",
-            height: "750px",
+            width: "1024px",
+            height: "768px",
             title: "CHI TIẾT SCRIPT",
             modal: true,
             visible: false,
@@ -357,12 +390,12 @@
             data: {ids: ids},
 
             success: function (rs) {
-                if (rs.success) {
+                if (rs.Success) {
                     alert("Execute thành công");
                     searchData();
                 }
                 else {
-                    alert(rs.message);
+                    alert(rs.Message);
                 }
             }
         });

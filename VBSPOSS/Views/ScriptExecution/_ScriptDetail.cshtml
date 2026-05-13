@@ -14,7 +14,7 @@
     }
 
     .script-card-header {
-        padding: 10px 14px;
+        padding: 5px 7px;
         border-bottom: 1px solid #e9ecef;
         font-size: 13px;
         font-weight: bold;
@@ -23,7 +23,7 @@
     }
 
     .script-card-body {
-        padding: 14px;
+        padding: 7px;
     }
 
     .script-label {
@@ -107,8 +107,8 @@
         padding: 14px;
         font-size: 13px;
         font-family: Consolas;
-        line-height: 1.7;
-        min-height: 350px;
+        line-height: 1.2;
+        min-height: 100px;
         overflow: auto;
         border: 1px solid #1f2937;
         white-space: pre-wrap;
@@ -124,6 +124,13 @@
 
     .collapse-header {
         cursor: pointer;
+    }
+
+    .create_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+        line-height: 1 !important;
     }
 </style>
 @{
@@ -170,7 +177,7 @@
             THÔNG TIN SCRIPT
         </div>
         <div class="script-card-body">
-            <div class="row">
+            <div class="create_form row">
                 <div class="col-md-2">
                     <div class="script-label">
                         <i class="fa fa-cubes"></i>
@@ -230,7 +237,7 @@
                            value="@Model.RetryCount" />
                 </div>
             </div>
-            <div class="row mt-3">
+            <div class="create_form row mt-3">
                 <div class="col-md-5">
                     <div class="script-label">
                         <i class="fa fa-file-text"></i>

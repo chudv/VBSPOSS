@@ -20,7 +20,7 @@
 
         public string OracleMessage { get; set; }
 
-        public string ExecutionLogContent { get; set; }
+        public string ExecutionLog { get; set; }
 
         public string ErrorCode { get; set; }
 

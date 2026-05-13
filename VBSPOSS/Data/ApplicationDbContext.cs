@@ -420,7 +420,7 @@ namespace VBSPOSS.Data
                 entity.Property(x => x.OracleMessage)
                     .HasColumnType("nvarchar(max)");
 
-                entity.Property(x => x.ExecutionLogContent)
+                entity.Property(x => x.ExecutionLog)
                     .HasColumnType("nvarchar(max)");
 
                 entity.Property(x => x.ErrorCode)
