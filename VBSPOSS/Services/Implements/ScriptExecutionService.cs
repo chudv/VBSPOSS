@@ -258,7 +258,7 @@ namespace VBSPOSS.Services.Implements
                 }
                 catch
                 {
-
+                    throw;
                 }
 
                 // rollback trạng thái cũ
@@ -477,60 +477,7 @@ namespace VBSPOSS.Services.Implements
 
             return script;
         }
-
-        //private async Task ExecuteScript(long id,string executedBy)
-        //{
-        //    var queue =
-        //        await _context.ScriptExecutionQueues
-        //            .FirstOrDefaultAsync(x => x.Id == id);
-
-        //    if (queue == null)
-        //        return;
-
-        //    queue.Status = 1;
-        //    await _context.SaveChangesAsync();
-
-        //    var oracleConnectionString =_connectionStringProvider.GetOracleConnectionString();
-        //    using var conn =new OracleConnection(oracleConnectionString);
-
-        //    await conn.OpenAsync();
-
-        //    using var tran =conn.BeginTransaction();
-
-        //    try
-        //    {
-        //        var command =
-        //            conn.CreateCommand();
-
-        //        command.Transaction = tran;
-
-        //        command.CommandText =
-        //            queue.ScriptContent;
-
-        //        await command.ExecuteNonQueryAsync();
-
-        //        tran.Commit();
-
-        //        queue.Status = 2;
-
-        //        queue.ExecutedBy = executedBy;
-
-        //        queue.ExecutedDate = DateTime.Now;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        tran.Rollback();
-
-        //        queue.Status = 3;
-
-        //        queue.ErrorMessage = ex.ToString();
-
-        //        throw;
-        //    }
-
-        //    await _context.SaveChangesAsync();
-        //}
-
+       
         public async Task<ServiceResult>
             RetryScript(
                 long id,
@@ -588,5 +535,148 @@ namespace VBSPOSS.Services.Implements
                 throw ;
             }
         }
+
+        /// <summary>
+        /// Hàm để các module khác gọi khi muốn đẩy 1 script vào queue để thực thi. Hệ thống sẽ tự động chạy theo lịch hoặc chạy ngay nếu effective date đã tới.    
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<ServiceResult>PushScriptToQueue(ScriptExecutionRequest request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return ServiceResult.ErrorResult(
+                        "Dữ liệu request không hợp lệ.");
+                }
+
+                if (string.IsNullOrWhiteSpace(
+                    request.ScriptContent))
+                {
+                    return ServiceResult.ErrorResult(
+                        "ScriptContent không được để trống.");
+                }
+
+                var queue =
+                    new ScriptExecutionQueue
+                    {
+                        ModuleCode =
+                            request.ModuleCode,
+
+                        BusinessId =
+                            request.BusinessId,
+
+                        ScriptName =
+                            request.ScriptName,
+
+                        DbType =
+                            request.DbType,
+
+                        ExecuteType =
+                            request.ExecuteType,
+
+                        ExecuteMode =
+                            request.ExecuteMode,
+
+                        ScriptContent =
+                            request.ScriptContent,
+
+                        RollbackScript =
+                            request.RollbackScript,
+
+                        EffectiveDate =
+                            request.EffectiveDate,
+
+                        ScheduleTime =
+                            request.ScheduleTime,
+
+                        Status = 0,
+
+                        RetryCount = 0,
+
+                        IsAutoExecuted =
+                            request.IsAutoExecuted,
+
+                        PriorityLevel =
+                            request.PriorityLevel,
+
+                        CreatedBy =
+                            request.CreatedBy,
+
+                        CreatedDate =
+                            DateTime.Now
+                    };
+
+                _context.ScriptExecutionQueues
+                    .Add(queue);
+
+                await _context.SaveChangesAsync();
+
+                // =========================================
+                // SAVE PARAMETERS
+                // =========================================
+
+                if (request.Parameters != null
+                    && request.Parameters.Any())
+                {
+                    var parameters =
+                        request.Parameters
+                            .Select((x, index) =>
+                                new ScriptExecutionParameter
+                                {
+                                    QueueId =
+                                        queue.Id,
+
+                                    ParamKey =
+                                        x.ParamKey,
+
+                                    ParamValue =
+                                        x.ParamValue,
+
+                                    OracleDataType =
+                                        x.OracleDataType,
+
+                                    ParameterDirection =
+                                        x.ParameterDirection,
+
+                                    ParameterOrder =
+                                        index + 1,
+
+                                    IsEncrypted =
+                                        x.IsEncrypted,
+
+                                    CreatedBy =
+                                        request.CreatedBy,
+
+                                    CreatedDate =
+                                        DateTime.Now
+                                }).ToList();
+
+                    _context
+                        .ScriptExecutionParameters
+                        .AddRange(parameters);
+
+                    await _context.SaveChangesAsync();
+                }
+
+                _logger.LogInformation(
+                    "Push script queue success. QueueId={QueueId}",
+                    queue.Id);
+
+                return ServiceResult.SuccessResult(
+                    queue.Id.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "PushScriptToQueue Error");
+
+                return ServiceResult.ErrorResult(
+                    ex.Message);
+            }
+        }
+
     }
 }

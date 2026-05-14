@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +12,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using VBSPOSS.Areas.Identity.Data;
 using VBSPOSS.Data;
+using VBSPOSS.Filters;
 using VBSPOSS.Helpers.Implements;
 using VBSPOSS.Helpers.Interfaces;
 using VBSPOSS.Implements.Helpers;
@@ -43,6 +45,9 @@ builder.Services.AddDbContext<MyIdentityDbContext>((sp, options) =>
     options.UseSqlServer(connStr);
 });
 
+
+
+
 builder.Services.AddDbContext<IntellectIDCDbContext>((sp, options) =>
 {
     var provider = sp.GetRequiredService<IConnectionStringProvider>();
@@ -50,6 +55,23 @@ builder.Services.AddDbContext<IntellectIDCDbContext>((sp, options) =>
 
     options.UseOracle(connStr);
 });
+
+
+builder.Services.AddHangfire((serviceProvider, config) =>
+{
+    var connectionProvider =
+        serviceProvider
+            .GetRequiredService<
+                IConnectionStringProvider>();
+
+    var connStr =
+        connectionProvider
+            .GetOSSConnectionString();
+
+    config.UseSqlServerStorage(connStr);
+});
+
+builder.Services.AddHangfireServer();
 
 // ========================= IDENTITY =========================
 
@@ -206,6 +228,10 @@ builder.Services.AddScoped<IInterestRateConfigureService,
 builder.Services.AddScoped<IProductParameterService,
     ProductParameterService>();
 
+builder.Services.AddScoped<
+    IScriptExecutionJobService,
+    ScriptExecutionJobService>();
+
 // ========================= HTTP CLIENT =========================
 
 builder.Services.AddHttpClient("InternalEsbClient", client =>
@@ -334,6 +360,28 @@ app.UseSession();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire",
+    new DashboardOptions
+    {
+        Authorization =
+            new[] {
+                new HangfireAuthorizationFilter()
+            }
+    });
+
+// ==========================================
+// REGISTER RECURRING JOB
+// ==========================================
+
+RecurringJob.AddOrUpdate<
+    IScriptExecutionJobService>(
+    "AUTO_EXECUTE_SCRIPT_JOB",
+
+    x => x.ProcessWaitingScripts(),
+
+    "*/1 * * * *");
+
 
 // LOG STATUS CODE
 

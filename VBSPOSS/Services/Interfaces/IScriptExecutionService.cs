@@ -33,5 +33,13 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<ScriptExecutionQueue>
             GetScriptDetail(long id);
+
+
+        /// <summary>
+        /// Hàm để các module khác gọi khi muốn đẩy 1 script vào queue để thực thi. Hệ thống sẽ tự động chạy theo lịch hoặc chạy ngay nếu effective date đã tới.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<ServiceResult>PushScriptToQueue(ScriptExecutionRequest request);
     }
 }
