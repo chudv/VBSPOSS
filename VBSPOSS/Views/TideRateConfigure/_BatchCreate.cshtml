@@ -245,6 +245,23 @@
         onLoadTermGrid();
     }
 
+
+     function onAccountTypeCodeChange(e){
+         e.preventDefault();
+
+            var depositGroupType = $("#DepositGroupType").val();
+
+            if (depositGroupType === null  || depositGroupType === '') {
+                alert('Bạn chưa chọn loại sản phẩm!!!');
+                return false;
+            } else {
+                onLoadProductGrid();
+                return true;
+            }
+
+    }
+
+
     function onLoadProductGrid(){        
         //Tải lại grid productCode sản phẩm
         var grid = $("#grdProductGrid").data("kendoGrid");
@@ -1197,6 +1214,7 @@
                         .HtmlAttributes(new { id = "DepositGroupType", style = "width: 100%; color: navy;", required = "required" })
                         .Suggest(true)
                         .AutoBind(true)
+                        //.SelectedIndex(0)
                         )
                 </div>
                 <div class="col-md-5">
@@ -1206,7 +1224,7 @@
                         .Placeholder("Chọn loại khách hàng")
                         .DataTextField("value")
                         .DataValueField("id")
-                        .Events(e => e.Change("onLoadProductGrid"))
+                                        .Events(e => e.Change("onAccountTypeCodeChange"))
                         .DataSource(
                         source => { source.Read(read => { read.Action("GetCustomerTypeList", "ListOfValue"); }).ServerFiltering(false); })
                         .HtmlAttributes(new { id = "CustomerType", style = "width: 100%; color: navy;", required = "required" })
