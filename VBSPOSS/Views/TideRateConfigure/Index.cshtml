@@ -83,6 +83,17 @@
 		height: 15px;
 		border: none;
 	}
+
+
+	#CircularDateBegin_Find {
+		max-width: 100px !important;
+		min-width: 100px !important;
+	}
+
+	#CircularDateEnd_Find {
+		max-width: 100px !important;
+		min-width: 100px !important;
+	}
 </style>
 <script>
 	var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
@@ -470,7 +481,7 @@
 	<div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;">
 
 		<div class="col-md-12">
-			<label class="lbcontrol" style="color: navy;text-align:left;width:50px;padding-top:3px;padding-right:0px;">Đơn vị</label>
+			<label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:0px;">Đơn vị</label>
 			@(Html.Kendo().ComboBox().Name("PosCode_Find")
 						.Filter(FilterType.Contains)
 						.Placeholder("--- Đơn vị ---")
@@ -478,11 +489,11 @@
 						.DataValueField("id")
 						.ClearButton(false)
 						.DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
-						.HtmlAttributes(new { @id = "PosCode_Find", style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;class='form - control';" })
+						.HtmlAttributes(new { @id = "PosCode_Find", style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;class='form-control';" })
 						.Suggest(true)
 						.AutoBind(true)
 						.SelectedIndex(0))
-			<label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top:3px;padding-right:6px;">Nội dung</label>
+			<label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:6px;margin-left: 5px;">Nội dung</label>
 			@(Html.Kendo().TextBox()
 						.Name("Search_Text")
 						.HtmlAttributes(new { placeholder = "Mã sản phẩm/quyết định", style = "background-color:white;width: 180px;color:green;!important;padding-left:3px;padding-right: 2px;!important;" })
@@ -494,7 +505,7 @@
 						.HtmlAttributes(new { placeholder = "Số/Nội dung quyết định", style = "background-color:white;width: 180px;padding-left:3px;padding-right: 2px;!important;" })
 						.Value("")
             ) *@
-            <label class="lbcontrol" style="color: navy;text-align:right;width:85px;padding-top:3px;padding-right:6px;">Trạng thái</label>
+			<label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:6px;margin-left: 5px;">Trạng thái</label>
             @(Html.Kendo().ComboBox()
                 .Name("StatusDesc_Find")
                 .Filter("contains")
@@ -505,23 +516,23 @@
 						.Read(read => read.Action("GetConfigStatusOptions", "ListOfValue")))
                 .HtmlAttributes(new
                 {
-                    style = "background-color:white;width: 150px;padding-left:3px;padding-right: 2px;!important;"
+                    style = "background-color:white;width: 130px;padding-left:3px;padding-right: 2px;!important;"
                 })
                 .AutoBind(true)
                 .SelectedIndex(0)
             )
-			<label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top:3px;padding-right:6px;">Ngày hiệu lực</label>
+			<label class="lbcontrol" style="color: navy;text-align:left;padding-top:3px;padding-right:6px;margin-left: 5px;">Ngày hiệu lực</label>
 			@(Html.Kendo().DatePicker()
 						.Name("CircularDateBegin_Find")
 						.Format("dd/MM/yyyy")
-						.HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Từ ngày cần tìm kiếm" })
+						.HtmlAttributes(new { style = "background-color: white !important; width: 130px !important;", title = "Từ ngày cần tìm kiếm" })
 						.Value(DateTime.Today.AddMonths(-1))
 						)
 			<span style="color: #ca8f5c;" for="DonVi_Cd_TimKiem">&nbsp;-&nbsp;</span>
 			@(Html.Kendo().DatePicker()
 						.Name("CircularDateEnd_Find")
 						.Format("dd/MM/yyyy")
-						.HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Đến ngày cần tìm kiếm" })
+						.HtmlAttributes(new { style = "background-color:white !important; width: 130px !important;", title = "Đến ngày cần tìm kiếm" })
 						.Value(DateTime.Today.AddDays(1))
 						)
 			&nbsp;&nbsp;
@@ -577,7 +588,7 @@
 									@class = "btn-delete"
 								});
 								
-							}).Width(150).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+							}).Width(180).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
 							@* columns.Bound(c => c.IdList).Title("Xem CT").Width(55).HtmlAttributes(new { style = "text-align: center;" }).ClientTemplate("<a onclick=showDetailTidePenalRate('#= IdList #',#= PosCode #,'#= ProductGroupCode #','#= CircularRefNum #','#= Status #') title='Xem chi tiết thông tin cán bộ' style='cursor:pointer;text-decoration:none;'>#= getAssignedImage(Id,PosCode) #  <u></u></a>"); *@
 							columns.Bound(c => c.DocumentId).Hidden();
 							columns.Bound(c => c.Id).Hidden();

@@ -287,12 +287,24 @@ namespace VBSPOSS.Constants
         public const string UserId_Call_ApiIDC_Code = "UserIdCallAPIIDC";
     }
 
+    public class DepositGroupType
+    {
+        public const string Tiet_kiem_ca_nhan = "I"; 
+        public const string Tien_gui_cuoi_ky_tai_quay_MB = "E"; 
+        public const string Tien_gui_dau_ky_dinh_ky_quay = "O"; 
+        public const string Tien_gui_dau_ky_dinh_ky_MB = "P"; 
+        public const string Topup = "T"; // 
+        public const string Tien_gui_tich_luy = "C";
+        public const string Tien_gui_ky_quy = "K";
+    }
+
+
     public class DepositType
     {
-        public const string BeforeOfTerm = "B"; // Đầu ký
-        public const string PartitalTerm = "P"; // Định kỳ
-        public const string OnTerm = "E"; // Định kỳ
-        public const string Topup = "T"; // Định kỳ
+        public const string BeforeOfTerm = "B";
+        public const string PartialTerm = "P";
+        public const string TopUp = "T";
+        public const string OnTerm = "E";        
     }
 
     /// <summary>

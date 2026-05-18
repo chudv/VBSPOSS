@@ -142,4 +142,88 @@ namespace VBSPOSS.Constants
 
         public const string ResultValue_Status_Errored = "Error";
     }
+
+    public class TranferDataPosStatus
+    {
+        /// <summary>
+        /// 0 - Khởi tạo, up tờ trình
+        /// </summary>
+        public static ValueConstModel INIT = new ValueConstModel
+        {
+            Value = 0,
+            Code = "INIT",
+            Description = "Khởi tạo"
+        };
+
+        /// <summary>
+        /// 1 - Khai báo thôn điều chuyển
+        /// </summary>
+        public static ValueConstModel DECLARE_VILLAGE = new ValueConstModel
+        {
+            Value = 1,
+            Code = "DECLARE",
+            Description = "Khai báo thôn điều chuyển"
+        };
+
+        /// <summary>
+        /// 2 - TW duyệt
+        /// </summary>
+        public static ValueConstModel TW_APPROVED = new ValueConstModel
+        {
+            Value = 2,
+            Code = "APPROVED",
+            Description = "TW duyệt"
+        };
+
+        /// <summary>
+        /// 3 - Pos nguồn xuất số liệu
+        /// </summary>
+        public static ValueConstModel FROM_POS_EXPORTED = new ValueConstModel
+        {
+            Value = 3,
+            Code = "EXPORT",
+            Description = "POS nguồn xuất số liệu"
+        };
+
+        /// <summary>
+        /// 4 - Pos đích xác nhận
+        /// </summary>
+        public static ValueConstModel TO_POS_CONFIRMED = new ValueConstModel
+        {
+            Value = 4,
+            Code = "CONFIRM",
+            Description = "POS đích xác nhận"
+        };
+
+        /// <summary>
+        /// Lấy theo Value
+        /// </summary>
+        public static ValueConstModel GetByValue(int value)
+        {
+            return value switch
+            {
+                0 => INIT,
+                1 => DECLARE_VILLAGE,
+                2 => TW_APPROVED,
+                3 => FROM_POS_EXPORTED,
+                4 => TO_POS_CONFIRMED,
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// Danh sách combobox
+        /// </summary>
+        public static List<ValueConstModel> GetOption()
+        {
+            return new List<ValueConstModel>
+        {
+            INIT,
+            DECLARE_VILLAGE,
+            TW_APPROVED,
+            FROM_POS_EXPORTED,
+            TO_POS_CONFIRMED
+        };
+        }
+    }
 }

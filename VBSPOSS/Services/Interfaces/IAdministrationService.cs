@@ -143,5 +143,13 @@ namespace VBSPOSS.Services.Interfaces
 
         RolePermissionModel GetRolePermissionByMenuId(string roleCode, string controller, string action);
 
+        /// <summary>
+        /// Hàm lấy danh sách menu cho phần site map
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        List<Menu> GetBreadcrumb(string controller,string action);
+
     }
 }

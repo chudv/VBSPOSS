@@ -1,6 +1,7 @@
 ﻿using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections;
@@ -600,14 +601,22 @@ namespace VBSPOSS.Controllers
             return Json(data);
         }
 
-        public JsonResult GetDepositTypeList()
+        public JsonResult GetDepositGroupTypeList()
         {
             ArrayList data = new ArrayList();
-            
-            data.Add(new { id = "B", value = "Đầu kỳ" });
-            data.Add(new { id = "P", value = "Định kỳ" });
-            data.Add(new { id = "E", value = "Cuối kỳ" });
-            data.Add(new { id = "T", value = "Top-up" });
+
+            //data.Add(new { id = "B", value = "Đầu kỳ" });
+            //data.Add(new { id = "P", value = "Định kỳ" });
+            //data.Add(new { id = "E", value = "Cuối kỳ" });
+            //data.Add(new { id = "T", value = "Top-up" });
+
+            data.Add(new { id = "I", value = "Tiết kiệm cá nhân" });
+            data.Add(new { id = "E", value = "Tiền gửi cuối kỳ tại quầy và MB" });
+            data.Add(new { id = "O", value = "Tiền gửi đầu kỳ/định kỳ tại quầy" });
+            data.Add(new { id = "P", value = "Tiền gửi đầu kỳ/định kỳ tại MB" });
+            data.Add(new { id = "T", value = "Tiền gửi góp" });
+            data.Add(new { id = "C", value = "Tiền gửi tích lũy" });
+            data.Add(new { id = "K", value = "Tiền gửi ký quỹ" });
 
             return Json(data);
         }
@@ -1699,6 +1708,21 @@ namespace VBSPOSS.Controllers
                     }
                 }
             }
+            return Json(data);
+        }
+
+
+
+        [HttpGet]
+        public JsonResult GetScriptExecutionStatus()
+        {
+            List<SelectListItem> data = new List<SelectListItem>();
+
+            data.Add(new SelectListItem { Value = "", Text = "Tất cả" });
+            data.Add(new SelectListItem { Value = "0", Text = "WAITING" });
+            data.Add(new SelectListItem { Value = "2", Text = "SUCCESS" });
+            data.Add(new SelectListItem { Value = "3", Text = "FAILED" });
+
             return Json(data);
         }
 

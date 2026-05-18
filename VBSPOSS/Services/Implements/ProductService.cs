@@ -145,7 +145,7 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-        public List<ListOfProducts> GetFullProductList(string productGroupCode, string depositType, string customerType, string userPosCode, int userGrade)
+        public List<ListOfProducts> GetFullProductList(string productGroupCode, string depositGroupType, string customerType, string userPosCode, int userGrade)
         {
 
             var query = _context.ListOfProducts
@@ -154,8 +154,8 @@ namespace VBSPOSS.Services.Implements
             if (!string.IsNullOrEmpty(productGroupCode))
                 query = query.Where(x => x.ProductGroupCode == productGroupCode);
 
-            if (!string.IsNullOrEmpty(depositType))
-                query = query.Where(x => x.DepositeType == depositType);
+            if (!string.IsNullOrEmpty(depositGroupType))
+                query = query.Where(x => x.GroupType == depositGroupType);
 
             if (!string.IsNullOrEmpty(customerType) && customerType != CustomerSegmentType.ALL)
                 query = query.Where(x => x.ApplyCustomerType == customerType);
@@ -214,13 +214,13 @@ namespace VBSPOSS.Services.Implements
         /// <param name="termType">Loại kỳ hạn: M - Tháng, Q - Quý, Y - Năm</param>
         /// <param name="termBasis">Hệ số nhân kỳ hạn: 1, 2, 3</param>
         /// <param name="inclusionFlag">Cờ bao gồm/Không bao gồm</param>
-        /// <param name="depositType">Loại sản phầm: B - đầu kỳ, P - định kỳ, E - Cuối kỳ</param>
+        /// <param name="depositGroupType">Loại sản phầm: B - đầu kỳ, P - định kỳ, E - Cuối kỳ</param>
         /// <returns></returns>
-        public List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag, string depositType)
+        public List<DepositTermModel> GetDepositTerms(string termType, int termBasis, string inclusionFlag, string depositGroupType)
         {
             bool isInclusive = inclusionFlag == "INCLUSIVE";
 
-            var terms = GetTermRangesByDepositType(depositType);
+            var terms = GetTermRangesByDepositType(depositGroupType);
 
             return terms.Select((x, index) => new DepositTermModel
             {
@@ -252,43 +252,117 @@ namespace VBSPOSS.Services.Implements
 
         List<(int Min, int Max)> GetTermRangesByDepositType(string depositType)
         {
-            if (depositType == DepositType.BeforeOfTerm ||
-                depositType == DepositType.PartitalTerm)
+            if (depositType == DepositGroupType.Tien_gui_cuoi_ky_tai_quay_MB)
             {
-                return new List<(int Min, int Max)>
-        {
-            (0, 1),
-            (1, 3),
-            (3, 6),
-            (6, 9),
-            (9, 12),
-            (12, 15),
-            (15, 18),
-            (18, 21),
-            (21, 24),
-            (24, 27),
-            (27, 30),
-            (30, 33),
-            (33, 36),
-            (36, 36)
-        };
+                var terms = new List<(int Min, int Max)>
+                {
+                    (0, 1)
+                };
+
+                for (int i = 1; i < 36; i++)
+                {
+                    terms.Add((i, i + 1));
+                }
+
+                terms.Add((36, 36));                    
+
+                return terms;
             }
 
-            if (depositType == DepositType.Topup)
+            if (depositType == DepositGroupType.Tien_gui_dau_ky_dinh_ky_quay)
             {
                 return new List<(int Min, int Max)>
-        {
-            (0, 1),
-            (1, 6),
-            (6, 9),
-            (9, 12),
-            (12, 18),
-            (18, 24),
-            (24, 36),
-            (36, 48),
-            (48, 60),
-            (60, 60)
-        };
+                {
+                    (0, 1),
+                    (1, 3),
+                    (3, 6),
+                    (6, 9),
+                    (9, 12),
+                    (12, 15),
+                    (15, 18),
+                    (18, 21),
+                    (21, 24),
+                    (24, 27),
+                    (27, 30),
+                    (30, 33),
+                    (33, 36),
+                    (36, 36)
+                };
+            }
+
+            if (depositType == DepositGroupType.Tien_gui_dau_ky_dinh_ky_MB)
+            {
+                return new List<(int Min, int Max)>
+                {
+                    (0, 3),
+                    (3, 6),
+                    (6, 9),
+                    (9, 12),
+                    (12, 15),
+                    (15, 18),
+                    (18, 21),
+                    (21, 24),
+                    (24, 27),
+                    (27, 30),
+                    (30, 33),
+                    (33, 36),
+                    (36, 36)
+                };
+            }
+
+            if (depositType == DepositGroupType.Tien_gui_tich_luy)
+            {
+                return new List<(int Min, int Max)>
+                {
+                    (0, 1),
+                    (1, 3),
+                    (3, 6),
+                    (6, 9),
+                    (9, 12),
+                    (12, 15),
+                    (15, 18),
+                    (18, 21),
+                    (21, 24),
+                    (24, 36),                    
+                    (36, 36)
+                };
+            }
+
+            if (depositType == DepositGroupType.Tien_gui_ky_quy)
+            {
+                return new List<(int Min, int Max)>
+                {
+                    (0, 1),
+                    (1, 2),
+                    (2, 3),
+                    (3, 4),
+                    (4, 5),
+                    (5, 6),
+                    (6, 7),
+                    (7, 8),
+                    (8, 9),
+                    (9, 10),
+                    (10, 11),
+                    (11, 12),
+                    (12, 12)
+                };
+            }
+
+            if (depositType == DepositGroupType.Topup)
+            {
+                return new List<(int Min, int Max)>
+                {
+                    (0, 1),
+                    (1, 6),
+                    (6, 9),
+                    (9, 12),
+                    (12, 18),
+                    (18, 24),
+                    (24, 36),
+                    (36, 48),
+                    (48, 60),
+                    (60, 60)
+                };
             }
 
             return GenerateDefaultTermRanges();
@@ -297,9 +371,9 @@ namespace VBSPOSS.Services.Implements
         List<(int Min, int Max)> GenerateDefaultTermRanges()
         {
             var terms = new List<(int Min, int Max)>
-    {
-        (0, 1)
-    };
+            {
+                (0, 1)
+            };
 
             for (int i = 1; i < 36; i++)
             {

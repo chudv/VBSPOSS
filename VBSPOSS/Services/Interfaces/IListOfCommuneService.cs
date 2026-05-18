@@ -4,7 +4,7 @@ using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces
 {
-    public interface IListOfCommunesService
+    public interface IListOfCommuneService
     {
 
         /// <summary>

@@ -92,7 +92,13 @@ namespace VBSPOSS.Controllers
             DateTime? fromDate = string.IsNullOrEmpty(fromBirthDay) ? null : CustConverter.StringToDate(fromBirthDay, "dd/MM/yyyy");
             DateTime? toDate = string.IsNullOrEmpty(fromBirthDay) ? null : CustConverter.StringToDate(toBirthDay, "dd/MM/yyyy");
 
-            var list = _administrationService.GetUsers(_findPosCode, findDepartment, findTitleCode, fromDate, toDate, findFullName, findSex, findUserName, findRoleCode, "");
+            var list1 = _administrationService.GetUsers(_findPosCode, findDepartment, findTitleCode, fromDate, toDate, findFullName, findSex, "", findRoleCode, "");
+            var list2 = _administrationService.GetUsers(_findPosCode, findDepartment, findTitleCode, fromDate, toDate, "", findSex, findUserName, findRoleCode, "");
+            var list = list1
+    .Concat(list2)
+    .GroupBy(x => x.UserName)
+    .Select(x => x.First())
+    .ToList();
 
             return Json(list.ToDataSourceResult(request));
         }

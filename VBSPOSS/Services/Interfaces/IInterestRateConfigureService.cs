@@ -101,7 +101,7 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<string> DeleteInterestRateConfigureByDocumentId(long documentId, string userName);
 
-        Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double interestRate, string sessionId, string userName, string userPosCode);
+        Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double interestRate, double beforeTermInterestRate, double partialInterestRate,  string sessionId, string userName, string userPosCode);
 
 
         //add Casa

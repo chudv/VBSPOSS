@@ -22,26 +22,26 @@ using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Controllers
 {
-    public class ListOfCommunesController : BaseController
+    public class ListOfCommuneController : BaseController
     {
-        private readonly IListOfCommunesService _serviceCommune;
-        private readonly ILogger<ListOfCommunesController> _logger;
+        private readonly IListOfCommuneService _serviceCommune;
+        private readonly ILogger<ListOfCommuneController> _logger;
         private readonly IListOfValueService _serviceLOV;
         private readonly IApiInternalService _internalServiceAPI;
         private readonly IMapper _mapper;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListOfCommunesController"/> class.
+        /// Initializes a new instance of the <see cref="ListOfCommuneController"/> class.
         /// </summary>
         /// <param name="logger">The logger<see cref="ILogger{BaseController}"/>.</param>
         /// <param name="adminService">The adminService<see cref="IAdministrationService"/>.</param>
         /// <param name="serviceLOV">The serviceLOV<see cref="IListOfValueService"/>.</param>
         /// <param name="sessionHelper">The sessionHelper<see cref="ISessionHelper"/>.</param>
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
-        /// <param name="service">The service<see cref="IListOfCommunesService"/>.</param>
+        /// <param name="service">The service<see cref="IListOfCommuneService"/>.</param>
         /// <param name="internalServiceAPI">The internalServiceAPI<see cref="IApiInternalService"/>.</param>
-        public ListOfCommunesController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
-                IMapper mapper, IListOfCommunesService serviceCommune, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
+        public ListOfCommuneController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
+                IMapper mapper, IListOfCommuneService serviceCommune, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
 
         {
             _serviceLOV = serviceLOV;
@@ -92,7 +92,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
         /// <param name="pStatus">Trạng thái</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        //public ActionResult LoadGridData_CommunedWorks([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus)
+        //public ActionResult LoadGridData_CommuneWorks([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus)
         //{
         //    try
         //    {
@@ -110,8 +110,8 @@ namespace VBSPOSS.Controllers
         //            if (!string.IsNullOrEmpty(pPosCode))
         //                pPosCode = pPosCode.Substring(0, 4);
         //        }
-        //        var listTransPointWorks = _serviceCommune.GetListOfCommunesSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
-        //        return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
+        //        var listCommuneWorks = _serviceCommune.GetListOfCommunesSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
+        //        return Json(listCommuneWorks.ToDataSourceResult(request, ModelState));
         //    }
         //    catch (Exception ex)
         //    {

@@ -66,14 +66,14 @@
                 <div class="container-fluid">
                     <div class="row align-items-center">
                         <div class="col-sm-12">
-                            <h6 class="vbsp-page-title">@ViewData["Title"]</h6>
+                            <h6 class="vbsp-page-title">@await Component.InvokeAsync("Breadcrumb")</h6>
                         </div>
                     </div>
                 </div>
             </div>
 
             <section class="content vbsp-content">
-                <div class="container-fluid">
+                <div class="container-fluid">                    
                     <div class="vbsp-page-card">
                         @RenderBody()
                     </div>

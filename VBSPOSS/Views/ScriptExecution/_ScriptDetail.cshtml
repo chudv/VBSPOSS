@@ -1,0 +1,366 @@
+﻿@model VBSPOSS.Data.OSS.Models.ScriptExecutionQueue
+<style>
+    .script-detail-wrapper {
+        padding: 12px;
+        background: #f4f6f9;
+    }
+
+    .script-card {
+        background: #ffffff;
+        border: 1px solid #dfe3e8;
+        border-radius: 6px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    }
+
+    .script-card-header {
+        padding: 5px 7px;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 13px;
+        font-weight: bold;
+        color: #0b5394;
+        background: #fafbfc;
+    }
+
+    .script-card-body {
+        padding: 7px;
+    }
+
+    .script-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1f3c5a;
+        margin-bottom: 4px;
+    }
+
+    .script-input {
+        width: 100%;
+        height: 34px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: #f8f9fa;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #212529;
+    }
+
+    .script-status {
+        display: inline-block;
+        min-width: 90px;
+        text-align: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .status-waiting {
+        background: #6c757d;
+    }
+
+    .status-running {
+        background: #17a2b8;
+    }
+
+    .status-success {
+        background: #28a745;
+    }
+
+    .status-failed {
+        background: #dc3545;
+    }
+
+    .status-cancelled {
+        background: #343a40;
+    }
+
+    .status-priority {
+        display: inline-block;
+        min-width: 90px;
+        text-align: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .priority-normal {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .priority-high {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .priority-critical {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .script-editor {
+        background: #111827;
+        color: #00ff99;
+        border-radius: 6px;
+        padding: 14px;
+        font-size: 13px;
+        font-family: Consolas;
+        line-height: 1.2;
+        min-height: 100px;
+        overflow: auto;
+        border: 1px solid #1f2937;
+        white-space: pre-wrap;
+    }
+
+    .script-footer {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 10px;
+        color: #ced4da;
+        font-size: 12px;
+    }
+
+    .collapse-header {
+        cursor: pointer;
+    }
+
+    .create_form.row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+        line-height: 1 !important;
+    }
+</style>
+@{
+    var statusClass = "status-waiting";
+    var statusText = "WAITING";
+    switch (Model.Status)
+    {
+        case 1:
+            statusClass = "status-running";
+            statusText = "RUNNING";
+            break;
+        case 2:
+            statusClass = "status-success";
+            statusText = "SUCCESS";
+            break;
+        case 3:
+            statusClass = "status-failed";
+            statusText = "FAILED";
+            break;
+        case 4:
+            statusClass = "status-cancelled";
+            statusText = "CANCELLED";
+            break;
+    }
+    var priorityClass = "priority-normal";
+    var priorityText = "NORMAL";
+    switch (Model.PriorityLevel)
+    {
+        case 2:
+            priorityClass = "priority-high";
+            priorityText = "HIGH";
+            break;
+        case 3:
+            priorityClass = "priority-critical";
+            priorityText = "CRITICAL";
+            break;
+    }
+}
+<div class="script-detail-wrapper">
+    <!-- THÔNG TIN -->
+    <div class="script-card">
+        <div class="script-card-header">
+            <i class="fa fa-info-circle"></i>
+            THÔNG TIN SCRIPT
+        </div>
+        <div class="script-card-body">
+            <div class="create_form row">
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-cubes"></i>
+                        Module
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.ModuleCode" />
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-bolt"></i>
+                        Loại thực thi
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@(Model.ExecuteType == 0 ? "MANUAL" : "AUTO")" />
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-database"></i>
+                        Database
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.DbType" />
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-flag"></i>
+                        Trạng thái
+                    </div>
+                    <div style="padding-top:4px;">
+                        <span class="script-status @statusClass">
+                            @statusText
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-star"></i>
+                        Priority
+                    </div>
+                    <div style="padding-top:4px;">
+                        <span class="status-priority @priorityClass">
+                            @priorityText
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-refresh"></i>
+                        Retry Count
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.RetryCount" />
+                </div>
+            </div>
+            <div class="create_form row mt-3">
+                <div class="col-md-5">
+                    <div class="script-label">
+                        <i class="fa fa-file-text"></i>
+                        Tên script
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.ScriptName" />
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-calendar"></i>
+                        Ngày hiệu lực
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.EffectiveDate.ToString("dd/MM/yyyy")" />
+                </div>
+                <div class="col-md-2">
+                    <div class="script-label">
+                        <i class="fa fa-user"></i>
+                        Người tạo
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.CreatedBy" />
+                </div>
+                <div class="col-md-3">
+                    <div class="script-label">
+                        <i class="fa fa-user-secret"></i>
+                        Người execute
+                    </div>
+                    <input class="script-input"
+                           readonly
+                           value="@Model.ExecutedBy" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- SCRIPT -->
+    <div class="script-card">
+        <div class="script-card-header d-flex justify-content-between">
+            <div>
+                <i class="fa fa-database"></i>
+                NỘI DUNG SCRIPT (SQL / PLSQL)
+            </div>
+            <button class="btn btn-outline-primary btn-sm"
+                    onclick="copyScriptContent()">
+                <i class="fa fa-copy"></i>
+                Sao chép
+            </button>
+        </div>
+        <div class="script-card-body">
+            <div class="script-editor"
+                 id="scriptContentEditor">
+                @Model.ScriptContent
+            </div>
+            <div class="script-footer">
+                <div>
+                    Dòng: @(Model.ScriptContent?.Split('\n').Length ?? 0)
+                </div>
+                <div>
+                    Tổng ký tự:
+                    @(Model.ScriptContent?.Length ?? 0)
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ROLLBACK -->
+    <div class="script-card">
+        <div class="script-card-header collapse-header"
+             data-toggle="collapse"
+             data-target="#rollbackArea">
+            <i class="fa fa-history"></i>
+            SCRIPT ROLLBACK (nếu có)
+        </div>
+        <div id="rollbackArea"
+             class="collapse">
+            <div class="script-card-body">
+                <div class="script-editor">
+                    @Model.RollbackScript
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ERROR -->
+    <div class="script-card">
+        <div class="script-card-header collapse-header"
+             style="color:#dc3545;"
+             data-toggle="collapse"
+             data-target="#errorArea">
+            <i class="fa fa-exclamation-circle"></i>
+            THÔNG TIN LỖI (nếu có)
+        </div>
+        <div id="errorArea"
+             class="collapse">
+            <div class="script-card-body">
+                <div class="script-editor"
+                     style="color:#ff6b6b;">
+                    @Model.ErrorMessage
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- FOOTER -->
+    <div class="text-right mt-3">
+        <button class="btn btn-secondary"
+                onclick="closeScriptPopup()">
+            <i class="fa fa-times"></i>
+            Đóng
+        </button>
+    </div>
+</div>
+<script>
+    function copyScriptContent() {
+        var content =
+            $("#scriptContentEditor").text();
+        navigator.clipboard.writeText(content);
+        alert("Đã sao chép script");
+    }
+    function closeScriptPopup() {
+        $("#scriptPopup")
+            .data("kendoWindow")
+            .close();
+    }
+</script>
