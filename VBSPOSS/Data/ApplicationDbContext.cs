@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
+using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Data
 {
@@ -60,9 +61,9 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
 
-        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; } 
-
         public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
+
+        public virtual DbSet<UserManagementIDCSumRequirement> UserManagementIDCSumRequirements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -232,10 +233,10 @@ namespace VBSPOSS.Data
             modelBuilder.Entity<PosRepresentative>().ToTable("PosRepresentative");
             modelBuilder.Entity<PosRepresentative>().HasKey(x => new { x.Id });
 
-            modelBuilder.Entity<UserIDCApproval>(eb =>
+            modelBuilder.Entity<UserManagementIDCSumRequirement>(eb =>
             {
                 eb.HasNoKey();
-                eb.ToView("UserIDCApprovals");
+                eb.ToView("UserManagementIDCSumRequirements");
             });
 
             modelBuilder.Entity<UserIDCRestrictionAllowedDays>().ToTable("UserIDCRestrictionAllowedDays");

@@ -263,10 +263,9 @@ namespace VBSPOSS.Services.Implements
                     objReportInput = new ReportInput { ReportId = "BC0111116", FileType = "PDF" };
                 }
 
-                List<Parameter> parameters = new List<Parameter>();
-                parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{pId}" });
-                objReportInput.Parameters = new List<Parameter>(parameters);
-
+                objReportInput.Parameters = new List<Parameter>();
+                objReportInput.Parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{pId}" });
+                
                 GenericResultReportGateway<ReportResultDto> _response = _apiReportGateway.GetReport(objReportInput);
 
                 if (_response.Success)

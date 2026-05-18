@@ -332,6 +332,52 @@ namespace VBSPOSS.Utils
         }
 
         /// <summary>
+        /// Kiểm tra số điện thoại di động Việt Nam có hợp lệ không
+        /// Hỗ trợ nhiều định dạng: 09xxxxxxxx, 09xx xxx xxx, +849xxxxxxxx, 849xxxxxxxx...
+        /// </summary>
+        public static bool IsValidVietnameseMobile(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return false;
+
+            // Loại bỏ tất cả ký tự không phải số và dấu +
+            string cleaned = Regex.Replace(phoneNumber, @"[^\d+]", "");
+
+            // Chuẩn hóa về dạng 10 số (bắt đầu bằng 0)
+            if (cleaned.StartsWith("+84"))
+                cleaned = "0" + cleaned.Substring(3);
+            else if (cleaned.StartsWith("84"))
+                cleaned = "0" + cleaned.Substring(2);
+
+            // Phải còn đúng 10 chữ số và bắt đầu bằng 0
+            if (cleaned.Length != 10 || !cleaned.StartsWith("0"))
+                return false;
+
+            // Danh sách đầu số di động Việt Nam hợp lệ (cập nhật 2025-2026)
+            string[] validPrefixes = {
+                        "032", "033", "034", "035", "036", "037", "038", "039",   // Viettel
+                        "052", "056", "058", "059",                                 // Vietnamobile
+                        "070", "076", "077", "078", "079",                         // Mobifone
+                        "081", "082", "083", "084", "085", "086", "087", "088", "089", // Vinaphone
+                        "090", "091", "092", "093", "094", "095", "096", "097", "098", "099"  // Các mạng cũ
+                    };
+
+            string prefix = cleaned.Substring(0, 3);
+
+            return Array.Exists(validPrefixes, p => p == prefix);
+        }
+
+        public static bool IsValidMobileRegex(string pMobileNo)
+        {
+            if (string.IsNullOrWhiteSpace(pMobileNo)) return false;
+
+            // Regex kiểm tra số điện thoại VN
+            string pattern = @"^(0|\+84|84)(3[2-9]|5[2|6|8|9]|7[0|6-9]|8[1-9]|9[0-9])\d{7}$";
+
+            return Regex.IsMatch(Regex.Replace(pMobileNo, @"\s+", ""), pattern);
+        }
+
+        /// <summary>
         /// Return true if it is in valid datetime format "dd/MM/yyyy Or dd-MM-yyyy Or dd.MM.yyyy". Hàm này chỉ kiểm tra về định dạng
         /// Còn với ví dụ tháng 02 thường không có ngày 31 thì hàm này không kiểm tra được.
         /// </summary>

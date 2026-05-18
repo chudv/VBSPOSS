@@ -211,15 +211,18 @@ namespace VBSPOSS.Controllers
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
             ArrayList data = new ArrayList();
-            if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199")
+            if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199" && pUserPosCode != "ALL")
             {
                 string sSQL = $"Select Top 1 As Id, IsNull(MainPosCode,'') Code , IsNull(MainPosCode,'') Value From ListOfPos Where Code = {pUserPosCode}";
                 string sMainPosTMP = _serviceLOV.GetCellValueForQuery(sSQL);
                 sPosCode = (sMainPosTMP == pUserPosCode) ? "" : pUserPosCode;
                 sMainCode = sMainPosTMP;
             }
+            if (string.IsNullOrEmpty(pUserPosCode))
+                pUserPosCode = UserPosCode;
+            pUserPosCode = (pUserPosCode == "ALL") ? "000100" : pUserPosCode;
 
-            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, UserPosCode, UserName);
+            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, pUserPosCode, UserName);
 
             if (sTitleChoice != "")
                 data.Add(new { id = "", value = sTitleChoice });
@@ -461,7 +464,8 @@ namespace VBSPOSS.Controllers
                 //Xử lý loại người dùng đã khởi tạo trong IDC
                 else if(pFlagCall == "2")
                 {
-                    var listStaffIDC = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "",3).Select(s => s.StaffId).ToHashSet();
+                    var listUserIDCTemp = await _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "", -1, false);
+                    var listStaffIDC = listUserIDCTemp.Select(s => s.StaffId).ToList();
                     listStaffVBSPTemp = listStaffVBSP.Result.Where(s => !listStaffIDC.Contains(s.StaffId)).ToList();
                 }    
                 else listStaffVBSPTemp = listStaffVBSP.Result;

@@ -37,7 +37,7 @@
     var isEditMode = false;
 
     (function() {
-        var flagCallView = '@TempData["FlagCall"]';
+        var flagCallView = '@TempData["FlagEventCall"]';
         if (flagCallView === "2") {
             isEditMode = true;
         }
@@ -99,11 +99,11 @@
             }
             else {
                 // Nếu thêm mới thì load theo PosCode
-                comboGroup.value("");
                 comboGroup.dataSource.read();
                 comboGroup.one("dataBound", function () {
                     if (this.dataSource.data().length > 0) {
-                        this.select(0);
+                        if ($("#FlagEventCallView").val() == "1")
+                            this.select(0);
                         Change_RoleOfUserIDC();
                     }
                 });
@@ -345,10 +345,17 @@
     var lcButton = "";
 </script>
 
-<form asp-controller="UserManagementIDC" asp-action="SaveAddOrUpdateUserManagementIDC" data-ajax="true" data-ajax-method="POST" id="form0" enctype="multipart/form-data">
+<form asp-controller="UserManagementIDC" asp-action="SaveAddOrUpdateUserManagementIDC" data-ajax="true" data-ajax-method="POST" id="formCreateNewUserIDC" enctype="multipart/form-data">
     <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
-    @Html.Hidden("FlagCallView", TempData["FlagCall"]) 
+    @Html.Hidden("FlagEventCallView", TempData["FlagEventCall"])
     @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+    
+    @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+    @Html.Hidden("EventFlag_EditIDCView", TempData["EventFlag_EditIDC"])
+    @Html.Hidden("EventFlag_EditView", TempData["EventFlag_Edit"])
+    @Html.Hidden("EventFlag_ViewView", TempData["EventFlag_View"])
+    @Html.Hidden("EventFlag_AddView", TempData["EventFlag_Add"])
+    
     @Html.HiddenFor(m => m.FlagCall, new { @Value = Model == null ? "" : Model.FlagCall })
     
     @Html.HiddenFor(m => m.OrderNo, new { @Value = Model == null ? 0 : Model.OrderNo })
@@ -396,9 +403,23 @@
     @Html.HiddenFor(m => m.MobileNumberOld, new { @Value = Model == null ? "" : Model.MobileNumberOld })
     @Html.HiddenFor(m => m.DateOfBirthOld, new { @Value = Model == null ? Model.DateOfBirth : Model.DateOfBirthOld })
     @Html.HiddenFor(m => m.BusinessDate, new { @Value = Model == null ? Model.EffectiveDate : Model.BusinessDate })
-
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
-        @(TempData["FlagCall"]?.ToString() == "2" ? "THAY ĐỔI THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ VỀ TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC" : "THÊM MỚI YÊU CẦU TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC")
+        @{
+            string title = "THÊM MỚI THÔNG TIN YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+            if (TempData["FlagEventCall"]?.ToString() == "1")
+            {
+                title = "THÊM MỚI THÔNG TIN YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+            }
+            else if (TempData["FlagEventCall"]?.ToString() == "2")
+            {
+                title = "CHỈNH SỬA THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+            }
+            else if (TempData["FlagEventCall"]?.ToString() == "6")
+            {
+                title = "XEM CHI TIẾT THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+            }
+            @title
+        }
     </div>
     <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
     <div class="align-items-center">
@@ -543,14 +564,22 @@
                     .DataValueField("Value")
                     .BindTo(new List<SelectListItem>() {
                         new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" },
-                        new SelectListItem() { Text = "Đóng (Hết hiệu lực)", Value = "0" }
-                    })
+                        new SelectListItem() { Text = "Chỉnh sửa", Value = "5" },
+                        new SelectListItem() { Text = "Trình duyệt", Value = "2" },
+                        new SelectListItem() { Text = "Phê duyệt cấp Chi nhánh", Value = "6" },
+                        new SelectListItem() { Text = "Từ chối cấp Chi nhánh", Value = "7" },
+                        new SelectListItem() { Text = "Phê duyệt cấp TTCNTT", Value = "3" },
+                        new SelectListItem() { Text = "Từ chối cấp TTCNTT", Value = "4" },
+                        new SelectListItem() { Text = "Đóng (Đánh dấu xóa)", Value = "0" }
+                        })
                     .Suggest(true)
                     .AutoBind(true)
                     .HtmlAttributes(new { style = "padding-left: 3px;width: 250px; color: blue;", })
                     .Events(e => e.Change("Change_Status"))
                     .SelectedIndex(0)
                     )
+                <label class="lbcontrol" style="color: navy;text-align:right;width:310px;padding-top: 7px;padding-right: 10px;"> Ngày hiện tại của hệ thống Intellect iDC</label>
+                @Html.Kendo().TextBoxFor(m => m.BusinessDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 125px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 3px;padding-right: 2px;" })
             </div>
         </div>
 
@@ -571,7 +600,7 @@
         <div class="row" style="padding-top: 0px; padding-left: 10px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 140px; vertical-align: middle;color: navy;text-align:left;">Ghi chú (nếu có)</label>
-                @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "padding-left: 3px;min-height:50px;width:830px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2" })
+                @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "padding-left: 5px;min-height:50px;width:830px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2" })
             </div>
         </div>
 
@@ -580,7 +609,7 @@
                 <label class="control-label" id="lblMessageInfor" style="width: 750px; text-align: left; color: red;"></label>
                 &nbsp;&nbsp;
                 @(Html.Kendo().Button()
-                    .Name("btnSave")
+                    .Name("btnSaveCreateNewUserIDC")
                     .Events(ev => ev.Click("onClick"))
                     .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin tài khoản người dùng Intellect iDC" })
                     .ImageUrl(Url.Content("~/images/save.png"))
@@ -596,19 +625,19 @@
 
 <script>
     $(function () {
-        $("#form0").submit(function (event) {
+        $("#formCreateNewUserIDC").submit(function (event) {
             event.preventDefault();
 
-            var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+            //var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
 
-            if (expirePicker && expirePicker.value()) {
-                $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
-            }
-            $("#pFlagCall").val($("#FlagCallView").val());
-            $("#pButtonType").val($("#ButtonTypeView").val());
-            $("#UserId").val($("#StaffCode").val());
-            $("#NickName").val($("#StaffCode").val());
-            var form = this;
+            // if (expirePicker && expirePicker.value()) {
+            //     $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
+            // }
+            // $("#pFlagCall").val($("#FlagEventCallView").val());
+            // $("#pButtonType").val($("#ButtonTypeView").val());
+            // $("#UserId").val($("#StaffCode").val());
+            // $("#NickName").val($("#StaffCode").val());
+            var frmCreateNewUserIDC = this;
 
             // if (!isEditMode) {
             //     $.ajax({
@@ -630,7 +659,7 @@
             //     });
             // } else {
 
-            submitFormAjax(form);
+            submitFormAjax(frmCreateNewUserIDC);
             // }
 
             return false;
@@ -683,7 +712,7 @@
                         alert("Tài khoản người dùng có phương thức xác thực khi đăng nhập là OTP nên không thể thực hiện tạo yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ". Vui lòng kiểm tra lại!");
                         //alert("Tài khoản người dùng có phương thức xác thực khi đăng nhập là OTP nên không thể thực hiện tạo yêu cầu cấp lại mật khẩu. Vui lòng kiểm tra lại!");
                     else if (result == "6")
-                        alert("Tài khoản người dùng đã mở sổ tiền mặt đầu ngày, nên không thể thực hiện tạo yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ". . Vui lòng kiểm tra lại!");
+                        alert("Tài khoản người dùng đã mở sổ tiền mặt đầu ngày, nên không thể thực hiện tạo yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ". Vui lòng kiểm tra lại!");
                     else if (result == "7")
                         alert("Tài khoản người dùng có yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ", nhưng thông tin (Quyền/Số điện thoại/Email) vẫn giữ nguyên. Vui lòng kiểm tra lại!");
                     else if (result == "8")
@@ -698,6 +727,12 @@
                         alert("Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + $("#EffectiveDate").val() + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + $("#BusinessDate").val() + "]. Vui lòng kiểm tra lại!");
                     else if (result == "13")
                         alert("Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + $("#StartDate").val() + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + $("#BusinessDate").val() + "]. Vui lòng kiểm tra lại");
+                    else if (result == "23" || result == "24")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC có thông tin địa chỉ email [" + $("#EmailAddress").val() + "] không hợp lệ. Vui lòng kiểm tra lại!");
+                    else if (result == "25")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC có thông tin số điện thoại [" + $("#MobileNumber").val() + "] không hợp lệ. Vui lòng kiểm tra lại!");
+                    else if (result == "26")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC [" + $("#UserId").val() + "] đã tồn tại. Vui lòng kiểm tra lại!");
                 }
             },
             error: function (xhr, status, error) {
@@ -708,11 +743,61 @@
     }
 
     $(document).ready(function () {
-            setTimeout(function () {
+        setTimeout(function () 
+        {
             Change_PosCode();
             Change_RoleOfUserIDC();
             LoadStaffInfoDetail();
+
+            
+
         }, 300); // delay nhẹ để đảm bảo Kendo init xong
+        var lcFlagCall = $("#FlagCall").val();
+
+        //Nếul à xem thì readonly các control và Hide nút lệnh Lưu
+        var cboStatus = $("#Status").data("kendoComboBox");
+        cboStatus.readonly(true);
+        if (lcFlagCall == $("#EventFlag_AddView").val() || lcFlagCall == $("#EventFlag_ViewView").val())
+        {
+            var cboStatus = $("#Status").data("kendoComboBox");
+            cboStatus.readonly(true);
+        }
+        else if (lcFlagCall == $("#EventFlag_ViewView").val())
+        {
+            var cboPosCode = $("#PosCode").data("kendoComboBox");
+            cboPosCode.readonly(true);
+
+            var cboStaffId = $("#StaffId").data("kendoComboBox");
+            cboStaffId.readonly(true);
+
+            // var cboGroupName = $("#GroupName").data("kendoComboBox");
+            // cboGroupName.readonly(true);
+
+            var cboAuthsecType = $("#AuthsecType").data("kendoComboBox");
+            cboAuthsecType.readonly(true);
+
+            var cboMailIdFlag = $("#MailIdFlag").data("kendoComboBox");
+            cboMailIdFlag.readonly(true);
+
+            var txtIpSetDetail = $("#IpSetDetail").data("kendoTextBox");
+            txtIpSetDetail.readonly(true);
+
+            var cboStatus = $("#Status").data("kendoComboBox");
+            cboStatus.readonly(true);
+
+            var dtpkEffectiveDate = $("#EffectiveDate").data("kendoDatePicker");
+            dtpkEffectiveDate.readonly(true);
+
+            var dtpkExpiryDate = $("#ExpiryDate").data("kendoDatePicker");
+            dtpkExpiryDate.readonly(true);
+
+            var dtpkStartDate = $("#StartDate").data("kendoDatePicker");
+            dtpkStartDate.readonly(true);
+
+            $("#Remark").prop("readonly", true)
+
+            $("#btnSaveCreateNewUserIDC").hide();                    // Cách đơn giản nhất
+        }
     });
 
 </script>

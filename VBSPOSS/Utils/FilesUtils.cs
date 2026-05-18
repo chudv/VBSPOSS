@@ -301,6 +301,24 @@ namespace VBSPOSS.Utils
                 return false;
             }
         }
+        public static bool Delete_File(string pFileName, string pPathFile)
+        {
+            var fullPath = string.Format("{0}\\{1}", pPathFile, pFileName);
+            if (System.IO.File.Exists(fullPath))
+            {
+                try
+                {
+                    System.IO.File.Delete(fullPath);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else
+                return false;
+        }
 
         /// <summary>
         /// Hàm thực hiện chuẩn hóa lại tên file. Cắt bỏ các ký tự đặc biệt không hợp lệ
