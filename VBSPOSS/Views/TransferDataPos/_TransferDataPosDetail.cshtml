@@ -1,224 +1,518 @@
-﻿@model VBSPOSS.ViewModels.TransferDataPosMasterViewModel
+﻿@model VBSPOSS.ViewModels.TransferDataPosSaveModel
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
+
 @{
-    var userPosCode =
-        TempData["UserPosCode"]?.ToString();
+    var userPosCode = TempData.Peek("UserPosCode")?.ToString();
 }
-<div style="padding:10px;">
-    @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
-    <!-- HEADER -->
-    <div class="row" style="margin-bottom:10px;">
 
-        <div class="col-md-12">
+<style>
+    .k-animation-container {
+        z-index: 100000 !important;
+    }
 
-            <table style="width:100%;">
+    .readonly-field input,
+    .readonly-field .k-input,
+    .readonly-field textarea {
+        background-color: #f0f0f0 !important;
+        color: #28a745 !important; /* Màu xanh lá */
+        cursor: not-allowed !important;
+    }
 
-                <tr>
+    .editable-field input,
+    .editable-field .k-input {
+        color: navy !important;
+    }
 
-                    <td style="width:110px;color:navy;font-weight:bold;">
-                        POS nguồn:
-                    </td>
-                    <td style="color:blue;font-weight:bold;">
-                        @Model.FromPosCode - @Model.FromPosName
-                    </td>
-                    <td style="width:40px;"></td>
+    #StartDate, #ExpiryDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
 
-                    <td style="width:110px;color:navy;font-weight:bold;">
-                        POS đích:
-                    </td>
+    .hidden-block {
+        display: none !important;
+    }
+</style>
+<script>
+    function onCloseTransferWindow() {
+        mainWindow.data("kendoWindow").close();
+        refreshGridIDC();
+    }
 
-                    <td style="color:blue;font-weight:bold;">
-                        @Model.ToPosCode - @Model.ToPosName
-                    </td>
-                </tr>
-            </table>
-        </div>
+
+    $(document).ready(function () {
+
+        var details =
+    @Html.Raw(
+            Newtonsoft.Json.JsonConvert
+            .SerializeObject(
+            Model.Details));
+
+        var grid =
+            $("#gridTransferVillage")
+                .data("kendoGrid");
+
+        if (grid) {
+
+            grid.dataSource.data(
+                details);
+
+            grid.refresh();
+        }
+    });
+
+</script>
+
+<form asp-controller="TransferDataPosDetail"
+      asp-action="SaveTransferDataPosDetail"
+      method="post"
+      enctype="multipart/form-data"
+      id="formTransferDataPos">
+
+    @Html.HiddenFor(m => m.Master.Id)
+
+
+
+    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 0px;font-weight: bold;">
+        ĐIỀU CHUYỂN DỮ LIỆU KHÁC POS
     </div>
 
     <hr />
 
-    <!-- TITLE -->
-    <div style=" width:100%;   text-align:center;">
-        <span style="font-weight:bold;color:navy;font-size:16px;display:inline-block;">
-            DANH SÁCH THÔN ĐIỀU CHUYỂN
-        </span>
-    </div>
+    <!-- ========================= -->
+    <!-- MASTER INFO -->
+    <!-- ========================= -->
 
-    <!-- GRID -->
-    <div class="row">
-        <div class="col-md-12">
-            @(Html.Kendo().Grid<VBSPOSS.ViewModels.TransferDataPosDetailViewModel>()
-                .Name("gridTransferVillage")
-                .Height(350)
-                .Columns(columns =>
-                {
-                    columns.Template("#= getRowNumber() #")
-                    .Title("STT")
-                    .Width(50)
+    <div class="row" style="margin-bottom:10px;">
+
+        <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+
+                <label class="lbcontrol" style="color: navy;text-align:left;width:106px;padding-top: 7px;">Pos nguồn</label>
+
+                @(Html.Kendo().ComboBoxFor(m => m.Master.FromPosCode)
+                    .DataTextField("Description")
+                    .DataValueField("Code")
+                    .Enable(false)
+                    .BindTo((List<ValueConstModel>)ViewBag.FromPosList)
+                    .Filter("contains")
+                    .Events(e => e.Change(@<text>
+                        function(ev) {
+
+                        var grid =
+                        $("#gridTransferVillage")
+                        .data("kendoGrid");
+
+                        if (grid) {
+
+                        grid.dataSource.data([]);
+                        }
+                        }
+                    </text>))
                     .HtmlAttributes(new
                     {
-                        style = "text-align:center;"
-                    })
-                    .HeaderHtmlAttributes(new
-                    {
-                        style = "text-align:center;font-weight:bold;"
-                    });
-
-                    columns.ForeignKey(
-                    p => p.FromVillageId,
-                    (System.Collections.IEnumerable)ViewData["FromVillages"],
-                    "Value",
-                    "Text")
-                    .Title("Xã nguồn - Thôn nguồn")
-                    .Width(320);
-
-                    columns.ForeignKey(
-                    p => p.ToVillageId,
-                    (System.Collections.IEnumerable)ViewData["ToVillages"],
-                    "Value",
-                    "Text")
-                    .Title("Xã đích - Thôn đích")
-                    .Width(320);
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
-                        columns.Command(command =>
-                        {
-                            command.Destroy()
-                    .Text("Xóa");
-                        })
-                        .Title("Xóa")
-                        .Width(80);
-                    }
-                })
-
-                .ToolBar(toolbar =>
-                {
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
-                        toolbar.Create()
-                        .Text("Thêm thôn");
-                    }
-                })
-                .Editable(editable =>
-                editable.Mode(GridEditMode.InCell)
-                )
-                .Scrollable()
-                .Navigatable()
-                .Resizable(resize => resize.Columns(true))
-                .DataSource(dataSource => dataSource
-                .Ajax()
-                .Model(model =>
-                {
-                    model.Id(p => p.Id);
-                })
-                .Read(read => read.Action(
-                "ReadTransferVillage",
-                "TransferDataPos",
-                new { masterId = Model.Id }
-                ))
-                )
-           )
-
-        </div>
-
-    </div>
-
-    <!-- FOOTER -->
-    @if (userPosCode != "000100" && userPosCode != "000196")
-    {
-        <div class="row" style="margin-top:15px;">
-            <div class="col-md-12" style="text-align:right;">
-                @(Html.Kendo().Button()
-                    .Name("btnSaveVillage")
-                    .Content("Lưu lại")
-                    .HtmlAttributes(new
-                    {
-                        type = "button",
-                        style = "width:100px;color:blue;font-weight:bold;"
+                        style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;"
                     })
                     )
-                &nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;">Pos đích</label>
 
-                @(Html.Kendo().Button()
-                    .Name("btnCloseVillage")
-                    .Content("Đóng")
+                @(Html.Kendo().ComboBoxFor(m => m.Master.ToPosCode)
+                    .DataTextField("Description")
+                    .DataValueField("Code")
+                    .Enable(false)
+                    .BindTo((List<ValueConstModel>)ViewBag.ToPosList)
+                    .Filter("contains")
+                    .Events(e => e.Change(@<text>
+                        function(ev) {
+
+                        var grid =
+                        $("#gridTransferVillage")
+                        .data("kendoGrid");
+
+                        if (grid) {
+
+                        grid.dataSource.data([]);
+                        }
+                        }
+                    </text>))
                     .HtmlAttributes(new
                     {
-                        type = "button",
-                        style = "width:100px;color:blue;font-weight:bold;"
+                        style = "width: 420px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;"
+                    })
+                    )
+
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
+
+                @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
+                    .Format("dd/MM/yyyy")
+                    .Min(DateTime.Today)
+                    .Enable(false)
+                    .HtmlAttributes(new
+                    {
+                        style = "width:110px;color:blue;"
                     })
                     )
             </div>
         </div>
-    }
-</div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- FILE -->
+    <!-- ========================= -->
+    @*
+    <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+    <div class="col-md-12" style="display: inline-flex;">
+
+    <label class="lbcontrol"
+    style="width:100px;">
+    Upload tờ trình
+    </label>
+
+    <input type="file"
+    id="files"
+    name="files"
+    style="width:400px;color:blue;" />
+
+    </div>
+
+    </div>
+
+    <hr /> *@
+
+    <!-- ========================= -->
+    <!-- DETAIL GRID -->
+    <!-- ========================= -->
+    @*  <div style=" width:100%;   text-align:center;">
+    <span style="font-weight:bold;color:navy;font-size:16px;display:inline-block;">
+    DANH SÁCH THÔN ĐIỀU CHUYỂN
+    </span>
+    </div> *@
+    <div class="lbtitle" style="color: red;text-align:center;padding-top: 10px;padding-bottom: 0px;font-weight: bold;">
+        DANH SÁCH THÔN ĐIỀU CHUYỂN
+    </div>
+
+    @(Html.Kendo().Grid<VBSPOSS.ViewModels.TransferDataPosDetailViewModel>()
+        .Name("gridTransferVillage")
+        .Height(350)
+        .Columns(columns =>
+        {
+            columns.Bound(p => p.FromVillageId)
+            .Title("Thôn nguồn")
+            .ClientTemplate(
+            "#= FromVillageName ? FromVillageName : '' #")
+            .EditorTemplateName(
+            "FromVillageEditor");
+
+            columns.Bound(p => p.ToVillageId)
+            .Title("Thôn đích")
+            .ClientTemplate(
+            "#= ToVillageName ? ToVillageName : '' #")
+            .EditorTemplateName(
+            "ToVillageEditor");
+
+            @* columns.Command(command =>
+            {
+                command.Destroy()
+            .Text("Xóa");
+            })
+            .Width(100); *@
+        })
+       @*  .ToolBar(toolbar =>
+        {
+            toolbar.Create()
+            .Text("Thêm thôn");
+        }) *@
+        .Editable(editable =>
+        editable.Mode(GridEditMode.InCell)
+        )
+        .Scrollable()
+        .Navigatable()
+        .Editable(editable =>
+        editable.Enabled(false))
+        .Resizable(resize => resize.Columns(true))
+        .DataSource(dataSource => dataSource
+        .Ajax()
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+        })
+        .Read(read => read.Action(
+        "ReadTransferVillage",
+        "TransferDataPos",
+        new { masterId = Model.Master.Id }
+        ))
+        )
+        )
+
+    <!-- ========================= -->
+    <!-- REMARK -->
+    <!-- ========================= -->
+    @* <div class="row" style="margin-top:15px;">
+
+    <div class="col-md-12">
+
+    <label class="lbcontrol">
+    Ghi chú
+    </label>
+
+    @Html.TextAreaFor(m => m.Master.Remark,
+    new
+    {
+    @class = "k-textbox",
+
+    style =
+    "width:100%;" +
+    "height:60px;" +
+    "color:blue;"
+    })
+
+    </div>
+
+    </div> *@
+
+    <!-- ========================= -->
+    <!-- FOOTER -->
+    <!-- ========================= -->
+
+    <div class="row" style="padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+
+        <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
+            <label class="control-label" id="lblMessageInfor" style="width: 1020px; text-align: left; color: red;"></label>
+          
+
+            @(Html.Kendo().Button()
+                .Name("btnClose")
+                .Events(ev =>
+                ev.Click(
+                "onCloseTransferWindow"))
+                .HtmlAttributes(new
+                {
+                    type = "button",
+
+                    style =
+                "height: 25px;" +
+                "width: 100px;" +
+                "font-weight:bold;" +
+                "color: blue;",
+
+                    title =
+                "Đóng lại màn hình cập nhật thông tin"
+                })
+                .ImageUrl(
+                Url.Content(
+                "~/images/close_icon.gif"))
+                .Content("Quay ra"))
+        </div>
+
+    </div>
+
+</form>
+
+
 
 <script>
+
     var rowNumber = 0;
 
-    function getRowNumber() {
-        return ++rowNumber;
-    }
-
     $(document).ready(function () {
-        // reset STT
-        var grid = $("#gridTransferVillage").data("kendoGrid");
+
+        var grid = $("#gridTransferVillage")
+            .data("kendoGrid");
+
         if (grid) {
+
             grid.bind("dataBinding", function () {
+
                 rowNumber = 0;
             });
         }
+    });
 
-        // SAVE
-        $("#btnSaveVillage").click(function () {
-            var grid = $("#gridTransferVillage").data("kendoGrid");
+
+
+    $("#formTransferDataPos")
+        .submit(function (e) {
+
+            e.preventDefault();
+
+            var grid = $("#gridTransferVillage")
+                .data("kendoGrid");
+
             grid.closeCell();
-            var data = grid.dataSource.data();
+
             var details = [];
 
+            var data = grid.dataSource.data();
+
             for (var i = 0; i < data.length; i++) {
+
                 details.push({
+
                     Id: data[i].Id || 0,
-                    MasterId: @Model.Id,
-                    FromVillageId: data[i].FromVillageId,
-                    ToVillageId: data[i].ToVillageId
+
+                    FromVillageId:
+                        data[i].FromVillageId,
+
+                    ToVillageId:
+                        data[i].ToVillageId
                 });
             }
 
+            var formData = new FormData(this);
+
+            formData.append(
+                "DetailsJson",
+                JSON.stringify(details));
+
             $.ajax({
-                url: '@Url.Action("SaveTransferVillage", "TransferDataPos")',
-                type: 'POST',
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                data: JSON.stringify({
-                    masterId: @Model.Id,
-                    details: details
-                }),
+
+                url: this.action,
+
+                type: "POST",
+
+                data: formData,
+
+                processData: false,
+
+                contentType: false,
+
                 success: function (res) {
-                    if (res.success) {
-                        alert(res.message);
-                        grid.dataSource.read();
+
+                    if (res == "1") {
+
+                        alert(
+                            "Lưu dữ liệu thành công");
+
+                        refreshGridIDC();
+
+                        onCloseTransferWindow();
+                    }
+                    else if (res == "2") {
+
+                        alert(
+                            "POS nguồn và POS đích không được trùng nhau");
+                    }
+                    else if (res == "3") {
+
+                        alert(
+                            "Bạn chưa khai báo danh sách thôn điều chuyển");
+                    }
+                    else if (res == "4") {
+
+                        alert(
+                            "Bạn chưa chọn đầy đủ thôn nguồn/thôn đích");
+                    }
+                    else if (res == "5") {
+
+                        alert(
+                            "Danh sách thôn nguồn bị trùng");
+                    }
+                    else if (res == "6") {
+
+                        alert(
+                            "Danh sách thôn đích bị trùng");
                     }
                     else {
 
-                        alert(res.message);
+                        alert(
+                            "Lưu dữ liệu thất bại");
                     }
                 },
 
-                error: function (xhr) {
-                    console.log(xhr);
-                    alert("Có lỗi xảy ra");
+                error: function () {
+
+                    alert(
+                        "Có lỗi xảy ra");
                 }
             });
         });
 
-        // CLOSE
-        $(document).ready(function () {
-            $("#btnCloseVillage").click(function () {
-                $("#mainWindow")
-                    .data("kendoWindow")
-                    .close();
-            });
-        });
-    });
+
+    function getFromPos() {
+
+        var combo =
+            $("#Master_FromPosCode")
+                .data("kendoComboBox");
+
+        return {
+
+            pPosCode:
+                combo
+                    ? combo.value()
+                    : ""
+        };
+    }
+
+    function getToPos() {
+
+        var combo =
+            $("#Master_ToPosCode")
+                .data("kendoComboBox");
+
+        return {
+
+            pPosCode:
+                combo
+                    ? combo.value()
+                    : ""
+        };
+    }
+
+    function onChangeToVillage(e) {
+
+        var grid =
+            $("#gridTransferVillage")
+                .data("kendoGrid");
+
+        var row =
+            $(e.sender.element)
+                .closest("tr");
+
+        var item =
+            grid.dataItem(row);
+
+        var dataItem =
+            e.sender.dataItem();
+
+        if (dataItem) {
+
+            item.set(
+                "ToVillageName",
+                dataItem.Text);
+        }
+    }
+
+    function onChangeFromVillage(e) {
+
+        var grid =
+            $("#gridTransferVillage")
+                .data("kendoGrid");
+
+        var row =
+            $(e.sender.element)
+                .closest("tr");
+
+        var item =
+            grid.dataItem(row);
+
+        var dataItem =
+            e.sender.dataItem();
+
+        if (dataItem) {
+
+            item.set(
+                "FromVillageName",
+                dataItem.Text);
+        }
+    }
+
+
 
 </script>
