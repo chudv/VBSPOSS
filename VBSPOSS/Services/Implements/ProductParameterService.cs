@@ -788,7 +788,8 @@ namespace VBSPOSS.Services.Implements
                             MaxInterestRateSpread = updatedItem.NewMaxSpread,
                             EffectedDate = effectedDate.Date,
                             Remark = !string.IsNullOrEmpty(updatedItem.Remark) ? updatedItem.Remark.Trim() : remark?.Trim() ?? "",
-                            Status = ConfigStatus.MAKER.Value,
+                            //Status = ConfigStatus.MAKER.Value,
+                            Status = ConfigStatus.AUTHORIZED.Value,
                             CreatedBy = "system",
                             CreatedDate = DateTime.Now
                         });
@@ -807,7 +808,8 @@ namespace VBSPOSS.Services.Implements
                             MaxInterestRateSpread = old.MaxInterestRateSpread,
                             EffectedDate = effectedDate.Date,
                             Remark = remark?.Trim() ?? "",
-                            Status = ConfigStatus.MAKER.Value,
+                           // Status = ConfigStatus.MAKER.Value,
+                            Status = ConfigStatus.AUTHORIZED.Value,
                             CreatedBy = "system",
                             CreatedDate = DateTime.Now
                         });
