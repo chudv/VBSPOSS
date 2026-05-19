@@ -817,7 +817,7 @@ namespace VBSPOSS.Controllers
                 AttachedFileInfo objFileInfo = new AttachedFileInfo();
                 if (objApprovalInfor.DocumentId != 0)
                 {
-                    var listAttachedFile = _intRateConfigService.GetListAttachedFileInfoSearch(0, objApprovalInfor.DocumentId, "1", "", "").FirstOrDefault();
+                    var listAttachedFile = _attachedFileService.GetListAttachedFileInfoSearch(0, objApprovalInfor.DocumentId, FileType.FileType_ConfigIntRate.Value.ToString(), "", "").FirstOrDefault();
                     if (listAttachedFile != null && listAttachedFile.FileId != 0)
                     {
                         objFileInfo.FileId = listAttachedFile.FileId;
@@ -877,7 +877,7 @@ namespace VBSPOSS.Controllers
                     }
                     foreach (var itemFileId in listIdAttachFileUpd)
                     {
-                        var listAttachedFile = _intRateConfigService.GetListAttachedFileInfoSearch(itemFileId, 0, "1", "", "").FirstOrDefault();
+                        var listAttachedFile = _attachedFileService.GetListAttachedFileInfoSearch(itemFileId, 0, FileType.FileType_ConfigIntRate.Value.ToString(), "", "").FirstOrDefault();
                         string fileNameNew = "";
                         if (listAttachedFile.FileNameNew.Contains(listAttachedFile.FileExtension))
                             fileNameNew = $"{listAttachedFile.FileNameNew}";
@@ -931,7 +931,7 @@ namespace VBSPOSS.Controllers
 
             if (pFileId != 0 || pDocumentId != 0)
             {
-                var objFileInfo = _intRateConfigService.GetListAttachedFileInfoSearch(pFileId, pDocumentId, FileType.FileType_ConfigIntRate.Value.ToString(), "", "").FirstOrDefault();
+                var objFileInfo = _attachedFileService.GetListAttachedFileInfoSearch(pFileId, pDocumentId, FileType.FileType_ConfigIntRate.Value.ToString(), "", "").FirstOrDefault();
                 if (objFileInfo != null && !string.IsNullOrEmpty(objFileInfo.FileNameNew))
                 {
                     sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), objFileInfo.PathFile, "");

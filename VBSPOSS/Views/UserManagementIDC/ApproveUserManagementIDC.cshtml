@@ -423,7 +423,7 @@
 @Html.Hidden("EventFlag_ApprovalView", TempData["EventFlag_Approval"])
 @Html.Hidden("EventFlag_AuthorizeView", TempData["EventFlag_Authorize"])
 @Html.Hidden("EventFlag_RejectView", TempData["EventFlag_Reject"])
-@Html.Hidden("SystemDateTextView", TempData["SystemDateText"])
+@Html.Hidden("SystemDateTextApprovalView", TempData["SystemDateText"])
 @Html.Hidden("BusinessDateTextView", TempData["BusinessDateText"])
 
 @Html.Hidden("FunctionTypeFlag_ADDNEW_USERView", TempData["FunctionTypeFlag_ADDNEW_USER"])
@@ -760,7 +760,7 @@
         }
         
         var lcFlagCallView = $("#FlagCallView").val();
-
+        var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();        
         var requireFileTypes = [$("#FunctionTypeFlag_ADDNEW_USERView").val(), $("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_MODIFY_USERView").val(), $("#FunctionTypeFlag_CHANGE_ROLEView").val()];
     
@@ -779,10 +779,8 @@
                 return;
             }
         }
-
         var cboFunctionTypeChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox");
         var cboMainPosCodeChoice = $("#MainPosCodeApproval_Find").data("kendoComboBox");
-
         //Tạo FormData
         var formData = new FormData();
         // append list data
@@ -790,7 +788,8 @@
         formData.append("pListApprovalData", JSON.stringify(listApprovalData));
         formData.append("pFunctionType", cboFunctionTypeChoice.value());
         formData.append("pMainPosCode", cboMainPosCodeChoice.value());
-        
+        formData.append("pPosCode", cboMainPosCodeChoice.value());
+        formData.append("pSystemDate", lcSystemDateTextView);
         // append file
         if (fileUploadUserIDC) {
             formData.append("pFileUpload", fileUploadUserIDC);
@@ -802,27 +801,32 @@
             data: formData,
             processData: false,
             contentType: false,
-            success: function (res) {
-                if (res === "0" && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+            success: function (resultSaveUpdate) {
+                if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
                     alert("Trình duyệt thành công!");
                     dataChange = false;
                     refreshGridIDCApproval();
-                } else if (res === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+                } else if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                     alert("Phê duyệt thành công!");
                     dataChange = false;
                     refreshGridIDCApproval();
                 }
-                else if (res === "-1") {
+                else if (resultSaveUpdate === "-1") {
                     alert("Lỗi khi lưu dữ liệu người dùng IDC");
-                } else if (res === "-2") {
+                } 
+                else if (resultSaveUpdate === "-2") {
                     alert("Thực hiện gọi API không thành công: Thay đổi tài khoản người dùng thất bại");
-                } else if (res == "5") {
+                } 
+                else if (resultSaveUpdate == "5") {
                     alert("Thực hiện cập nhật thay đổi quyền tiền mặt không thành công. Vui lòng thực hiện lại!");
-                } else if (res == "6") {
+                } 
+                else if (resultSaveUpdate == "6") {
                     alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
-                } else if (result == "9") {
+                } 
+                else if (resultSaveUpdate == "9") {
                         alert("Người dùng này đang bị khóa, không thể thực hiện chức năng này. Vui lòng kiểm tra lại!");
-                } else {
+                } 
+                else {
                     alert("Có lỗi xảy ra!");
                 }
             },

@@ -45,7 +45,7 @@ namespace VBSPOSS.Controllers
         private readonly IListOfTransPointService _listOfTransPointService;
 
         private readonly IUserManagementIDCService _userManagementIDCService;
-        
+        private readonly IAttachedFileService _attachedFileService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ListController"/> class.
@@ -56,7 +56,8 @@ namespace VBSPOSS.Controllers
         /// <param name="menuService">The menuService<see cref="IPermitService"/>.</param>
         public ListOfValueController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper, 
                                 IProductService productService, IApiInternalService internalServiceAPI, IInterestRateConfigureService intRateConfigService,
-                                IAdministrationService userService, IListOfTransPointService listOfTransPointService,IUserManagementIDCService userManagementIDCService) : base(logger, adminService, sessionHelper)
+                                IAdministrationService userService, IListOfTransPointService listOfTransPointService,
+                                IUserManagementIDCService userManagementIDCService, IAttachedFileService attachedFileService) : base(logger, adminService, sessionHelper)
         {
             _serviceLOV = serviceLOV;
             _productService = productService;
@@ -64,6 +65,7 @@ namespace VBSPOSS.Controllers
             _intRateConfigService = intRateConfigService;
             _listOfTransPointService = listOfTransPointService;
             _userManagementIDCService = userManagementIDCService;
+            _attachedFileService = attachedFileService;
         }
 
         /// <summary>
@@ -1366,7 +1368,7 @@ namespace VBSPOSS.Controllers
         public JsonResult GetListAttachedFileInfo_ForDocumentId(long pDocumentId, string pFileType)
         {
             ArrayList resultData = new ArrayList();
-            var listAttachedFileInfo = _intRateConfigService.GetListAttachedFileInfoSearch(0, pDocumentId, pFileType, "", "");
+            var listAttachedFileInfo = _attachedFileService.GetListAttachedFileInfoSearch(0, pDocumentId, pFileType, "", "");
             if (listAttachedFileInfo != null && listAttachedFileInfo.Count != 0)
             {
                 foreach (var item in listAttachedFileInfo)

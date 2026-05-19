@@ -7,8 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telerik.SvgIcons;
@@ -34,6 +36,7 @@ namespace VBSPOSS.Controllers
         private readonly ILogger<UserManagementIDCController> _logger;
         private readonly IUserManagementIDCService _userManagementIDCService;
         private readonly IListOfValueService _serviceLOV;
+        private readonly IAttachedFileService _attachedFileService;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly IListOfTransPointService _serviceTransPoint;
@@ -41,7 +44,8 @@ namespace VBSPOSS.Controllers
 
         public UserManagementIDCController(ILogger<UserManagementIDCController> logger, IAdministrationService adminService,
             ISessionHelper sessionHelper, IUserManagementIDCService userManagementIDCService, IListOfTransPointService serviceTransPoint,
-                    IListOfValueService serviceLOV,IInterestRateConfigureService intRateConfigService,IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
+                    IListOfValueService serviceLOV, IAttachedFileService attachedFileService,
+                    IInterestRateConfigureService intRateConfigService,IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
         {
             _logger = logger;
             _userManagementIDCService = userManagementIDCService;
@@ -50,6 +54,7 @@ namespace VBSPOSS.Controllers
             _context = context;
             _serviceTransPoint = serviceTransPoint;
             _intRateConfigService = intRateConfigService;
+            _attachedFileService = attachedFileService;
         }
 
         /// <summary>
@@ -1491,7 +1496,6 @@ namespace VBSPOSS.Controllers
             DateTime dBusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
             string sBusinessDateText = dBusinessDate.ToString(FormatParameters.FORMAT_DATE);
 
-
             string sNameView = "";
             var listStaffVBSP = (await _userManagementIDCService.GetListUserIDCManagement(0, "", pMainPosCode, "", "", "", 0, "", true)).FirstOrDefault();
             sNameView = (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString()) ? "ApproveUserManagementIDC" : "ApproveUserManagementIDC";
@@ -1518,12 +1522,57 @@ namespace VBSPOSS.Controllers
             return PartialView(sNameView, objPosUserIDCManagement);
         }
 
+
+        /// <summary>
+        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
+        ///  6 - Tài khoản người dùng cần khóa đã mở sổ tiền mặt đầu ngày
+        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
+        /// </summary>
+        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData, string pFlagEventCall)
+        {
+            int iResultCheckAll = 0;
+            try
+            {
+                if (listData == null || !listData.Any())
+                    return 99;
+                foreach (var itemCheck in listData)
+                {
+                    if (itemCheck == null)
+                        continue;
+
+                    int iResultCheckItem = await IsValidSaveUserManagementIDC(itemCheck, pFlagEventCall);
+                    if (iResultCheckItem != 0)
+                    {
+                        iResultCheckAll = iResultCheckItem;
+                        break;
+                    }    
+                    /*
+                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(itemCheck.UserId);
+                    // Kiểm tra Trạng thái người dùng: 1 = Đóng/Khóa ; 2 = Mở/Active
+                    if (objViewUserIDCByApi.UserStatus == 1 && itemCheck.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                        return 9;
+                    //Kiểm tra đảm bảo user KHÔNG mở tiền mặt
+                    string startDate = itemCheck.StartDate.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper();
+                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(itemCheck.UserId, startDate);
+                    if (iCheckOpenCash > 0)
+                        return 6;
+                    */
+                }
+                return iResultCheckAll;
+            }
+            catch
+            {
+                return 99;
+            }
+        }
+
         /// <summary>
         /// Hàm thực hiện lưu thông tin và thực thi cho trường hợp Trình duyệt hoặc Phê duyệt yêu cầu về Tài khoản người dùng Intellect iDC
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pFlagCall">Sự kiện: Trình duyệt - EventFlag.EventFlag_Approval.Value; Phê duyệt - EventFlag.EventFlag_Authorize.Value</param>
-        /// <param name="pListApprovalData">Mảng dữ liệu danh sách Id (Cách nhau bởi dấu phẩy), UserId, Status</param>
+        /// <param name="pListApprovalData">Mảng dữ liệu danh sách Id (Cách nhau bởi dấu phẩy), UserId, Status
+        ///                         Ex: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
         /// <param name="pFileUpload">Danh sách file upload (tờ trình) với trường hợp trình duyệt</param>
         /// <param name="pFunctionType">Nghiệp vụ thực hiện: Thêm/Thay đổi quyền.... Giá trị lấy theo:
         ///                         Thêm mới người dùng: FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
@@ -1539,15 +1588,15 @@ namespace VBSPOSS.Controllers
         /// <returns></returns>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdateApprovalOrAuthorize([DataSourceRequest] DataSourceRequest request, string pFlagCall, string pListApprovalData,
-                    IFormFile pFileUpload, string pFunctionType, string pMainPosCode)
+                    IFormFile pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate)
         {
-            /*
             List<long> saveFileStatus = null;
+            string sListUserId = "", sListId = "";
             long iVal = 1;
             try
             {
                 string sFunctionTypeNameTmp = string.IsNullOrEmpty(pFunctionType) ? "" : FunctionTypeFlag.GetByCode(pFunctionType).Description;
-                string result = "0";
+                string resultSaveUpdate = "0";
                 var listData = JsonConvert.DeserializeObject<List<UserManagementIDCViewModel>>(pListApprovalData);
                 if (listData == null || !listData.Any() || listData.Count <= 0)
                 {
@@ -1556,23 +1605,155 @@ namespace VBSPOSS.Controllers
                     else if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
                         return new JsonResult($"Không có dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần phê duyệt. Vui lòng kiểm tra lại!");
                 }
-                var resultValue = await IsValidApprovalUserIDC(listData);
-                result = resultValue.ToString();
-                if (result != "0")
+
+                List<UserManagementIDCViewModel> listDataNewTemp = new List<UserManagementIDCViewModel>();
+                foreach (var itemUpdTemp in listData)
                 {
-                    return new JsonResult(result);
+                    var objUserManagementChangeTemp = (await _userManagementIDCService.GetListUserIDCManagement(itemUpdTemp.Id, "", "", itemUpdTemp.UserId, "", "", -1, "", false)).FirstOrDefault();
+                    #region --- Lấy dữ liệu vào listDataNewTemp cho đầy đủ để kiểm tra ---
+                    if (objUserManagementChangeTemp != null && !string.IsNullOrEmpty(objUserManagementChangeTemp.UserId))
+                    {
+                        var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+                        UserManagementIDCViewModel objUserManagementIDCUpd = new UserManagementIDCViewModel();
+                        objUserManagementIDCUpd.Id = objUserManagementChangeTemp.Id;
+                        objUserManagementIDCUpd.OrderNo = 1;
+                        objUserManagementIDCUpd.FunctionType = objUserManagementChangeTemp.FunctionType;
+                        objUserManagementIDCUpd.FunctionTypeName = objUserManagementChangeTemp.FunctionTypeName;
+
+                        objUserManagementIDCUpd.PosCode = objUserManagementChangeTemp.PosCode;
+                        objUserManagementIDCUpd.PosName = objUserManagementChangeTemp.PosName;
+                        objUserManagementIDCUpd.StaffId = objUserManagementChangeTemp.StaffId;
+                        objUserManagementIDCUpd.StaffCode = objUserManagementChangeTemp.StaffCode;
+                        objUserManagementIDCUpd.UserId = objUserManagementChangeTemp.UserId;
+                        objUserManagementIDCUpd.NickName = objUserManagementChangeTemp.NickName;
+                        objUserManagementIDCUpd.FirstName = objUserManagementChangeTemp.FirstName;
+                        objUserManagementIDCUpd.LastName = objUserManagementChangeTemp.LastName;
+                        objUserManagementIDCUpd.FullName = objUserManagementChangeTemp.FullName;
+                        objUserManagementIDCUpd.EmailAddress = objUserManagementChangeTemp.EmailAddress;
+                        objUserManagementIDCUpd.MobileNumber = objUserManagementChangeTemp.MobileNumber;
+                        objUserManagementIDCUpd.DateOfBirth = objUserManagementChangeTemp.DateOfBirth;
+                        objUserManagementIDCUpd.GroupName = objUserManagementChangeTemp.GroupName;
+                        objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+
+                        objUserManagementIDCUpd.AuthType = objUserManagementChangeTemp.AuthType;
+                        objUserManagementIDCUpd.UserType = objUserManagementChangeTemp.UserType;
+                        objUserManagementIDCUpd.MailIdFlag = objUserManagementChangeTemp.MailIdFlag;
+                        objUserManagementIDCUpd.AuthsecType = objUserManagementChangeTemp.AuthsecType;
+                        objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
+                        objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
+                        objUserManagementIDCUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
+                        objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date; //objUserManagementChangeTemp.BusinessDate;
+                        objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+                        objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                        objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
+                        objUserManagementIDCUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
+                        objUserManagementIDCUpd.Ticket = objUserManagementChangeTemp.Ticket;
+                        objUserManagementIDCUpd.Remark = objUserManagementChangeTemp.Remark;
+                        objUserManagementIDCUpd.OrtherNotes = objUserManagementChangeTemp.OrtherNotes;
+                        objUserManagementIDCUpd.Status = objUserManagementChangeTemp.Status;
+                        objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
+                        objUserManagementIDCUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
+                        if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
+                            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+                        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
+                            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+                        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
+                            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
+                        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+
+                        objUserManagementIDCUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
+                        objUserManagementIDCUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
+                        objUserManagementIDCUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
+                        objUserManagementIDCUpd.ResponseAttributes = objUserManagementChangeTemp.ResponseAttributes;
+                        objUserManagementIDCUpd.CallApiStatus = objUserManagementChangeTemp.CallApiStatus;
+                        objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementChangeTemp.CallApiReqRecordSl;
+                        objUserManagementIDCUpd.CallApiResponseCode = objUserManagementChangeTemp.CallApiResponseCode;
+                        objUserManagementIDCUpd.CallApiResponseMsg = objUserManagementChangeTemp.CallApiResponseMsg;
+
+                        objUserManagementIDCUpd.CreatedBy = objUserManagementChangeTemp.CreatedBy;
+                        objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
+                        objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
+                        objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
+                        objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+                        objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
+
+                        if (listRoleUsers != null && listRoleUsers.Count != 0)
+                        {
+                            objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.ShortName).FirstOrDefault();
+                            objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+                            objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+                            objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+                            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
+                            objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
+                            objUserManagementIDCUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
+                        }
+                        objUserManagementIDCUpd.StartDate = objUserManagementChangeTemp.StartDate;
+                        objUserManagementIDCUpd.StartDateText = string.IsNullOrEmpty(objUserManagementChangeTemp.StartDateText) ? objUserManagementChangeTemp.StartDate.ToString(FormatParameters.FORMAT_DATE) : objUserManagementChangeTemp.StartDateText;
+                        objUserManagementIDCUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
+                        objUserManagementIDCUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementChangeTemp.IpSetDetail) ? "" : objUserManagementChangeTemp.IpSetDetail;
+                        objUserManagementIDCUpd.RestrictionFlag = 0;
+                        objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
+
+                        objUserManagementIDCUpd.SubType = objUserManagementChangeTemp.SubType;
+                        objUserManagementIDCUpd.AuthsecTypeName = objUserManagementChangeTemp.AuthsecTypeName;
+                        objUserManagementIDCUpd.MailIdFlagName = objUserManagementChangeTemp.MailIdFlagName;
+                        objUserManagementIDCUpd.CallApiAutoGeneratedPassword = objUserManagementChangeTemp.CallApiAutoGeneratedPassword;
+
+                        objUserManagementIDCUpd.PosCodeOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosCodeOld) ? objUserManagementChangeTemp.PosCode : objUserManagementChangeTemp.PosCodeOld;
+                        objUserManagementIDCUpd.PosNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosNameOld) ? objUserManagementChangeTemp.PosName : objUserManagementChangeTemp.PosNameOld;
+                        objUserManagementIDCUpd.GroupNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.GroupNameOld) ? objUserManagementChangeTemp.GroupName : objUserManagementChangeTemp.GroupNameOld;
+                        objUserManagementIDCUpd.FirstNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FirstNameOld) ? objUserManagementChangeTemp.FirstName : objUserManagementChangeTemp.FirstNameOld;
+                        objUserManagementIDCUpd.LastNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.LastNameOld) ? objUserManagementChangeTemp.LastName : objUserManagementChangeTemp.LastNameOld;
+                        objUserManagementIDCUpd.FullNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FullNameOld) ? objUserManagementChangeTemp.FullName : objUserManagementChangeTemp.FullNameOld;
+                        objUserManagementIDCUpd.EmailAddressOld = string.IsNullOrEmpty(objUserManagementChangeTemp.EmailAddressOld) ? objUserManagementChangeTemp.EmailAddress : objUserManagementChangeTemp.EmailAddressOld;
+                        objUserManagementIDCUpd.MobileNumberOld = string.IsNullOrEmpty(objUserManagementChangeTemp.MobileNumberOld) ? objUserManagementChangeTemp.MobileNumber : objUserManagementChangeTemp.MobileNumberOld;
+                        objUserManagementIDCUpd.DateOfBirthOld = objUserManagementChangeTemp.DateOfBirthOld;
+                        objUserManagementIDCUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCUpd.GroupNameOldText) ? objUserManagementIDCUpd.GroupNameText : objUserManagementIDCUpd.GroupNameOldText;
+                        objUserManagementIDCUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashValueOld) ? objUserManagementIDCUpd.RoleToTransferCashValue : objUserManagementIDCUpd.RoleToTransferCashValueOld;
+                        objUserManagementIDCUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashNameOld) ? objUserManagementIDCUpd.RoleToTransferCashName : objUserManagementIDCUpd.RoleToTransferCashNameOld;
+                        objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionOld) ? objUserManagementIDCUpd.RoleToTransferCashDescription : objUserManagementIDCUpd.RoleToTransferCashDescriptionOld;
+                        objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld;
+                        objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
+                        objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
+                        objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.ExpiryDate;
+                        objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
+                        int numberDays = (objUserManagementIDCUpd.ExpiryDate - objUserManagementIDCUpd.StartDate).Days;
+                        if (numberDays <= 90)
+                            objUserManagementIDCUpd.ChoiceEndDateChangeRole = 1;
+                        objUserManagementIDCUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
+                        objUserManagementIDCUpd.GenderText = objUserManagementChangeTemp.GenderText;
+                        objUserManagementIDCUpd.StaffPosCode = objUserManagementChangeTemp.StaffPosCode;
+                        objUserManagementIDCUpd.StaffPosName = objUserManagementChangeTemp.StaffPosName;
+                        objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementChangeTemp.StaffDepartmentCode;
+                        objUserManagementIDCUpd.StaffDepartmentName = objUserManagementChangeTemp.StaffDepartmentName;
+                        objUserManagementIDCUpd.StaffPositionCode = objUserManagementChangeTemp.StaffPositionCode;
+                        objUserManagementIDCUpd.StaffPositionName = objUserManagementChangeTemp.StaffPositionName;
+                        objUserManagementIDCUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
+                        objUserManagementIDCUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
+                        objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
+                        listDataNewTemp.Add(objUserManagementIDCUpd);
+                    }
+
+                    #endregion
+                }
+                var resultValue = await IsValidApprovalUserIDC(listDataNewTemp, pFlagCall);
+                resultSaveUpdate = resultValue.ToString();
+                if (resultSaveUpdate != "0")
+                {
+                    return new JsonResult(resultSaveUpdate);
                 }
                 foreach (var objUserIDC in listData)
                 {
                     if (!TryValidateModel(objUserIDC))
                     {
-                        return new JsonResult("Dữ liệu không hợp lệ");
+                        if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
+                            return new JsonResult($"Dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần trình duyệt không hợp lệ. Vui lòng kiểm tra lại!");
+                        else if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
+                            return new JsonResult($"Dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần phê duyệt không hợp lệ. Vui lòng kiểm tra lại!");
                     }
-
                     foreach (var prop in objUserIDC.GetType().GetProperties())
                     {
                         var type = prop.PropertyType;
-
                         if (type == typeof(string))
                         {
                             var val = prop.GetValue(objUserIDC) as string;
@@ -1597,60 +1778,86 @@ namespace VBSPOSS.Controllers
                                 prop.SetValue(objUserIDC, 0);
                         }
                     }
-                    string pButtonType = objUserIDC.Status.ToString();
-                    iVal = await _userManagementIDCService.SaveApproveUserManagementIDC(objUserIDC, UserName, pFlagCall, pButtonType);
-                    if (iVal <= 0)
-                    {
-                        result = iVal.ToString();
-                        break;
-                    }
+                    sListUserId = $"{sListUserId}{objUserIDC.UserId}~";
+                    sListId = $"{sListId}{objUserIDC.Id.ToString()};";
                 }
-
-                if (fileUpload != null && fileUpload.Length > 0)
+                if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
                 {
-                    var extension = Path.GetExtension(fileUpload.FileName).ToLower();
-                    string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\");
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", "ToTrinh");
-                    if (!Directory.Exists(folderPath))
-                    {
-                        Directory.CreateDirectory(folderPath);
-                    }
-                    var fileName = _userManagementIDCService.GetFileNameNewUpload(0, pFunctionType, "", DateTime.Now) + extension;
-                    var fullFilePath = Path.Combine(folderPath, fileName);
-                    var relativeFilePath = Path.Combine("wwwroot", "Uploads", "ToTrinh");
-                    using (var stream = new FileStream(fullFilePath, FileMode.Create))
-                    {
-                        await fileUpload.CopyToAsync(stream);
-                    }
+                    var listIdUpdateStatus = await _userManagementIDCService.UpdateStatusApproveUserManagementIDC(listData, pFunctionType, pSystemDate, UserName, pFlagCall);
+                    if (listIdUpdateStatus != null && listIdUpdateStatus.Count != 0)
+                        resultSaveUpdate = "0";
+                    else resultSaveUpdate = "-2";
+                }
+                if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
+                {
+                    var listIdUpdateStatus = await _userManagementIDCService.UpdateStatusApproveUserManagementIDC(listData, pFunctionType, pSystemDate, UserName, pFlagCall);
+                    if (listIdUpdateStatus != null && listIdUpdateStatus.Count != 0)
+                        resultSaveUpdate = "0";
+                    else resultSaveUpdate = "-2";
+                }
+                if (pFileUpload != null && pFileUpload.Length > 0)
+                {
+                    string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\") + @"\";
+                    var sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), sPathFileUpload, "ToTrinh");
+                    long iDocumentIdTmp = string.IsNullOrEmpty(pMainPosCode) ? long.Parse(pPosCode) : long.Parse(pMainPosCode);
+                    string sFunctionTypeTmp = pFunctionType.Replace("_"," ").ToCamelCase();
+                    sFunctionTypeTmp = sFunctionTypeTmp.Replace(" ", "_");
+                    string sListUserIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListUserId, "~");
+                    string sListIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListId, ";");
+                    
+                    List<AttachedFileInfo> listFileUpload = new List<AttachedFileInfo>();
+                    AttachedFileInfo objFileInfo = new AttachedFileInfo();
+                    objFileInfo.FileId = 0;
+                    objFileInfo.DocumentId = iDocumentIdTmp;        //Tạm thời set giá trị là POS hoặc MAINPOS
+                    objFileInfo.FileType = FileType.FileType_User_IDC.Value.ToString();
+                    objFileInfo.FileName = pFileUpload.FileName;
+                    objFileInfo.FileExtension = Path.GetExtension(pFileUpload.FileName);
+                    objFileInfo.PathFile = Path.Combine(sPathFileUpload, "ToTrinh") + @"\";
+                    objFileInfo.FileNameNew = $"{Guid.NewGuid()}.pdf";
+                    objFileInfo.DocumentNumber = pFunctionType;
+                    objFileInfo.CircularRefNum = pSystemDate;
+                    objFileInfo.ContentDescription = $"Tờ trình {sFunctionTypeNameTmp} của đơn vị {pPosCode}-{pMainPosCode} với ngày hệ thống Intellect iDC {pSystemDate} cua các User {sListUserIdTmp}";
+                    objFileInfo.Status = StatusTrans.Status_Created.Value;
+                    objFileInfo.CreatedBy = UserName;
+                    objFileInfo.CreatedDate = DateTime.Now;
+                    objFileInfo.ModifiedBy = UserName;
+                    objFileInfo.ModifiedDate = DateTime.Now;
+                    objFileInfo.ApproverBy = UserName;
+                    objFileInfo.ApprovalDate = DateTime.Now;
+                    listFileUpload.Add(objFileInfo);
 
-                    saveFileStatus = await _userManagementIDCService.SaveAttachedFiles(0,
-                        new List<AttachedFileInfo>
-                        {
-                            new AttachedFileInfo
-                            {
-                                DocumentId = long.Parse(pMainPosCode),
-                                FileType = "2",
-                                FileName = fileUpload.FileName,
-                                PathFile = relativeFilePath,
-                                FileExtension = extension,
-                                FileNameNew = fileName,
-                                DocumentNumber = pFunctionType,
-                                Status = 1,
-                                CreatedBy = UserName,
-                                CreatedDate = DateTime.Now,
-                                ModifiedBy = UserName,
-                                ModifiedDate = DateTime.Now,
-                            }
-                        },
-                        UserName
-                    );
-                    if (saveFileStatus?.Any() != true)
+                    var listIdAttachFileUpd = await _attachedFileService.SaveAttachedFileInfo(iDocumentIdTmp, listFileUpload, FileType.FileType_User_IDC.Value.ToString(),
+                                    "", UserName, sFunctionTypeTmp);
+                    long iDocumentIdUpd = 0;
+                    int iCountUpdateDocumentIdRet = 0;
+                    if (listIdAttachFileUpd != null)
                     {
-                        throw new Exception("Lưu file thất bại!");
+                        if (!Directory.Exists(sUploadPathTemp))
+                        {
+                            Directory.CreateDirectory(sUploadPathTemp);
+                        }
+                        foreach (var itemFileId in listIdAttachFileUpd)
+                        {
+                            var listAttachedFile = _attachedFileService.GetListAttachedFileInfoSearch(itemFileId, 0, FileType.FileType_User_IDC.Value.ToString(), "", "").FirstOrDefault();
+                            string fileNameNew = "";
+                            if (listAttachedFile.FileNameNew.Contains(listAttachedFile.FileExtension))
+                                fileNameNew = $"{listAttachedFile.FileNameNew}";
+                            else
+                                fileNameNew = $"{listAttachedFile.FileNameNew}{listAttachedFile.FileExtension}";
+
+                            var filePathNew = Path.Combine(sUploadPathTemp, fileNameNew);
+                            iDocumentIdUpd = listAttachedFile.DocumentId;
+                            using (var stream = new FileStream(filePathNew, FileMode.Create))
+                            {
+                                pFileUpload.CopyTo(stream);
+                            }
+                        }
+                        //Thực hiện cập nhật DocumentId vào bảng UserManagementIDC
+                        var listIdOfUserManagementIDC = StringHelper.ConvertToLongList(sListIdTmp, ';');
+                        iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, iDocumentIdUpd);
                     }
                 }
-            
-                return new JsonResult(result);
+                return new JsonResult(resultSaveUpdate);
            
             }
             catch (Exception ex)
@@ -1658,9 +1865,12 @@ namespace VBSPOSS.Controllers
                 _logger.LogInformation($"{System.Reflection.MethodBase.GetCurrentMethod()} Error: {ex.Message}");
                 return new JsonResult("99");
             }
-             */
-            return null;
         }
+
+
+
+
+
 
 
         public async Task<IActionResult> IndexUserIDCMaster()
@@ -1788,38 +1998,7 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        /// <summary>
-        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
-        ///  6 - Kiểm tra mở sổ tiền mặt đầu ngày
-        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
-        /// </summary>
-        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData)
-        {
-            try
-            {
-                if (listData == null || !listData.Any())
-                    return 99;       
-                foreach (var item in listData)
-                {
-                    if (item == null)
-                        continue;        
-                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(item.UserId);        
-                    // Kiểm tra Trạng thái người dùng: 1 = Đóng/Khóa ; 2 = Mở/Active
-                    if (objViewUserIDCByApi.UserStatus == 1 && item.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
-                        return 9;
-                    //Kiểm tra đảm bảo user KHÔNG mở tiền mặt
-                    string startDate = item.StartDate.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper();        
-                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(item.UserId,startDate);        
-                    if (iCheckOpenCash > 0)
-                        return 6;
-                }        
-                return 0;
-            }
-            catch
-            {
-                return 99;
-            }
-        }
+        
 
 
         /// <summary>

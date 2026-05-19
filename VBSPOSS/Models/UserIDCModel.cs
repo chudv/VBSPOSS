@@ -66,6 +66,7 @@ namespace VBSPOSS.Models
         public string? MobileNumberOld { get; set; }
         public DateTime? DateOfBirthOld { get; set; }
         public DateTime? BusinessDate { get; set; }
+        public long? DocumentId { get; set; }
     }
 
 

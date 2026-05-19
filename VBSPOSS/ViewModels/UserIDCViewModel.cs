@@ -137,6 +137,7 @@ namespace VBSPOSS.ViewModels
         public DateTime SystemDate { get; set; }
 
         public string SystemDateText { get; set; }
+        public long DocumentId { get; set; }
     }
 
     /// <summary>
