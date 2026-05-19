@@ -256,6 +256,104 @@ namespace VBSPOSS.Controllers
 
 
 
+        //add
+        [HttpGet]
+        public IActionResult ShowApproval(string productGroupCode, string effectedDateStr)
+        {
+            if (string.IsNullOrEmpty(productGroupCode))
+                return Content("Thiếu thông tin phân loại");
+
+            DateTime effectedDate = DateTime.Today.AddDays(1);
+            if (!string.IsNullOrEmpty(effectedDateStr) &&
+                DateTime.TryParseExact(effectedDateStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+            {
+                effectedDate = dt;
+            }
+
+            var model = new ProductParameterApproveViewModel
+            {
+                ProductGroupCode = productGroupCode,
+                EffectedDate = effectedDate,
+                ProductGroupDisplay = productGroupCode switch
+                {
+                    "CASA" => "Casa",
+                    "TIDE" => "Tide",
+                    "DEPOSITPENAL" or "PENAL" => "Rút trước hạn (Penal Tide)",
+                    _ => productGroupCode
+                }
+            };
+
+            return PartialView("_Approve", model);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> LoadComparisonForApprove([FromBody] LoadProductRequest request)
+        {
+            try
+            {
+                DateTime effectedDate = DateTime.ParseExact(request.effectedDate, "dd/MM/yyyy",
+                    CultureInfo.InvariantCulture);
+
+                var data = await _service.GetComparisonForApproveAsync(request.productGroupCode, effectedDate);
+
+                return Json(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi load dữ liệu duyệt");
+                return Json(new { error = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ApproveBatch([FromForm] ApproveRequest request)
+        {
+            try
+            {
+                bool success = await _service.ApproveProductParametersAsync(
+                    request.ProductGroupCode,
+                    request.EffectedDate,
+                    User.Identity?.Name ?? "Approver");
+
+                return Json(new
+                {
+                    success,
+                    message = success ? "Duyệt thành công!" : "Không tìm thấy dữ liệu cần duyệt."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RejectBatch([FromForm] ApproveRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.RejectReason))
+                    return Json(new { success = false, message = "Vui lòng nhập lý do từ chối!" });
+
+                bool success = await _service.RejectProductParametersAsync(
+                    request.ProductGroupCode,
+                    request.EffectedDate,
+                    User.Identity?.Name ?? "Approver",
+                    request.RejectReason.Trim());
+
+                return Json(new
+                {
+                    success,
+                    message = success ? "Đã từ chối thành công!" : "Không tìm thấy dữ liệu để từ chối."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
 
 
     }

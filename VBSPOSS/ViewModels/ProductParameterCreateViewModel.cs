@@ -84,4 +84,30 @@ namespace VBSPOSS.ViewModels
         public string Remark { get; set; }
         public string Items { get; set; } // JSON string của grid items
     }
+
+    /// <summary>
+    /// ViewModel cho Popup Duyệt Cấu hình Lãi suất
+    /// </summary>
+    public class ProductParameterApproveViewModel
+    {
+        public string ProductGroupCode { get; set; } = "";
+        public string ProductGroupDisplay { get; set; } = "";
+        public DateTime EffectedDate { get; set; }
+
+        // Danh sách dữ liệu để bind vào Grid so sánh
+        public List<ProductParameterComparisonViewModel> Items { get; set; } = new List<ProductParameterComparisonViewModel>();
+    }
+
+    /// <summary>
+    /// Request khi bấm Duyệt hoặc Từ chối
+    /// </summary>
+    public class ApproveRequest
+    {
+        public string ProductGroupCode { get; set; } = "";
+        public DateTime EffectedDate { get; set; }
+        public string RejectReason { get; set; } = "";
+    }
+
+
+
 }

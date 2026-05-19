@@ -746,7 +746,8 @@ namespace VBSPOSS.Services.Implements
                 // Kiểm tra trùng ngày hiệu lực theo ProductGroupCode
                 var existing = await _dbContext.ProductParameters
                     .AnyAsync(x => x.ProductGroupCode == productGroupCode
-                                && x.EffectedDate.Date == effectedDate.Date);
+                                && x.EffectedDate.Date == effectedDate.Date
+                    && x.Status != ConfigStatus.REJECTED.Value);
 
                 if (existing)
                     throw new Exception($"Đã tồn tại cấu hình cho phân loại {productGroupCode} với ngày hiệu lực {effectedDate:dd/MM/yyyy}. Không thể tạo trùng.");
@@ -788,8 +789,8 @@ namespace VBSPOSS.Services.Implements
                             MaxInterestRateSpread = updatedItem.NewMaxSpread,
                             EffectedDate = effectedDate.Date,
                             Remark = !string.IsNullOrEmpty(updatedItem.Remark) ? updatedItem.Remark.Trim() : remark?.Trim() ?? "",
-                            //Status = ConfigStatus.MAKER.Value,
-                            Status = ConfigStatus.AUTHORIZED.Value,
+                            Status = ConfigStatus.MAKER.Value,
+                           // Status = ConfigStatus.AUTHORIZED.Value,
                             CreatedBy = "system",
                             CreatedDate = DateTime.Now
                         });
@@ -808,8 +809,8 @@ namespace VBSPOSS.Services.Implements
                             MaxInterestRateSpread = old.MaxInterestRateSpread,
                             EffectedDate = effectedDate.Date,
                             Remark = remark?.Trim() ?? "",
-                           // Status = ConfigStatus.MAKER.Value,
-                            Status = ConfigStatus.AUTHORIZED.Value,
+                            Status = ConfigStatus.MAKER.Value,
+                          //  Status = ConfigStatus.AUTHORIZED.Value,
                             CreatedBy = "system",
                             CreatedDate = DateTime.Now
                         });
@@ -892,7 +893,121 @@ namespace VBSPOSS.Services.Implements
         }
 
 
+        //add
 
+        // Service/Implements/ProductParameterService.cs
+
+        public async Task<List<ProductParameterComparisonViewModel>> GetComparisonForApproveAsync(
+            string productGroupCode, DateTime effectedDate)
+        {
+            try
+            {
+                var proposedQuery = _dbContext.ProductParameters
+                    .Where(p => p.ProductGroupCode == productGroupCode
+                             && p.EffectedDate.Date == effectedDate.Date
+                             && (p.Status == ConfigStatus.MAKER.Value || p.Status == ConfigStatus.PROCESS.Value));
+
+                var currentQuery = _dbContext.ProductParameters
+                    .Where(p => p.ProductGroupCode == productGroupCode
+                             && p.EffectedDate <= effectedDate.Date
+                             && p.Status == ConfigStatus.AUTHORIZED.Value);
+
+                var proposeds = await proposedQuery.ToListAsync();
+                var currents = await currentQuery.ToListAsync();
+
+                var allKeys = proposeds.Select(p => new { p.ProductGroupCode, p.ProductCode }).Distinct().ToList();
+
+                var result = new List<ProductParameterComparisonViewModel>();
+                int order = 1;
+
+                foreach (var key in allKeys)
+                {
+                    var current = currents.FirstOrDefault(c => c.ProductCode == key.ProductCode);
+                    var proposed = proposeds.FirstOrDefault(p => p.ProductCode == key.ProductCode);
+
+                    var vm = new ProductParameterComparisonViewModel
+                    {
+                        OrderNo = order++,
+                        ProductGroupDisplay = proposed?.ProductGroupDisplay ?? current?.ProductGroupDisplay ?? "",
+                        ProductCode = key.ProductCode,
+                        ProductName = proposed?.ProductName ?? current?.ProductName ?? "",
+
+                        CurrentApplyPos = current?.ApplyPosDisplay ?? "",
+                        CurrentMinSpread = current?.MinInterestRateSpread ?? 0,
+                        CurrentMaxSpread = current?.MaxInterestRateSpread ?? 0,
+                        CurrentEffectedDate = current?.EffectedDate,
+
+                        NewApplyPos = proposed?.ApplyPosDisplay ?? "",
+                        NewMinSpread = proposed?.MinInterestRateSpread,
+                        NewMaxSpread = proposed?.MaxInterestRateSpread,
+                        NewEffectedDate = proposed?.EffectedDate,
+
+                        HasChange = true,
+                        ProposalStatus = ConfigStatus.GetByValue(proposed?.Status ?? 0)?.Description ?? "Chờ duyệt",
+                        Remark = proposed?.Remark ?? ""
+                    };
+
+                    result.Add(vm);
+                }
+
+                return result.OrderBy(x => x.ProductCode).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi load dữ liệu duyệt");
+                throw;
+            }
+        }
+
+        public async Task<bool> ApproveProductParametersAsync(string productGroupCode, DateTime effectedDate, string approver)
+        {
+            var items = await _dbContext.ProductParameters
+                .Where(x => x.ProductGroupCode == productGroupCode
+                         && x.EffectedDate.Date == effectedDate.Date
+                         && x.Status == ConfigStatus.MAKER.Value)
+                .ToListAsync();
+
+            if (!items.Any()) return false;
+
+            foreach (var item in items)
+            {
+                item.Status = ConfigStatus.AUTHORIZED.Value;
+            //    item.StatusDesc = "Đã duyệt";
+                item.ApproverBy = approver;
+                item.ApprovalDate = DateTime.Now;
+                item.ModifiedBy = approver;
+                item.ModifiedDate = DateTime.Now;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RejectProductParametersAsync(string productGroupCode, DateTime effectedDate,
+            string approver, string rejectReason)
+        {
+            var items = await _dbContext.ProductParameters
+                .Where(x => x.ProductGroupCode == productGroupCode
+                         && x.EffectedDate.Date == effectedDate.Date
+                         && x.Status == ConfigStatus.MAKER.Value)
+                .ToListAsync();
+
+            if (!items.Any()) return false;
+
+            foreach (var item in items)
+            {
+                item.Status = ConfigStatus.REJECTED.Value;   // Bạn cần định nghĩa REJECTED trong ConfigStatus
+              //  item.StatusDesc = "Từ chối";
+                item.ApproverBy = approver;
+                item.ApprovalDate = DateTime.Now;
+                item.Remark = !string.IsNullOrEmpty(rejectReason)
+                    ? $"[Từ chối] {rejectReason} - {item.Remark}"
+                    : item.Remark;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
 
 
 
