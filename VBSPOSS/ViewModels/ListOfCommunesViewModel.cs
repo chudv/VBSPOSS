@@ -140,6 +140,11 @@ namespace VBSPOSS.ViewModels
     #region ---Model ListOfCommuneWorksViewModel - Thông tin thêm mới/thay đổi thông tin địa phương ---
     public class ListOfCommuneWorksViewModel
     {
+
+        //add
+        public long Id { get; set; }           // 
+        public string FlagCall { get; set; }
+
         public int OrderNo { get; set; }                        //Thêm
         public string OrderNoText { get; set; }                 //Thêm
         public string EventCode { get; set; }

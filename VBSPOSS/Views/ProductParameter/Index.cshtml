@@ -218,23 +218,42 @@
         });
     }
 
-    function showApproval(e) {
+          function showApproval(e) {
         e.preventDefault();
+
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+        if (!dataItem) {
+            alert("Không lấy được dữ liệu dòng!");
+            return;
+        }
+
+        if (!dataItem.ProductGroupCode) {
+            alert("Dòng được chọn không có thông tin phân loại!");
+            return;
+        }
+
+        // Ưu tiên lấy ngày hiệu lực theo thứ tự hợp lý với View
+        var effectedDateStr = kendo.toString(
+            dataItem.EffectedDate || dataItem.NewEffectedDate || dataItem.CurrentEffectedDate,
+            "dd/MM/yyyy"
+        );
+
+        var url = '@Url.Action("ShowApproval", "ProductParameter")' +
+                  '?productGroupCode=' + encodeURIComponent(dataItem.ProductGroupCode) +
+                  '&effectedDateStr=' + encodeURIComponent(effectedDateStr);
+
         mainWindow.kendoWindow({
-            width: "1100px",
-            height: "680px",
-            title: "Phê duyệt cấu hình",
-            content: {
-                url: '@Url.Action("ShowApproval", "ProductParameter")',
-                data: { id: dataItem.Id }
-            },
+            width: "1250px",
+            height: "720px",
+            title: "Phê duyệt cấu hình lãi suất - " + (dataItem.ProductGroupDisplay || dataItem.ProductGroupCode),
+            content: { url: url },
             modal: true,
             close: onCloseProductParameter,
-            actions: ["Close"]
+            actions: ["Close", "Maximize"]
         }).data("kendoWindow").center().open();
     }
+       
 
     // ====================== ROW BOUND ======================
     function onRowBound(e) {
@@ -464,14 +483,14 @@
             .Name("EffectDateBegin_Find")
             .Format("dd/MM/yyyy")
             .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Từ ngày" })
-            .Value(DateTime.Today.AddMonths(-1))
+            .Value(DateTime.Today.AddMonths(-2))
             )
         <span style="color: #ca8f5c; padding: 0 8px;">&nbsp;-&nbsp;</span>
         @(Html.Kendo().DatePicker()
             .Name("EffectDateEnd_Find")
             .Format("dd/MM/yyyy")
             .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Đến ngày" })
-            .Value(DateTime.Today.AddDays(1))
+            .Value(DateTime.Today.AddDays(2))
             )
 @* 
         @(Html.Kendo().Button()
@@ -509,7 +528,7 @@
             command.Custom("Detail").Text("").Click("showDetail").HtmlAttributes(new { @class = "btn-view", title = "Chi tiết" });
             command.Custom("Edit").Text("").Click("showEdit").HtmlAttributes(new { @class = "btn-view-edit", title = "Sửa" });
             command.Custom("Delete").Text("").Click("deleteItem").HtmlAttributes(new { @class = "btn-delete", title = "Xóa" });
-           // command.Custom("Approval").Text("").Click("showApproval").HtmlAttributes(new { @class = "btn-approval", title = "Phê duyệt" });
+            command.Custom("Approval").Text("").Click("showApproval").HtmlAttributes(new { @class = "btn-approval", title = "Phê duyệt" });
         }).Width(160).Title("Thao tác").HtmlAttributes(new { style = "text-align:center;" });
 
         //columns.Bound(p => p.OrderNo).Title("STT").Width(60);

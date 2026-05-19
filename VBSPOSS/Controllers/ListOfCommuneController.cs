@@ -29,6 +29,7 @@ namespace VBSPOSS.Controllers
         private readonly IListOfValueService _serviceLOV;
         private readonly IApiInternalService _internalServiceAPI;
         private readonly IMapper _mapper;
+        private readonly IListOfTransPointService _serviceTransPoint;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ListOfCommuneController"/> class.
@@ -120,5 +121,133 @@ namespace VBSPOSS.Controllers
         //        return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
         //    }
         //}
+
+        //add
+        /// <summary>
+        /// Hiển thị form Thêm mới thông tin danh mục địa phương (Xã/Phường)
+        /// </summary>
+        /// <summary>
+        /// Hiển thị form Thêm mới thông tin danh mục địa phương
+        /// </summary>
+        /// <summary>
+        /// Hiển thị form Thêm mới thông tin danh mục địa phương
+        /// </summary>
+        public ActionResult ShowUpdateListOfCommuneWork(string pButtonType, long pId, string pPosCode, string pEventCode, string pFlagCall)
+        {
+            ListOfCommuneWorksViewModel model = new ListOfCommuneWorksViewModel();
+            string sNameView = "";   //
+
+            if (string.IsNullOrEmpty(pPosCode)) pPosCode = "";
+            if (string.IsNullOrEmpty(pEventCode)) pEventCode = "";
+            if (string.IsNullOrEmpty(pFlagCall)) pFlagCall = EventFlag.EventFlag_Add.Value.ToString();
+
+            if (pFlagCall == EventFlag.EventFlag_Add.Value.ToString() || pFlagCall == "1")
+            {
+                #region --- THÊM MỚI ---
+
+                model.OrderNo = 0;
+                model.EventCode = string.IsNullOrEmpty(pEventCode)
+                                ? EventBusinessCode.EventCode_Locality_AddNew.Code
+                                : pEventCode;
+
+                model.EventName = EventBusinessCode.EventCode_Locality_AddNew.Description;
+
+                model.ParentId = 0;
+                model.PosCode = pPosCode;
+                model.PosName = "";
+
+                model.ProvinceCode = "";
+                model.ProvinceName = "";
+                model.DistrictCode = "";
+                model.DistrictName = "";
+                model.CommuneCode = "";
+                model.CommuneName = "";
+                model.SubCommuneCode = "";
+                model.SubCommuneName = "";
+
+                model.DistrictFlag30A = "";
+                model.AreaEconomic = "";
+                model.CommuneFlag135 = "";
+                model.Region_01 = "";
+                model.Region_02 = "";
+                model.Region_03 = "";
+                model.Region_04 = "";
+                model.DiffAreaCode = "";
+                model.IsNewCountryside = "0";
+
+                model.TxnPointCode = "";
+                model.TxnPointName = "";
+
+                model.VisitDate = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
+                model.VisitDateText = DateTime.Now.ToString(FormatParameters.FORMAT_DATE);
+
+                model.TimeBegin = "08:00";
+                model.TimeEnd = "17:00";
+                model.TimeBeginNum = 8.0m;
+                model.TimeEndNum = 17.0m;
+                model.Hours = 8.0m;
+                model.Minutes = 0.0m;
+
+                model.Longitude = 0;
+                model.Latitude = 0;
+
+                model.IsInCommune = "1";
+                model.IsInPos = "1";
+                model.IsInterWard = "0";
+                model.InterWardName = "";
+
+                model.Status = StatusBusinessFlow.Status_Created.Value;
+                model.StatusText = StatusBusinessFlow.Status_Created.Description;
+                model.RecordStatus = "1";
+                model.RecordStatusText = "Hoạt động";
+
+                model.EffectDate = _serviceTransPoint?.GetDateInCoreIDC("1").Date ?? DateTime.Now.Date;
+                model.BusinessDate = _serviceTransPoint?.GetDateInCoreIDC("1").Date ?? DateTime.Now.Date;
+
+                model.EffectDateText = model.EffectDate.ToString(FormatParameters.FORMAT_DATE);
+                model.BusinessDateText = model.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+
+                model.DocumentId = 0;
+
+                model.CreatedBy = UserName;
+                model.CreatedDate = DateTime.Now;
+                model.ModifiedBy = UserName;
+                model.ModifiedDate = DateTime.Now;
+                model.ApproverBy = UserName;
+                model.ApprovalDate = DateTime.Now;
+
+                model.StatusUpdateCore = 0;
+                model.CallApiTxnStatus = "";
+                model.CallApiResRecords = 0;
+                model.CallApiResponseCode = "";
+                model.CallApiResponseMsg = "";
+
+                // OldInfo để trống
+                model.PosCodeOldInfo = "";
+                model.ProvinceCodeOldInfo = "";
+                model.DistrictCodeOldInfo = "";
+                model.CommuneCodeOldInfo = "";
+                model.SubCommuneCodeOldInfo = "";
+                model.StatusOldInfo = 0;
+             //   model.EffectDateOldInfo = DefaultValue.MinDate;
+            //    model.BusinessDateOldInfo = DefaultValue.MinDate;
+                model.DocumentIdOldInfo = 0;
+
+                model.FlagCall = pFlagCall;
+
+                #endregion
+            }
+
+            sNameView = "UpdateListOfCommuneWork";
+
+
+            TempData["FlagCall"] = pFlagCall;
+            TempData["ButtonType"] = pButtonType;
+            TempData["UserPosCode"] = UserPosCode;
+
+            return PartialView(sNameView, model);
+        }
+
+
     }
 }

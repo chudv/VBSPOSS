@@ -74,6 +74,25 @@ namespace VBSPOSS.Services.Interfaces
         DateTime? toDate = null);       // Đến ng
 
 
+        //add 
+        /// <summary>
+        /// Load dữ liệu so sánh Current vs New để duyệt
+        /// </summary>
+        Task<List<ProductParameterComparisonViewModel>> GetComparisonForApproveAsync(
+            string productGroupCode, DateTime effectedDate);
+
+        /// <summary>
+        /// Duyệt batch cấu hình
+        /// </summary>
+        Task<bool> ApproveProductParametersAsync(string productGroupCode, DateTime effectedDate, string approver);
+
+        /// <summary>
+        /// Từ chối batch cấu hình
+        /// </summary>
+        Task<bool> RejectProductParametersAsync(string productGroupCode, DateTime effectedDate,
+            string approver, string rejectReason);
+
+
     }
 
 

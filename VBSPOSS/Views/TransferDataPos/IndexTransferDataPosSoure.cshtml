@@ -359,9 +359,6 @@
         else if (dataItem.Status.toString() == "4") {
             alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
-        // else if (dataItem.FunctionType != "ADDNEW_USER") {
-        //     alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
-        // }
         else {
             var sFlagCall = $("#EventFlag_EditTemp").val();
             mainWindow.kendoWindow({
@@ -383,30 +380,6 @@
         }
     }
 
-    function showDetail(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        var sFlagCall = $("#EventFlag_EditTemp").val();
-        mainWindow.kendoWindow({
-            width: "1170px",
-            height: "600px",
-            title: "Chi tiết yêu cầu điều chuyển dữ liệu khác pos",
-            content: {
-                url: '@Url.Action("ShowTransferDataPosMasterDetail", "TransferDataPos")',
-                data: { pId: dataItem.Id }
-            },
-            resizable: false,
-            visible: false,
-            modal: true,
-            close: onCloseTransPointWork,
-            actions: ["Refresh", "Close"]
-        });
-        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1170 });
-        mainWindow.data("kendoWindow").center().open().title("Chi tiết yêu cầu điều chuyển dữ liệu khác pos");
-
-    }
-
     function uploadToTrinh(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -420,9 +393,6 @@
         else if (dataItem.Status.toString() == "4") {
             alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
-        // else if (dataItem.FunctionType != "ADDNEW_USER") {
-        //     alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
-        // }
         else {
             var sFlagCall = $("#EventFlag_EditTemp").val();
             mainWindow.kendoWindow({
@@ -476,7 +446,7 @@
         }
     }
 
-    function approveItem(e) {
+    function createTransferData(e) {
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var sMessInfor = "Tờ trình [" + dataItem.Id + "]";
 
@@ -484,21 +454,18 @@
             alert("Tờ trình [" + dataItem.Id + "] đã được phê duyệt nên không thể xóa. Vui lòng kiểm tra lại!");
         }
         else {
-            var isConfirm = confirm("Bạn có chắc chắn muốn gửi tờ trình này lên trung ương để phê duyệt?");
+            var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin tờ trình " + sMessInfor + " không?");
             if (isConfirm == true) {
                 $.ajax({
-                    data: {
-                        pId: dataItem.Id,
-                        pAction: "3"
-                    },
+                    data: { pId: dataItem.Id },
                     type: "POST",
-                    url: "../TransferDataPos/ApproveTransferDataPos",
+                    url: "../TransferDataPos/CreateTransferData",
                     success: function (resultVal) {
                         if (resultVal == "1") {
-                            alert("Bạn gửi đi phê duyệt thành công" + sMessInfor + "!");
+                            alert("Bạn đã xóa thành công thông tin tờ trình " + sMessInfor + "!");
                             refreshGridIDC();
                         }
-                        else alert("Gửi tờ trình " + sMessInfor + "đi phê duyệt thất bại!");
+                        else alert("Đánh dấu xóa thông tin tờ trình " + sMessInfor + " thất bại!");
                     },
                     error: function () {
                         alert(" dấu xóa thông tin tờ trình " + sMessInfor + " có lỗi!");
@@ -511,37 +478,6 @@
         }
     }
 
-    function showDetailUserIDC(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var grid = $("#gridMainIDC").data("kendoGrid");
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
-        }
-        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
-        mainWindow.kendoWindow({
-            width: "1000px",
-            height: "500px",
-            title: "Xem chi tiết thông tin người dùng IDC",
-            content: {
-                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "14", pId: dataItem.Id }
-            },
-            resizable: false,
-            visible: false,
-            modal: true,
-            close: onCloseTransPointWork,
-            actions: ["Refresh", "Close"],
-            error: function (e) {
-                notification.show({
-                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
-                    type: "error"
-                }, "error");
-                mainWindow.data("kendoWindow").close();
-            }
-        });
-        mainWindow.data("kendoWindow").center().open();
-    }
 
     function showEditIDC(e) {
         e.preventDefault();
@@ -614,23 +550,7 @@
                 .Suggest(true)
                 .AutoBind(true)
                 .SelectedIndex(0))
-            @*  <label class="lbcontrol" style="color: navy;text-align:right;width:140px;padding-top: 7px;padding-right:5px;">Yêu cầu nghiệp vụ</label>
-            @(Html.Kendo().ComboBox().Name("EventCode_Find")
-            .Filter(FilterType.Contains)
-            .DataTextField("Description")
-            .DataValueField("Code")
-            .BindTo((List<ValueConstModel>)ViewBag.EventBusinessCodes)
-            .Placeholder("Chọn nghiệp vụ yêu cầu")
-            .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
-            .Filter("contains")
-            .SelectedIndex(0)) *@
-            @*  <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
-            @(Html.Kendo().TextBox().Name("TxnPointCode_Find")
-            .Placeholder("Mã điểm GD")
-            .HtmlAttributes(new { style = "width: 90px;padding-left: 3px;padding-right: 2px;color: green;" })) *@
-            @*  @(Html.Kendo().TextBox().Name("TxnPointName_Find")
-            .Placeholder("Tên điểm giao dịch")
-            .HtmlAttributes(new { style = "width: 140px;padding-left: 3px;padding-right: 2px;color: green;" })) *@
+          
             <label class="lbcontrol" style="width: 85px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("Status_Find")
                 .DataTextField("Text")
@@ -658,37 +578,20 @@
                 .Events(e => e.DataBound("onRowBoundTransPointWork"))
                 .Columns(columns =>
                 {
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
+                   
 
                         columns.Command(command =>
                         {
-                            command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
-                            {
-                                @class = "btn-view-edit",
-                                style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                                title = "Chỉnh sửa thông tin yêu cầu điều chuyển dữ liệu"
-                            });
-                            command.Custom("Delete").Text("<span style='color: blue;'></span>").Click("deleteItem").HtmlAttributes(new
-                            {
-                                style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                                title = "Đóng (đánh dấu xóa) yêu cầu điều chuyển",
-                                @class = "btn-delete"
-                            });
-
                             command.Custom("ViewDetail").Text("<span style='color: blue;'></span>").Click("showDetail").HtmlAttributes(new
                             {
                                 @class = "btn-view-edit",
                                 style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
                                 title = "Chi tiết yêu cầu điều chuyển"
                             });
-
-                        }).Width(100).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
+                        }).Width(100).Title("Chi tiết").HtmlAttributes(new { style = "text-align: center;" });
 
                         columns.Command(command =>
                         {
-                            command.Custom("PrintToTrinh").Text("<span style='color: blue;'>In</span>").Click("printToTrinh").HtmlAttributes(new { @class = "btn-print-totrinh", style = "width: 45px !important; display: inline-block; vertical-align: middle; padding: 0 2px !important;", title = "In tờ trình điều chuyển dữ liệu" });
-                            command.Custom("UploadToTrinh").Text("<span style='color: green;'>Upload</span>").Click("uploadToTrinh").HtmlAttributes(new { @class = "btn-upload-totrinh", style = "width: 70px !important; display: inline-block; vertical-align: middle; padding: 0 2px !important;", title = "Upload tờ trình đã ký đóng dấu" });
                             command.Custom("DownloadToTrinh")
                             .Text("<span style='color: darkorange;'>Tải</span>")
                             .Click("downloadTransferFileGrid")
@@ -704,61 +607,38 @@
                                 title =
                             "Tải file tờ trình"
                             });
-                        }).Width(190).Title("Tờ trình").HtmlAttributes(new { style = "text-align: center;" });
+                        }).Width(90).Title("Tờ trình").HtmlAttributes(new { style = "text-align: center;" });
+                            
 
-                    }
-                    else
-                    {
-                        columns.Command(command =>
-                        {
-                            command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("onShowApproveTransferDetail")
-                    .HtmlAttributes(new
-                    {
-                        @class = "btn-view-edit",
-                        style =
-                    "width:20px !important;" +
-                    "display:inline-block;" +
-                    "vertical-align:middle;" +
-                    "padding:0 2px !important;",
-                        title = "Phê duyệt"
-                    });
-                        })
-                        .Width(100)
-                        .Title("Phê duyệt")
-                        .HtmlAttributes(new
-                        {
-                            style = "text-align:center;"
-                        });
-                    }
 
                     columns.Command(command =>
                     {
 
-                        command.Custom("Approve").Text("<span style='color: blue;'></span>").Click("approveItem").HtmlAttributes(new
+                        command.Custom("CreateTransferData").Text("<span style='color: blue;'></span>").Click("createTransferData").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
-                            title = "Gửi lên Trung ương để phê duyệt",
+                            title = "Tạo số liệu",
                             @class = "btn-view-edit"
                         });
-                    }).Width(100).Title("Trình duyệt").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(100).Title("Tạo số liệu").HtmlAttributes(new { style = "text-align: center;" });
 
-                    @* columns.Command(command =>
-            {
-            command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
-            {
-            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-            title = "Yêu cầu thay đổi điểm giao dịch",
-            @class = "btn-EditIDC"
-            });
-            }).Width(60).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
-            *@
+                    columns.Command(command =>
+                    {
+                        command.Custom("ViewDataDetail").Text("<span style='color: blue;'></span>").Click("showDataDetail").HtmlAttributes(new
+                        {
+                            @class = "btn-view-edit",
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;padding: 0 2px !important;",
+                            title = "Chi tiết dữ liệu điều chuyển"
+                        });
+                    }).Width(100).Title("Dữ liệu điều chuyển").HtmlAttributes(new { style = "text-align: center;" });
+
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    @* columns.Bound(c => c.EventName).Title("Yêu cầu nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" }); *@
+                    
                     columns.Bound(c => c.EventCode).Hidden();
-                    columns.Bound(c => c.FromPosCode).Title("Pos nguồn").Width(90).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
+                    columns.Bound(c => c.FromPosCode).Title("Pos nguồn").Width(110).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
                     columns.Bound(c => c.FromPosName).Title("Tên pos nguồn").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
                     columns.Bound(c => c.ToPosCode).Title("Pos đích").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.ToPosName).Title("Tên pos đích").Width(90).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.ToPosName).Title("Tên pos đích").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
                     columns.Bound(c => c.Status).Title("Trạng thái").Width(100)
                     .ClientTemplate(
                     "# if (Status == 1) { #" + "CN - Tạo yêu cầu" +
@@ -778,42 +658,10 @@
                         style = "text-align:center;font-weight:bold;"
                     });
 
-                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
-                    columns.Bound(c => c.TotalVillage).Title("Số thôn điều chuyển").Width(80).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
-                    @* columns.Bound(c => c.TotalVillage)
-            .Title("Số thôn điều chuyển")
-            .Width(140)
-            .HtmlAttributes(new
-            {
-            style = "text-align:center;"
-            })
-            .ClientTemplate(
-            "<a href='javascript:void(0);' " +
-            "onclick='showTransferDetail(#=Id#)' " +
-            "style='color:blue;text-decoration:underline;font-weight:bold;'>" +
-            "#=TotalVillage# thôn" +
-            "</a>"
-            ); *@
-
-
-                    @*   columns.Template(
-            "<a href='javascript:void(0);' " +
-            "onclick='downloadTransferFile(#=Id#)' " +
-            "style='color:blue;text-decoration:underline;'>" +
-            "Tải tờ trình" +
-            "</a>"
-            )
-            .Title("Tải file")
-            .Width(100)
-            .HtmlAttributes(new
-            {
-            style = "text-align:center;"
-            })
-            .HeaderHtmlAttributes(new
-            {
-            style = "text-align:center;font-weight:bold;"
-            }); *@
-
+                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(110).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
+                    columns.Bound(c => c.TotalVillage).Title("Số thôn điều chuyển").Width(110).HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
+                 
+                 
                     columns.Bound(c => c.Status).Hidden();
                     columns.Bound(c => c.CreatedBy).Hidden();
                     columns.Bound(c => c.CreatedDate).Hidden();
@@ -824,14 +672,6 @@
 
                 })
                 .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
-                .ToolBar(toolbar =>
-                {
-                    if (userPosCode != "000100" && userPosCode != "000196")
-                    {
-                        toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreateTranferDataPos").HtmlAttributes(new { id = "btnCreateTranferDataPos", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
-                    }
-                })
-                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi Diem GD.xlsx").AllPages(true))
                 .Editable(editable => { editable.Mode(GridEditMode.InLine); })
                 .Sortable()
                 .Scrollable()
@@ -854,6 +694,33 @@
 </div>
 
 <script>
+
+
+
+    function showDetail(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var sFlagCall = $("#EventFlag_EditTemp").val();
+        mainWindow.kendoWindow({
+            width: "1170px",
+            height: "600px",
+            title: "Chi tiết yêu cầu điều chuyển dữ liệu khác pos",
+            content: {
+                url: '@Url.Action("ShowTransferDataPosMasterDetail", "TransferDataPos")',
+                data: { pId: dataItem.Id }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTransPointWork,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1170 });
+        mainWindow.data("kendoWindow").center().open().title("Chi tiết yêu cầu điều chuyển dữ liệu khác pos");
+
+    }
+
     function downloadTransferFileGrid(e) {
 
         e.preventDefault();
@@ -865,6 +732,32 @@
 
         downloadTransferFile(
             dataItem.Id);
+    }
+
+    function showDataDetail(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var sFlagCall = $("#EventFlag_EditTemp").val();
+        mainWindow.kendoWindow({
+            width: "1170px",
+            height: "600px",
+            title: "Chi tiết yêu cầu điều chuyển dữ liệu khác pos",
+            content: {
+                url: '@Url.Action("ShowTransferDataLoanDetail", "TransferDataPos")',
+                data: { pId: dataItem.Id,
+                    pFromPos: "000302"//dataItem.FromPosCode
+                }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTransPointWork,
+            actions: ["Refresh", "Close"]
+        });
+        mainWindow.data("kendoWindow").wrapper.css({ height: 600, width: 1170 });
+        mainWindow.data("kendoWindow").center().open().title("Chi tiết yêu cầu điều chuyển dữ liệu khác pos");
+
     }
 
     function printToTrinh(e) {

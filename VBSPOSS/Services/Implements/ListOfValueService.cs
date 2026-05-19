@@ -636,23 +636,23 @@ namespace VBSPOSS.Services.Implements
                 {
                     return answer;
                 }
-               
-                var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => string.IsNullOrEmpty(pProvinceCode)|| (w.ProvinceCode ==  pProvinceCode)
+
+                var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => string.IsNullOrEmpty(pProvinceCode) || (w.ProvinceCode == pProvinceCode)
                                         && (string.IsNullOrEmpty(pDistrictCode) || w.DistrictCode == pDistrictCode)
                                         && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
                                         && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode == pCommuneCode)
                                         && (string.IsNullOrEmpty(pSubCommuneCode) || w.SubCommuneCode == pSubCommuneCode)
                                         ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.DistrictCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.SubCommuneCode).ToList();
-                
-                if(profileBranchTMPs != null)
+
+                if (profileBranchTMPs != null)
                 {
                     foreach (var item in profileBranchTMPs)
                     {
                         ListOfCommuneViewModel objItem = new ListOfCommuneViewModel();
-                        objItem = _mapper.Map<ListOfCommuneViewModel>(item);                      
+                        objItem = _mapper.Map<ListOfCommuneViewModel>(item);
                         answer.Add(objItem);
                     }
-                }                               
+                }
                 return answer;
             }
             catch (Exception ex)
@@ -660,6 +660,82 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
+
+        //  public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode, string pDistrictCode,
+        //string pCommuneCode, string pPosCode, string pSubCommuneCode)
+        //  {
+        //      var answer = new List<ListOfCommuneViewModel>();
+        //      try
+        //      {
+        //          var query = _dbContext.ListOfCommunes.AsQueryable();
+
+        //          if (!string.IsNullOrEmpty(pProvinceCode))
+        //              query = query.Where(w => w.ProvinceCode == pProvinceCode);
+
+        //          if (!string.IsNullOrEmpty(pDistrictCode))
+        //              query = query.Where(w => w.DistrictCode == pDistrictCode);
+
+        //          if (!string.IsNullOrEmpty(pCommuneCode))
+        //              query = query.Where(w => w.CommuneCode == pCommuneCode);
+
+        //          if (!string.IsNullOrEmpty(pSubCommuneCode))
+        //              query = query.Where(w => w.SubCommuneCode == pSubCommuneCode);
+
+        //          if (!string.IsNullOrEmpty(pPosCode))
+        //              query = query.Where(w => w.PosCode == pPosCode);
+
+        //          var listData = query
+        //              .OrderBy(o => o.ProvinceCode)
+        //              .ThenBy(o => o.DistrictCode)
+        //              .ThenBy(o => o.CommuneCode)
+        //              .ThenBy(o => o.SubCommuneCode)
+        //              .ToList();
+
+        //          foreach (var item in listData)
+        //          {
+        //              var vm = new ListOfCommuneViewModel();
+
+        //              vm.ProvinceCode = item.ProvinceCode ?? "";
+        //              vm.ProvinceName = item.ProvinceName ?? "";
+        //              vm.DistrictCode = item.DistrictCode ?? "";
+        //              vm.DistrictName = item.DistrictName ?? "";
+        //              vm.CommuneCode = item.CommuneCode ?? "";
+        //              vm.CommuneName = item.CommuneName ?? "";
+        //              vm.SubCommuneCode = item.SubCommuneCode ?? "";
+        //              vm.SubCommuneName = item.SubCommuneName ?? "";
+        //              vm.PosCode = item.PosCode ?? "";
+        //              vm.PosName = item.PosName ?? "";
+
+        //              // Ép kiểu an toàn
+        //             // vm.Status = item.Status;                    // int
+        //             // vm.VisitDate = item.VisitDate;              // int
+
+        //             // vm.RecordStatus = item.RecordStatus ?? "";
+        //              vm.DistrictFlag30A = item.DistrictFlag30A ?? "";
+        //              vm.AreaEconomic = item.AreaEconomic ?? "";
+        //              vm.CommuneFlag135 = item.CommuneFlag135 ?? "";
+        //              vm.IsNewCountryside = item.IsNewCountryside ?? "";
+        //              vm.TxnPointCode = item.TxnPointCode ?? "";
+        //              vm.TxnPointName = item.TxnPointName ?? "";
+        //              vm.TimeBegin = item.TimeBegin ?? "";
+        //              vm.TimeEnd = item.TimeEnd ?? "";
+        //              vm.IsInCommune = item.IsInCommune ?? "";
+        //              vm.IsInPos = item.IsInPos ?? "";
+        //              vm.IsInterWard = item.IsInterWard ?? "";
+        //              vm.InterWardName = item.InterWardName ?? "";
+
+        //              answer.Add(vm);
+        //          }
+
+        //          return answer;
+        //      }
+        //      catch (Exception ex)
+        //      {
+        //          throw ex;
+        //      }
+        //  }
+
+
 
         /// <summary>
         /// Hàm lấy danh sách sản phẩm TIDE/CASA theo điều kiện truyền vào (Danh sách trong bảng ListOfProducts)

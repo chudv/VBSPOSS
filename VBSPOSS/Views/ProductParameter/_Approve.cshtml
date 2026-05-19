@@ -1,0 +1,206 @@
+﻿@using Kendo.Mvc.UI
+@using VBSPOSS.ViewModels
+@model VBSPOSS.ViewModels.ProductParameterApproveViewModel
+
+<div id="notificationApprove"></div>
+
+<style>
+    .approve-header {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    #gridApprove .k-grid-header th {
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        width: 110px;
+        height: 36px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+</style>
+
+<div class="container-fluid">
+    <form id="approveForm">
+
+        <!-- Header -->
+        <div class="approve-header">
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Phân loại</label>
+                    <input type="text" class="form-control" value="@Model.ProductGroupDisplay" readonly style="background-color:#fff;" />
+                    <input type="hidden" id="ProductGroupCode" value="@Model.ProductGroupCode" />
+                </div>
+                <div class="col-md-5">
+                    <label>Ngày hiệu lực</label>
+                    <input type="text" class="form-control"
+                           value="@Model.EffectedDate.ToString("dd/MM/yyyy")" readonly style="background-color:#fff;" />
+                    <input type="hidden" id="EffectedDate" value="@Model.EffectedDate.ToString("dd/MM/yyyy")" />
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Grid So sánh -->
+        @(Html.Kendo().Grid<ProductParameterComparisonViewModel>()
+            .Name("gridApprove")
+            .Columns(columns =>
+            {
+                columns.Bound(p => p.OrderNo).Title("STT").Width(60).HtmlAttributes(new { style = "text-align:center;" }); ;
+                columns.Bound(p => p.ProductCode).Title("Mã SP").Width(80).HtmlAttributes(new { style = "text-align:center;" }); ;
+                columns.Bound(p => p.ProductName).Title("Tên sản phẩm").Width(230);
+
+                columns.Group(group => group
+                .Title("Cấu hình hiện tại")
+                .Columns(sub =>
+                {
+                    sub.Bound(p => p.CurrentApplyPos).Title("AD POS").Width(80).HtmlAttributes(new { style = "text-align:center;" });
+                    sub.Bound(p => p.CurrentMinSpread).Title("LSĐC tối thiểu").Width(130).Format("{0:N2}").HtmlAttributes(new { style = "text-align:center;" });
+                    sub.Bound(p => p.CurrentMaxSpread).Title("LSĐC tối đa").Width(130).Format("{0:N2}").HtmlAttributes(new { style = "text-align:center;" });
+                })
+                );
+
+                columns.Group(group => group
+                .Title("Cấu hình đề xuất mới")
+                .Columns(sub =>
+                {
+                    sub.Bound(p => p.NewApplyPos).Title("AD POS").Width(80).HtmlAttributes(new { style = "text-align:center;" });
+                    sub.Bound(p => p.NewMinSpread).Title("LSĐC tối thiểu").Width(130).Format("{0:N2}").HtmlAttributes(new { style = "text-align:center;" });
+                    sub.Bound(p => p.NewMaxSpread).Title("LSĐC tối đa").Width(130).Format("{0:N2}").HtmlAttributes(new { style = "text-align:center;" });
+                })
+                );
+
+                columns.Bound(p => p.Remark).Title("Ghi chú").Width(150);
+            })
+            .Scrollable()
+            .Sortable()
+            .Resizable(resizable => resizable.Columns(true))
+            .Pageable(p => p.PageSizes(new[] { 20, 50, 100 }))
+            .DataSource(ds => ds.Ajax().ServerOperation(false))
+            .AutoBind(false)
+            )
+
+        <!-- Buttons -->
+        <div class="text-right mt-3">
+            <button type="button" id="btnClose" class="btn btn-light btn-action">Thoát</button>
+            <button type="button" id="btnReject" class="btn btn-light btn-action">Từ chối</button>
+            <button type="button" id="btnApprove" class="btn btn-success btn-action">Phê duyệt</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function () {
+        loadApproveGrid();
+
+        $("#btnApprove").click(function () {
+            if (confirm("Bạn chắc chắn muốn PHÊ DUYỆT cấu hình này?")) {
+                approveBatch();
+            }
+        });
+
+        $("#btnReject").click(function () {
+            var reason = prompt("Nhập lý do từ chối:");
+            if (reason && reason.trim() !== "") {
+                rejectBatch(reason.trim());
+            } else if (reason !== null) {
+                alert("Vui lòng nhập lý do từ chối!");
+            }
+        });
+
+        $("#btnClose").click(function () {
+            closeApproveWindow();
+        });
+    });
+
+    function loadApproveGrid() {
+        var groupCode = $("#ProductGroupCode").val();
+        var effectedDate = $("#EffectedDate").val();
+
+        $.ajax({
+            url: '@Url.Action("LoadComparisonForApprove", "ProductParameter")',
+            type: "POST",
+            data: JSON.stringify({ productGroupCode: groupCode, effectedDate: effectedDate }),
+            contentType: "application/json",
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+            success: function (response) {
+                if (response?.length) {
+                    $("#gridApprove").data("kendoGrid").dataSource.data(response);
+                } else {
+                    alert("Không có dữ liệu cần duyệt!");
+                }
+            },
+            error: function () {
+                alert("Lỗi tải dữ liệu!");
+            }
+        });
+    }
+
+    function approveBatch() {
+        kendo.ui.progress($("#approveForm"), true);
+        var formData = new FormData();
+        formData.append("ProductGroupCode", $("#ProductGroupCode").val());
+        formData.append("EffectedDate", $("#EffectedDate").val());
+
+        $.ajax({
+            url: '@Url.Action("ApproveBatch", "ProductParameter")',
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+            success: function (res) {
+                kendo.ui.progress($("#approveForm"), false);
+                alert(res.message || "Phê duyệt thành công!");
+                if (res.success) closeApproveWindow();
+            },
+            error: function () {
+                kendo.ui.progress($("#approveForm"), false);
+                alert("Lỗi khi phê duyệt!");
+            }
+        });
+    }
+
+    function rejectBatch(reason) {
+        kendo.ui.progress($("#approveForm"), true);
+        var formData = new FormData();
+        formData.append("ProductGroupCode", $("#ProductGroupCode").val());
+        formData.append("EffectedDate", $("#EffectedDate").val());
+        formData.append("RejectReason", reason);
+
+        $.ajax({
+            url: '@Url.Action("RejectBatch", "ProductParameter")',
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+            success: function (res) {
+                kendo.ui.progress($("#approveForm"), false);
+                alert(res.message || "Đã từ chối!");
+                if (res.success) closeApproveWindow();
+            },
+            error: function () {
+                kendo.ui.progress($("#approveForm"), false);
+                alert("Lỗi khi từ chối!");
+            }
+        });
+    }
+
+    function closeApproveWindow() {
+        var win = mainWindow.data("kendoWindow");
+        if (win) win.close();
+        else window.close();
+    }
+</script>

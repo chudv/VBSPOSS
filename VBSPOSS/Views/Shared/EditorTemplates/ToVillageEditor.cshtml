@@ -1,0 +1,45 @@
+﻿@model string
+
+@(Html.Kendo().ComboBoxFor(m => m)
+    .DataTextField("Text")
+    .DataValueField("Value")
+    .Filter("contains")
+    .AutoBind(false)
+    .Events(e => e.Change("onChangeToVillage"))
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action(
+                "GetVillageByPos",
+                "TransferDataPos")
+                .Data("getToPos");
+        });
+    })
+)
+
+<script>
+    function onChangeToVillage(e) {
+
+        var grid =
+            $("#gridTransferVillage")
+                .data("kendoGrid");
+
+        var row =
+            $(e.sender.element)
+                .closest("tr");
+
+        var item =
+            grid.dataItem(row);
+
+        var dataItem =
+            e.sender.dataItem();
+
+        if (dataItem) {
+
+            item.set(
+                "ToVillageName",
+                dataItem.Text);
+        }
+    }
+</script>
