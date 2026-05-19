@@ -89,7 +89,7 @@ namespace VBSPOSS.Models
         public string EntityList { get; set; }
         public string AuthType { get; set; }
         public string UserType { get; set; }
-        public string MailIdFlag { get; set; }
+        public string MailIdFlag { get; set; }//MailIdFlag
         public string AuthsecType { get; set; }
         public string ExtraAttributeUserRole { get; set; }
         public string ExtraAttributeBranchCode { get; set; }
@@ -112,21 +112,29 @@ namespace VBSPOSS.Models
         public string? SubType { get; set; }
     }
 
-    public class UserIDCApproval
+    /// <summary>
+    /// Tổng hợp số lượng yêu cầu về người dùng để hiển thị lên hàng chờ phê duyệt
+    /// </summary>
+    public class UserManagementIDCSumRequirement
     {
-        public string STT { get; set; }
-        public int TT_Dong { get; set; }
-        public int KieuIn { get; set; }
-        public string MaDonVi { get; set; }
-        public int SoLgTrinh_ThemMoi { get; set; }
-        public int SoLgTrinh_Matkhau { get; set; }
-        public int SoLgTrinh_MoKhoa { get; set; }
-        public int SoLgTrinh_Khoa { get; set; }
-        public int SoLgTrinh_Edit { get; set; }
-        public int SoLgTrinh_ChangePos { get; set; }
-        public int SoLgTrinh_ChangeRole { get; set; }
-        public string TenChiNhanh { get; set; }            //Thêm
-        public string KhoangThoiGian { get; set; }
+        public string OrderNoText { get; set; }
+        public int OrderNo { get; set; }
+        public int StylePrint { get; set; }
+        public string MainPosCode { get; set; }
+        public string MainPosName { get; set; }
+        public string PosCode { get; set; }
+        public string PosName { get; set; }
+        public int NumberOfAddNewUser { get; set; }
+        public int NumberOfResetPassword { get; set; }
+        public int NumberOfEnableUser { get; set; }
+        public int NumberOfDisableUser { get; set; }
+        public int NumberOfModifyUser { get; set; }
+        public int NumberOfChangePos { get; set; }
+        public int NumberOfChangeRole { get; set; }
+        public int NumberOfCloseUser { get; set; }
+        public int NumberOfOtherUser { get; set; }
+        public string StartDatePeriodText { get; set; }
+        public string SumaryStatus { get; set; }
     }
 
     public class UserIDCRestrictionAllowedDays

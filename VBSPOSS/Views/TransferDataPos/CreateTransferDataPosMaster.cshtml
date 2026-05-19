@@ -85,13 +85,9 @@
         }
     }
 
-
-   
-
     function onCloseDetail(ev) {
         mainWindow.data("kendoWindow").close();
     }
-
 
     function Change_Status(e) {
 
@@ -99,15 +95,10 @@
 
         var statusDDL = $("#Status").data("kendoDropDownList");
         var statusValue = statusDDL.value();
-
-
         if (statusValue === "0") {
             var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
             if (expirePicker) {
-
                 expirePicker.value(new Date());
-
-
                 expirePicker.enable(true);
             }
         }
@@ -115,35 +106,24 @@
 
     var lcButton = "";
     function onClickDetail(e) {
-
         var fromPos = $("#FromPosCode").data("kendoComboBox").value();
         var toPos = $("#ToPosCode").data("kendoComboBox").value();
 
         // Check POS
         if (fromPos === toPos) {
-
             alert("POS nguồn và POS đích không được trùng nhau");
-
             e.preventDefault();
-
             return false;
         }
 
         // Check ngày hiệu lực
         var effectivePicker = $("#EffectiveDate").data("kendoDatePicker");
-
         if (effectivePicker) {
-
             var effectiveDate = effectivePicker.value();
-
             if (!effectiveDate) {
-
                 alert("Ngày hiệu lực không hợp lệ, vui lòng chọn lại");
-
                 $("#EffectiveDate").focus();
-
                 e.preventDefault();
-
                 return false;
             }
         }
@@ -152,17 +132,11 @@
         var fileInput = $("#files");
 
         if (fileInput.length > 0) {
-
             var fileValue = fileInput.val();
-
             if (!fileValue) {
-
                 alert("Bạn chưa upload tờ trình");
-
                 $("#files").focus();
-
                 e.preventDefault();
-
                 return false;
             }
         }

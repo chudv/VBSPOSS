@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
+using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Data
 {
@@ -60,9 +61,9 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
 
-        public virtual DbSet<UserIDCApproval> UserIDCApprovals { get; set; } 
-
         public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
+
+        public virtual DbSet<UserManagementIDCSumRequirement> UserManagementIDCSumRequirements { get; set; }
 
 
         public virtual DbSet<ScriptExecutionQueue> ScriptExecutionQueues { get; set; }
@@ -253,10 +254,10 @@ namespace VBSPOSS.Data
             modelBuilder.Entity<PosRepresentative>().ToTable("PosRepresentative");
             modelBuilder.Entity<PosRepresentative>().HasKey(x => new { x.Id });
 
-            modelBuilder.Entity<UserIDCApproval>(eb =>
+            modelBuilder.Entity<UserManagementIDCSumRequirement>(eb =>
             {
                 eb.HasNoKey();
-                eb.ToView("UserIDCApprovals");
+                eb.ToView("UserManagementIDCSumRequirements");
             });
 
             modelBuilder.Entity<UserIDCRestrictionAllowedDays>().ToTable("UserIDCRestrictionAllowedDays");
@@ -420,7 +421,7 @@ namespace VBSPOSS.Data
                 entity.Property(x => x.OracleMessage)
                     .HasColumnType("nvarchar(max)");
 
-                entity.Property(x => x.ExecutionLogContent)
+                entity.Property(x => x.ExecutionLog)
                     .HasColumnType("nvarchar(max)");
 
                 entity.Property(x => x.ErrorCode)

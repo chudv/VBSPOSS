@@ -186,13 +186,13 @@
             var row = $(rows[j]);
             var dataItem = e.sender.dataItem(row);
             var statusRowValue = dataItem.get("Status");
-            if (statusRowValue == 0 || statusRowValue == 4 || statusRowValue == 7)
-                row.css({ "background-color": "#f8f9fa", "color": "#6c757d" });
-            if (statusRowValue != null && statusRowValue == 4)
-                row.css({ "background-color": "#fff5f5", "color": "#dc3545" });
-            if (statusRowValue != null && statusRowValue == 3) // Đã duyệt
+            if (statusRowValue == 0)
+                row.css({ "background-color": "#f8f9fa", "color": "red" });
+            else if (statusRowValue == 4 || statusRowValue == 7)
+                row.css({ "background-color": "#f8f9fa", "color": "red" });
+            else if (statusRowValue != null && statusRowValue == 3) // Đã duyệt
                 row.css({ "background-color": "#e8f5e9", "color": "green" });
-            if (statusRowValue == 1 || statusRowValue == 5)
+            else if (statusRowValue == 1 || statusRowValue == 5)
                 row.css({ "background-color": "white", "color": "Navy" });
         }
     }
@@ -216,7 +216,8 @@
     {
         e.preventDefault();
         var lcEventValue = $("#EventFlag_AddView").val();
-
+        
+        
         if (mainWindow.data("kendoWindow")) {
             mainWindow.data("kendoWindow").destroy();
         }
@@ -230,7 +231,7 @@
             title: "Thêm mới yêu cầu nghiệp vụ tạo mới tài khoản người dùng Intellect IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pButtonType: lcEventValue, pId: 0, pPosCode: "",pUserId: "", pEffectiveDate: dCurrentDate, pFlagCall: lcEventValue}
+                data: { pButtonType: $("#FunctionTypeFlag_ADDNEW_USERView").val(), pId: 0, pPosCode: "",pUserId: "", pEffectiveDate: dCurrentDate, pFlagCall: lcEventValue}
             },
             resizable: true,
             visible: false,
@@ -277,7 +278,7 @@
         }
        
         else {
-            var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa bản ghi nghiệp vụ người dùng " + sMessInfor + " không?");
+            var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] không?");
             if (isConfirm == true) {
                 $.ajax({
                     data: { pId: dataItem.Id,pUserId: dataItem.UserId, pStaffId: dataItem.StaffId, pStatus: dataItem.Status, pFunctionType: dataItem.FunctionType},
@@ -285,18 +286,18 @@
                     url: "../UserManagementIDC/DeleteMarkUserManagementIDC",
                     success: function (resultVal) {
                         if (resultVal == "1") {
-                            alert("Bạn đã đánh dấu xóa " + sMessInfor + " thành công!");
+                            alert("Bạn đã đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] thành công!");
                             refreshGridIDC();
                         }
-                        else alert("Đánh dấu xóa " + sMessInfor + " thất bại!");
+                        else alert("Đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] thất bại!");
                     },
                     error: function () {
-                        alert("Đánh dấu xóa " + sMessInfor + " có lỗi!");
+                        alert("Đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] có lỗi!");
                     }
                 });
             }
             else {
-                alert("Thao tác đánh dấu xóa " + sMessInfor + " bị hủy bỏ!");
+                alert("Thao tác đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] bị hủy bỏ!");
             }
         }
     }
@@ -352,7 +353,7 @@
         }
     }
 
-    //Xem chi tiết bản ghi: Xem chi tiết thông tin người dùng
+    //Xem chi tiết bản ghi: Xem chi tiết bản ghi: Thêm mới/Yêu cầu nghiệp vụ thay đổi người dùng
     function showDetailUserIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -362,8 +363,9 @@
         
         var lcTitleForm = "Xem chi tiết thông tin tài khoản người dùng Intellect iDC";
 
-        if (dataItem.FunctionType != "")
-            lcTitleForm = "Xem chi tiết thông tin bản ghi yêu cầu nghiệp vụ với tài khoản người dùng IDC";
+        if (dataItem.FunctionType != "" && dataItem.Id != 0)
+            lcTitleForm = "Xem chi tiết thông tin bản ghi yêu cầu nghiệp vụ với tài khoản người dùng Intellect iDC";
+        
         var lcEventValue = $("#EventFlag_ViewView").val();
 
         mainWindow.kendoWindow({
@@ -390,6 +392,7 @@
         mainWindow.data("kendoWindow").center().open();
     }
 
+    //Không thấy sử dụng?
     function submitForApprovalIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -440,42 +443,53 @@
         mainWindow.data("kendoWindow").center().open();
     }
     
-
+    //Sự kiện gọi lên Form Tạo mới yêu cầu (Luôn luôn là thê mmới bản ghi Yêu cầu thay đổi thông tin):
+    //          'RESET_PASSWORD' - Cấp lại mật khẩu
+    //          'ENABLE_USER' - Mở lại người dùng
+    //          'DISABLE_USER' - Khóa người dùng
+    //          'MODIFY_USER' - Thay đổi thông tin người dùng
+    //          'CHANGE_POS' - Thay đổi POS người dùng
+    //          'CHANGE_ROLE' - Thay đổi quyền/vài trò người dùng
     function showEditIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.FullName + "]";
-        var grid = $("#gridMainIDC").data("kendoGrid");
+        
+        var sMessInfor = "Tài khoản của người dùng [" + dataItem.FullName + "]";
         // Kiểm tra trạng thái trước khi trình duyệt
-        var deletedStatuses = [0, 1, 2, 4, 5];
-        //EventFlag_ViewView
+        var deletedStatuses = [0, 1, 2, 4, 7, 5];
 
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
-                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
+                alert(sMessInfor + " đã được đánh dấu xóa, không thể tạo yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC. Vui lòng kiểm tra lại!");
+                return;
             }
-            else if (dataItem.Status == 1 || dataItem.Status == 5) {
-                alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
-            }
-            else if (dataItem.Status == 2) {
-                alert("Người dùng " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
-            }
-            else if (dataItem.Status == 4) {
-                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
-            }
-            return;
+            // else if (dataItem.Status == 1 || dataItem.Status == 5) {
+            //     alert(sMessInfor + " bản ghi có trạng thái đang tạo lập/chỉnh sửa bản ghi, không thể tạo yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC. Vui lòng kiểm tra lại!");
+            // }
+            // else if (dataItem.Status == 2) {
+            //     alert(sMessInfor + " bản ghi có trạng thái trình duyệt, không thể tạo yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC. Vui lòng kiểm tra lại!");
+            // }
+            // else if (dataItem.Status == 4 || dataItem.Status == 7) {
+            //     alert(sMessInfor + " bản ghi có trạng thái bị từ chối, không thể tạo yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC. Vui lòng kiểm tra lại!");
+            // }
+            //return;
         }
+        var lcIdRowChange = dataItem.Id;
+        if ((dataItem.FunctionType == "") && (dataItem.Status== 6 || dataItem.Status == 3))
+            lcIdRowChange = 0;
+        else lcIdRowChange = 0;
+        var lcEventValue = $("#EventFlag_EditIDCView").val();
         if (mainWindow.data("kendoWindow")) {
             mainWindow.data("kendoWindow").destroy();
         }
-        var sFlagCall = $("#EventFlag_ApprovalTemp").val();
+        
         mainWindow.kendoWindow({
-            width: "1000px",
+            width: "1024px",
             height: "700px",
             title: "Yêu cầu chỉnh sửa thông tin người dùng IDC",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10", pId: dataItem.Id }
+                data: { pButtonType: dataItem.FunctionType, pId: lcIdRowChange, pPosCode: dataItem.PosCode,pUserId: dataItem.UserId, pEffectiveDate: formatDateToDDMMYYYY(dataItem.EffectiveDate), pFlagCall: lcEventValue }
             },
             resizable: false,
             visible: false,
@@ -504,6 +518,17 @@
 @Html.Hidden("EventFlag_ViewView", TempData["EventFlag_View"])
 @Html.Hidden("EventFlag_MarkDeletedView", TempData["EventFlag_MarkDeleted"])
 @Html.Hidden("EventFlag_DeleteView", TempData["EventFlag_Delete"])
+@Html.Hidden("EventFlag_EditIDCView", TempData["EventFlag_EditIDC"])
+
+@Html.Hidden("FunctionTypeFlag_ADDNEW_USERView", TempData["FunctionTypeFlag_ADDNEW_USER"])
+@Html.Hidden("FunctionTypeFlag_ResetPasswordView", TempData["FunctionTypeFlag_ResetPassword"])
+@Html.Hidden("FunctionTypeFlag_ENABLE_USERView", TempData["FunctionTypeFlag_ENABLE_USER"])
+@Html.Hidden("FunctionTypeFlag_DISABLE_USERView", TempData["FunctionTypeFlag_DISABLE_USER"])
+@Html.Hidden("FunctionTypeFlag_MODIFY_USERView", TempData["FunctionTypeFlag_MODIFY_USER"])
+@Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
+@Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
+
+
 <hr style='margin-top: 0.1em; margin-bottom: 0.1em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; ">
@@ -522,7 +547,7 @@
                 .Suggest(true)
                 .AutoBind(true)
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:center;width:80px;padding-top: 7px;">Nghiệp vụ</label>
+            <label class="lbcontrol" style="color: navy;text-align:center;width:85px;padding-top: 7px;">Nghiệp vụ</label>
             @(Html.Kendo().ComboBox().Name("FunctionType_Find")
                 .Filter(FilterType.Contains)
                 .DataTextField("Description")
@@ -532,14 +557,14 @@
                 .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top:3px;padding-right:6px;">Tài khoản</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top:7px;padding-right:6px;">Tài khoản</label>
             @(Html.Kendo().TextBox().Name("NickName_Find")
                 .Placeholder("Tài khoản")
                 .HtmlAttributes(new { style = "width: 65px;padding-left: 2px;padding-right: 0px;" }))
             @(Html.Kendo().TextBox().Name("StaffName_Find")
                 .Placeholder("Họ tên người dùng")
                 .HtmlAttributes(new { style = "width: 130px;padding-left: 3px;padding-right: 2px;" }))
-            <label class="lbcontrol" style="width: 80px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:3px; ">Trạng thái</label>
+            <label class="lbcontrol" style="width: 85px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
             @(Html.Kendo().ComboBox().Name("Status_Find")
                 .Filter(FilterType.Contains)
                 .DataTextField("Description")
@@ -595,7 +620,7 @@
                         command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Yêu cầu nghiệp vụ thay đổi thông tin người dùng",
+                            title = "Yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC",
                             @class = "btn-EditIDC"
                         });
                     }).Width(80).Title("Nghiệp vụ thay đổi").HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });

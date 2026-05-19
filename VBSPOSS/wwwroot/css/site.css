@@ -161,15 +161,13 @@ p .k-button {
     color: #ffffff !important;*/ /* Chuyển thành màu trắng khi hover */
 /*}*/
 
-
-
 .vbsp-breadcrumb {
-    padding: 10px 15px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #ddd;
-    font-size: 13px;
+    padding: 0 ; /* 10px 15px;*/
+    /*background: #f8f9fa;*/
+/*    border-bottom: 1px solid #ddd;
+*/    font-size: 13px;
     font-weight: bold;
-    color: #0b5394;
+    /*color: #0b5394;*/
 }
 
 .vbsp-breadcrumb-item {

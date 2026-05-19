@@ -296,9 +296,9 @@ namespace VBSPOSS.Controllers
         {
             try
             {
-                var depositType = Request.Form["depositType"].ToString();
+                var depositGroupType = Request.Form["depositGroupType"].ToString();
                 var customerType = Request.Form["customerType"].ToString(); //   
-                var models = _productService.GetFullProductList(ProductGroupCode.ProductGroupCode_Tide, depositType, customerType, UserPosCode, UserGrade);
+                var models = _productService.GetFullProductList(ProductGroupCode.ProductGroupCode_Tide, depositGroupType, customerType, UserPosCode, UserGrade);
 
                 var result = models.ToDataSourceResult(request, ModelState);
                 return Json(result);
@@ -318,7 +318,7 @@ namespace VBSPOSS.Controllers
                 var termType = Request.Form["termType"].ToString(); //   Loại kỳ hạn: Tháng, Quý, Năm
                 var inclusionFlag = Request.Form["inclusionFlag"].ToString(); //   Cờ bao gồm/Không bao gồm
                 var termBasis = int.Parse( Request.Form["termBasis"].ToString()); //   Bước nhảy
-                var depositType = Request.Form["depositType"].ToString(); // Loại sản phầm: Đầu kỳ, cuối kỳ, định kỳ
+                var depositGroupType = Request.Form["depositGroupType"].ToString(); // Nhóm sản phẩm theo kỳ hạn
 
                 if (string.IsNullOrEmpty(inclusionFlag))
                 {
@@ -329,7 +329,7 @@ namespace VBSPOSS.Controllers
                     termType = "M";
                 }
 
-                var models = _productService.GetDepositTerms(termType, termBasis, inclusionFlag, depositType);
+                var models = _productService.GetDepositTerms(termType, termBasis, inclusionFlag, depositGroupType);
 
                 var result = models.ToDataSourceResult(request, ModelState);
                 return Json(result);
@@ -543,24 +543,24 @@ namespace VBSPOSS.Controllers
                 var sessionId = HttpContext.Session.Id;
                 double interestRate = 0;
 
-                if (request.DepositType == DepositType.BeforeOfTerm)
-                {
-                    interestRate = request.BeforeTermInterestRate;
-                }
-                else if (request.DepositType == DepositType.PartitalTerm)
-                {
-                    interestRate = request.PartialInterestRate;
-                }
-                else if (request.DepositType == DepositType.Topup)
-                {
-                    interestRate = request.PartialInterestRate;
-                }
-                else if (request.DepositType == DepositType.OnTerm)
-                {
-                    interestRate = request.InterestRate;
-                }
+                //if (request.DepositGroupType == DepositType.BeforeOfTerm)
+                //{
+                //    interestRate = request.BeforeTermInterestRate;
+                //}
+                //else if (request.DepositGroupType == DepositType.PartialTerm)
+                //{
+                //    interestRate = request.PartialInterestRate;
+                //}
+                //else if (request.DepositGroupType == DepositType.TopUp)
+                //{
+                //    interestRate = request.PartialInterestRate;
+                //}
+                //else if (request.DepositGroupType == DepositType.OnTerm)
+                //{
+                //    interestRate = request.InterestRate;
+                //}
 
-                var updateRowCnt = await _interestRateConfigureService.UpdateTideConfigureTemp(request.DepositTerms, interestRate, sessionId, UserName, UserPosCode);
+                var updateRowCnt = await _interestRateConfigureService.UpdateTideConfigureTemp(request.DepositTerms, request.InterestRate, request.BeforeTermInterestRate, request.PartialInterestRate, sessionId, UserName, UserPosCode);
 
                 if (updateRowCnt <= 0)
                 {

@@ -15,6 +15,21 @@
         // NUMBER
         // DATE
 
+        /// <summary>
+        /// INPUT / OUTPUT / INPUT_OUTPUT
+        /// </summary>
+        public string ParameterDirection { get; set; }
+
+        /// <summary>
+        /// Thứ tự parameter
+        /// </summary>
+        public int ParameterOrder { get; set; }
+
+        /// <summary>
+        /// Có mã hóa dữ liệu hay không
+        /// </summary>
+        public bool IsEncrypted { get; set; }
+
         public string CreatedBy { get; set; }
 
         public DateTime? CreatedDate { get; set; }

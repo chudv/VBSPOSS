@@ -37,6 +37,7 @@ namespace VBSPOSS.Services.Implements
         private readonly IMapper _mapper;
         private readonly IApiInternalEsbService _apiInternalEsbService;
         private readonly IProductService _productService;
+        
         private readonly IListOfValueService _serviceLOV;
         private readonly ILogger<InterestRateConfigureService> _logger;
         public InterestRateConfigureService(ApplicationDbContext context, IMapper mapper, IApiInternalEsbService apiInternalEsbService, 
@@ -48,6 +49,7 @@ namespace VBSPOSS.Services.Implements
             _productService = productService;
             _logger = logger;
             _serviceLOV = serviceLOV;
+            
         }
 
         //public async Task<List<InterestRateConfigMasterModel>> GetInterestRateConfigMasterListAsync(string productGroupCode, string posCode, string productCode,
@@ -1002,7 +1004,7 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-        public async Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double interestRate, string sessionId, string userName, string userPosCode)
+        public async Task<int> UpdateTideConfigureTemp(List<DepositTermModel> depositTerms, double onTermInterestRate, double beforeTermInterestRate, double partialInterestRate, string sessionId, string userName, string userPosCode)
         {
             try
             {
@@ -1010,10 +1012,33 @@ namespace VBSPOSS.Services.Implements
                 {
                     var existingTerms = await _dbContext.TideTermWorkings
                         .Where(x => x.SessionId == sessionId && x.TermValue == term.TermValue && x.TermUnit == term.TermUnitCode).ToListAsync();
+
+
                     if (existingTerms != null && existingTerms.Count > 0)
                     {
                         for (int i = 0; i < existingTerms.Count; i++)
                         {
+
+                            var depositType = _dbContext.ListOfProducts.Where(w => w.ProductCode == existingTerms[i].TermProductCode).Select(s => s.DepositType).Distinct().ToList().FirstOrDefault();   
+
+                            double interestRate = 0;
+
+                            if (depositType != null)
+                            { 
+                                if (depositType == DepositType.OnTerm)
+                                {
+                                    interestRate = onTermInterestRate;
+                                }
+                                else if (depositType == DepositType.BeforeOfTerm)
+                                {
+                                    interestRate = beforeTermInterestRate;
+                                }
+                                else if (depositType == DepositType.PartialTerm || depositType == DepositType.TopUp)
+                                {
+                                    interestRate = partialInterestRate;
+                                }
+                            }
+
                             //Bổ sung phần validation khi nhập lãi suất
                             double minInterestRate =
                                 (double)(existingTerms[i].TermIntRate - existingTerms[i].MinInterestRateSpread ?? 0);
@@ -3992,35 +4017,35 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        private string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate)
-        {
-            string sFileNameNew = "";
-            long iFileIdTemp = 0;
-            if (pFileId == 0)
-            {
-                var listAttachedFileTemp = _dbContext.AttachedFileInfos.OrderByDescending(o => o.FileId).ToList();
-                if (listAttachedFileTemp != null && listAttachedFileTemp.Count != 0)
-                    iFileIdTemp = listAttachedFileTemp.FirstOrDefault().FileId;
-                iFileIdTemp++;
-            }
-            else iFileIdTemp = pFileId;
-            //1 - File cấu hình lãi suất Tide / Casa / DepositPenal;
-            if (pFileType == "1")
-            {
-                if (pProductGroupCode == ProductGroupCode.TIDE.Code)
-                    sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Tide_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-                else if (pProductGroupCode == ProductGroupCode.CASA.Code)
-                    sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Casa_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-                else if (pProductGroupCode == ProductGroupCode.DEPOSITPENAL.Code)
-                    sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Penal_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-                else sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Unknown_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-            }
-            else if (pFileType == "2")
-            {
-                sFileNameNew = $"{FileType.FileType_User_IDC.Code}_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-            }
-            return sFileNameNew;
-        }
+        //private string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate)
+        //{
+        //    string sFileNameNew = "";
+        //    long iFileIdTemp = 0;
+        //    if (pFileId == 0)
+        //    {
+        //        var listAttachedFileTemp = _dbContext.AttachedFileInfos.OrderByDescending(o => o.FileId).ToList();
+        //        if (listAttachedFileTemp != null && listAttachedFileTemp.Count != 0)
+        //            iFileIdTemp = listAttachedFileTemp.FirstOrDefault().FileId;
+        //        iFileIdTemp++;
+        //    }
+        //    else iFileIdTemp = pFileId;
+        //    //1 - File cấu hình lãi suất Tide / Casa / DepositPenal;
+        //    if (pFileType == FileType.FileType_ConfigIntRate.Value.ToString())
+        //    {
+        //        if (pProductGroupCode == ProductGroupCode.TIDE.Code)
+        //            sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Tide_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
+        //        else if (pProductGroupCode == ProductGroupCode.CASA.Code)
+        //            sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Casa_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
+        //        else if (pProductGroupCode == ProductGroupCode.DEPOSITPENAL.Code)
+        //            sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Penal_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
+        //        else sFileNameNew = $"{FileType.FileType_ConfigIntRate.Code}_Unknown_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
+        //    }
+        //    else if (pFileType == FileType.FileType_User_IDC.Value.ToString())
+        //    {
+        //        sFileNameNew = $"{FileType.FileType_User_IDC.Code}_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
+        //    }
+        //    return sFileNameNew;
+        //}
 
         /// <summary>
         /// Hàm lấy danh sách tệp tin đính kèm Văn bản/Tài liệu/Quyết định
@@ -4089,175 +4114,154 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        /// <summary>
-        /// Hàm cập nhật thông tin bảng dữ liệu AttachedFileInfo (Tệp tin đính kèm văn bản/tài liệu/quyết định cấu hình lãi suất)
-        /// </summary>
-        /// <param name="pDocumentId">Chỉ số xác định băn bản/tài liệu/quyết định có file đính kèm</param>
-        /// <param name="pListAttachedFiles">Danh sách file đính kèm</param>
-        /// <param name="pFileType">Phân loại:  1 - File cấu hình lãi suất Tide/Casa/DepositPenal;
-        ///                                     2 - File đính kèm của người dùng iDC;</param>
-        /// <param name="pProductGroupCode">Phân nhóm sản phẩm Tide hay Casa. Giá trị: CASA/TIDE/DEPOSITPENAL</param>
-        /// <param name="pUserNameUpd">Người thực hiện</param>
-        /// <returns>Chuỗi FileId được thêm mới hoặc cập nhật chỉnh sửa</returns>
-        /// <exception cref="Exception"></exception>
-        public async Task<List<long>> SaveAttachedFileInfo(long pDocumentId, List<AttachedFileInfo> pListAttachedFiles, string pFileType, string pProductGroupCode, string pUserNameUpd)
-        {
-            int iCountDocumentId = 0;
-            long iDocumentIdTemp = 0;
-            DateTime dCurrentDateTmp = DateTime.Now;
-            if (pListAttachedFiles == null || !pListAttachedFiles.Any())
-                return null;
-            if (pListAttachedFiles == null || pListAttachedFiles.Count <= 0)
-                return null;
-            try
-            {
-                List<long> listIdResult = new List<long>();
-                List<AttachedFileInfo> listAttachedFilesAddNew = new List<AttachedFileInfo>();
-                List<AttachedFileInfo> listAttachedFilesUpdate = new List<AttachedFileInfo>();
-                var listAttachedFileTemp = await _dbContext.AttachedFileInfos.OrderByDescending(o => o.FileId).ToListAsync();
-                if (listAttachedFileTemp != null && listAttachedFileTemp.Count != 0)
-                {
-                    iDocumentIdTemp = listAttachedFileTemp.FirstOrDefault().FileId;
-                    var listAttachedFileTemp01 = listAttachedFileTemp.Where(w => w.DocumentId == iDocumentIdTemp).OrderByDescending(o => o.DocumentId).ToList();
-                    if (listAttachedFileTemp01 != null && listAttachedFileTemp01.Count != 0)
-                    {
-                        iDocumentIdTemp = listAttachedFileTemp01.FirstOrDefault().DocumentId;
-                        iDocumentIdTemp++;
-                    }
-                }
-                else iDocumentIdTemp++;
-                iCountDocumentId = pListAttachedFiles.Where(w => w.DocumentId != 0).Count();
-                var listFileOld = await _dbContext.AttachedFileInfos.Where(x => pListAttachedFiles.Select(s => s.FileId).Contains(x.FileId)).ToListAsync();
-                foreach (var itemAttachedFile in pListAttachedFiles)
-                {
-                    if (itemAttachedFile.FileId != 0)
-                    {
-                        var objAttachedFileUpd = await _dbContext.AttachedFileInfos.FindAsync(itemAttachedFile.FileId);
-                        if (objAttachedFileUpd != null && objAttachedFileUpd.FileId > 0)
-                        {
-                            _mapper.Map(itemAttachedFile, objAttachedFileUpd);
-                            if (iCountDocumentId <= 0)
-                                objAttachedFileUpd.DocumentId = iDocumentIdTemp;
-                            objAttachedFileUpd.DocumentId = (itemAttachedFile.DocumentId <= 0) ? iDocumentIdTemp : itemAttachedFile.DocumentId;
-                            objAttachedFileUpd.FileType = itemAttachedFile.FileType;
-                            objAttachedFileUpd.FileName = itemAttachedFile.FileName;
-                            objAttachedFileUpd.FileExtension = itemAttachedFile.FileExtension;
-                            objAttachedFileUpd.PathFile = itemAttachedFile.PathFile;
-                            objAttachedFileUpd.FileNameNew = GetFileNameNewUpload(itemAttachedFile.FileId, itemAttachedFile.FileType, pProductGroupCode, dCurrentDateTmp) + $"{itemAttachedFile.FileExtension}";
-                            objAttachedFileUpd.DocumentNumber = itemAttachedFile.DocumentNumber;
-                            objAttachedFileUpd.CircularRefNum = itemAttachedFile.CircularRefNum;
-                            objAttachedFileUpd.Status = StatusTrans.Status_Modified.Value;
-                            objAttachedFileUpd.ModifiedBy = pUserNameUpd ?? "UnknownUser";
-                            objAttachedFileUpd.ModifiedDate = dCurrentDateTmp;
-                            listAttachedFilesUpdate.Add(objAttachedFileUpd);
-                        }
-                    }
-                    else if (itemAttachedFile.FileId == 0)
-                    {
-                        if (iCountDocumentId <= 0)
-                            itemAttachedFile.DocumentId = iDocumentIdTemp;
-                        itemAttachedFile.Status = StatusTrans.Status_Created.Value;
-                        itemAttachedFile.CreatedBy = pUserNameUpd;
-                        itemAttachedFile.CreatedDate = dCurrentDateTmp;
-                        itemAttachedFile.ModifiedBy = pUserNameUpd;
-                        itemAttachedFile.ModifiedDate = dCurrentDateTmp;
-                        itemAttachedFile.ApproverBy = pUserNameUpd;
-                        itemAttachedFile.ApprovalDate = dCurrentDateTmp;
-                        listAttachedFilesAddNew.Add(itemAttachedFile);
-                    }
-                }
-                if (listAttachedFilesUpdate != null && listAttachedFilesUpdate.Count != 0)
-                {
-                    _dbContext.AttachedFileInfos.UpdateRange(listAttachedFilesUpdate);
-                    int iSaveChanges = await _dbContext.SaveChangesAsync();
-                    if (iSaveChanges > 0)
-                        listIdResult.AddRange(listAttachedFilesUpdate.Select(s => s.FileId).ToList());
-                }
-                if (listAttachedFilesAddNew != null && listAttachedFilesAddNew.Count != 0)
-                {
-                    _dbContext.AttachedFileInfos.AddRange(listAttachedFilesAddNew);
-                    int iSaveChanges = await _dbContext.SaveChangesAsync();
-                    if (iSaveChanges > 0)
-                        listIdResult.AddRange(listAttachedFilesAddNew.Select(s => s.FileId).ToList());
-                }
+        ///// <summary>
+        ///// Hàm cập nhật thông tin bảng dữ liệu AttachedFileInfo (Tệp tin đính kèm văn bản/tài liệu/quyết định cấu hình lãi suất)
+        ///// </summary>
+        ///// <param name="pDocumentId">Chỉ số xác định băn bản/tài liệu/quyết định có file đính kèm</param>
+        ///// <param name="pListAttachedFiles">Danh sách file đính kèm</param>
+        ///// <param name="pFileType">Phân loại:  1 - File cấu hình lãi suất Tide/Casa/DepositPenal;
+        /////                                     2 - File đính kèm của người dùng iDC;</param>
+        ///// <param name="pProductGroupCode">Phân nhóm sản phẩm Tide hay Casa. Giá trị: CASA/TIDE/DEPOSITPENAL</param>
+        ///// <param name="pUserNameUpd">Người thực hiện</param>
+        ///// <returns>Chuỗi FileId được thêm mới hoặc cập nhật chỉnh sửa</returns>
+        ///// <exception cref="Exception"></exception>
+        //public async Task<List<long>> SaveAttachedFileInfo(long pDocumentId, List<AttachedFileInfo> pListAttachedFiles, string pFileType, string pProductGroupCode, string pUserNameUpd)
+        //{
+        //    int iCountDocumentId = 0;
+        //    long iDocumentIdTemp = 0;
+        //    DateTime dCurrentDateTmp = DateTime.Now;
+        //    if (pListAttachedFiles == null || !pListAttachedFiles.Any())
+        //        return null;
+        //    if (pListAttachedFiles == null || pListAttachedFiles.Count <= 0)
+        //        return null;
+        //    try
+        //    {
+        //        List<long> listIdResult = new List<long>();
+        //        List<AttachedFileInfo> listAttachedFilesAddNew = new List<AttachedFileInfo>();
+        //        List<AttachedFileInfo> listAttachedFilesUpdate = new List<AttachedFileInfo>();
+        //        var listAttachedFileTemp = await _dbContext.AttachedFileInfos.OrderByDescending(o => o.FileId).ToListAsync();
+        //        if (listAttachedFileTemp != null && listAttachedFileTemp.Count != 0)
+        //        {
+        //            iDocumentIdTemp = listAttachedFileTemp.FirstOrDefault().FileId;
+        //            var listAttachedFileTemp01 = listAttachedFileTemp.Where(w => w.DocumentId == iDocumentIdTemp).OrderByDescending(o => o.DocumentId).ToList();
+        //            if (listAttachedFileTemp01 != null && listAttachedFileTemp01.Count != 0)
+        //            {
+        //                iDocumentIdTemp = listAttachedFileTemp01.FirstOrDefault().DocumentId;
+        //                iDocumentIdTemp++;
+        //            }
+        //        }
+        //        else iDocumentIdTemp++;
+        //        iCountDocumentId = pListAttachedFiles.Where(w => w.DocumentId != 0).Count();
+        //        var listFileOld = await _dbContext.AttachedFileInfos.Where(x => pListAttachedFiles.Select(s => s.FileId).Contains(x.FileId)).ToListAsync();
+        //        foreach (var itemAttachedFile in pListAttachedFiles)
+        //        {
+        //            if (itemAttachedFile.FileId != 0)
+        //            {
+        //                var objAttachedFileUpd = await _dbContext.AttachedFileInfos.FindAsync(itemAttachedFile.FileId);
+        //                if (objAttachedFileUpd != null && objAttachedFileUpd.FileId > 0)
+        //                {
+        //                    _mapper.Map(itemAttachedFile, objAttachedFileUpd);
+        //                    if (iCountDocumentId <= 0)
+        //                        objAttachedFileUpd.DocumentId = iDocumentIdTemp;
+        //                    objAttachedFileUpd.DocumentId = (itemAttachedFile.DocumentId <= 0) ? iDocumentIdTemp : itemAttachedFile.DocumentId;
+        //                    objAttachedFileUpd.FileType = itemAttachedFile.FileType;
+        //                    objAttachedFileUpd.FileName = itemAttachedFile.FileName;
+        //                    objAttachedFileUpd.FileExtension = itemAttachedFile.FileExtension;
+        //                    objAttachedFileUpd.PathFile = itemAttachedFile.PathFile;
+        //                    objAttachedFileUpd.FileNameNew = GetFileNameNewUpload(itemAttachedFile.FileId, itemAttachedFile.FileType, pProductGroupCode, dCurrentDateTmp) + $"{itemAttachedFile.FileExtension}";
+        //                    objAttachedFileUpd.DocumentNumber = itemAttachedFile.DocumentNumber;
+        //                    objAttachedFileUpd.CircularRefNum = itemAttachedFile.CircularRefNum;
+        //                    objAttachedFileUpd.Status = StatusTrans.Status_Modified.Value;
+        //                    objAttachedFileUpd.ModifiedBy = pUserNameUpd ?? "UnknownUser";
+        //                    objAttachedFileUpd.ModifiedDate = dCurrentDateTmp;
+        //                    listAttachedFilesUpdate.Add(objAttachedFileUpd);
+        //                }
+        //            }
+        //            else if (itemAttachedFile.FileId == 0)
+        //            {
+        //                if (iCountDocumentId <= 0)
+        //                    itemAttachedFile.DocumentId = iDocumentIdTemp;
+        //                itemAttachedFile.Status = StatusTrans.Status_Created.Value;
+        //                itemAttachedFile.CreatedBy = pUserNameUpd;
+        //                itemAttachedFile.CreatedDate = dCurrentDateTmp;
+        //                itemAttachedFile.ModifiedBy = pUserNameUpd;
+        //                itemAttachedFile.ModifiedDate = dCurrentDateTmp;
+        //                itemAttachedFile.ApproverBy = pUserNameUpd;
+        //                itemAttachedFile.ApprovalDate = dCurrentDateTmp;
+        //                listAttachedFilesAddNew.Add(itemAttachedFile);
+        //            }
+        //        }
+        //        if (listAttachedFilesUpdate != null && listAttachedFilesUpdate.Count != 0)
+        //        {
+        //            _dbContext.AttachedFileInfos.UpdateRange(listAttachedFilesUpdate);
+        //            int iSaveChanges = await _dbContext.SaveChangesAsync();
+        //            if (iSaveChanges > 0)
+        //                listIdResult.AddRange(listAttachedFilesUpdate.Select(s => s.FileId).ToList());
+        //        }
+        //        if (listAttachedFilesAddNew != null && listAttachedFilesAddNew.Count != 0)
+        //        {
+        //            _dbContext.AttachedFileInfos.AddRange(listAttachedFilesAddNew);
+        //            int iSaveChanges = await _dbContext.SaveChangesAsync();
+        //            if (iSaveChanges > 0)
+        //                listIdResult.AddRange(listAttachedFilesAddNew.Select(s => s.FileId).ToList());
+        //        }
 
-                //Cập nhật lại tên file mới
-                if (listIdResult != null && listIdResult.Count != 0)
-                {
-                    List<AttachedFileInfo> listAttachFileUpdFileName = new List<AttachedFileInfo>();
-                    foreach (var itemUpd in listIdResult)
-                    {
-                        var objAttachedFileUpdFileName = _dbContext.AttachedFileInfos.Where(w => w.FileId == itemUpd).FirstOrDefault();
-                        if (objAttachedFileUpdFileName != null && objAttachedFileUpdFileName.FileId != 0)
-                        {
-                            objAttachedFileUpdFileName.FileNameNew = GetFileNameNewUpload(objAttachedFileUpdFileName.FileId, "1", pProductGroupCode, dCurrentDateTmp);
-                            if (!objAttachedFileUpdFileName.FileNameNew.Contains(objAttachedFileUpdFileName.FileExtension))
-                            {
-                                objAttachedFileUpdFileName.FileNameNew = $"{objAttachedFileUpdFileName.FileNameNew}{objAttachedFileUpdFileName.FileExtension}";
-                            }
-                            listAttachFileUpdFileName.Add(objAttachedFileUpdFileName);
-                        }
-                    }
-                    if (listAttachFileUpdFileName != null && listAttachFileUpdFileName.Count != 0)
-                    {
-                        _dbContext.AttachedFileInfos.UpdateRange(listAttachFileUpdFileName);
-                        int iSaveChanges = await _dbContext.SaveChangesAsync();
-                    }
-                }
-                //Xóa file dữ liệu đã upload trước đó nếu có trên server
-                int iCountFileDelete = 0;
-                if (listFileOld != null && listFileOld.Count != 0)
-                {
-                    foreach (var itemOld in listFileOld)
-                    {
-                        bool bIsDeleteFile = false;
-                        if (itemOld.PathFile.Contains(itemOld.FileExtension))
-                            bIsDeleteFile = Delete_File("", itemOld.PathFile);
-                        else
-                            bIsDeleteFile = Delete_File(itemOld.FileNameNew, itemOld.PathFile);
+        //        //Cập nhật lại tên file mới
+        //        if (listIdResult != null && listIdResult.Count != 0)
+        //        {
+        //            List<AttachedFileInfo> listAttachFileUpdFileName = new List<AttachedFileInfo>();
+        //            foreach (var itemUpd in listIdResult)
+        //            {
+        //                var objAttachedFileUpdFileName = _dbContext.AttachedFileInfos.Where(w => w.FileId == itemUpd).FirstOrDefault();
+        //                if (objAttachedFileUpdFileName != null && objAttachedFileUpdFileName.FileId != 0)
+        //                {
+        //                    objAttachedFileUpdFileName.FileNameNew = GetFileNameNewUpload(objAttachedFileUpdFileName.FileId, "1", pProductGroupCode, dCurrentDateTmp);
+        //                    if (!objAttachedFileUpdFileName.FileNameNew.Contains(objAttachedFileUpdFileName.FileExtension))
+        //                    {
+        //                        objAttachedFileUpdFileName.FileNameNew = $"{objAttachedFileUpdFileName.FileNameNew}{objAttachedFileUpdFileName.FileExtension}";
+        //                    }
+        //                    listAttachFileUpdFileName.Add(objAttachedFileUpdFileName);
+        //                }
+        //            }
+        //            if (listAttachFileUpdFileName != null && listAttachFileUpdFileName.Count != 0)
+        //            {
+        //                _dbContext.AttachedFileInfos.UpdateRange(listAttachFileUpdFileName);
+        //                int iSaveChanges = await _dbContext.SaveChangesAsync();
+        //            }
+        //        }
+        //        //Xóa file dữ liệu đã upload trước đó nếu có trên server
+        //        int iCountFileDelete = 0;
+        //        if (listFileOld != null && listFileOld.Count != 0)
+        //        {
+        //            foreach (var itemOld in listFileOld)
+        //            {
+        //                bool bIsDeleteFile = false;
+        //                if (itemOld.PathFile.Contains(itemOld.FileExtension))
+        //                    bIsDeleteFile = FilesUtils.Delete_File("", itemOld.PathFile);
+        //                else
+        //                    bIsDeleteFile = FilesUtils.Delete_File(itemOld.FileNameNew, itemOld.PathFile);
 
-                        if (bIsDeleteFile)
-                            iCountFileDelete++;
-                    }
-                }
-                return listIdResult;
-            }
-            catch (DbUpdateException ex)
-            {
-                var innerException = ex.InnerException?.Message ?? "Không có inner exception";
-                Console.WriteLine($"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {innerException}\n{ex.Message}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                var innerException = ex.InnerException?.Message ?? "Không có inner exception";
-                Console.WriteLine($"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {innerException}\n{ex.Message}");
-                throw new Exception($"Lỗi gọi hàm cập nhật file đính kèm " +
-                            $"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        public bool Delete_File(string pFileName, string pPathFile)
-        {
-            var fullPath = string.Format("{0}\\{1}", pPathFile, pFileName);
-            if (System.IO.File.Exists(fullPath))
-            {
-                try
-                {
-                    System.IO.File.Delete(fullPath);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-            else
-                return false;
-        }
-
-
+        //                if (bIsDeleteFile)
+        //                    iCountFileDelete++;
+        //            }
+        //        }
+        //        return listIdResult;
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        var innerException = ex.InnerException?.Message ?? "Không có inner exception";
+        //        Console.WriteLine($"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {innerException}\n{ex.Message}");
+        //        throw;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var innerException = ex.InnerException?.Message ?? "Không có inner exception";
+        //        Console.WriteLine($"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {innerException}\n{ex.Message}");
+        //        throw new Exception($"Lỗi gọi hàm cập nhật file đính kèm " +
+        //                    $"SaveAttachedFileInfo({pDocumentId.ToString()},'{pListAttachedFiles.FirstOrDefault().CircularRefNum}', '{pFileType}', '{pProductGroupCode}', '{pUserNameUpd}') => Error: {ex.Message}", ex);
+        //        throw;
+        //    }
+        //}
 
         /// <summary>
         /// Hàm thực hiện Phê duyệt/Từ chối cấu hình lãi suất rút trước hạn tiền gửi CKH:

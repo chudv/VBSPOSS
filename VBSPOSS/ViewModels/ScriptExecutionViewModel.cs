@@ -18,6 +18,9 @@
 
         public DateTime? CreatedDate { get; set; }
 
+
+        public int PriorityLevel { get; set; }
+
         public string StatusDesc
         {
             get
@@ -29,6 +32,20 @@
                     2 => "SUCCESS",
                     3 => "FAILED",
                     4 => "CANCELLED",
+                    _ => ""
+                };
+            }
+        }
+
+        public string PriorityLevelDesc
+        {
+            get
+            {
+                return PriorityLevel switch
+                {
+                    1 => "NORMAL",
+                    2 => "HIGH",
+                    3 => "CRITICAL",
                     _ => ""
                 };
             }

@@ -86,7 +86,7 @@ namespace VBSPOSS.Mappings
             CreateMap<StaffVbspInforViewModel, PosRepresentativeViewModel>();
             CreateMap<PosRepresentativeViewModel, StaffVbspInforViewModel>();
 
-            CreateMap<UserIDCApproval, UserIDCApprovalViewModel>();
+            CreateMap<UserManagementIDCSumRequirement, UserManagementIDCSumRequirementViewModel>();
 
             CreateMap<AddCasaProductViewModel, InterestRateConfigMaster>()
                .ForMember(dest => dest.ModifiedDate, opt => opt.Ignore())

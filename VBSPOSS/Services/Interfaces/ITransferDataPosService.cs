@@ -1,4 +1,5 @@
-﻿using VBSPOSS.Models;
+﻿using VBSPOSS.Data.OSS.Models;
+using VBSPOSS.Models;
 using VBSPOSS.ViewModels;
 
 namespace VBSPOSS.Services.Interfaces
@@ -17,19 +18,28 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
         List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
-                                int pStatus, string pTxnLocation, string pEventCode);
+                                int pStatus, string pTxnLocation, string pEventCode, string pUserGrade);
 
         List<ValueConstModel> GetListPosOfBranch(string mainPos);
 
-         Task<long> SaveTranferPosMaster(TransferDataPosMasterViewModel tranferMaster, string pUserNameUpd, string pFlagCall, string pButtonType);
+        Task<long> SaveTranferPosMaster(TransferDataPosMasterViewModel tranferMaster, string pUserNameUpd, string pFlagCall, string pButtonType, string mainPos);
 
         List<ValueConstModel> GetListSubCommuneOfPos(string posCd);
 
         string GetPosName(string posCode);
 
-         bool CheckExistTransferDataPosMaster(
-    string fromPosCode,
-    string toPosCode,
-    DateTime? effectiveDate);
+        bool CheckExistTransferDataPosMaster(string fromPosCode, string toPosCode, DateTime? effectiveDate);
+
+        Task<long> SaveAttachedFile(long documentId, IFormFile file, string documentNumber, string userName);
+
+        Task<AttachedFileInfo> DownloadTransferAttachFile(long documentId);
+
+        Task<bool> DeleteTransferDataPos(long pId, string userName);
+
+        TransferDataPosMaster GetTransferDataPosMasterById(long pId);
+
+        Task<int> ApproveTransferDataPos(long pId, string pRemark, string pAction, string pUserName);
+
+
     }
 }

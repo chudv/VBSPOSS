@@ -1,4 +1,5 @@
 ﻿using System;
+using System.DirectoryServices.Protocols;
 using System.Reflection.Emit;
 using Kendo.Mvc.UI;
 using Telerik.SvgIcons;
@@ -51,7 +52,7 @@ namespace VBSPOSS.Constants
         public static ValueConstModel EventFlag_Delete = new ValueConstModel { Value = 3, Code = "DELETE", Description = "Xóa bỏ" };
 
         /// <summary>
-        /// Sự kiện gọi trình duyệt: EventFlag_Approval = new ValueConstModel { Value = 3, Code = "APPROVAL", Description = "Trình duyệt" };
+        /// Sự kiện gọi trình duyệt: EventFlag_Approval = new ValueConstModel { Value = 4, Code = "APPROVAL", Description = "Trình duyệt" };
         /// </summary>
         public static ValueConstModel EventFlag_Approval = new ValueConstModel { Value = 4, Code = "APPROVAL", Description = "Trình duyệt" };
 
@@ -61,14 +62,19 @@ namespace VBSPOSS.Constants
         public static ValueConstModel EventFlag_Authorize = new ValueConstModel { Value = 5, Code = "AUTHORIZE", Description = "Phê duyệt" };
 
         /// <summary>
+        /// Sự kiện gọi từ chối: EventFlag_Reject = new ValueConstModel { Value = 8, Code = "REJECT", Description = "Từ chối" };
+        /// </summary>
+        public static ValueConstModel EventFlag_Reject = new ValueConstModel { Value = 8, Code = "REJECT", Description = "Từ chối" };
+
+        /// <summary>
         /// Sự kiện gọi phê duyệt: EventFlag_View = new ValueConstModel { Value = 6, Code = "VIEW", Description = "Xem chi tiết" };
         /// </summary>
         public static ValueConstModel EventFlag_View = new ValueConstModel { Value = 6, Code = "VIEW", Description = "Xem chi tiết" };
 
-                /// <summary>
-        /// Sự kiện gọi phê duyệt: EventFlag_View = new ValueConstModel { Value = 6, Code = "VIEW", Description = "Xem chi tiết" };
+        /// <summary>
+        /// Sự kiện gọi phê duyệt: EventFlag_EditIDC = new ValueConstModel { Value = 7, Code = "EDITIDC", Description = "Yêu cầu thay đổi tài khoản người dùng Intellect iDC" };
         /// </summary>
-        public static ValueConstModel EventFlag_EditIDC = new ValueConstModel { Value = 7, Code = "EDITIDC", Description = "Yêu cầu chỉnh sửa trên IDC" };
+        public static ValueConstModel EventFlag_EditIDC = new ValueConstModel { Value = 7, Code = "EDITIDC", Description = "Yêu cầu thay đổi tài khoản người dùng Intellect iDC" };
 
         public static ValueConstModel GetByValue(int value)
         {
@@ -258,6 +264,12 @@ namespace VBSPOSS.Constants
     {
         public static ValueConstModel FileType_ConfigIntRate = new ValueConstModel { Value = 1, Code = "IntRate", Description = "File cấu hình lãi suất Tide/Casa/DepositPenal" };
         public static ValueConstModel FileType_User_IDC = new ValueConstModel { Value = 2, Code = "User_IDC", Description = "File đính kèm của người dùng iDC" };
+        public static ValueConstModel FileType_TransPoint = new ValueConstModel { Value = 3, Code = "TransPoint", Description = "File đính kèm thay đổi/thêm mới điểm giao dịch" };
+        public static ValueConstModel FileType_Commune = new ValueConstModel { Value = 4, Code = "Commune", Description = "File đính kèm thay đổi/thêm mới danh mục địa phương" };
+        public static ValueConstModel FileType_Execution = new ValueConstModel { Value = 5, Code = "ExecutionFile", Description = "File đính kèm bản cập nhật phần mềm Offline (ExecutionFile)" };
+        public static ValueConstModel FileType_BODOffline = new ValueConstModel { Value = 6, Code = "TXN", Description = "File dữ liệu đầu ngày giao dịch Offline" };
+        public static ValueConstModel FileType_OtherFile = new ValueConstModel { Value = 7, Code = "Other", Description = "File tài liệu khác" };
+        public static ValueConstModel FileType_TransferPos = new ValueConstModel { Value = 8, Code = "TransferPos", Description = "File đính kèm điều chuyển dữ liệu khác POS" };
     }
 
 
@@ -275,12 +287,24 @@ namespace VBSPOSS.Constants
         public const string UserId_Call_ApiIDC_Code = "UserIdCallAPIIDC";
     }
 
+    public class DepositGroupType
+    {
+        public const string Tiet_kiem_ca_nhan = "I"; 
+        public const string Tien_gui_cuoi_ky_tai_quay_MB = "E"; 
+        public const string Tien_gui_dau_ky_dinh_ky_quay = "O"; 
+        public const string Tien_gui_dau_ky_dinh_ky_MB = "P"; 
+        public const string Topup = "T"; // 
+        public const string Tien_gui_tich_luy = "C";
+        public const string Tien_gui_ky_quy = "K";
+    }
+
+
     public class DepositType
     {
-        public const string BeforeOfTerm = "B"; // Đầu ký
-        public const string PartitalTerm = "P"; // Định kỳ
-        public const string OnTerm = "E"; // Định kỳ
-        public const string Topup = "T"; // Định kỳ
+        public const string BeforeOfTerm = "B";
+        public const string PartialTerm = "P";
+        public const string TopUp = "T";
+        public const string OnTerm = "E";        
     }
 
     /// <summary>
@@ -694,6 +718,34 @@ namespace VBSPOSS.Constants
 
         public const int MinDate = 19000101;
         public const int MaxDate = 20501231;
+
+        /// <summary>
+        /// Giá trị mặc định: UserIDC_AuthType = "1";       Phương thức đăng nhập. Giá trị: 1: Native user
+        /// </summary>
+        public const string UserIDC_AuthType = "1";
+        /// <summary>
+        /// Giá trị mặc định là 1: UserIDC_UserType = "1";
+        /// </summary>
+        public const string UserIDC_UserType = "1";
+
+        /// <summary>
+        /// Loại tài khoản phụ. Giá trị mặc định là 1 SELECT * FROM IDL_ARX.TB_ARM_USER_IDENTIFIER
+        /// </summary>
+        public const string UserIDC_SubType = "1";
+
+        /// <summary>
+        /// Trạng thái người dùng. Giá trị: '1'- Đóng/Khóa: UserIDC_UserStatus_Closed = "1";
+        /// </summary>
+        public const string UserIDC_UserStatus_Closed = "1";
+        /// <summary>
+        /// Trạng thái người dùng. Giá trị: '2' - Mở/Active: UserIDC_UserStatus_Open = "2";
+        /// </summary>
+        public const string UserIDC_UserStatus_Open = "2";
+
+        /// <summary>
+        /// Trạng thái người dùng. Giá trị: '4' - Lock (Khóa tạm thời): UserIDC_UserStatus_Lock = "4";
+        /// </summary>
+        public const string UserIDC_UserStatus_Lock = "4";
     }
 
     /// <summary>
@@ -845,13 +897,15 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel FunctionTypeFlag_CHANGE_ROLE = new ValueConstModel { Value = 7, Code = "CHANGE_ROLE", Description = "Thay đổi quyền người dùng" };
 
+        public static ValueConstModel FunctionTypeFlag_DELETE_USER = new ValueConstModel { Value = 11, Code = "DELETE_USER", Description = "Hủy tài khoản người dùng" };
+
+
+
         public static ValueConstModel FunctionTypeFlag_APPROVAL = new ValueConstModel { Value = 8, Code = "APPROVAL", Description = "Trình duyệt" };
 
         public static ValueConstModel FunctionTypeFlag_AUTHORIZE = new ValueConstModel { Value = 9, Code = "AUTHORIZE", Description = "Phê duyệt" };
 
         public static ValueConstModel FunctionTypeFlag_EDIT = new ValueConstModel { Value = 10, Code = "EDIT", Description = "Chỉnh sửa thông tin người dùng IDC" };
-
-        public static ValueConstModel FunctionTypeFlag_DELETE_USER = new ValueConstModel { Value = 11, Code = "DELETE_USER", Description = "Xóa người dùng IDC" };
 
         public static ValueConstModel FunctionTypeFlag_REJECT_BRANCH = new ValueConstModel { Value = 12, Code = "REJECT_BRANCH", Description = "Từ chối cấp chi nhánh" };
         
@@ -885,6 +939,8 @@ namespace VBSPOSS.Constants
                 "MODIFY_USER" => FunctionTypeFlag_MODIFY_USER,
                 "CHANGE_POS" => FunctionTypeFlag_CHANGE_POS,
                 "CHANGE_ROLE" => FunctionTypeFlag_CHANGE_ROLE,
+                "DELETE_USER" => FunctionTypeFlag_DELETE_USER,
+                
                 _ => null
             };
         }
@@ -898,15 +954,28 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_DISABLE_USER,
                 FunctionTypeFlag_MODIFY_USER,
                 FunctionTypeFlag_CHANGE_POS,
-                FunctionTypeFlag_CHANGE_ROLE
+                FunctionTypeFlag_CHANGE_ROLE,
+                FunctionTypeFlag_DELETE_USER
             };
         }
 
-        public static List<ValueConstModel> GetAll()
+        public static List<ValueConstModel> GetAll(bool pIsNone)
         {
-           return new List<ValueConstModel>
+            if (pIsNone)
+                return new List<ValueConstModel>
            {
                FunctionTypeFlag_None,
+               FunctionTypeFlag_ADDNEW_USER,
+               FunctionTypeFlag_ResetPassword,
+               FunctionTypeFlag_ENABLE_USER,
+               FunctionTypeFlag_DISABLE_USER,
+               FunctionTypeFlag_MODIFY_USER,
+               FunctionTypeFlag_CHANGE_POS,
+               FunctionTypeFlag_CHANGE_ROLE,
+               FunctionTypeFlag_DELETE_USER
+           };
+            else return new List<ValueConstModel>
+           {
                FunctionTypeFlag_ADDNEW_USER,
                FunctionTypeFlag_ResetPassword,
                FunctionTypeFlag_ENABLE_USER,
@@ -920,7 +989,7 @@ namespace VBSPOSS.Constants
 
         public static ValueConstModel GetByCode(string pCode)
         {
-            return GetAll().FirstOrDefault(x => x.Code == pCode);
+            return GetAll(true).FirstOrDefault(x => x.Code == pCode);
         }
     }
 
@@ -1006,6 +1075,7 @@ namespace VBSPOSS.Constants
 
         /// <summary>
         /// Phương thức xác thực thứ 2 của người dùng khi đăng nhập vào iDC => ARX OTP (Dùng OTP để đăng nhâp) Hiện được gửi qua QLTDCS: AuthSecType_ARXOTP = 17
+        ///                 AuthSecType_ARXOTP = new ValueConstModel { Value = 17, Code = "17", Description = "ARX OTP (Dùng OTP để đăng nhâp)" };
         /// </summary>
         public static ValueConstModel AuthSecType_ARXOTP = new ValueConstModel { Value = 17, Code = "17", Description = "ARX OTP (Dùng OTP để đăng nhâp)" };
 
@@ -1032,6 +1102,32 @@ namespace VBSPOSS.Constants
                 _ => null
             };
         }
+
+        public static ValueConstModel GetDescriptionByCode(string pCode)
+        {
+            return pCode switch
+            {
+                "0" => AuthSecType_Single,
+                "1" => AuthSecType_Native,
+                "2" => AuthSecType_LDAP,
+                "3" => AuthSecType_Safeword,
+                "4" => AuthSecType_RSA,
+                "5" => AuthSecType_SMSOTP,
+                "6" => AuthSecType_VascoToken,
+                "7" => AuthSecType_EMVCard,
+                "8" => AuthSecType_VASCOTokenTrans,
+                "9" => AuthSecType_SMSOTPTrans,
+                "11" => AuthSecType_USBEToken,
+                "12" => AuthSecType_SMSOTP_TIBCO,
+                "13" => AuthSecType_NativeTrans,
+                "14" => AuthSecType_Blackshiel,
+                "16" => AuthSecType_ARXSecurityQuestion,
+                "17" => AuthSecType_ARXOTP,
+                _ => null
+
+            };
+        }
+
 
         public static List<ValueConstModel> GetAll()
         {

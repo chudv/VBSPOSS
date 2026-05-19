@@ -37,8 +37,8 @@ namespace VBSPOSS.ViewModels
         [JsonPropertyName("partialInterestRate")]
         public double PartialInterestRate { get; set; }
 
-        [JsonPropertyName("depositType")]
-        public string DepositType { get; set; }
+        [JsonPropertyName("depositGroupType")]
+        public string DepositGroupType { get; set; }
     }
 
     public class TideRateConfigureViewModel

@@ -39,10 +39,10 @@ namespace VBSPOSS.Controllers
         private readonly IProductService _serviceProduct;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
-
+        private readonly IAttachedFileService _attachedFileService;
         public IntRateConfigController(ILogger<IntRateConfigController> logger, IAdministrationService adminService,
             ISessionHelper sessionHelper, IInterestRateConfigureService intRateConfigService,
-                    IListOfValueService serviceLOV, IProductService serviceProduct, IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
+                    IListOfValueService serviceLOV, IProductService serviceProduct, IAttachedFileService attachedFileService, IMapper mapper, ApplicationDbContext context) : base(logger, adminService, sessionHelper)
         {
             _logger = logger;
             _intRateConfigService = intRateConfigService;
@@ -50,6 +50,7 @@ namespace VBSPOSS.Controllers
             _mapper = mapper;
             _context = context;
             _serviceProduct = serviceProduct;
+            _attachedFileService = attachedFileService;
         }
 
         public IActionResult IndexTidePenalRates()
@@ -864,8 +865,8 @@ namespace VBSPOSS.Controllers
                     objFileInfo.ApprovalDate = DateTime.Now;
                     listFileUpload.Add(objFileInfo);
                 }
-                var listIdAttachFileUpd = await _intRateConfigService.SaveAttachedFileInfo(objApprovalInfor.DocumentId, listFileUpload, FileType.FileType_ConfigIntRate.Value.ToString(),
-                                                    ProductGroupCode.ProductGroupCode_DepositPenal, UserName);
+                var listIdAttachFileUpd = await _attachedFileService.SaveAttachedFileInfo(objApprovalInfor.DocumentId, listFileUpload, FileType.FileType_ConfigIntRate.Value.ToString(),
+                                                    ProductGroupCode.ProductGroupCode_DepositPenal, UserName,"");
                 long iDocumentIdUpd = 0;
                 int iResultUpdateDocumentId = 0;
                 if (listIdAttachFileUpd != null)

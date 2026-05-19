@@ -212,15 +212,18 @@ namespace VBSPOSS.Controllers
             string sTitleChoice = "", sName = "", sShortName = "", sPosCode = "", sMainCode = "";
             sTitleChoice = string.IsNullOrEmpty(pTitleChoice) ? "" : pTitleChoice;
             ArrayList data = new ArrayList();
-            if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199")
+            if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199" && pUserPosCode != "ALL")
             {
                 string sSQL = $"Select Top 1 As Id, IsNull(MainPosCode,'') Code , IsNull(MainPosCode,'') Value From ListOfPos Where Code = {pUserPosCode}";
                 string sMainPosTMP = _serviceLOV.GetCellValueForQuery(sSQL);
                 sPosCode = (sMainPosTMP == pUserPosCode) ? "" : pUserPosCode;
                 sMainCode = sMainPosTMP;
             }
+            if (string.IsNullOrEmpty(pUserPosCode))
+                pUserPosCode = UserPosCode;
+            pUserPosCode = (pUserPosCode == "ALL") ? "000100" : pUserPosCode;
 
-            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, UserPosCode, UserName);
+            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, pUserPosCode, UserName);
 
             if (sTitleChoice != "")
                 data.Add(new { id = "", value = sTitleChoice });
@@ -462,7 +465,8 @@ namespace VBSPOSS.Controllers
                 //Xử lý loại người dùng đã khởi tạo trong IDC
                 else if(pFlagCall == "2")
                 {
-                    var listStaffIDC = _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "",3).Select(s => s.StaffId).ToHashSet();
+                    var listUserIDCTemp = await _userManagementIDCService.GetListUserIDCMasters(0, "", pPosCode, "", "", "", -1, false);
+                    var listStaffIDC = listUserIDCTemp.Select(s => s.StaffId).ToList();
                     listStaffVBSPTemp = listStaffVBSP.Result.Where(s => !listStaffIDC.Contains(s.StaffId)).ToList();
                 }    
                 else listStaffVBSPTemp = listStaffVBSP.Result;
@@ -597,14 +601,22 @@ namespace VBSPOSS.Controllers
             return Json(data);
         }
 
-        public JsonResult GetDepositTypeList()
+        public JsonResult GetDepositGroupTypeList()
         {
             ArrayList data = new ArrayList();
-            
-            data.Add(new { id = "B", value = "Đầu kỳ" });
-            data.Add(new { id = "P", value = "Định kỳ" });
-            data.Add(new { id = "E", value = "Cuối kỳ" });
-            data.Add(new { id = "T", value = "Top-up" });
+
+            //data.Add(new { id = "B", value = "Đầu kỳ" });
+            //data.Add(new { id = "P", value = "Định kỳ" });
+            //data.Add(new { id = "E", value = "Cuối kỳ" });
+            //data.Add(new { id = "T", value = "Top-up" });
+
+            data.Add(new { id = "I", value = "Tiết kiệm cá nhân" });
+            data.Add(new { id = "E", value = "Tiền gửi cuối kỳ tại quầy và MB" });
+            data.Add(new { id = "O", value = "Tiền gửi đầu kỳ/định kỳ tại quầy" });
+            data.Add(new { id = "P", value = "Tiền gửi đầu kỳ/định kỳ tại MB" });
+            data.Add(new { id = "T", value = "Tiền gửi góp" });
+            data.Add(new { id = "C", value = "Tiền gửi tích lũy" });
+            data.Add(new { id = "K", value = "Tiền gửi ký quỹ" });
 
             return Json(data);
         }

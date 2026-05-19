@@ -11,18 +11,20 @@ namespace VBSPOSS.Services.Interfaces
         /// Hàm lấy danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC
         /// </summary>
         /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
-        /// <param name="pMainPosCode">Mã chi nhánh (Không bắt buộc). Ex: 002721</param>
+        /// <param name="pMainPosCode">Mã chi nhánh (Không bắt buộc)</param>
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
         /// <param name="pUserId">Tên đăng nhập người dùng</param>
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
+        /// <param name="pIsCallGetInfoCoreIDC">Cờ xác định: True: Sau khi lấy thông tin trong UserIDCMaster thì lấy tiếp trong iDC để ra thông tin cuối cùng của người dùng. False: Chỉ lấy thông tin trong UserIDCMaster</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        List<UserIDCMasterViewModel> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus);
+        Task<List<UserIDCMasterViewModel>> GetListUserIDCMasters(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus, bool pIsCallGetInfoCoreIDC);
 
         /// <summary>
         /// Hàm lấy danh sách bản ghi trong bảng UserManagementIDC Thông tin tài khoản người dùng Intellect iDC
         /// </summary>
         /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
+        /// <param name="pMainPosCode">Mã Chi nhánh (Không bắt buộc)</param>
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
         /// <param name="pUserId">Tên đăng nhập người dùng</param>
         /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
@@ -31,7 +33,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
         /// <param name="pIsJoinUserIDCMaster">Cờ xác định có Union Với UserIDCMaster không</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
-        List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pPosCode, string pUserId, string pFullName, string pStaffCode, int pStatus, string pFunctionType, bool pIsJoinUserIDCMaster);
+        Task<List<UserManagementIDCViewModel>> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode,
+                                int pStatus, string pFunctionType, bool pIsJoinUserIDCMaster);
 
         /// <summary>
         /// Hàm thực hiện Xóa (Đóng) bản ghi nghiệp vụ thêm mới hoặc thay đổi thông tin tài khoản người dùng Intellect iDC (Bảng UserManagementIDC)
@@ -45,6 +48,21 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pFlagDelete">Cờ xác định Xóa/Đánh dấu xóa: 1: Xóa hẳn; 2: Đánh dấu xóa;</param>
         /// <returns>True - Thành công; False - Không thành công</returns>
         bool DeleteUserManagementIDC(long pId, string pUserId, string pStaffId, int pStatus, string pFunctionType, string pModifiedBy, int pFlagDelete);
+
+        /// <summary>
+        /// Hàm tổng hợp số lượng yêu cầu của các chi nhánh về người dùng iDC để hiển thị hàng chờ phê duyệt
+        /// </summary>
+        /// <param name="pStartDateBegin">Ngày bắt đầu - Bắt đầu. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
+        /// <param name="pStartDateEnd">Ngày bắt đầu - Kết thúc. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
+        /// <param name="pMainPosCode">Mã chi nhánh (Bắt buộc phải truyền)</param>
+        /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
+        /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
+        /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
+        /// <returns></returns>
+        List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
+            string pPosCode, string pListStatus, int pFlagCall);
+
+
 
         /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bảng dữ liệu người dùng trên Intellect iDC UserIDCMaster
@@ -239,7 +257,7 @@ namespace VBSPOSS.Services.Interfaces
         /// </returns>
         /// <exception cref="Exception"></exception>
         Task<ChangeInforUserIDCAPIResponseViewModel> ModifyUserByApiModifyUser(ModifyUserRequestViewModel requestInput, string pUserNameUpd);
-        List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai);
+        //List<UserIDCApprovalViewModel> UserIDCApproval_GetSearch(string pNgayHLBatDau,string pNgayHLKetThuc,string pDonVi, int pFlagCall, string pTrangThai);
 
         //List<UserManagementIDCViewModel> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode, string pFunctionType, int iStatus);
 
