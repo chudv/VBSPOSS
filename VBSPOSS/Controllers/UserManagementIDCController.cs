@@ -1604,7 +1604,7 @@ namespace VBSPOSS.Controllers
         /// <returns></returns>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdateApprovalOrAuthorize([DataSourceRequest] DataSourceRequest request, string pFlagCall, string pListApprovalData,
-                    IFormFile pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate)
+                    IList<IFormFile> pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate)
         {
             List<long> saveFileStatus = null;
             string sListUserId = "", sListId = "";
@@ -1811,69 +1811,69 @@ namespace VBSPOSS.Controllers
                         resultSaveUpdate = "0";
                     else resultSaveUpdate = "-2";
                 }
-                if (pFileUpload != null && pFileUpload.Length > 0)
+                if (pFileUpload != null && pFileUpload.Count > 0)
                 {
                     #region --- Cập nhật thông tin file đính kèm nếu có vào bảng AttachedFileInfo và Copy file lên Server ---
-                    string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\") + @"\";
-                    var sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), sPathFileUpload, "ToTrinh");
-                    long iDocumentIdTmp = string.IsNullOrEmpty(pMainPosCode) ? long.Parse(pPosCode) : long.Parse(pMainPosCode);
-                    string sFunctionTypeTmp = pFunctionType.Replace("_"," ").ToCamelCase();
-                    sFunctionTypeTmp = sFunctionTypeTmp.Replace(" ", "_");
-                    string sListUserIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListUserId, "~");
-                    string sListIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListId, ";");
-                    string sListFileIdUpload = "";
+                    //string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\") + @"\";
+                    //var sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), sPathFileUpload, "ToTrinh");
+                    //long iDocumentIdTmp = string.IsNullOrEmpty(pMainPosCode) ? long.Parse(pPosCode) : long.Parse(pMainPosCode);
+                    //string sFunctionTypeTmp = pFunctionType.Replace("_"," ").ToCamelCase();
+                    //sFunctionTypeTmp = sFunctionTypeTmp.Replace(" ", "_");
+                    //string sListUserIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListUserId, "~");
+                    //string sListIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListId, ";");
+                    //string sListFileIdUpload = "";
 
-                    List<AttachedFileInfo> listFileUpload = new List<AttachedFileInfo>();
-                    AttachedFileInfo objFileInfo = new AttachedFileInfo();
-                    objFileInfo.FileId = 0;
-                    objFileInfo.DocumentId = iDocumentIdTmp;        //Tạm thời set giá trị là POS hoặc MAINPOS
-                    objFileInfo.FileType = FileType.FileType_User_IDC.Value.ToString();
-                    objFileInfo.FileName = pFileUpload.FileName;
-                    objFileInfo.FileExtension = Path.GetExtension(pFileUpload.FileName);
-                    objFileInfo.PathFile = Path.Combine(sPathFileUpload, "ToTrinh") + @"\";
-                    objFileInfo.FileNameNew = $"{Guid.NewGuid()}.pdf";
-                    objFileInfo.DocumentNumber = pFunctionType;
-                    objFileInfo.CircularRefNum = pSystemDate;
-                    objFileInfo.ContentDescription = $"Tờ trình {sFunctionTypeNameTmp} của đơn vị {pPosCode}-{pMainPosCode} với ngày hệ thống Intellect iDC {pSystemDate} cua các User {sListUserIdTmp}";
-                    objFileInfo.Status = StatusTrans.Status_Created.Value;
-                    objFileInfo.CreatedBy = UserName;
-                    objFileInfo.CreatedDate = DateTime.Now;
-                    objFileInfo.ModifiedBy = UserName;
-                    objFileInfo.ModifiedDate = DateTime.Now;
-                    objFileInfo.ApproverBy = UserName;
-                    objFileInfo.ApprovalDate = DateTime.Now;
-                    listFileUpload.Add(objFileInfo);
+                    //List<AttachedFileInfo> listFileUpload = new List<AttachedFileInfo>();
+                    //AttachedFileInfo objFileInfo = new AttachedFileInfo();
+                    //objFileInfo.FileId = 0;
+                    //objFileInfo.DocumentId = iDocumentIdTmp;        //Tạm thời set giá trị là POS hoặc MAINPOS
+                    //objFileInfo.FileType = FileType.FileType_User_IDC.Value.ToString();
+                    //objFileInfo.FileName = pFileUpload.FileName;
+                    //objFileInfo.FileExtension = Path.GetExtension(pFileUpload.FileName);
+                    //objFileInfo.PathFile = Path.Combine(sPathFileUpload, "ToTrinh") + @"\";
+                    //objFileInfo.FileNameNew = $"{Guid.NewGuid()}.pdf";
+                    //objFileInfo.DocumentNumber = pFunctionType;
+                    //objFileInfo.CircularRefNum = pSystemDate;
+                    //objFileInfo.ContentDescription = $"Tờ trình {sFunctionTypeNameTmp} của đơn vị {pPosCode}-{pMainPosCode} với ngày hệ thống Intellect iDC {pSystemDate} cua các User {sListUserIdTmp}";
+                    //objFileInfo.Status = StatusTrans.Status_Created.Value;
+                    //objFileInfo.CreatedBy = UserName;
+                    //objFileInfo.CreatedDate = DateTime.Now;
+                    //objFileInfo.ModifiedBy = UserName;
+                    //objFileInfo.ModifiedDate = DateTime.Now;
+                    //objFileInfo.ApproverBy = UserName;
+                    //objFileInfo.ApprovalDate = DateTime.Now;
+                    //listFileUpload.Add(objFileInfo);
 
-                    var listIdAttachFileUpd = await _attachedFileService.SaveAttachedFileInfo(iDocumentIdTmp, listFileUpload, FileType.FileType_User_IDC.Value.ToString(),
-                                    "", UserName, sFunctionTypeTmp);
-                    long iDocumentIdUpd = 0;
-                    int iCountUpdateDocumentIdRet = 0;
-                    if (listIdAttachFileUpd != null)
-                    {
-                        if (!Directory.Exists(sUploadPathTemp))
-                        {
-                            Directory.CreateDirectory(sUploadPathTemp);
-                        }
-                        foreach (var itemFileId in listIdAttachFileUpd)
-                        {
-                            var listAttachedFile = _attachedFileService.GetListAttachedFileInfoSearch(itemFileId, 0, FileType.FileType_User_IDC.Value.ToString(), "", "").FirstOrDefault();
-                            string fileNameNew = "";
-                            if (listAttachedFile.FileNameNew.Contains(listAttachedFile.FileExtension))
-                                fileNameNew = $"{listAttachedFile.FileNameNew}";
-                            else
-                                fileNameNew = $"{listAttachedFile.FileNameNew}{listAttachedFile.FileExtension}";
+                    //var listIdAttachFileUpd = await _attachedFileService.SaveAttachedFileInfo(iDocumentIdTmp, listFileUpload, FileType.FileType_User_IDC.Value.ToString(),
+                    //                "", UserName, sFunctionTypeTmp);
+                    //long iDocumentIdUpd = 0;
+                    //int iCountUpdateDocumentIdRet = 0;
+                    //if (listIdAttachFileUpd != null)
+                    //{
+                    //    if (!Directory.Exists(sUploadPathTemp))
+                    //    {
+                    //        Directory.CreateDirectory(sUploadPathTemp);
+                    //    }
+                    //    foreach (var itemFileId in listIdAttachFileUpd)
+                    //    {
+                    //        var listAttachedFile = _attachedFileService.GetListAttachedFileInfoSearch(itemFileId, 0, FileType.FileType_User_IDC.Value.ToString(), "", "").FirstOrDefault();
+                    //        string fileNameNew = "";
+                    //        if (listAttachedFile.FileNameNew.Contains(listAttachedFile.FileExtension))
+                    //            fileNameNew = $"{listAttachedFile.FileNameNew}";
+                    //        else
+                    //            fileNameNew = $"{listAttachedFile.FileNameNew}{listAttachedFile.FileExtension}";
 
-                            var filePathNew = Path.Combine(sUploadPathTemp, fileNameNew);
-                            iDocumentIdUpd = listAttachedFile.DocumentId;
-                            using (var stream = new FileStream(filePathNew, FileMode.Create))
-                            {
-                                pFileUpload.CopyTo(stream);
-                            }
-                        }
-                        //Thực hiện cập nhật DocumentId vào bảng UserManagementIDC
-                        var listIdOfUserManagementIDC = StringHelper.ConvertToLongList(sListIdTmp, ';');
-                        iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, sListFileIdUpload);
-                    }
+                    //        var filePathNew = Path.Combine(sUploadPathTemp, fileNameNew);
+                    //        iDocumentIdUpd = listAttachedFile.DocumentId;
+                    //        using (var stream = new FileStream(filePathNew, FileMode.Create))
+                    //        {
+                    //            pFileUpload.CopyTo(stream);
+                    //        }
+                    //    }
+                    //    //Thực hiện cập nhật DocumentId vào bảng UserManagementIDC
+                    //    var listIdOfUserManagementIDC = StringHelper.ConvertToLongList(sListIdTmp, ';');
+                    //    iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, sListFileIdUpload);
+                    //}
                     #endregion
                 }
                 return new JsonResult(resultSaveUpdate);
