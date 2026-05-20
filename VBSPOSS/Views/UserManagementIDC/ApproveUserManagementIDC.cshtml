@@ -224,6 +224,85 @@
                 row.find("td").css("color", "red");
             }
         }
+
+        var grid = e.sender;
+        // Sự kiện chọn từng checkbox
+        grid.tbody.find(".depProductCheckSelect")
+            .off("change.depProduct")
+            .on("change.depProduct", function (ev) {
+                ev.stopPropagation();
+
+                var $checkbox = $(this);
+                var $row = $checkbox.closest("tr");
+
+                $row.toggleClass("row-selected-custom", $checkbox.is(":checked"));
+
+                updateSelectedRowIdUsers();
+            });
+
+        // Click vào row thì toggle checkbox
+        grid.tbody.find("tr")
+            .off("click.depProduct")
+            .on("click.depProduct", function (ev) {
+                if ($(ev.target).is("input:checkbox")) return;
+
+                var $row = $(this);
+                var $checkbox = $row.find(".depProductCheckSelect");
+
+                if ($checkbox.length === 0 || $checkbox.is(":disabled")) return;
+
+                $checkbox.prop("checked", !$checkbox.is(":checked"));
+                $row.toggleClass("row-selected-custom", $checkbox.is(":checked"));
+
+                updateSelectedRowIdUsers();
+            });
+
+        // Checkbox header chọn tất cả
+        $("#chkSelectAllProducts")
+            .off("change.depProduct")
+            .on("change.depProduct", function (ev) {
+                ev.stopPropagation();
+
+                var isChecked = $(this).is(":checked");
+
+                grid.tbody.find(".depProductCheckSelect").prop("checked", isChecked);
+                grid.tbody.find("tr").toggleClass("row-selected-custom", isChecked);
+
+                updateSelectedRowIdUsers();
+            });
+
+        // Đồng bộ lại giao diện sau databound
+        grid.tbody.find("tr").each(function () {
+            var $row = $(this);
+            var isChecked = $row.find(".depProductCheckSelect").is(":checked");
+            $row.toggleClass("row-selected-custom", isChecked);
+        });
+
+    }
+
+    function updateSelectedRowIdUsers() {
+        var grid = $("#gridMainIDCApproval").data("kendoGrid");
+        var listItemChoice = [];
+
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+
+            listItemChoice.push(dataItem.UserId);
+        });
+
+        if (listItemChoice.length === 0) {
+            $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + grid.dataSource.total());
+        } else {
+            $("#idRowChoiceTmp").text("Yêu cầu đã chọn: " + listItemChoice.join(", "));
+        }
+
+        var total = grid.tbody.find(".depProductCheckSelect").length;
+        var checked = grid.tbody.find(".depProductCheckSelect:checked").length;
+
+        $("#chkSelectAllProducts").prop("checked", total > 0 && total === checked);
     }
 
     var dataChange = false;
@@ -273,6 +352,22 @@
         openAuthorizeWindow(dataItem,lcEventAuthorizeView,"Phê duyệt thông tin người dùng IDC");
     }
 
+    function showDetailUserIDCForApprovalOrAuthorize(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var lcEventDetailView = $("#EventFlag_ViewView").val();
+        // var dSystemDateRow = dataItem.SystemDate;
+        // var dStartDateRow = dataItem.StartDate;
+        // if (dStartDateRow < dSystemDateRow) {
+        //     alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        openAuthorizeWindow(dataItem,lcEventDetailView,"Xem chi tiết thông tin yêu cầu người dùng Intellect iDC");
+    }
+    
+
     function openAuthorizeWindow(dataItem, eventCodeView, windowTitle) {
         var wnd = mainWindowApproval.data("kendoWindow");
         if (!wnd) {
@@ -293,6 +388,15 @@
         wnd.setOptions({
             title: windowTitle
         });
+        var lcEventDetailView = $("#EventFlag_ViewView").val();
+        var lcButtonType = "";
+        var lcEventAuthorizeView = $("#EventFlag_AuthorizeView").val();
+        if (eventCodeView==lcEventDetailView) {
+            
+            lcButtonType = eventCodeView;
+            eventCodeView = lcEventAuthorizeView;
+        }
+
         // Refresh lại với cache false
         wnd.refresh({
             url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
@@ -301,7 +405,7 @@
                 pPosCode: dataItem.PosCode,
                 pUserId: dataItem.UserId,
                 pFlagCall: eventCodeView,
-                pButtonType: "",
+                pButtonType: lcButtonType,
                 _t: new Date().getTime()    // chống cache
             }
         });
@@ -431,6 +535,8 @@
 @Html.Hidden("FlagCallView", TempData["FlagCall"])
 @Html.Hidden("EventFlag_ApprovalView", TempData["EventFlag_Approval"])
 @Html.Hidden("EventFlag_AuthorizeView", TempData["EventFlag_Authorize"])
+@Html.Hidden("EventFlag_ViewView", TempData["EventFlag_View"])
+
 @Html.Hidden("EventFlag_RejectView", TempData["EventFlag_Reject"])
 @Html.Hidden("SystemDateTextApprovalView", TempData["SystemDateText"])
 @Html.Hidden("BusinessDateTextApprovalView", TempData["BusinessDateText"])
@@ -505,6 +611,11 @@
                 .Events(e => e.DataBound("onRowBoundIDCApproval"))
                 .Columns(columns =>
                 {
+                    columns.Template("<input type='checkbox' class='depProductCheckSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAllProducts' />")
+                        .Title("")
+                        .Width(50)
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" })
+                        .HtmlAttributes(new { style = "text-align:center;" });
                     columns.Command(command =>
                     {
                         command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
@@ -519,15 +630,21 @@
                             title = "Phê duyệt yêu cầu người dùng IDC",
                             @class = "btn-auth"
                         });
+                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDCForApprovalOrAuthorize").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Xem chi tiết thông tin yêu cầu thêm mới/thay đổi thông tin người dùng Intellect iDC",
+                            @class = "btn-view"
+                        });
                     }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(150).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(70).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupName).Hidden();
-                    columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(83).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.StartDateText).Hidden();
                     columns.Bound(c => c.StatusText).Title("Trạng thái").Width(70).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Id).Hidden();
@@ -563,7 +680,7 @@
                     columns.Bound(c => c.BusinessDate).Hidden();
                     columns.Bound(c => c.BusinessDateText).Hidden();
                 })
-                .HtmlAttributes(new { style = "height: 500px;color: navy; border: 1px solid #ddd;" })
+                .HtmlAttributes(new { style = "height: 470px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
                 {
                     toolbar.Custom().Text("In tờ trình").HtmlAttributes(new {id = "btnPrintToTrinh",style = "height: 25px;width: 120px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;",title = "In tờ trình"});
@@ -587,6 +704,7 @@
             )
         </div>
     </div>
+    <div id="idRowChoiceTmp" style="margin-top:2px; font-weight:bold;"></div>
 
     <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
    
@@ -648,7 +766,7 @@
 
     </div> *@
 
-    <div id="divUploadFile" class="row" style="padding-top: 5px;">
+    <div id="divUploadFile" class="row" style="padding-top: 2px;">
 
         <!-- BÊN TRÁI -->
         <div class="col-md-10">
@@ -669,9 +787,7 @@
             </button>
 
             <!-- danh sách file -->
-            <div id="fileList" style="margin-top:10px;">
-            </div>
-
+            <div id="fileList" style="margin-top:0px;padding-top: 1px;padding-bottom: 1px;"></div>
         </div>
 
         <!-- BÊN PHẢI -->
@@ -920,7 +1036,25 @@
     
     //Lưu thông tin Trinh duyệt hoặc Phê duyệt với yêu cầu người dùng
     $("#btnApprovalAll, #btnAuthorizeAll").click(function () {
-        if (listApprovalData.length === 0) {
+        var listUserIdChoiceApprovalTmp = [];
+
+        var grid = $("#gridMainIDCApproval").data("kendoGrid");
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+            var dataTempRow = {
+                    Id: dataItem.Id,
+                    UserId: dataItem.UserId,
+                    Status: dataItem.Status
+                };
+            listUserIdChoiceApprovalTmp.push(dataTempRow);
+        });
+            
+
+        
+        if (listUserIdChoiceApprovalTmp.length === 0) {
             alert("Bạn chưa chọn danh sách yêu cầu để lưu thông tin trình duyệt/phê duyệt người dùng IDC. Vui chọn trình duyệt/phê duyệt!");
             return;
         }
@@ -934,11 +1068,12 @@
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
 
         var fileInput = $("#fileUpload")[0];
+        alert(uploadedFiles.length );
         //var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
-        var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files : [];
+        var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-            if (!fileUploadUserIDC) {
+            if (!fileUploadUserIDC || fileUploadUserIDC.length == 0 {
                 alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng cầu phải đính kèm tờ trình (dạng file PDF). Vui lòng đính kèm tờ trình!");
                 return;
             }
@@ -953,23 +1088,22 @@
         var formData = new FormData();
         // append list data
         formData.append("pFlagCall", lcFlagCallView);
-        formData.append("pListApprovalData", JSON.stringify(listApprovalData));
+        formData.append("pListApprovalData", JSON.stringify(listUserIdChoiceApprovalTmp));
         formData.append("pFunctionType", cboFunctionTypeChoice.value());
         formData.append("pMainPosCode", cboMainPosCodeChoice.value());
         formData.append("pPosCode", cboMainPosCodeChoice.value());
         formData.append("pSystemDate", lcSystemDateTextView);
         formData.append("pBusinessDate", lcBusinessDateTextView);
-        var iCountUserdChoice = listApprovalData.length.toString();
+        var iCountUserdChoice = listUserIdChoiceApprovalTmp.length.toString();
         // append file
         if (fileUploadUserIDC) {
             //formData.append("pFileUpload", fileUploadUserIDC);
             // Append nhiều file (quan trọng)
-            for (let i = 0; i < listFileALLs.length; i++) {
-                formData.append("pFileUpload", listFileALLs[i]);   // Backend nhận nhiều file cùng tên
+            alert(fileUploadUserIDC.length);
+            for (let i = 0; i < fileUploadUserIDC.length; i++) {
+                formData.append("pFileUpload", fileUploadUserIDC[i].file);   // Backend nhận nhiều file cùng tên
             }
         }
-
-        
 
         $.ajax({
             url: "/UserManagementIDC/SaveUpdateApprovalOrAuthorize",
@@ -1015,7 +1149,7 @@
 
 
 
-        $("#btnChooseFile").click(function () {
+    $("#btnChooseFile").click(function () {
 
         $("#fileUpload").click();
 
@@ -1053,7 +1187,8 @@
 
             uploadedFiles.push({
                 name: file.name,
-                url: fileUrl
+                url: fileUrl,
+                file: file
             });
 
             renderFileItem(file.name, fileUrl);
@@ -1069,15 +1204,15 @@
             `
             <div class="file-item"
                  data-file="${fileName}"
-                 style="margin-top:5px;
+                 style="margin-top:0px;
                         border:1px solid #ddd;
-                        padding:5px 10px;
-                        border-radius:5px;
+                        padding:1px 1px;
+                        border-radius:1px;
                         display:flex;
                         align-items:center;
                         justify-content:space-between;">
 
-                <span style="color:red;">
+                <span style="color:maroon;">
                     ${fileName}
                 </span>
 
@@ -1105,14 +1240,8 @@
 
     // xem file
     $(document).on("click", ".btn-view-file", function () {
-
         let url = $(this).data("url");
-
-        window.open(
-            url,
-            "_blank",
-            "width=1200,height=800"
-        );
+        window.open (url, "_blank", "width=1200,height=800");
     });
 
     // xóa file

@@ -1513,6 +1513,7 @@ namespace VBSPOSS.Controllers
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll(false);
             TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
+            TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
 
             TempData["FunctionTypeFlag_ADDNEW_USER"] = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
             TempData["FunctionTypeFlag_ResetPassword"] = FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code;
