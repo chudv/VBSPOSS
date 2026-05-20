@@ -1,0 +1,157 @@
+﻿@model VBSPOSS.Models.AttachedFileInfoView
+
+@{
+    var idTranfer = ViewBag.IdTranferDataPos;
+}
+
+<style>
+    .btn-upload {
+    padding: 4px 14px;
+    height: 30px;
+    background: #1976d2;
+    border: 1px solid #1565c0;
+    color: white;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.btn-upload:hover {
+    background: #1565c0;
+}
+</style>
+@Html.Hidden("IdTranferDataPos", ViewBag.IdTranferDataPos as string)
+
+<form id="uploadFormTranferPos"
+      method="post"
+      enctype="multipart/form-data"
+      action="/AttachedFile/Upload">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="FileId"
+           value="@(Model?.FileId ?? 0)" />
+
+    <input type="hidden" name="idTranfer"
+           value="@idTranfer" />
+
+        <!-- chọn file -->
+    <div class="row" style="margin-bottom:8px;margin-top:34px;">
+            <div class="col-md-2">
+                <label style="color:navy;">Chọn file</label>
+            </div>
+
+            <div class="col-md-3" style="width:600px;">
+                <input type="file"
+                       id="files"
+                       name="files"
+                       style="width:100%;color:blue;" />
+            </div>
+
+            <div class="col-md-2">
+                <label style="color:navy;">Số VB / Trích yếu</label>
+            </div>
+
+            <div class="col-md-4">
+                <input type="text"
+                       id="DocumentNumber"
+                       name="DocumentNumber"
+                       class="k-textbox"
+                       style="width:100%;color:blue;" />
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- mô tả -->
+        <div class="row" style="margin-bottom:5px;">
+            <div class="col-md-2">
+                <label style="color:navy;">Mô tả</label>
+            </div>
+
+            <div class="col-md-8">
+                <textarea id="Mo_Ta"
+                          name="Mo_Ta"
+                          placeholder="Nhập mô tả"
+                          style="width:600px;
+                             height:53px;
+                             border:0;
+                             border-bottom:1px dotted;
+                             color:blue;"></textarea>
+            </div>
+
+            <div class="col-md-2" style="padding-top:6px;">
+                <label style="color:orangered;white-space:nowrap;width:150px">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(File <= 50MB)
+                </label>
+            </div>
+        </div>
+        <hr>
+        <!-- button -->
+        <div style="width:100%; max-width:100%;">
+            <div style="text-align:right;">
+                <button type="submit" class="btn-upload">
+                    <span class="k-icon k-i-upload"></span>
+                    Tải lên
+                </button>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<script>
+    $("#uploadFormTranferPos").on("submit", function (e) {
+        e.preventDefault();
+
+        var file = $("#files")[0].files[0];
+        var mota = $("#Mo_Ta").val();
+        var documentNumber = $("#DocumentNumber").val();
+        var idTranfer = $("#IdTranferDataPos").val();
+
+
+
+       
+        if (!file) {
+            alert("Chưa chọn file");
+            return;
+        }
+
+        if (file.size > 50 * 1024 * 1024) {
+            alert("File vượt quá 50MB");
+            return;
+        }
+
+
+
+        var formData = new FormData(this);
+
+        formData.set("idTranfer", idTranfer);
+        formData.set("DocumentNumber", documentNumber);
+
+        $.ajax({
+            url: "/TransferDataPos/UploadTotrinh",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+
+                if (res == "0") {
+                    alert("Upload thành công");
+
+                    $("#files").val("");
+                    $("#Mo_Ta").val("");
+
+                    var grid = $("#gridMainCasaRate").data("kendoGrid");
+                    if (grid) grid.dataSource.read();
+                }
+                else {
+                    alert("Upload lỗi");
+                }
+            },
+            error: function () {
+                alert("Lỗi hệ thống");
+            }
+        });
+    });
+</script>

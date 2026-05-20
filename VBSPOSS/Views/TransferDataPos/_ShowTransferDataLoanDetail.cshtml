@@ -1,0 +1,196 @@
+﻿@model List<VBSPOSS.ViewModels.ChangePosDataCheckingViewModel>
+
+@using Kendo.Mvc.UI
+
+<script>
+    function paramLoadGridData() {
+
+        return {
+
+            pId: '@ViewBag.PId',
+
+            pFromPos: "000302"
+        };
+    }
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+
+        @(Html.Kendo().Grid<VBSPOSS.ViewModels.ChangePosDataCheckingViewModel>()
+            .Name("gridMainTranferTarget")
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.ACCEPT_MOV)
+                .Title("Xác nhận")
+                .Width(80)
+                .ClientTemplate(
+                "<input type='checkbox' class='chkAcceptMov' #= ACCEPT_MOV ? 'checked=checked' : '' # />")
+                .HtmlAttributes(new { style = "text-align:center;" });
+
+                columns.Bound(c => c.TYPE_CD)
+                .Title("Loại dữ liệu")
+                .Width(120);
+
+                columns.Bound(c => c.CUST_ID)
+                .Title("Mã KH")
+                .Width(120);
+
+                columns.Bound(c => c.CUST_NAME)
+                .Title("Tên khách hàng")
+                .Width(250);
+
+                columns.Bound(c => c.AC_NO)
+                .Title("Số tài khoản")
+                .Width(150);
+
+                columns.Bound(c => c.PROD_CD)
+                .Title("Sản phẩm")
+                .Width(120);
+
+                columns.Bound(c => c.PRIN_AMOUNT)
+                .Title("Dư nợ")
+                .Width(120)
+                .Format("{0:n0}")
+                .HtmlAttributes(new { style = "text-align:right;" });
+
+                columns.Bound(c => c.POS_CD)
+                .Title("POS cũ")
+                .Width(100);
+
+                columns.Bound(c => c.NEW_POS_CD)
+                .Title("POS mới")
+                .Width(100);
+
+                columns.Bound(c => c.SCOM_CD)
+                .Title("Thôn cũ")
+                .Width(120);
+
+                columns.Bound(c => c.NEW_SCOM_CD)
+                .Title("Thôn mới")
+                .Width(120);
+            })
+
+            .ToolBar(toolbar =>
+            {
+                toolbar.Excel().Text("Xuất Excel");
+            })
+
+            .Excel(excel =>
+            excel.FileName("Danh_sach_dieu_chuyen_du_lieu.xlsx")
+            .AllPages(true)
+            )
+
+            .Pageable(pageable => pageable
+            .Refresh(true)
+            .PageSizes(true)
+            .ButtonCount(5)
+            )
+
+            .Sortable()
+            .Scrollable()
+            .Filterable()
+            .Resizable(resize => resize.Columns(true))
+
+            .HtmlAttributes(new
+            {
+                style = "height:650px;"
+            })
+
+            .DataSource(dataSource => dataSource
+            .Ajax()
+            .PageSize(100)
+            .ServerOperation(false)
+
+            .Model(model =>
+            {
+                model.Id(p => p.CUST_ID);
+            })
+
+            .Read(read => read
+            .Action(
+            "LoadGridData_TransPointTarget1",
+            "TransferDataPos")
+            .Data("paramLoadGridData")
+            )
+            )
+            )
+
+    </div>
+</div>
+
+<div class="row" style="padding-top:10px;">
+    <div class="col-md-12">
+
+        <button type="button"
+                class="k-button k-primary"
+                onclick="saveAcceptMove();">
+            Lưu xác nhận chuyển thôn
+        </button>
+
+    </div>
+</div>
+
+<script>
+
+    function saveAcceptMove() {
+
+        var grid =
+            $("#gridMainTranferTarget")
+                .data("kendoGrid");
+
+        var data = [];
+
+        $("#gridMainTranferTarget tbody tr")
+            .each(function () {
+
+                var item =
+                    grid.dataItem(this);
+
+                var checked =
+                    $(this)
+                        .find(".chkAcceptMov")
+                        .is(":checked");
+
+                data.push({
+                    CUST_ID: item.CUST_ID,
+                    AC_NO: item.AC_NO,
+                    PROD_CD: item.PROD_CD,
+                    ACCEPT_MOV: checked
+                });
+            });
+
+        $.ajax({
+
+            url:
+                '/TransferDataPos/SaveAcceptMove',
+
+            type:
+                'POST',
+
+            contentType:
+                'application/json',
+
+            data:
+                JSON.stringify(data),
+
+            success: function (res) {
+
+                if (res == 1) {
+
+                    alert("Lưu dữ liệu thành công!");
+                }
+                else {
+
+                    alert("Lưu dữ liệu thất bại!");
+                }
+            },
+
+            error: function () {
+
+                alert("Có lỗi khi lưu dữ liệu!");
+            }
+        });
+    }
+
+</script>

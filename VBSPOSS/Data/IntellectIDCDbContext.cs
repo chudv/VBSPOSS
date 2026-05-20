@@ -1,6 +1,7 @@
 ﻿//using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VBSPOSS.Data.IntellectIDC.Models;
+using VBSPOSS.Models.IDC;
 
 namespace VBSPOSS.Data
 {
@@ -13,6 +14,8 @@ namespace VBSPOSS.Data
             : base(options)
         {
         }
+
+        public virtual DbSet<ChangePosDataChecking> ChangePosDataCheckings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +31,16 @@ namespace VBSPOSS.Data
                 eb.HasNoKey();
                 eb.ToView("QueryResults");
             });
+
+            modelBuilder.Entity<ChangePosDataChecking>(
+                entity =>
+                {
+                    entity.HasNoKey();
+                    entity.ToTable(
+                        "CHANGE_POS_DATA_CHECKING",
+                        "IDL_LMS");
+                });
+
 
         }
     }

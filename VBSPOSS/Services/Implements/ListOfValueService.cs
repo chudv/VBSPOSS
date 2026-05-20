@@ -533,6 +533,7 @@ namespace VBSPOSS.Services.Implements
         ///          '3' - Lấy danh sách các POS Chi nhánh/PGD, trừ POS Hội sở chính (000100)
         ///          '4' - Lấy danh sách các POS HSC/Chi nhánh: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; => Phải truyền thêm pPosCodeUser
         ///          '5' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD => Phải truyền thêm pPosCodeUser
+        ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
         /// </param>
         ///  <param name="pDefaultValue">Giá trị mặc định (ví dụ: 0 cho logic mặc định, có thể dùng để giới hạn hoặc điều kiện bổ sung)</param>
         /// <param name="pMainPosCode">Mã chi nhánh. Không sử dụng truyền vào là ''</param>
@@ -599,6 +600,15 @@ namespace VBSPOSS.Services.Implements
                         profileBranchLists = profileBranchTMPs.Where(w => w.MainPosCode == pPosCodeUser).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
                     else
                         profileBranchLists = profileBranchTMPs.Where(w => w.Code == pPosCodeUser).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ToList();
+                }
+                else if (pFlagCondi == "7")
+                {
+                    if (userNameLevel == PosGrade.HEAD_POS)
+                        profileBranchLists = profileBranchTMPs.Where(w=>w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+                    else if (userNameLevel == PosGrade.MAIN_POS)
+                        profileBranchLists = profileBranchTMPs.Where(w => w.MainPosCode == pPosCodeUser && w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+                    else
+                        profileBranchLists = profileBranchTMPs.Where(w => w.Code == pPosCodeUser).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
                 }
                 else profileBranchLists = profileBranchTMPs;
 

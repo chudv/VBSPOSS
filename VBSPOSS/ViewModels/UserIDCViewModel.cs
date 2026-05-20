@@ -137,6 +137,8 @@ namespace VBSPOSS.ViewModels
         public DateTime SystemDate { get; set; }
 
         public string SystemDateText { get; set; }
+        public string ListFileId { get; set; }
+        public string ReasonReject { get; set; }
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using VBSPOSS.Data.OSS.Models;
+﻿using System.Collections;
+using VBSPOSS.Data.OSS.Models;
 using VBSPOSS.Models;
 using VBSPOSS.ViewModels;
 
@@ -17,8 +18,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
-        List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
-                                int pStatus, string pTxnLocation, string pEventCode, string pUserGrade);
+        List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pPosCode, string statuspStatus, string pUserGrade);
 
         List<ValueConstModel> GetListPosOfBranch(string mainPos);
 
@@ -40,6 +40,37 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<int> ApproveTransferDataPos(long pId, string pRemark, string pAction, string pUserName);
 
+        List<TransferDataPosDetailViewModel> GetTransferDataPosDetailByMasterId(long pId);
 
-    }
+        Task<int> SaveTransferDataPosDetail(
+            long masterId,
+            List<TransferDataPosDetailViewModel> details,
+            string userName);
+
+
+
+        Task<long> SaveTransferDataPosMaster(
+            TransferDataPosMasterViewModel model,
+            string userName,
+            int totalVillage, string mainPos);
+
+
+
+        string GetVillageNameByCode(string villageCode);
+
+        Task<List<CommuneMaintenanceOracleView>> GetTransferDataForOracleAsync(long transferId);
+
+
+
+        Task<int> BulkInsertCommuneTransferAsync(List<CommuneMaintenanceOracleView> data);
+
+        List<ChangePosDataCheckingViewModel> GetListChangePosDataChecking(string pPosCode, string pTotrinh);
+
+        int SaveAcceptMove(List<ChangePosDataCheckingViewModel> data);
+
+        ArrayList GetToTrinh(string pUserPosCode);
+    };
+
+
+
 }

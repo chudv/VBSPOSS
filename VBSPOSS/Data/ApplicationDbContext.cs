@@ -80,6 +80,8 @@ namespace VBSPOSS.Data
 
         public virtual DbSet<TransferDataPosDetail> TransferDataPosDetails { get; set; }
 
+        public virtual DbSet<CommuneMaintenanceOracleView> CommuneMaintenanceOracleViews { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -149,6 +151,10 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<TransferDataPosDetail>().ToTable("TransferDataPosDetail");
             modelBuilder.Entity<TransferDataPosDetail>().HasKey(x => new { x.Id });
+
+            modelBuilder.Entity<CommuneMaintenanceOracleView>()
+                .HasNoKey()
+                .ToView("VW_TRANSFER_DATA_POS_ORACLE");
 
             //add Index
             modelBuilder.Entity<InterestRateConfigMasterView>(eb =>
