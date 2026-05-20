@@ -916,6 +916,7 @@
 
         var fileInput = $("#fileUpload")[0];
         var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
+        var listFileALLs = fileInput.files;                    // ← Lấy tất cả các file
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             if (!fileUploadUserIDC) {
@@ -939,11 +940,17 @@
         formData.append("pPosCode", cboMainPosCodeChoice.value());
         formData.append("pSystemDate", lcSystemDateTextView);
         formData.append("pBusinessDate", lcBusinessDateTextView);
-        var iCountUserdChoice = listApprovalData.length.ToString();
+        var iCountUserdChoice = listApprovalData.length.toString();
         // append file
         if (fileUploadUserIDC) {
-            formData.append("pFileUpload", fileUploadUserIDC);
+            //formData.append("pFileUpload", fileUploadUserIDC);
+            // Append nhiều file (quan trọng)
+            for (let i = 0; i < listFileALLs.length; i++) {
+                formData.append("pFileUpload", listFileALLs[i]);   // Backend nhận nhiều file cùng tên
+            }
         }
+
+        
 
         $.ajax({
             url: "/UserManagementIDC/SaveUpdateApprovalOrAuthorize",
