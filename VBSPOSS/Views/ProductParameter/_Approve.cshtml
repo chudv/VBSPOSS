@@ -34,21 +34,22 @@
 <div class="container-fluid">
     <form id="approveForm">
 
-        <!-- Header -->
-        <div class="approve-header">
+        <!-- Header - 1 dòng -->
+        <div class="approve-header" style="display:flex">
             <div class="row">
-                <div class="col-md-4">
-                    <label>Phân loại</label>
-                    <input type="text" class="form-control" value="@Model.ProductGroupDisplay" readonly style="background-color:#fff;" />
+                <div class="col-md-4" style="display:flex">
+                    <label style="width: 130px; padding-top: 8px;">Phân loại</label>
+                    <input type="text" class="form-control"
+                           value="@Model.ProductGroupDisplay" readonly style="background-color:#fff;" />
                     <input type="hidden" id="ProductGroupCode" value="@Model.ProductGroupCode" />
                 </div>
-                <div class="col-md-5">
-                    <label>Ngày hiệu lực</label>
+                <div class="col-md-4" style="display:flex">
+                    <label style="width: 190px; padding-top: 8px;">Ngày hiệu lực</label>
                     <input type="text" class="form-control"
                            value="@Model.EffectedDate.ToString("dd/MM/yyyy")" readonly style="background-color:#fff;" />
                     <input type="hidden" id="EffectedDate" value="@Model.EffectedDate.ToString("dd/MM/yyyy")" />
                 </div>
-                
+               
             </div>
         </div>
 
@@ -93,7 +94,7 @@
 
         <!-- Buttons -->
         <div class="text-right mt-3">
-            <button type="button" id="btnClose" class="btn btn-light btn-action">Thoát</button>
+            
             <button type="button" id="btnReject" class="btn btn-light btn-action">Từ chối</button>
             <button type="button" id="btnApprove" class="btn btn-success btn-action">Phê duyệt</button>
         </div>
@@ -119,9 +120,9 @@
             }
         });
 
-        $("#btnClose").click(function () {
-            closeApproveWindow();
-        });
+        // $("#btnClose").click(function () {
+        //     closeApproveWindow();
+        // });
     });
 
     function loadApproveGrid() {

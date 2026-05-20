@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace VBSPOSS.ViewModels
@@ -19,7 +20,16 @@ namespace VBSPOSS.ViewModels
         public decimal MinInterestRateSpread { get; set; } = 0.1m; //
         public decimal MaxInterestRateSpread { get; set; } = 5.6m; //
 
-   
+        // add
+        // ==================== THÊM MỚI ====================
+        [Display(Name = "LSĐC Tối thiểu (mặc định)")]
+        public decimal DefaultMinSpread { get; set; } = 0.5m;
+
+        [Display(Name = "LSĐC Tối đa (mặc định)")]
+        public decimal DefaultMaxSpread { get; set; } = 3.0m;
+        // ==================================================
+
+
         public DateTime EffectedDate { get; set; } = new DateTime(2026, 3, 1); // Mặc định theo mô tả 
 
 
@@ -76,6 +86,11 @@ namespace VBSPOSS.ViewModels
     {
         public string productGroupCode { get; set; }
         public string effectedDate { get; set; }
+
+        //add
+
+        public decimal? defaultMinSpread { get; set; }
+        public decimal? defaultMaxSpread { get; set; }
     }
     public class SaveBatchRequest
     {

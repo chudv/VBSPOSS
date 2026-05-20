@@ -184,7 +184,13 @@ namespace VBSPOSS.Controllers
                     effectedDt = new DateTime(2026, 1, 1); // 
                 }
 
-                var result = await _service.LoadProductsForCreateAsync(productGroupCode, effectedDt);
+               // var result = await _service.LoadProductsForCreateAsync(productGroupCode, effectedDt);
+                var result = await _service.LoadProductsForCreateAsync(
+  request.productGroupCode,
+            effectedDt,
+            request.defaultMinSpread ?? 0.5m,
+            request.defaultMaxSpread ?? 3.0m
+        );
 
                 return Json(result);
             }

@@ -72,7 +72,7 @@
     }
 
     function Change_SubCommune() {
-        // Có thể set tên nếu cần
+     
     }
 
 
@@ -85,37 +85,7 @@
         $("#PosName").val(posName);
     }
 
-    // function Change_Province() {
-    //     var provinceCode = $("#ProvinceCode").val();
-    //     if (provinceCode) {
-    //         var districtCombo = $("#DistrictCode").data("kendoComboBox");
-    //         if (districtCombo) {
-    //             districtCombo.dataSource.read({ pParentId: provinceCode });
-    //             districtCombo.value("");
-    //             $("#DistrictName").val("");
-    //         }
-    //     }
-    // }
-
-    // function Change_District() {
-    //     var districtCode = $("#DistrictCode").val();
-    //     if (districtCode) {
-    //         var communeCombo = $("#CommuneCode").data("kendoComboBox");
-    //         if (communeCombo) {
-    //             communeCombo.dataSource.read({ pParentId: districtCode });
-    //             communeCombo.value("");
-    //             $("#CommuneName").val("");
-    //         }
-    //     }
-    // }
-
-    // function Change_Commune() {
-    //     var communeCode = $("#CommuneCode").val();
-    //     var communeText = $("#CommuneCode").data("kendoComboBox").text();
-    //     if (communeCode) {
-    //         $("#CommuneName").val(communeText);
-    //     }
-    // }
+   
 
 
     
@@ -245,7 +215,7 @@
                     .DataSource(ds => ds.Read(read => read.Action("GetListProvinces", "ListOfValue")
                     .Data("paramLoadProvinces")))
                     .Suggest(true)
-                    .AutoBind(true)           @* ← Quan trọng *@
+                    .AutoBind(true)         
                     .MinLength(0))
             </div>
             <div class="col-md-3">
@@ -298,7 +268,7 @@
             </div>
         </div>
 
-        <div class="row" style="padding-top: 8px;">
+       @*  <div class="row" style="padding-top: 8px;">
             <div class="col-md-3">
                 <label class="lbcontrol">Vùng KT - XH</label>
                 @Html.Kendo().TextBoxFor(m => m.AreaEconomic).HtmlAttributes(new { style = "width: 100%;" })
@@ -315,7 +285,7 @@
                 <label class="lbcontrol">Nông thôn mới</label>
                 @Html.Kendo().TextBoxFor(m => m.IsNewCountryside).HtmlAttributes(new { style = "width: 100%;" })
             </div>
-        </div>
+        </div> *@
 
         <!-- Tọa độ & Thời gian -->
         <div class="row" style="padding-top: 8px;">

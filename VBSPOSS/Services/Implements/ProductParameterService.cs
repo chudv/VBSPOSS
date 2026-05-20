@@ -616,31 +616,93 @@ namespace VBSPOSS.Services.Implements
 
        
 
-        public async Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(string productGroupCode, DateTime effectedDate)
+        //public async Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(string productGroupCode, DateTime effectedDate)
+        //{
+        //    try
+        //    {
+        //        string displayGroup = productGroupCode;  
+        //        string loadGroup = productGroupCode;      
+
+        //        // Xử lý Penal Tide
+        //        if (productGroupCode == "PENAL" || productGroupCode == "DEPOSITPENAL" || productGroupCode == "PENALTIDE")
+        //        {
+        //            var hasPenalData = await _dbContext.ProductParameters
+        //                .AnyAsync(p => p.ProductGroupCode == "DEPOSITPENAL");
+
+        //            loadGroup = hasPenalData ? "DEPOSITPENAL" : "TIDE";
+        //            _logger.LogInformation($"Penal Tide → Load từ {loadGroup}");
+        //        }
+
+        //        _logger.LogInformation($"Load - Display: {displayGroup} | Query: {loadGroup}");
+
+        //        // ==================== LOAD DỮ LIỆU ====================
+        //        List<ProductParameterDetailViewModel> result;
+
+        //        if (loadGroup == "DEPOSITPENAL")
+        //        {
+        //            // Load Penal Tide 
+        //            var rawData = await _dbContext.ProductParameters
+        //                .Where(p => p.ProductGroupCode == "DEPOSITPENAL")
+        //                .ToListAsync();
+
+        //            var latestData = rawData
+        //                .GroupBy(p => new { p.ProductCode, p.ProductName })
+        //                .Select(g => g.OrderByDescending(x => x.EffectedDate).FirstOrDefault())
+        //                .Where(x => x != null)
+        //                .OrderBy(x => x.ProductCode)
+        //                .ToList();
+
+        //            result = CreateDetail(latestData, displayGroup);
+        //        }
+        //        else
+        //        {
+        //            // CASA và TIDE 
+        //            var viewData = await _dbContext.Set<ProductParameterWithDefaultView>()
+        //                .Where(v => v.ProductGroupCode == loadGroup)
+        //                .ToListAsync();
+
+        //            var latestData = viewData
+        //                .GroupBy(v => new { v.ProductCode, v.ProductName })
+        //                .Select(g => g.OrderByDescending(v => v.CurrentEffectedDate ?? DateTime.MinValue).FirstOrDefault())
+        //                .Where(x => x != null)
+        //                .OrderBy(x => x.ProductCode)
+        //                .ToList();
+
+        //            result = CreateDetailFromView(latestData, displayGroup);
+        //        }
+
+        //        _logger.LogInformation($"Trả về grid {result.Count} dòng cho {displayGroup}");
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"Lỗi Load - {productGroupCode}");
+        //        throw;
+        //    }
+        //}
+
+        public async Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(string productGroupCode,
+    DateTime effectedDate,
+    decimal defaultMinSpread,
+    decimal defaultMaxSpread)
         {
             try
             {
-                string displayGroup = productGroupCode;  
-                string loadGroup = productGroupCode;      
+                string displayGroup = productGroupCode;
+                string loadGroup = productGroupCode;
 
                 // Xử lý Penal Tide
                 if (productGroupCode == "PENAL" || productGroupCode == "DEPOSITPENAL" || productGroupCode == "PENALTIDE")
                 {
                     var hasPenalData = await _dbContext.ProductParameters
                         .AnyAsync(p => p.ProductGroupCode == "DEPOSITPENAL");
-
                     loadGroup = hasPenalData ? "DEPOSITPENAL" : "TIDE";
-                    _logger.LogInformation($"Penal Tide → Load từ {loadGroup}");
                 }
 
-                _logger.LogInformation($"Load - Display: {displayGroup} | Query: {loadGroup}");
-
-                // ==================== LOAD DỮ LIỆU ====================
                 List<ProductParameterDetailViewModel> result;
 
                 if (loadGroup == "DEPOSITPENAL")
                 {
-                    // Load Penal Tide 
                     var rawData = await _dbContext.ProductParameters
                         .Where(p => p.ProductGroupCode == "DEPOSITPENAL")
                         .ToListAsync();
@@ -652,11 +714,10 @@ namespace VBSPOSS.Services.Implements
                         .OrderBy(x => x.ProductCode)
                         .ToList();
 
-                    result = CreateDetail(latestData, displayGroup);
+                    result = CreateDetailWithDefault(latestData, displayGroup, defaultMinSpread, defaultMaxSpread);
                 }
                 else
                 {
-                    // CASA và TIDE 
                     var viewData = await _dbContext.Set<ProductParameterWithDefaultView>()
                         .Where(v => v.ProductGroupCode == loadGroup)
                         .ToListAsync();
@@ -668,18 +729,75 @@ namespace VBSPOSS.Services.Implements
                         .OrderBy(x => x.ProductCode)
                         .ToList();
 
-                    result = CreateDetailFromView(latestData, displayGroup);
+                    result = CreateDetailFromViewWithDefault(latestData, displayGroup, defaultMinSpread, defaultMaxSpread);
                 }
 
-                _logger.LogInformation($"Trả về grid {result.Count} dòng cho {displayGroup}");
+                _logger.LogInformation($"LoadProductsForCreateAsync: Trả về {result.Count} sản phẩm cho {displayGroup} | Default Min={defaultMinSpread}, Max={defaultMaxSpread}");
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Lỗi Load - {productGroupCode}");
+                _logger.LogError(ex, $"Lỗi LoadProductsForCreateAsync - {productGroupCode}");
                 throw;
             }
         }
+
+        // Hàm mới - Dùng cho DEPOSITPENAL
+        private List<ProductParameterDetailViewModel> CreateDetailWithDefault(
+            List<ProductParameter> list,
+            string displayGroup,
+            decimal defMinSpread,
+            decimal defMaxSpread)
+        {
+            return list.Select((p, i) => new ProductParameterDetailViewModel
+            {
+                STT = i + 1,
+                ProductGroupCode = displayGroup,
+                ProductCode = p.ProductCode,
+                ProductName = p.ProductName ?? "",
+                CurrentApplyPos = p.ApplyPosFlag == 1 ? "X" : "",
+                CurrentApplyPosFlag = p.ApplyPosFlag == 1,
+                CurrentMinSpread = p.MinInterestRateSpread,
+                CurrentMaxSpread = p.MaxInterestRateSpread,
+
+                // Áp dụng giá trị mặc định từ form
+                NewApplyPosFlag = p.ApplyPosFlag == 1,           // giữ nguyên theo hiện tại
+                NewMinSpread = defMinSpread,                     // ← Quan trọng
+                NewMaxSpread = defMaxSpread,                     // ← Quan trọng
+                Remark = p.Remark ?? ""
+            }).ToList();
+        }
+
+        // Hàm mới - Dùng cho CASA / TIDE
+        private List<ProductParameterDetailViewModel> CreateDetailFromViewWithDefault(
+            List<ProductParameterWithDefaultView> list,
+            string displayGroup,
+            decimal defMinSpread,
+            decimal defMaxSpread)
+        {
+            return list.Select((v, i) => new ProductParameterDetailViewModel
+            {
+                STT = i + 1,
+                ProductGroupCode = displayGroup,
+                ProductCode = v.ProductCode,
+                ProductName = v.ProductName ?? "",
+                CurrentApplyPos = v.ApplyPosFlag == 1 ? "X" : "",
+                CurrentApplyPosFlag = v.ApplyPosFlag == 1,
+                CurrentMinSpread = v.CurrentMinSpread ?? 0m,
+                CurrentMaxSpread = v.CurrentMaxSpread ?? 0m,
+
+                // Áp dụng giá trị mặc định từ form
+                NewApplyPosFlag = v.ApplyPosFlag == 1,
+                NewMinSpread = defMinSpread,                     // ← Quan trọng
+                NewMaxSpread = defMaxSpread,                     // ← Quan trọng
+                Remark = v.CurrentRemark ?? ""
+            }).ToList();
+        }
+
+
+
+
+
 
         // 
         private List<ProductParameterDetailViewModel> CreateDetail(List<ProductParameter> list, string displayGroup)
@@ -972,7 +1090,7 @@ namespace VBSPOSS.Services.Implements
             foreach (var item in items)
             {
                 item.Status = ConfigStatus.AUTHORIZED.Value;
-            //    item.StatusDesc = "Đã duyệt";
+           
                 item.ApproverBy = approver;
                 item.ApprovalDate = DateTime.Now;
                 item.ModifiedBy = approver;
@@ -996,8 +1114,8 @@ namespace VBSPOSS.Services.Implements
 
             foreach (var item in items)
             {
-                item.Status = ConfigStatus.REJECTED.Value;   // Bạn cần định nghĩa REJECTED trong ConfigStatus
-              //  item.StatusDesc = "Từ chối";
+                item.Status = ConfigStatus.REJECTED.Value;  
+             
                 item.ApproverBy = approver;
                 item.ApprovalDate = DateTime.Now;
                 item.Remark = !string.IsNullOrEmpty(rejectReason)

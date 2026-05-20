@@ -70,9 +70,11 @@
     //     autoHideAfter: 5000
     // }).data("kendoNotification");
 
-        function loadProductGrid() {
+           function loadProductGrid() {
         var groupCode = $("#ProductGroupCode").val();
         var effectedDate = $("#EffectedDate").data("kendoDatePicker").value();
+        var defaultMin = $("#DefaultMinSpread").data("kendoNumericTextBox").value();
+        var defaultMax = $("#DefaultMaxSpread").data("kendoNumericTextBox").value();
 
         if (!groupCode || groupCode === "") {
             alert("Vui lòng chọn phân loại!");
@@ -82,25 +84,37 @@
             alert("Vui lòng chọn ngày hiệu lực!");
             return;
         }
+        if (defaultMin == null || defaultMax == null) {
+            alert("Vui lòng nhập LSĐC tối thiểu và tối đa (mặc định)!");
+            return;
+        }
 
         var effectedDateStr = kendo.toString(effectedDate, "dd/MM/yyyy");
 
         $.ajax({
             url: '@Url.Action("LoadProductsForCreate", "ProductParameter")',
             type: "POST",
-            data: JSON.stringify({ productGroupCode: groupCode, effectedDate: effectedDateStr }),
+            data: JSON.stringify({
+                productGroupCode: groupCode,
+                effectedDate: effectedDateStr,
+                defaultMinSpread: defaultMin,
+                defaultMaxSpread: defaultMax
+            }),
             contentType: "application/json; charset=utf-8",
             headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
             success: function (response) {
-                if (response && response.length) {
+                if (response && response.length > 0) {
                     var grid = $("#gridCreateDetail").data("kendoGrid");
-                    if (grid) {
-                        var commonRemark = $("#Remark").val().trim();
-                        response.forEach(item => item.Remark = commonRemark);
-                        grid.dataSource.data(response);
-                    }
+                    var commonRemark = $("#Remark").val().trim();
+
+                    response.forEach(item => {
+                        item.Remark = commonRemark;
+                    });
+
+                    grid.dataSource.data(response);
+                    alert("Đã tải " + response.length + " sản phẩm thành công!");
                 } else {
-                    alert("Không có dữ liệu!");
+                    alert("Không có dữ liệu sản phẩm nào!");
                 }
             },
             error: function (xhr) {
@@ -108,6 +122,8 @@
             }
         });
     }
+
+
     // function saveBatch() {
     //     var grid = $("#gridCreateDetail").data("kendoGrid");
     //     if (!grid) {
@@ -225,31 +241,76 @@
 <div class="container-fluid">
     <form id="createForm" class="form-horizontal">
         <div class="row form-group">
-            <div class="col-md-4">
+            <!-- Phân loại -->
+            <div class="col-md-2">
                 <label>Phân loại <span style="color:red;">*</span></label>
                 @(Html.Kendo().DropDownListFor(m => m.ProductGroupCode)
                     .BindTo(Model.ProductGroupOptions)
-                    .OptionLabel("--- Chọn phân loại ---")
-                                .HtmlAttributes(new { required = "required", style = "width:250px; height: 28px !important;" })
+                    .OptionLabel("- Chọn phân loại -")
+                    .HtmlAttributes(new { required = "required", style = "width:100%; height: 28px !important;" })
                     )
             </div>
 
-            <div class="col-md-3">
+            <!-- Ngày hiệu lực -->
+            <div class="col-md-2">
                 <label>Ngày hiệu lực <span style="color:red;">*</span></label>
                 @(Html.Kendo().DatePickerFor(m => m.EffectedDate)
                     .Format("dd/MM/yyyy")
                     .Min(DateTime.Today.AddDays(1))
                     .Value(Model.EffectedDate)
-                    .HtmlAttributes(new { required = "required", style = "width:150px;" })
+                    .HtmlAttributes(new { required = "required", style = "width:100%;" })
                     )
             </div>
 
-            <div class="col-md-5" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <!-- === Ô MỚI: Giá trị mặc định cho Cấu hình MỚI === -->
+            <div class="col-md-2">
+                <label>LSĐC Tối thiểu  <span style="color:red;">*</span></label>
+                @(Html.Kendo().NumericTextBoxFor(m => m.DefaultMinSpread)
+                    .Format("{0:N2}")
+                    .Decimals(2)
+                    .Min(0)
+                    .HtmlAttributes(new { style = "width:100%;", id = "DefaultMinSpread" })
+                    )
+            </div>
+
+            <div class="col-md-2">
+                <label>LSĐC Tối đa  <span style="color:red;">*</span></label>
+                @(Html.Kendo().NumericTextBoxFor(m => m.DefaultMaxSpread)
+                    .Format("{0:N2}")
+                    .Decimals(2)
+                    .Min(0)
+                    .HtmlAttributes(new { style = "width:100%;", id = "DefaultMaxSpread" })
+                    )
+            </div>
+
+            <div class="col-md-2">
+                <label>Ghi chú <span style="color:red;">*</span></label>
+                @(Html.Kendo().TextAreaFor(m => m.Remark)
+                    .Rows(3)
+                    .HtmlAttributes(new { style = "width:150px !important; resize:vertical;" })
+                    )
+            </div>
+            <div class="col-md-2" style="padding-top:30px">
+                <label> </label>
+
+                @(Html.Kendo().Button()
+                    .Name("btnLoadList")
+                    .Content("Tải danh sách")
+                    .Events(e => e.Click("loadProductGrid"))
+                    .HtmlAttributes(new { type = "button", style = "width: 110px; height: 25px; font-weight: bold; color: blue;" })
+                    .ImageUrl(Url.Content("~/images/tim_kiem.png"))
+                    )
+            </div>
+           
+           
+       
+
+            @* <div class="col-md-3" style="display: flex; justify-content: space-between; align-items: flex-end;">
 
                 <label>Ghi chú</label>
                 @(Html.Kendo().TextAreaFor(m => m.Remark)
                     .Rows(3)
-                                .HtmlAttributes(new { style = "width:250px !important; resize:vertical;" })
+                                .HtmlAttributes(new { style = "width:150px !important; resize:vertical;" })
                     )
 
                 
@@ -261,7 +322,7 @@
                                 .ImageUrl(Url.Content("~/images/tim_kiem.png"))
                                 )
                 
-            </div>
+            </div> *@
 
             
         </div>

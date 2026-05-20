@@ -87,8 +87,19 @@
         margin: 0 4px !important; 
         border: none !important;
     }
+
+    /* Làm icon lịch to và dễ click hơn */
+    .k-datepicker .k-input-icon {
+        width: 32px !important;
+        font-size: 18px !important;
+    }
+
+    .k-datepicker input {
+        padding-right: 40px !important;
+    }
 </style>
 <script>
+
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
 
     var notification = $("#notification").kendoNotification({
@@ -277,6 +288,13 @@
             if (userPermission.ReportPermissionFlag == 0) $(this).find(".k-grid-Approval").hide();
         });
     }
+
+
+
+        // Tự động mở lịch khi click vào DatePicker
+    $(document).on('focus', '#EffectDateBegin_Find, #EffectDateEnd_Find', function () {
+        $(this).data("kendoDatePicker").open();
+    });
 </script>
 
 
@@ -476,29 +494,57 @@
             .HtmlAttributes(new { placeholder = "Nhập mã SP", style = "width: 150px;" })
             )
         <!-- Phần Ngày hiệu lực -->
-        <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top: 10px;padding-right: 10px; margin-left: 20px;">
+       @*  <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top: 10px;padding-right: 10px; margin-left: 20px;">
             Ngày hiệu lực
         </label>
         @(Html.Kendo().DatePicker()
             .Name("EffectDateBegin_Find")
             .Format("dd/MM/yyyy")
             .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Từ ngày" })
-            .Value(DateTime.Today.AddMonths(-2))
+            .Value(DateTime.Today.AddMonths(-1))
             )
         <span style="color: #ca8f5c; padding: 0 8px;">&nbsp;-&nbsp;</span>
         @(Html.Kendo().DatePicker()
             .Name("EffectDateEnd_Find")
             .Format("dd/MM/yyyy")
             .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Đến ngày" })
-            .Value(DateTime.Today.AddDays(2))
+            .Value(DateTime.Today.AddMonths(1))
             )
-@* 
-        @(Html.Kendo().Button()
-            .Name("btnSearch")
-            .Content("Tìm kiếm")
-            .Events(e => e.Click("onSearch"))
-            .HtmlAttributes(new { @class = "k-button k-primary", style = "margin-left: 10px;" })
-            ) *@
+ *@
+
+
+        <!-- Ngày hiệu lực -->
+       
+
+
+
+        <label class="lbcontrol" style="color: navy; text-align:right; width:115px; padding-top: 8px; padding-right: 8px; margin-left: 25px;">
+            Ngày hiệu lực
+        </label>
+
+        @(Html.Kendo().DatePicker()
+            .Name("EffectDateBegin_Find")
+            .Format("dd/MM/yyyy")
+            .Value(DateTime.Today.AddMonths(-1))
+            .HtmlAttributes(new
+            {
+                style = "background-color: white !important; width: 155px !important; cursor: pointer;",
+                placeholder = "Từ ngày"
+            })
+            )
+
+        <span style="color: #ca8f5c; font-size: 18px; padding-top: 8px;">&nbsp;-&nbsp;</span>
+
+        @(Html.Kendo().DatePicker()
+            .Name("EffectDateEnd_Find")
+            .Format("dd/MM/yyyy")
+            .Value(DateTime.Today.AddMonths(1))
+            .HtmlAttributes(new
+            {
+                style = "background-color: white !important; width: 155px !important; cursor: pointer;",
+                placeholder = "Đến ngày"
+            })
+            )
 
         @(Html.Kendo().Button()
             .Name("btnSearch")
@@ -534,6 +580,7 @@
         //columns.Bound(p => p.OrderNo).Title("STT").Width(60);
         columns.Bound(p => p.ProductGroupCode).Title("Phân loại").Width(80);
         columns.Bound(p => p.EffectedDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(120);
+        columns.Bound(p => p.StatusDesc).Title("Trạng thái").Width(110);
         columns.Bound(p => p.Status).Title("Trạng thái mã").Hidden();
      
        
@@ -575,7 +622,7 @@
                .Title("Ghi chú")
                .Width(120);
      
-        columns.Bound(p => p.StatusDesc).Title("Trạng thái").Width(110);
+      //  columns.Bound(p => p.StatusDesc).Title("Trạng thái").Width(110);
      
     })
     .ToolBar(toolbar =>
