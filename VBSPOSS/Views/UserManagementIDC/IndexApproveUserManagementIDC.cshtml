@@ -138,7 +138,7 @@
         padding-left: 2px;
         padding-right: 2px;
     }
-    , 
+    
 </style>
 <script>
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
@@ -224,11 +224,11 @@
     var dataChange = false;
 
     function onClose() {
-        var wndApproval = mainWindowApproval.data("kendoWindow");
-        if (wndApproval) {
-            wndApproval.content("");
-            wndApproval.destroy();
-        }
+        // var wndApproval = mainWindowApproval.data("kendoWindow");
+        // if (wndApproval) {
+        //     wndApproval.content("");
+        //     wndApproval.destroy();
+        // }
         refreshGridSumRequirementUserIDC();
     }
 
