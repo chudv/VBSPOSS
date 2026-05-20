@@ -3996,49 +3996,49 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        /// <summary>
-        /// Hàm lấy danh sách thông tin tệp tin đính kèm theo các điều kiện truyền vào (nếu có)
-        /// </summary>
-        /// <param name="pFileId">Chỉ số khóa bản ghi File đính kèm</param>
-        /// <param name="pThamChieuId">Chỉ số xác định Tham chiếu có file đính kèm (Id của phân hệ có file đính kèm)</param>
-        /// <param name="pThamChieuHT">Tiêu đề/Số hiệu/Nội dung của thông tinTham chiếu có file đính kèm (Ví dụ QĐ Khen thưởng thì đây là tiêu đề quyết định cần tìm)</param>
-        /// <param name="pPhanLoai">Mã hiệu phan loại file đính kèm</param>
-        /// <param name="pTenFile">Tên file lúc đính kèm (Tên nguyên bản)</param>
-        /// <param name="pTenFileMoi">Tên file mới của file đính kèm theo quy ước</param>
-        /// <param name="pMoTa">Mô tả file đính kèm</param>
-        /// <param name="pTrangThai">Trạng thái bản ghi.Nếu truyền '0' lấy tất; Nếu truyền '1' lấy bản ghi đang mở</param>
-        /// <returns>Danh sách thông tin file đính kèm</returns>
-        public List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai)
-        {
-            var answer = new List<AttachedFileInfo>();
-            try
-            {
-                int iCount = 0;
-                var profileAttachFileTMP = _dbContext.AttachedFileInfos.Where(w => w.FileId != 0 && (pFileId == 0 || w.FileId == pFileId)
-                                            && (pDocumentId == -1 || w.DocumentId == pDocumentId)
-                                            && (string.IsNullOrEmpty(pTenFile) || w.FileName == pTenFile)
-                                            && (string.IsNullOrEmpty(pTenFileMoi) || w.FileNameNew == pTenFileMoi)
-                                            && (string.IsNullOrEmpty(pMoTa) || w.DocumentNumber.Contains(pMoTa))
-                                            && (w.CreatedDate >= DateTime.Now.AddDays(-1) && w.CreatedDate <= DateTime.Now.AddDays(1))
-                                            && (pTrangThai == -1 || w.Status == pTrangThai)
-                                        ).OrderBy(o => o.DocumentNumber).ThenBy(o => o.FileNameNew).ToList();
-                List<AttachedFileInfo> profileAttachFiles = new List<AttachedFileInfo>();
-                profileAttachFiles = profileAttachFileTMP;
+        ///// <summary>
+        ///// Hàm lấy danh sách thông tin tệp tin đính kèm theo các điều kiện truyền vào (nếu có)
+        ///// </summary>
+        ///// <param name="pFileId">Chỉ số khóa bản ghi File đính kèm</param>
+        ///// <param name="pThamChieuId">Chỉ số xác định Tham chiếu có file đính kèm (Id của phân hệ có file đính kèm)</param>
+        ///// <param name="pThamChieuHT">Tiêu đề/Số hiệu/Nội dung của thông tinTham chiếu có file đính kèm (Ví dụ QĐ Khen thưởng thì đây là tiêu đề quyết định cần tìm)</param>
+        ///// <param name="pPhanLoai">Mã hiệu phan loại file đính kèm</param>
+        ///// <param name="pTenFile">Tên file lúc đính kèm (Tên nguyên bản)</param>
+        ///// <param name="pTenFileMoi">Tên file mới của file đính kèm theo quy ước</param>
+        ///// <param name="pMoTa">Mô tả file đính kèm</param>
+        ///// <param name="pTrangThai">Trạng thái bản ghi.Nếu truyền '0' lấy tất; Nếu truyền '1' lấy bản ghi đang mở</param>
+        ///// <returns>Danh sách thông tin file đính kèm</returns>
+        //public List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai)
+        //{
+        //    var answer = new List<AttachedFileInfo>();
+        //    try
+        //    {
+        //        int iCount = 0;
+        //        var profileAttachFileTMP = _dbContext.AttachedFileInfos.Where(w => w.FileId != 0 && (pFileId == 0 || w.FileId == pFileId)
+        //                                    && (pDocumentId == -1 || w.DocumentId == pDocumentId)
+        //                                    && (string.IsNullOrEmpty(pTenFile) || w.FileName == pTenFile)
+        //                                    && (string.IsNullOrEmpty(pTenFileMoi) || w.FileNameNew == pTenFileMoi)
+        //                                    && (string.IsNullOrEmpty(pMoTa) || w.DocumentNumber.Contains(pMoTa))
+        //                                    && (w.CreatedDate >= DateTime.Now.AddDays(-1) && w.CreatedDate <= DateTime.Now.AddDays(1))
+        //                                    && (pTrangThai == -1 || w.Status == pTrangThai)
+        //                                ).OrderBy(o => o.DocumentNumber).ThenBy(o => o.FileNameNew).ToList();
+        //        List<AttachedFileInfo> profileAttachFiles = new List<AttachedFileInfo>();
+        //        profileAttachFiles = profileAttachFileTMP;
 
-                foreach (var item in profileAttachFiles)
-                {
-                    iCount++;
-                    AttachedFileInfo objItem = new AttachedFileInfo();
-                    objItem = _mapper.Map<AttachedFileInfo>(item);
-                    answer.Add(objItem);
-                }
-                return answer;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        foreach (var item in profileAttachFiles)
+        //        {
+        //            iCount++;
+        //            AttachedFileInfo objItem = new AttachedFileInfo();
+        //            objItem = _mapper.Map<AttachedFileInfo>(item);
+        //            answer.Add(objItem);
+        //        }
+        //        return answer;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
         
         /// <summary>
         /// Hàm thực hiện gọi API Insert dữ liệu noti vào bảng VBSP_NOTIFICATION_DATA

@@ -217,6 +217,8 @@
                 row.find(".btn-approval").hide(); 
                 row.find(".btn-auth").show();
             }
+            // row.find(".btn-approval").hide();
+            //     row.find(".btn-auth").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
@@ -636,7 +638,7 @@
                             title = "Xem chi tiết thông tin yêu cầu thêm mới/thay đổi thông tin người dùng Intellect iDC",
                             @class = "btn-view"
                         });
-                    }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(90).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: left;" });
@@ -969,12 +971,28 @@
     });
 
     //Hàm thực hiện gọi In tờ trình
-    $("#btnPrintToTrinh").click(function () {     
-        if (listApprovalData.length === 0) {
-            alert("Bạn chưa chọn danh sách yêu cầu về tài khoản người dùng Intellect iDC. Vui lòng chọn trình duyệt/Phê duyệt!");
+    $("#btnPrintToTrinh").click(function () {
+        var listUserIdChoiceApprovalTmp = [];
+
+        var grid = $("#gridMainIDCApproval").data("kendoGrid");
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+            var dataTempRow = {
+                    Id: dataItem.Id,
+                    UserId: dataItem.UserId,
+                    Status: dataItem.Status
+                };
+            listUserIdChoiceApprovalTmp.push(dataTempRow);
+        });
+       
+        if (listUserIdChoiceApprovalTmp.length === 0) {
+            alert("Bạn chưa chọn danh sách yêu cầu về tài khoản người dùng Intellect iDC để in tờ trình. Vui lòng chọn trình duyệt/Phê duyệt!");
             return;
         }
-        var listPrintData = listApprovalData.filter(function(item) {
+        var listPrintData = listUserIdChoiceApprovalTmp.filter(function(item) {
             return Number(item.Status) === 1 || Number(item.Status) === 5 || Number(item.Status) === 2;
         });
 
@@ -1051,9 +1069,6 @@
                 };
             listUserIdChoiceApprovalTmp.push(dataTempRow);
         });
-            
-
-        
         if (listUserIdChoiceApprovalTmp.length === 0) {
             alert("Bạn chưa chọn danh sách yêu cầu để lưu thông tin trình duyệt/phê duyệt người dùng IDC. Vui chọn trình duyệt/phê duyệt!");
             return;
@@ -1068,7 +1083,7 @@
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
 
         var fileInput = $("#fileUpload")[0];
-        alert(uploadedFiles.length );
+        
         //var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
         var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
@@ -1098,8 +1113,7 @@
         // append file
         if (fileUploadUserIDC) {
             //formData.append("pFileUpload", fileUploadUserIDC);
-            // Append nhiều file (quan trọng)
-            alert(fileUploadUserIDC.length);
+            // Append nhiều file (quan trọng)           alert(fileUploadUserIDC.length);
             for (let i = 0; i < fileUploadUserIDC.length; i++) {
                 formData.append("pFileUpload", fileUploadUserIDC[i].file);   // Backend nhận nhiều file cùng tên
             }
@@ -1150,29 +1164,19 @@
 
 
     $("#btnChooseFile").click(function () {
-
         $("#fileUpload").click();
-
     });
 
     $("#fileUpload").on("change", function () {
-
         if (!this.files || this.files.length === 0) {
-
             return;
         }
-
         for (let i = 0; i < this.files.length; i++) {
-
             let file = this.files[i];
-
             let fileName = file.name.toLowerCase();
-
             // check pdf
             if (!fileName.endsWith(".pdf")) {
-
-                alert("File " + file.name + " không phải PDF");
-
+                alert("File bạn chọn " + file.name + " không phải định dạng PDF. Vui lòng chọn lại!");
                 continue;
             }
 
@@ -1182,15 +1186,8 @@
             if (exists) {
                 continue;
             }
-
             let fileUrl = URL.createObjectURL(file);
-
-            uploadedFiles.push({
-                name: file.name,
-                url: fileUrl,
-                file: file
-            });
-
+            uploadedFiles.push({ name: file.name, url: fileUrl, file: file});
             renderFileItem(file.name, fileUrl);
         }
 
@@ -1199,7 +1196,6 @@
     });
 
     function renderFileItem(fileName, fileUrl) {
-
         let html =
             `
             <div class="file-item"
@@ -1217,24 +1213,19 @@
                 </span>
 
                 <div>
-
                     <button type="button"
                             class="btn btn-info btn-sm btn-view-file"
                             data-url="${fileUrl}">
                         👁
                     </button>
-
                     <button type="button"
                             class="btn btn-danger btn-sm btn-remove-file"
                             data-file="${fileName}">
                         ✖
                     </button>
-
                 </div>
-
             </div>
             `;
-
         $("#fileList").append(html);
     }
 

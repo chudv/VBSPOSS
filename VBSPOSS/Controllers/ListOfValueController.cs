@@ -1727,7 +1727,44 @@ namespace VBSPOSS.Controllers
             return Json(data);
         }
 
+        /// <summary>
+        /// Hàm lấy danh sách files theo chuỗi Id của file truyền vào
+        /// </summary>
+        /// <param name="pListFileId">Chuỗi File Id</param>
+        /// <param name="pFileType">Loại file</param>
+        /// <param name="pDelimiter">Ký tự phân cách trong chuỗi id truyền vào</param>
+        /// <returns>Danh sách file trong bảng AttachedFileInfo</returns>
+        public JsonResult GetListAttachedFileInfoForDocumentId(string pListFileId, string pFileType, string pDelimiter)
+        {
+            ArrayList data = new ArrayList();
+            if (!string.IsNullOrEmpty(pListFileId))
+            {
+                string[] arlFiles = Utilities.Splip_Strings(pListFileId, pDelimiter);
+                if (arlFiles.Length > 0)
+                {
+                    for (int j = 0; j < arlFiles.Length; j++)
+                    {
+                        long iFileIdTmp = string.IsNullOrEmpty(arlFiles[j]) ? 0 : Convert.ToInt64(arlFiles[j]);
 
+                        var listAttachedFileLoads = _attachedFileService.GetListAttachedFileInfoSearch(iFileIdTmp, 0, pFileType, "", "");
+                        for (int i = 0; i < listAttachedFileLoads.Count; i++)
+                        {
+                            data.Add(new 
+                                { 
+                                        FileId = listAttachedFileLoads[i].FileId,
+                                        DocumentId = listAttachedFileLoads[i].DocumentId,
+                                        FileName = listAttachedFileLoads[i].FileName,
+                                        FileNameNew = listAttachedFileLoads[i].FileNameNew,
+                                        ContentDescription = listAttachedFileLoads[i].ContentDescription,
+                                        CircularRefNum = listAttachedFileLoads[i].CircularRefNum,
+                                        DocumentNumber = listAttachedFileLoads[i].DocumentNumber
+                                });
+                        }
+                    }
+                }
+            }
+            return Json(data);
+        }
 
         [HttpGet]
         public JsonResult GetScriptExecutionStatus()
