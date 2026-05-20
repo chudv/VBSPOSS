@@ -864,7 +864,8 @@ namespace VBSPOSS.Services.Implements
                     }
 
                     objUserManagementUpdNew.BusinessDate = pUserManagementUpd.BusinessDate.Date;
-
+                    objUserManagementUpdNew.ReasonReject = string.IsNullOrEmpty(pUserManagementUpd.ReasonReject) ? "" : pUserManagementUpd.ReasonReject;
+                    objUserManagementUpdNew.ListFileId = string.IsNullOrEmpty(pUserManagementUpd.ListFileId) ? "" : pUserManagementUpd.ListFileId;
                     objUserManagementUpdNew.CreatedBy = pUserNameUpd;
                     objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
                     objUserManagementUpdNew.ModifiedBy = pUserNameUpd;
@@ -1033,9 +1034,9 @@ namespace VBSPOSS.Services.Implements
         /// </summary>
         /// <param name="pListIdUpdate">Danh sách Id bản ghi trong UserManagementIDC cần cập nhật DocumentId</param>
         /// <param name="pUserName">Người thực hiện</param>
-        /// <param name="pFileId">Chỉ số xác định FileId (DocumentId) cần cập nhật vào bản ghi UserManagementIDC</param>
+        /// <param name="pFileId">Chuỗi Chỉ số xác định danh sách FileId (DocumentId) cần cập nhật vào bản ghi UserManagementIDC</param>
         /// <returns>Số lượng bản ghi được cập nhật </returns>
-        public async Task<int> UpdateDocumentIdUserManagementIDC(List<long> pListIdUpdate, string pUserName, long pFileId)
+        public async Task<int> UpdateDocumentIdUserManagementIDC(List<long> pListIdUpdate, string pUserName, string pListFileId)
         {
             int iCountUpdateDocument = 0, iSaveChanges = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
@@ -1051,7 +1052,7 @@ namespace VBSPOSS.Services.Implements
                     var objUserManagementIDCUpdDocumentId = listUserManagementIDCUpdDocumentId.FirstOrDefault(x => x.Id == itemIdUpdate);
                     if (objUserManagementIDCUpdDocumentId != null && !string.IsNullOrEmpty(objUserManagementIDCUpdDocumentId.UserId))
                     {
-                        objUserManagementIDCUpdDocumentId.DocumentId = (pFileId != 0) ? pFileId : objUserManagementIDCUpdDocumentId.DocumentId;
+                        objUserManagementIDCUpdDocumentId.ListFileId = !string.IsNullOrEmpty(pListFileId) ? pListFileId : objUserManagementIDCUpdDocumentId.ListFileId;
                         objUserManagementIDCUpdDocumentId.ModifiedDate = dCurrentDateTmp;
                         objUserManagementIDCUpdDocumentId.ModifiedBy = pUserName;
                         iSaveChanges = await _dbContext.SaveChangesAsync();
@@ -1064,9 +1065,9 @@ namespace VBSPOSS.Services.Implements
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"UpdateDocumentIdUserManagementIDC('{pListIdUpdate.Count.ToString()}', '{pUserName}', {pFileId.ToString()}) => Error: {ex.Message}");
+                Console.WriteLine($"UpdateDocumentIdUserManagementIDC('{pListIdUpdate.Count.ToString()}', '{pUserName}', '{pListFileId}') => Error: {ex.Message}");
                 throw new Exception($"Lỗi gọi hàm cập nhật DocumentId vào bảng UserManagementIDC " +
-                                        $"UpdateDocumentIdUserManagementIDC('{pListIdUpdate.Count.ToString()}', '{pUserName}', {pFileId.ToString()}) => Error: {ex.Message}", ex);
+                                        $"UpdateDocumentIdUserManagementIDC('{pListIdUpdate.Count.ToString()}', '{pUserName}', '{pListFileId}') => Error: {ex.Message}", ex);
             }
             return iCountUpdateDocument;
 
@@ -1129,11 +1130,12 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pStartDateEnd">Ngày bắt đầu - Kết thúc. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
         /// <param name="pMainPosCode">Mã chi nhánh (Bắt buộc phải truyền)</param>
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
+        /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
         /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
         /// <returns></returns>
         public List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
-            string pPosCode, string pListStatus, int pFlagCall)
+            string pPosCode, int pUserGrade, string pListStatus, int pFlagCall)
         {
             var answer = new List<UserManagementIDCSumRequirementViewModel>();
             try
@@ -1148,10 +1150,12 @@ namespace VBSPOSS.Services.Implements
                 paramPosCode.Value = pPosCode;
                 SqlParameter paramListStatus = new SqlParameter("@pListStatus", SqlDbType.VarChar);
                 paramListStatus.Value = pListStatus;
+                SqlParameter paramUserGrade = new SqlParameter("@pUserGrade", SqlDbType.Int);
+                paramUserGrade.Value = pUserGrade;
                 SqlParameter paramFlagCall = new SqlParameter("@pFlagCall", SqlDbType.Int);
                 paramFlagCall.Value = pFlagCall;
 
-                var listUserManagementIDCSumRequirement = _dbContext.UserManagementIDCSumRequirements.FromSqlRaw($"Exec [dbo].[UserManagementIDC_SumRequirement_GetSearch] @pStartDateBegin,@pStartDateEnd,@pMainPosCode,@pPosCode,@pListStatus,@pFlagCall", paramStartDateBegin, paramStartDateEnd, paramMainPosCode, paramPosCode, paramListStatus, paramFlagCall).ToList();
+                var listUserManagementIDCSumRequirement = _dbContext.UserManagementIDCSumRequirements.FromSqlRaw($"Exec [dbo].[UserManagementIDC_SumRequirement_GetSearch] @pStartDateBegin,@pStartDateEnd,@pMainPosCode,@pPosCode,@pUserGrade,@pListStatus,@pFlagCall", paramStartDateBegin, paramStartDateEnd, paramMainPosCode, paramPosCode, paramUserGrade, paramListStatus, paramFlagCall).ToList();
                 if (listUserManagementIDCSumRequirement != null && listUserManagementIDCSumRequirement.Count != 0)
                 {
                     if (pFlagCall == 1)

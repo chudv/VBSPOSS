@@ -62,10 +62,10 @@ namespace VBSPOSS.Services.Interfaces
         /// Hàm thực hiện cập nhật DocumentId (FileId) vào bảng UserManagementIDC - Cập nhật chỉ số xác định file tờ trình vào bảng UserManagementIDC
         /// </summary>
         /// <param name="pListIdUpdate">Danh sách Id bản ghi trong UserManagementIDC cần cập nhật DocumentId</param>
-        /// <param name="pUserName"></param>
-        /// <param name="pFileId">Chỉ số xác định FileId (DocumentId) cần cập nhật vào bản ghi UserManagementIDC</param>
+        /// <param name="pUserName">Người thực hiện</param>
+        /// <param name="pFileId">Chuỗi Chỉ số xác định danh sách FileId (DocumentId) cần cập nhật vào bản ghi UserManagementIDC</param>
         /// <returns>Số lượng bản ghi được cập nhật </returns>
-        Task<int> UpdateDocumentIdUserManagementIDC(List<long> pListIdUpdate, string pUserName, long pFileId);
+        Task<int> UpdateDocumentIdUserManagementIDC(List<long> pListIdUpdate, string pUserName, string pListFileId);
 
         /// <summary>
         /// Hàm thực hiện Trình duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
@@ -88,11 +88,12 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStartDateEnd">Ngày bắt đầu - Kết thúc. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
         /// <param name="pMainPosCode">Mã chi nhánh (Bắt buộc phải truyền)</param>
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
+        /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
         /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
         /// <returns></returns>
         List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
-            string pPosCode, string pListStatus, int pFlagCall);
+            string pPosCode, int pUserGrade, string pListStatus, int pFlagCall);
 
         /// <summary>
         /// Hàm thực hiện Phê duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
@@ -351,8 +352,5 @@ namespace VBSPOSS.Services.Interfaces
         Task<ExecuteResultModelModel> ChangeOTPRegisterByUserId(string pUserId, int pRegisterFlag);
 
         Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
-
-        //string GetFileNameNewUpload(long pFileId, string pFileType, string pProductGroupCode, DateTime pAttachDate);
-
     }
 }

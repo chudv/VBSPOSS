@@ -1197,16 +1197,16 @@ namespace VBSPOSS.Controllers
                 if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code)
                 {
                     if (pUserManagementIDCUpdate.UserStatus != DefaultValue.UserIDC_UserStatus_Open)
-                        return 17;
+                        return 17;//Đang ở trạng thái Khóa rồi
                 }
                 if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
                 {
                     if (pUserManagementIDCUpdate.UserStatus != DefaultValue.UserIDC_UserStatus_Closed)
-                        return 18;
+                        return 18;//Mở User nhưng trạng thái đang mở rồi
                     if (pUserManagementIDCUpdate.ExpiryDate.Date < pUserManagementIDCUpdate.BusinessDate.Date)
                         return 19;
                     if (pUserManagementIDCUpdate.ExpiryDate.Date < DateTime.Now.Date)
-                        return 20;
+                        return 20;//User cần mở có ngày hết hạn nhỏ hơn ngày hiện thời
                 }
                 if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                 {
@@ -1439,12 +1439,13 @@ namespace VBSPOSS.Controllers
         /// Hàm lấy tổng hợp các yêu cầu nghiệp vụ về tài khoản người dùng Intellect iDC để liệt kê tổng hợp Hàng chờ phê duyệt
         /// </summary>
         /// <returns>Tổng hợp các yêu cầu nghiệp vụ về tài khoản người dùng Intellect iDC </returns>
-        public ActionResult LoadGridData_UserManagementIDC_SumRequirements([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFromStartDate, string pToStartDate, string pFunctionType)
+        public ActionResult LoadGridData_UserManagementIDC_SumRequirements([DataSourceRequest] DataSourceRequest request, string pPosCode,
+                                                    string pFromStartDate, string pToStartDate, string pFunctionType)
         {
             try
             {
                 string sListStatus = $"{StatusBusinessFlow.Status_Created.Value},{StatusBusinessFlow.Status_Modified.Value},{StatusBusinessFlow.Status_Submitted.Value}";
-                
+
                 if (string.IsNullOrEmpty(pFunctionType))
                     pFunctionType = "";
                 if (string.IsNullOrEmpty(pPosCode))
@@ -1456,16 +1457,19 @@ namespace VBSPOSS.Controllers
                 if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS)
                     && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
                 {
-                    if (!string.IsNullOrEmpty(pPosCode) && pPosCode == UserPosCode)
-                    {
-                        sMainPosCode = pPosCode;
-                        pPosCode = "";
-                    }
+                    sMainPosCode = pPosCode;
+                    pPosCode = "";
+                }
+                else if (UserGrade == PosGrade.SUB_POS)
+                {
+                    sMainPosCode = "";
+                    sPosCode = string.IsNullOrEmpty(pPosCode) ? UserPosCode : pPosCode;
                 }
                 DateTime dSystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
                 string sSystemDateText = dSystemDate.ToString(FormatParameters.FORMAT_DATE);
 
-                var listSumRequirementUserIDC = _userManagementIDCService.UserManagementIDC_SumRequirement_GetSearch(pFromStartDate, pToStartDate, sMainPosCode, sPosCode, sListStatus, 1);
+                var listSumRequirementUserIDC = _userManagementIDCService.UserManagementIDC_SumRequirement_GetSearch(pFromStartDate, pToStartDate, sMainPosCode,
+                                sPosCode, UserGrade, sListStatus, 1);
                 return Json(listSumRequirementUserIDC.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -1518,6 +1522,18 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_POS"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+
+            // Hoặc cách khác qua RouteData
+            var controllerFromRoute = RouteData.Values["controller"]?.ToString();
+            var actionFromRoute = RouteData.Values["action"]?.ToString();
+            SetPermitData(actionFromRoute, controllerFromRoute);
+
+            RolePermissionModel userPermission = UserPermission;
+
+            string sRoleUserLoad = UserRole.ToString();
+
+            TempData["Role"] = sRoleUserLoad;
+            TempData.Put("UserPermission", userPermission);
 
             return PartialView(sNameView, objPosUserIDCManagement);
         }
@@ -1588,7 +1604,7 @@ namespace VBSPOSS.Controllers
         /// <returns></returns>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdateApprovalOrAuthorize([DataSourceRequest] DataSourceRequest request, string pFlagCall, string pListApprovalData,
-                    IFormFile pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate)
+                    IFormFile pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate)
         {
             List<long> saveFileStatus = null;
             string sListUserId = "", sListId = "";
@@ -1790,13 +1806,14 @@ namespace VBSPOSS.Controllers
                 }
                 if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
                 {
-                    var listIdUpdateStatus = await _userManagementIDCService.UpdateStatusApproveUserManagementIDC(listData, pFunctionType, pSystemDate, UserName, pFlagCall);
-                    if (listIdUpdateStatus != null && listIdUpdateStatus.Count != 0)
+                    var listIdAuthorize = await _userManagementIDCService.SaveAuthorizeUserManagementIDC(listData, pFunctionType, pSystemDate, pBusinessDate, UserName, UserGrade, pFlagCall);
+                    if (listIdAuthorize != null && listIdAuthorize.Count != 0)
                         resultSaveUpdate = "0";
                     else resultSaveUpdate = "-2";
                 }
                 if (pFileUpload != null && pFileUpload.Length > 0)
                 {
+                    #region --- Cập nhật thông tin file đính kèm nếu có vào bảng AttachedFileInfo và Copy file lên Server ---
                     string sPathFileUpload = Common.UploadDirFileDocument.Replace("~", "").Replace("/", @"\") + @"\";
                     var sUploadPathTemp = Path.Combine(Directory.GetCurrentDirectory(), sPathFileUpload, "ToTrinh");
                     long iDocumentIdTmp = string.IsNullOrEmpty(pMainPosCode) ? long.Parse(pPosCode) : long.Parse(pMainPosCode);
@@ -1804,7 +1821,8 @@ namespace VBSPOSS.Controllers
                     sFunctionTypeTmp = sFunctionTypeTmp.Replace(" ", "_");
                     string sListUserIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListUserId, "~");
                     string sListIdTmp = Utils.Utilities.DeleteChar_FirstAndLast(sListId, ";");
-                    
+                    string sListFileIdUpload = "";
+
                     List<AttachedFileInfo> listFileUpload = new List<AttachedFileInfo>();
                     AttachedFileInfo objFileInfo = new AttachedFileInfo();
                     objFileInfo.FileId = 0;
@@ -1854,8 +1872,9 @@ namespace VBSPOSS.Controllers
                         }
                         //Thực hiện cập nhật DocumentId vào bảng UserManagementIDC
                         var listIdOfUserManagementIDC = StringHelper.ConvertToLongList(sListIdTmp, ';');
-                        iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, iDocumentIdUpd);
+                        iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, sListFileIdUpload);
                     }
+                    #endregion
                 }
                 return new JsonResult(resultSaveUpdate);
            

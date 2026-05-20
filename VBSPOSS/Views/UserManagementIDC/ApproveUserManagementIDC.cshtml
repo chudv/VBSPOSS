@@ -1,7 +1,12 @@
 ﻿@model VBSPOSS.ViewModels.UserManagementIDCViewModel
+@using VBSPOSS.Extensions
 @using VBSPOSS.Models
 @using VBSPOSS.Constants
 
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
 <div id="myPopupApproval"></div>
 
 <style>
@@ -125,6 +130,7 @@
 
 </style>
 <script>
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
     var mainWindowApproval = $("#myPopupApproval");
     var currentPdfUrl = null;
 </script>
@@ -425,7 +431,7 @@
 @Html.Hidden("EventFlag_AuthorizeView", TempData["EventFlag_Authorize"])
 @Html.Hidden("EventFlag_RejectView", TempData["EventFlag_Reject"])
 @Html.Hidden("SystemDateTextApprovalView", TempData["SystemDateText"])
-@Html.Hidden("BusinessDateTextView", TempData["BusinessDateText"])
+@Html.Hidden("BusinessDateTextApprovalView", TempData["BusinessDateText"])
 
 @Html.Hidden("FunctionTypeFlag_ADDNEW_USERView", TempData["FunctionTypeFlag_ADDNEW_USER"])
 @Html.Hidden("FunctionTypeFlag_ResetPasswordView", TempData["FunctionTypeFlag_ResetPassword"])
@@ -619,7 +625,7 @@
                    id="fileUpload"
                    name="fileUpload"
                    hidden
-                   accept="application/pdf" />
+                   accept="application/pdf" multiple />
 
             <!-- nút chọn file -->
             <button type="button"
@@ -654,15 +660,15 @@
         <!-- BÊN PHẢI -->
         <div class="col-md-2 text-right">
             @(Html.Kendo().Button()
-                        .Name("btnApprovalAll")
-                        .HtmlAttributes(new
-                        {
-                            type = "button",
-                            style = "font-weight:bold; width:135px; color: blue; height: 25px;",
-                            title = "Trình duyệt/Phê duyệt người dùng IDC"
-                        })
-                        .ImageUrl(Url.Content("~/images/note_add.png"))
-                        .Content("Lưu trình duyệt &nbsp;"))
+                .Name("btnApprovalAll")
+                .HtmlAttributes(new
+                {
+                    type = "button",
+                    style = "font-weight:bold; width:135px; color: blue; height: 25px;",
+                    title = "Trình duyệt/Phê duyệt người dùng IDC"
+                })
+                .ImageUrl(Url.Content("~/images/note_add.png"))
+                .Content("Lưu trình duyệt &nbsp;"))
         </div>
 
     </div>
@@ -902,6 +908,7 @@
         
         var lcFlagCallView = $("#FlagCallView").val();
         var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
+        var lcBusinessDateTextView = $("#BusinessDateTextApprovalView").val();
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();        
         var requireFileTypes = [$("#FunctionTypeFlag_ADDNEW_USERView").val(), $("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_MODIFY_USERView").val(), $("#FunctionTypeFlag_CHANGE_ROLEView").val()];
     
@@ -931,6 +938,8 @@
         formData.append("pMainPosCode", cboMainPosCodeChoice.value());
         formData.append("pPosCode", cboMainPosCodeChoice.value());
         formData.append("pSystemDate", lcSystemDateTextView);
+        formData.append("pBusinessDate", lcBusinessDateTextView);
+        var iCountUserdChoice = listApprovalData.length.ToString();
         // append file
         if (fileUploadUserIDC) {
             formData.append("pFileUpload", fileUploadUserIDC);
@@ -944,11 +953,11 @@
             contentType: false,
             success: function (resultSaveUpdate) {
                 if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-                    alert("Trình duyệt thành công!");
+                    alert("Bạn đã trình duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
                     dataChange = false;
                     refreshGridIDCApproval();
                 } else if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
-                    alert("Phê duyệt thành công!");
+                    alert("Bạn đã phê duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
                     dataChange = false;
                     refreshGridIDCApproval();
                 }

@@ -1,12 +1,17 @@
 ﻿@using Kendo.Mvc
+@using VBSPOSS.Extensions
 @using VBSPOSS.Models
 
+@{
+    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
+    TempData.Keep("UserPermission");
+}
 @{
     ViewData["Title"] = "HÀNG CHỜ PHÊ DUYỆT/TỪ CHỐI YÊU CẦU NGHIỆP VỤ TẠO/THAY ĐỔI THÔNG TIN TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div id="myPopup"></div>
+<div id="myPopupSumRequirementUserIDC"></div>
 
 <style>
     #gridMainSumRequirementUserIDC div a, table tr, td {
@@ -136,17 +141,22 @@
     , 
 </style>
 <script>
-    var mainWindow = $("#myPopup");
+    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
+    var mainWindow = $("#myPopupSumRequirementUserIDC");
 </script>
 
 <script>
     //Chọn đơn vị/chi nhánh
     function paramLoadListBranchFind() {
+        var lcUserGradeViewLoad = $("#UserGradeView").val();
+        var lcTitleChoiceShow = "--- Chọn tất cả ---";
+        if (lcUserGradeViewLoad == "1" || lcUserGradeViewLoad == "2")
+            lcTitleChoiceShow = "";
         return {
-            pFlagCondi: "2",
+            pFlagCondi: "7",
             pStatus: "O",
             pShortName: "1",
-            pTitleChoice: "",
+            pTitleChoice: lcTitleChoiceShow,
             pFlagTextShow: "1",
             pUserPosCode: "",
             pUserName: "",
@@ -154,7 +164,7 @@
         };
     }
     
-    function paramLoadGridData() {
+    function paramLoadGridDataSumTmp() {
         return {
             pPosCode: $("#MainPosCode_Find").val(),
             pFromStartDate: $("#StartDateBegin_Find").val(),
@@ -164,9 +174,9 @@
     }
     
     function refreshGridSumRequirementUserIDC() {
-        var grid = $("#gridMainSumRequirementUserIDC").data("kendoGrid");
-        if (grid != null) {
-            grid.dataSource.read();
+        var gridSumTmp = $("#gridMainSumRequirementUserIDC").data("kendoGrid");
+        if (gridSumTmp != null) {
+            gridSumTmp.dataSource.read();
         }
     }
 
@@ -180,18 +190,35 @@
         for (var j = 0; j < rows.length; j++) {
             var row = $(rows[j]);
             var dataItem = e.sender.dataItem(row);
-
-            var lcUserView = $("#UserPosCodeView").val();
-            if (lcUserView != "000196" && lcUserView != "000100") {
+            var lcUserGradeView = $("#UserGradeView").val();
+            if (lcUserGradeView == "1") {
                 row.find(".btn-auth-main").hide();
-                row.find(".btn-approval-main").show();
-            }
-            else {
-                row.find(".btn-approval-main").show();
-                row.find(".btn-auth-main").show();
             }
 
+            // var lcUserView = $("#UserPosCodeView").val();
+            // if (lcUserView != "000196" && lcUserView != "000100") {
+            //     row.find(".btn-auth-main").hide();
+            //     row.find(".btn-approval-main").show();
+            // }
+            // else {
+            //     row.find(".btn-approval-main").show();
+            //     row.find(".btn-auth-main").show();
+            // }
         }
+        
+        var grid = this;
+        grid.tbody.find("tr").each(function () {
+            var dataItem = grid.dataItem(this);
+            
+            if (userPermission && userPermission.AuthorizePermissionFlag == 0) {
+                $(this).find(".k-grid-Authorize").hide();
+            }
+
+            if (userPermission && userPermission.ReportPermissionFlag == 0) {
+                $(this).find(".k-grid-Approval").hide();
+            }
+        });
+
     }
 
     var dataChange = false;
@@ -228,7 +255,7 @@
         wnd.refresh({
             url: '@Url.Action("ShowApprovalOrAuthorizeUserManagementIDC", "UserManagementIDC")',
             data: {
-                pMainPosCode: dataItem.MainPosCode,
+                pMainPosCode: dataItem.PosCode,
                 pFlagCall: eventCode,
                 pButtonType: ""
             }
@@ -250,13 +277,49 @@
         var lcUserPosCodeView = $("#UserPosCodeView").val();
         var lcEventCode = $("#EventFlag_AuthorizeView").val();
         var lcUserGradeView = $("#UserGradeView").val();
-        
-        if (lcUserPosCodeView != "000196" && lcUserPosCodeView != "000100") {
-            alert("Bạn không có quyền thực hiện chức năng phê duyệt yêu cầu nghiệp vụ về tài khoản người dùng Intellect iDC!");
+        if (lcUserGradeView == "1") {
+            alert("Bạn không có quyền thực hiện chức năng phê duyệt yêu cầu nghiệp vụ về tài khoản người dùng Intellect iDC (Tài khoản của bạn là cấp đơn vị Phòng giao dịch). Vui lòng kiểm tra lại!");
             return;
         }
+
+        // if (lcUserPosCodeView != "000196" && lcUserPosCodeView != "000100") {
+        //     alert("Bạn không có quyền thực hiện chức năng phê duyệt yêu cầu nghiệp vụ về tài khoản người dùng Intellect iDC!");
+        //     return;
+        // }
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         openApprovalWindow(dataItem, lcEventCode, "Phê duyệt thay đổi thông tin người dùng IDC");
+    }
+
+    function onSaveGridSumTmpIDC(e) {
+        if (e != null && e.response != null) {
+            if (!e.response.Errors) {
+                if (e.type == "create") {
+                }
+                else if (e.type == "update") {
+                    alert("Xử lý yêu cầu thành công!");
+                }
+                else if (e.type == "read") {
+                }
+            }
+            else {
+                alert(e.response.Errors);
+            }
+        }
+    }
+
+    function error_handlerSumTmpIDC(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+            console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
+        }
     }
 </script>
 
@@ -361,7 +424,7 @@
                     }).Width(130).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                     columns.Bound(c => c.OrderNoText).Title("STT").Width(60).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.MainPosName).Title("Đơn vị").HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosName).Title("Đơn vị").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.StartDatePeriodText).Title("Khoảng thời gian").Width(170).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Group(groupSLCNTT => groupSLCNTT.Title("Số lượng yêu cầu hàng chờ")
                     .Columns(infoDGXL =>
@@ -378,6 +441,7 @@
                     columns.Bound(c => c.StylePrint).Hidden();
                     columns.Bound(c => c.OrderNo).Hidden();
                     columns.Bound(c => c.MainPosCode).Hidden();
+                    columns.Bound(c => c.MainPosName).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
                 })
                 .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
@@ -395,8 +459,8 @@
                 .Batch(false)
                 .ServerOperation(false)
                 .Model(model => model.Id(p => p.OrderNo))
-                .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                .Read(read => read.Action("LoadGridData_UserManagementIDC_SumRequirements", "UserManagementIDC").Data("paramLoadGridData"))
+                .Events(e => e.RequestEnd("onSaveGridSumTmpIDC").Error("error_handlerSumTmpIDC"))
+                .Read(read => read.Action("LoadGridData_UserManagementIDC_SumRequirements", "UserManagementIDC").Data("paramLoadGridDataSumTmp"))
                 .PageSize(100)
                 )
                 .Resizable(resize => resize.Columns(true))
@@ -410,37 +474,7 @@
 
 
 <script>
-     function onSaveGridIDC(e) {
-        if (e != null && e.response != null) {
-            if (!e.response.Errors) {
-                if (e.type == "create") {
-                }
-                else if (e.type == "update") {
-                    alert("Xử lý yêu cầu thành công!");
-                }
-                else if (e.type == "read") {
-                }
-            }
-            else {
-                alert(e.response.Errors);
-            }
-        }
-    }
-
-    function error_handlerIDC(e) {
-        if (e.errors) {
-            var message = "Errors:\n";
-            $.each(e.errors, function (key, value) {
-                if ('errors' in value) {
-                    $.each(value.errors, function () {
-                        message += this + "\n";
-                    });
-                }
-            });
-            alert(message);
-            console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
-        }
-    }
+     
 
     $(document).ready(function () {
         $("#lbl_space").remove();

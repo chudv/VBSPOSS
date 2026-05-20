@@ -193,6 +193,7 @@ namespace VBSPOSS.Controllers
         ///          '4' - Lấy danh sách các POS HSC/Chi nhánh: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh;
         ///          '5' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
         ///          '6' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy 1 bản ghi Toàn hàng; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
+        ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
         /// </param>
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất cả truyền vào là '0'</param>
         /// <param name="pShortName">Chỉ số xác định: 1 - Lấy tên viết tắt hiển thị Combobox; 0 - Lấy tên đầy đủ</param>
@@ -246,6 +247,19 @@ namespace VBSPOSS.Controllers
                     {
                         sName = item.MainPosName.Trim();
                         sShortName = item.MainPosName.Trim();
+                    }
+                    else if (pFlagCondi == "7")
+                    {
+                        if (UserGrade == PosGrade.HEAD_POS || UserGrade == PosGrade.MAIN_POS)
+                        {
+                            sName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.Name.Trim();
+                            sShortName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.ShortName.Trim();
+                        }
+                        else
+                        {
+                            sName = item.Name.Trim();
+                            sShortName = item.ShortName.Trim();
+                        }
                     }
                     else if (item.MainPosCode == item.Code)
                     {
