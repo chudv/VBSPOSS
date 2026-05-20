@@ -60,7 +60,16 @@ namespace VBSPOSS.Services.Interfaces
       
 
         Task<List<ProductParameterDetailViewModel>> GetProductsForCreateAsync(string productGroupCode, DateTime effectedDate);
-        Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(string productGroupCode, DateTime effectedDate);
+      //  Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(string productGroupCode, DateTime effectedDate);
+
+
+        //add
+        Task<List<ProductParameterDetailViewModel>> LoadProductsForCreateAsync(
+        string productGroupCode,
+        DateTime effectedDate,
+        decimal defaultMinSpread,     // ← thêm
+        decimal defaultMaxSpread      // ← thêm
+    );
 
         // luu
         Task<int> SaveBatchProductParameterAsync(string productGroupCode, DateTime effectedDate, string remark, List<ProductParameterDetailViewModel> items);
