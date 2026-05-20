@@ -132,7 +132,9 @@
 <script>
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
     var mainWindowApproval = $("#myPopupApproval");
-    var currentPdfUrl = null;
+    //var currentPdfUrl = null;
+
+    var uploadedFiles = [];
 </script>
 
 <script>
@@ -587,35 +589,8 @@
     </div>
 
     <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
-    @* <div id="divUploadFile"  class="row" style="padding-top: 5px;">
-        <!-- BÊN TRÁI -->
-        <div class="col-md-10 d-flex align-items-center">
-            <!-- input file ẩn -->
-            <input type="file" id="fileUpload" name="fileUpload" hidden accept="application/pdf" />
-    
-            <!-- nút chọn file -->
-            <button type="button" class="btn btn-primary" id="btnChooseFile">
-                Chọn file
-            </button>
-    
-            <!-- tên file -->
-            <span id="fileName" style="margin-left:10px; font-style: italic;color:red;">
-                Chưa chọn file
-            </span>
-    
-            <!-- nút xóa -->
-            <button type="button" class="btn btn-danger btn-sm"
-                    id="btnRemoveFile" style="display:none; margin-left:10px;">
-                ✖
-            </button>
-        </div>
-    
-        <!-- BÊN PHẢI -->
-        <div class="col-md-2 text-right">
-            @(Html.Kendo().Button().Name("btnApprovalAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:135px; color: blue; height: 25px;", title = "Trình duyệt/Phê duyệt người dùng IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu trình duyệt &nbsp;"))
-        </div>
-    </div> *@
-    <div id="divUploadFile" class="row" style="padding-top: 5px;">
+   
+    @* <div id="divUploadFile" class="row" style="padding-top: 5px;">
 
         <!-- BÊN TRÁI -->
         <div class="col-md-10 d-flex align-items-center">
@@ -671,6 +646,50 @@
                 .Content("Lưu trình duyệt &nbsp;"))
         </div>
 
+    </div> *@
+
+    <div id="divUploadFile" class="row" style="padding-top: 5px;">
+
+        <!-- BÊN TRÁI -->
+        <div class="col-md-10">
+
+            <!-- input file -->
+            <input type="file"
+                   id="fileUpload"
+                   name="fileUpload"
+                   hidden
+                   accept="application/pdf"
+                   multiple />
+
+            <!-- nút chọn file -->
+            <button type="button"
+                    class="btn btn-primary"
+                    id="btnChooseFile">
+                Chọn file
+            </button>
+
+            <!-- danh sách file -->
+            <div id="fileList" style="margin-top:10px;">
+            </div>
+
+        </div>
+
+        <!-- BÊN PHẢI -->
+        <div class="col-md-2 text-right">
+
+            @(Html.Kendo().Button()
+                        .Name("btnApprovalAll")
+                        .HtmlAttributes(new
+                        {
+                            type = "button",
+                            style = "font-weight:bold; width:135px; color: blue; height: 25px;",
+                            title = "Trình duyệt/Phê duyệt người dùng IDC"
+                        })
+                        .ImageUrl(Url.Content("~/images/note_add.png"))
+                        .Content("Lưu trình duyệt &nbsp;"))
+
+        </div>
+
     </div>
 
     <div id="divFileAttached"  class="row" style="padding-top: 5px;">
@@ -702,90 +721,90 @@
         }
 
 
-               $("#btnChooseFile").click(function () {
+    //            $("#btnChooseFile").click(function () {
 
-        $("#fileUpload").click();
+    //     $("#fileUpload").click();
 
-    });
+    // });
 
-    $("#fileUpload").on("change", function () {
+    // $("#fileUpload").on("change", function () {
 
-        if (!this.files || this.files.length === 0) {
+    //     if (!this.files || this.files.length === 0) {
 
-            resetFile();
+    //         resetFile();
 
-            return;
-        }
+    //         return;
+    //     }
 
-        var file = this.files[0];
+    //     var file = this.files[0];
 
-        var fileName = file.name.toLowerCase();
+    //     var fileName = file.name.toLowerCase();
 
-        // chỉ cho phép PDF
-        if (!fileName.endsWith(".pdf")) {
+    //     // chỉ cho phép PDF
+    //     if (!fileName.endsWith(".pdf")) {
 
-            alert("Chỉ cho phép upload file PDF");
+    //         alert("Chỉ cho phép upload file PDF");
 
-            resetFile();
+    //         resetFile();
 
-            return;
-        }
+    //         return;
+    //     }
 
-        // hiển thị tên file
-        $("#fileName").text(file.name);
+    //     // hiển thị tên file
+    //     $("#fileName").text(file.name);
 
-        // hiện button
-        $("#btnRemoveFile").show();
+    //     // hiện button
+    //     $("#btnRemoveFile").show();
 
-        $("#btnViewFile").show();
+    //     $("#btnViewFile").show();
 
-        // tạo url preview
-        currentPdfUrl = URL.createObjectURL(file);
+    //     // tạo url preview
+    //     currentPdfUrl = URL.createObjectURL(file);
 
-        // mở preview luôn
-        openPdfPreview();
-    });
+    //     // mở preview luôn
+    //     openPdfPreview();
+    // });
 
-    // nút xem chi tiết
-    $("#btnViewFile").click(function () {
+    // // nút xem chi tiết
+    // $("#btnViewFile").click(function () {
 
-        openPdfPreview();
+    //     openPdfPreview();
 
-    });
+    // });
 
-    // nút xóa
-    $("#btnRemoveFile").click(function () {
+    // // nút xóa
+    // $("#btnRemoveFile").click(function () {
 
-        resetFile();
+    //     resetFile();
 
-    });
+    // });
 
-    function openPdfPreview() {
+    // function openPdfPreview() {
 
-        if (!currentPdfUrl) {
+    //     if (!currentPdfUrl) {
 
-            return;
-        }
+    //         return;
+    //     }
 
-        window.open(
-            currentPdfUrl,
-            "_blank",
-            "width=1200,height=800"
-        );
-    }
+    //     window.open(
+    //         currentPdfUrl,
+    //         "_blank",
+    //         "width=1200,height=800"
+    //     );
+    // }
 
-    function resetFile() {
+    // function resetFile() {
 
-        $("#fileUpload").val("");
+    //     $("#fileUpload").val("");
 
-        $("#fileName").text("Chưa chọn file");
+    //     $("#fileName").text("Chưa chọn file");
 
-        $("#btnRemoveFile").hide();
+    //     $("#btnRemoveFile").hide();
 
-        $("#btnViewFile").hide();
+    //     $("#btnViewFile").hide();
 
-        currentPdfUrl = null;
-    }
+    //     currentPdfUrl = null;
+    // }
 
         // $("#btnChooseFile").click(function () {
         //     $("#fileUpload").click();
@@ -915,18 +934,21 @@
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
 
         var fileInput = $("#fileUpload")[0];
-        var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
-        var listFileALLs = fileInput.files;                    // ← Lấy tất cả các file
+        //var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
+        var fileUploadUserIDC =
+    fileInput.files.length > 0
+        ? fileInput.files
+        : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             if (!fileUploadUserIDC) {
                 alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng cầu phải đính kèm tờ trình (dạng file PDF). Vui lòng đính kèm tờ trình!");
                 return;
             }
-            if (!fileUploadUserIDC.name.toLowerCase().endsWith(".pdf")) {
-                alert("Tờ trình đính kèm yêu cầu [" + lcFunctionTypeNameChoice + "] của tài khoản người dùng không phải là file PDF. Vui lòng kiểm tra lại!");
-                return;
-            }
+            // if (!fileUploadUserIDC.name.toLowerCase().endsWith(".pdf")) {
+            //     alert("Tờ trình đính kèm yêu cầu [" + lcFunctionTypeNameChoice + "] của tài khoản người dùng không phải là file PDF. Vui lòng kiểm tra lại!");
+            //     return;
+            // }
         }
         var cboFunctionTypeChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox");
         var cboMainPosCodeChoice = $("#MainPosCodeApproval_Find").data("kendoComboBox");
@@ -992,5 +1014,117 @@
                 alert("Lỗi hệ thống!");
             }
         });
+    });
+
+
+
+        $("#btnChooseFile").click(function () {
+
+        $("#fileUpload").click();
+
+    });
+
+    $("#fileUpload").on("change", function () {
+
+        if (!this.files || this.files.length === 0) {
+
+            return;
+        }
+
+        for (let i = 0; i < this.files.length; i++) {
+
+            let file = this.files[i];
+
+            let fileName = file.name.toLowerCase();
+
+            // check pdf
+            if (!fileName.endsWith(".pdf")) {
+
+                alert("File " + file.name + " không phải PDF");
+
+                continue;
+            }
+
+            // tránh add trùng
+            let exists = uploadedFiles.some(x => x.name === file.name);
+
+            if (exists) {
+                continue;
+            }
+
+            let fileUrl = URL.createObjectURL(file);
+
+            uploadedFiles.push({
+                name: file.name,
+                url: fileUrl
+            });
+
+            renderFileItem(file.name, fileUrl);
+        }
+
+        // reset input để chọn lại được file cũ
+        $("#fileUpload").val("");
+    });
+
+    function renderFileItem(fileName, fileUrl) {
+
+        let html =
+            `
+            <div class="file-item"
+                 data-file="${fileName}"
+                 style="margin-top:5px;
+                        border:1px solid #ddd;
+                        padding:5px 10px;
+                        border-radius:5px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:space-between;">
+
+                <span style="color:red;">
+                    ${fileName}
+                </span>
+
+                <div>
+
+                    <button type="button"
+                            class="btn btn-info btn-sm btn-view-file"
+                            data-url="${fileUrl}">
+                        👁
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-danger btn-sm btn-remove-file"
+                            data-file="${fileName}">
+                        ✖
+                    </button>
+
+                </div>
+
+            </div>
+            `;
+
+        $("#fileList").append(html);
+    }
+
+    // xem file
+    $(document).on("click", ".btn-view-file", function () {
+
+        let url = $(this).data("url");
+
+        window.open(
+            url,
+            "_blank",
+            "width=1200,height=800"
+        );
+    });
+
+    // xóa file
+    $(document).on("click", ".btn-remove-file", function () {
+
+        let fileName = $(this).data("file");
+
+        uploadedFiles = uploadedFiles.filter(x => x.name !== fileName);
+
+        $('.file-item[data-file="' + fileName + '"]').remove();
     });
 </script>
