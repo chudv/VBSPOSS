@@ -1073,7 +1073,7 @@
         var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-            if (!fileUploadUserIDC || fileUploadUserIDC.length == 0 {
+            if (!fileUploadUserIDC || fileUploadUserIDC.length == 0) {
                 alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng cầu phải đính kèm tờ trình (dạng file PDF). Vui lòng đính kèm tờ trình!");
                 return;
             }
