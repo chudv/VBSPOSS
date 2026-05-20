@@ -109,7 +109,7 @@ namespace VBSPOSS.Controllers
                     if (!string.IsNullOrEmpty(pPosCode))
                         pPosCode = pPosCode.Substring(0, 4);
                 }
-                var listTransPointWorks = _serviceTranferDataPos.GetListOfTranferDataPosSearch(pPosCode, pStatus.ToString(), UserGrade.ToString());
+                var listTransPointWorks = _serviceTranferDataPos.GetListOfTranferDataPosSearch(pPosCode, pStatus.ToString(), UserGrade.ToString(), "","");
                 return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)

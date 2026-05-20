@@ -50,7 +50,7 @@
             Newtonsoft.Json.JsonConvert
             .SerializeObject(
             Model.Details));
-    
+
         var grid =
             $("#gridTransferVillage")
                 .data("kendoGrid");
@@ -93,11 +93,14 @@
 
                 <label class="lbcontrol" style="color: navy;text-align:left;width:106px;padding-top: 7px;">Pos nguồn</label>
 
-            @(Html.Kendo().ComboBoxFor(m => m.Master.FromPosCode)
-                .DataTextField("Description")
-                .DataValueField("Code")
-                .BindTo((List<ValueConstModel>)ViewBag.FromPosList)
-                .Filter("contains")
+                @(Html.Kendo().ComboBoxFor(m => m.Master.FromPosCode)
+                    .DataTextField("Description")
+                    .DataValueField("Code")
+                    .BindTo((List<ValueConstModel>)ViewBag.FromPosList)
+                    .Value(string.IsNullOrEmpty(Model?.Master?.FromPosCode)
+                    ? "-1"
+                    : Model.Master.FromPosCode)
+                    .Filter("contains")
                     .Events(e => e.Change(@<text>
                         function(ev) {
 
@@ -111,19 +114,22 @@
                         }
                         }
                     </text>))
-                .HtmlAttributes(new
-                {
+                    .HtmlAttributes(new
+                    {
                         style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;"
-                })
-                )
+                    })
+                    )
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;">Pos đích</label>
 
-            @(Html.Kendo().ComboBoxFor(m => m.Master.ToPosCode)
-                .DataTextField("Description")
-                .DataValueField("Code")
-                .BindTo((List<ValueConstModel>)ViewBag.ToPosList)
-                .Filter("contains")
+                @(Html.Kendo().ComboBoxFor(m => m.Master.ToPosCode)
+                    .DataTextField("Description")
+                    .DataValueField("Code")
+                    .BindTo((List<ValueConstModel>)ViewBag.ToPosList)
+                    .Value(string.IsNullOrEmpty(Model?.Master?.ToPosCode)
+                    ? "-1"
+                    : Model.Master.ToPosCode)
+                    .Filter("contains")
                     .Events(e => e.Change(@<text>
                         function(ev) {
 
@@ -137,47 +143,47 @@
                         }
                         }
                     </text>))
-                .HtmlAttributes(new
-                {
+                    .HtmlAttributes(new
+                    {
                         style = "width: 420px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;"
-                })
-                )
+                    })
+                    )
 
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
 
-            @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
-                .Format("dd/MM/yyyy")
-                .Min(DateTime.Today)
-                .HtmlAttributes(new
-                {
-                    style = "width:110px;color:blue;"
-                })
-                )
+                @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
+                    .Format("dd/MM/yyyy")
+                    .Min(DateTime.Today)
+                    .HtmlAttributes(new
+                    {
+                        style = "width:110px;color:blue;"
+                    })
+                    )
             </div>
         </div>
 
     </div>
-   
+
 
     <!-- ========================= -->
     <!-- FILE -->
     <!-- ========================= -->
-@* 
+    @*
     <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
-        <div class="col-md-12" style="display: inline-flex;">
+    <div class="col-md-12" style="display: inline-flex;">
 
-            <label class="lbcontrol"
-                   style="width:100px;">
-                Upload tờ trình
-            </label>
+    <label class="lbcontrol"
+    style="width:100px;">
+    Upload tờ trình
+    </label>
 
-            <input type="file"
-                   id="files"
-                   name="files"
-                   style="width:400px;color:blue;" />
+    <input type="file"
+    id="files"
+    name="files"
+    style="width:400px;color:blue;" />
 
-        </div>
+    </div>
 
     </div>
 
@@ -186,11 +192,10 @@
     <!-- ========================= -->
     <!-- DETAIL GRID -->
     <!-- ========================= -->
-
-   @*  <div style=" width:100%;   text-align:center;">
-        <span style="font-weight:bold;color:navy;font-size:16px;display:inline-block;">
-            DANH SÁCH THÔN ĐIỀU CHUYỂN
-        </span>
+    @*  <div style=" width:100%;   text-align:center;">
+    <span style="font-weight:bold;color:navy;font-size:16px;display:inline-block;">
+    DANH SÁCH THÔN ĐIỀU CHUYỂN
+    </span>
     </div> *@
     <div class="lbtitle" style="color: red;text-align:center;padding-top: 10px;padding-bottom: 0px;font-weight: bold;">
         DANH SÁCH THÔN ĐIỀU CHUYỂN
@@ -250,27 +255,26 @@
     <!-- ========================= -->
     <!-- REMARK -->
     <!-- ========================= -->
-
     @* <div class="row" style="margin-top:15px;">
 
-        <div class="col-md-12">
+    <div class="col-md-12">
 
-            <label class="lbcontrol">
-                Ghi chú
-            </label>
+    <label class="lbcontrol">
+    Ghi chú
+    </label>
 
-            @Html.TextAreaFor(m => m.Master.Remark,
-            new
-            {
-            @class = "k-textbox",
+    @Html.TextAreaFor(m => m.Master.Remark,
+    new
+    {
+    @class = "k-textbox",
 
-            style =
-            "width:100%;" +
-            "height:60px;" +
-            "color:blue;"
-            })
+    style =
+    "width:100%;" +
+    "height:60px;" +
+    "color:blue;"
+    })
 
-        </div>
+    </div>
 
     </div> *@
 
@@ -399,7 +403,7 @@
 
                         onCloseTransferWindow();
                     }
-                    else if(res == "2") {
+                    else if (res == "2") {
 
                         alert(
                             "POS nguồn và POS đích không được trùng nhau");

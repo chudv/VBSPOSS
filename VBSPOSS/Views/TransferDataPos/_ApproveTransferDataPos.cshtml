@@ -86,6 +86,8 @@
                 )
                 .Scrollable()
                 .Navigatable()
+                .Editable(editable =>
+                editable.Enabled(false))
                 .Resizable(resize => resize.Columns(true))
                 .DataSource(dataSource => dataSource
                 .Ajax()
@@ -257,7 +259,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: 'APPROVE'
+                pAction: '5'
             },
             success: function (res) {
                 if (res == "1") {
@@ -290,7 +292,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: 'REJECT'
+                pAction: '6' //Trung ương từ chối
             },
             success: function (res) {
                 if (res == "1") {

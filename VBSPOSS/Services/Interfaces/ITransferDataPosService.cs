@@ -18,7 +18,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
-        List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pPosCode, string statuspStatus, string pUserGrade);
+        List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pPosCode, string statuspStatus, string pUserGrade, string authorizePermissionFlag, string pSoureTarget);
 
         List<ValueConstModel> GetListPosOfBranch(string mainPos);
 
@@ -69,6 +69,11 @@ namespace VBSPOSS.Services.Interfaces
         int SaveAcceptMove(List<ChangePosDataCheckingViewModel> data);
 
         ArrayList GetToTrinh(string pUserPosCode);
+
+        
+        Task<bool> CheckExistsTransferFile(long documentId);
+
+        Task<int> UpdateTransferMasterStatusAsync(long id, int status, string userName);
     };
 
 

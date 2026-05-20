@@ -21,12 +21,12 @@
             .Name("gridMainTranferTarget")
             .Columns(columns =>
             {
-                columns.Bound(c => c.ACCEPT_MOV)
+                @* columns.Bound(c => c.ACCEPT_MOV)
                 .Title("Xác nhận")
                 .Width(80)
                 .ClientTemplate(
                 "<input type='checkbox' class='chkAcceptMov' #= ACCEPT_MOV ? 'checked=checked' : '' # />")
-                .HtmlAttributes(new { style = "text-align:center;" });
+                .HtmlAttributes(new { style = "text-align:center;" }); *@
 
                 columns.Bound(c => c.TYPE_CD)
                 .Title("Loại dữ liệu")
@@ -94,12 +94,12 @@
 
             .HtmlAttributes(new
             {
-                style = "height:650px;"
+                style = "height:550px;"
             })
 
             .DataSource(dataSource => dataSource
             .Ajax()
-            .PageSize(100)
+            .PageSize(15)
             .ServerOperation(false)
 
             .Model(model =>

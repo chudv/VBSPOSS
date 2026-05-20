@@ -50,8 +50,8 @@ namespace VBSPOSS.Models
         [Column("RejectReason")]
         public string RejectReason { get; set; }
 
-        [Column("IsDeleted")]
-        public bool IsDeleted { get; set; }
+        //[Column("IsDeleted")]
+        //public bool IsDeleted { get; set; }
 
        
     }

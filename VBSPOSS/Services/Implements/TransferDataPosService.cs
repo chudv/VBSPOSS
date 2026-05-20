@@ -62,7 +62,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
-        public List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pPosCode, string statuspStatus, string pUserGrade)
+        public List<TransferDataPosMasterViewModel> GetListOfTranferDataPosSearch(string pPosCode, string statuspStatus, string pUserGrade, string authorizePermissionFlag, string pSoureTarget)
         {
             var transferDataPosMasterViews = new List<TransferDataPosMasterViewModel>();
 
@@ -73,17 +73,35 @@ namespace VBSPOSS.Services.Implements
 
                 if (pUserGrade == "3")
                 {
-                    query = query.Where(w => w.IsDeleted == false &&
-                        (w.Status == 2 || w.Status == 3 || w.Status == 4 || w.Status == 1) &&
-                        w.MainPos.StartsWith(pPosCode));
+                    var ignorePos = string.IsNullOrEmpty(pPosCode) || new[] { "000100", "000196" }.Contains(pPosCode);
+                    query = query.Where(w => new[] { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }.Contains(w.Status) && (ignorePos || w.MainPos.StartsWith(pPosCode)));
+
+                    //query = query.Where(w => w.IsDeleted == false &&
+                    //    (w.Status == 2 || w.Status == 3 || w.Status == 4 || w.Status == 1) &&
+                    //    w.MainPos.StartsWith(pPosCode));
                 }
-                else if (pUserGrade == "2")
+                else if (pUserGrade == "2" && authorizePermissionFlag == "0")
                 {
-                    query = query.Where(w => w.IsDeleted == false && w.MainPos.StartsWith(pPosCode));
+                    query = query.Where(w => w.MainPos.StartsWith(pPosCode));
+                }
+                else if (pUserGrade == "2" && authorizePermissionFlag == "1")
+                {
+                    query = query.Where(w => new[] { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }.Contains(w.Status)
+                            && w.MainPos.StartsWith(pPosCode));
+                }
+                else if (pUserGrade == "1" && pSoureTarget == "S")
+                {
+                    query = query.Where(w => new[] { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }.Contains(w.Status)
+                            && w.FromPosCode.StartsWith(pPosCode));
+                }
+                else if (pUserGrade == "1" && pSoureTarget == "T")
+                {
+                    query = query.Where(w => new[] { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }.Contains(w.Status)
+                            && w.ToPosCode.StartsWith(pPosCode));
                 }
                 else
                 {
-                    query = query.Where(w => w.IsDeleted == false);
+                    query = query.Where(w => w.Status != 0);
                 }
 
                 var listOfTransferDataPosMaster = query
@@ -110,7 +128,6 @@ namespace VBSPOSS.Services.Implements
                         ApproverBy = x.ApproverBy,
                         ApprovalDate = x.ApprovalDate,
                         RejectReason = x.RejectReason,
-                        IsDeleted = x.IsDeleted
                     })
                     .ToList();
 
@@ -157,6 +174,12 @@ namespace VBSPOSS.Services.Implements
                         })
                         .ToList();
 
+                    answer.Insert(0, new ValueConstModel
+                    {
+                        Code = "-1",
+                        Description = "-- Chọn phòng giao dịch --"
+                    });
+
                     return answer;
                 }
                 else
@@ -170,7 +193,11 @@ namespace VBSPOSS.Services.Implements
                             Description = x.Code + " - " + x.Name
                         })
                         .ToList();
-
+                    answer.Insert(0, new ValueConstModel
+                    {
+                        Code = "-1",
+                        Description = "-- Chọn phòng giao dịch --"
+                    });
                     return answer;
                 }
             }
@@ -311,6 +338,33 @@ namespace VBSPOSS.Services.Implements
                     await file.CopyToAsync(stream);
                 }
 
+                // Xóa file cũ trước khi lưu
+                var oldFiles = _dbContext.AttachedFileInfos
+                    .Where(x => x.DocumentId == documentId
+                        && x.FileType == "8")
+                    .ToList();
+
+                foreach (var oldFile in oldFiles)
+                {
+                    try
+                    {
+                        var fullPathOld = Path.Combine(
+                            oldFile.PathFile ?? "",
+                            oldFile.FileNameNew ?? "");
+
+                        if (System.IO.File.Exists(fullPathOld))
+                        {
+                            System.IO.File.Delete(fullPathOld);
+                        }
+
+                        _dbContext.AttachedFileInfos.Remove(oldFile);
+                    }
+                    catch
+                    {
+                        // bỏ qua lỗi xóa file
+                    }
+                }
+                await _dbContext.SaveChangesAsync();
                 // SAVE DB
                 var entity = new AttachedFileInfo
                 {
@@ -363,7 +417,7 @@ namespace VBSPOSS.Services.Implements
                 var entity = await _dbContext.TransferDataPosMasters.FirstOrDefaultAsync(x => x.Id == pId);
                 if (entity == null) return false;
 
-                entity.IsDeleted = true;
+                entity.Status = 0;
                 entity.ModifiedBy = userName;
                 entity.ModifiedDate = DateTime.Now;
 
@@ -382,7 +436,7 @@ namespace VBSPOSS.Services.Implements
             try
             {
                 return _dbContext.TransferDataPosMasters
-                    .FirstOrDefault(x => x.Id == pId && x.IsDeleted == false);
+                    .FirstOrDefault(x => x.Id == pId);
             }
             catch (Exception)
             {
@@ -461,7 +515,6 @@ namespace VBSPOSS.Services.Implements
                         Status = 1,
                         TotalVillage = totalVillage,
                         MainPos = mainPos,
-                        IsDeleted = false,
                         CreatedBy = userName,
                         CreatedDate = DateTime.Now
                     };
@@ -732,6 +785,32 @@ namespace VBSPOSS.Services.Implements
         }
 
 
+        public async Task<bool> CheckExistsTransferFile(long documentId)
+        {
+            return await _dbContext.AttachedFileInfos
+                .AnyAsync(x => x.DocumentId == documentId
+                    && x.FileType == "8");
+        }
+
+
+        public async Task<int> UpdateTransferMasterStatusAsync(long id, int status, string userName)
+        {
+            try
+            {
+                var entity = await _dbContext.TransferDataPosMasters.FirstOrDefaultAsync(x => x.Id == id);
+                if (entity == null) return 0;
+
+                entity.Status = status;
+                entity.ModifiedBy = userName;
+                entity.ModifiedDate = DateTime.Now;
+
+                return await _dbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                return 0;
+            }
+        }
 
     }
 }

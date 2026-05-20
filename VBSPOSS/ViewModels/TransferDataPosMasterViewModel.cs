@@ -46,6 +46,6 @@
 
         public string RejectReason { get; set; }
 
-        public bool IsDeleted { get; set; }
+        //public bool IsDeleted { get; set; }
     }
 }
