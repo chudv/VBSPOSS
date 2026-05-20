@@ -935,10 +935,7 @@
 
         var fileInput = $("#fileUpload")[0];
         //var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
-        var fileUploadUserIDC =
-    fileInput.files.length > 0
-        ? fileInput.files
-        : [];
+        var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             if (!fileUploadUserIDC) {
