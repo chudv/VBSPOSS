@@ -48,7 +48,7 @@
         return formatedDate;
     }
 
-    function onCloseUpdateApproval(ev) {
+    function onCloseUpdateApprovalChild(ev) {
         mainWindowApproval.data("kendoWindow").close();
     }
 
@@ -217,7 +217,7 @@
         if (eventFlag == $("#EventFlag_RejectView").val()) {
             alert("Lưu tạm (Đánh dấu chọn) từ chối yêu cầu [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC [" + lcUserId + "] thành công!");
         }
-        onCloseUpdateApproval();
+        onCloseUpdateApprovalChild();
     }
 
     function add_AttachFilesLinkOfUserIdChild() {
@@ -506,7 +506,7 @@
                 @Html.Kendo().TextBoxFor(m => m.OrtherNotes).HtmlAttributes(new { @readonly = "readonly", style = " width: 830px; !important;max-width:100% !important;color: blue;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
-        <div class="row" style="margin-bottom: 5px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+        <div id="divReasonReject" class="row" style="margin-bottom: 5px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="width: 140px; vertical-align: middle;color: navy;text-align:left;padding-top:7px;">Lý do từ chối</label>
                 @Html.Kendo().TextBoxFor(m => m.ReasonReject).HtmlAttributes(new { @readonly = "readonly", style = " width: 830px; !important;max-width:100% !important;color: blue;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
@@ -541,7 +541,7 @@
                         .ImageUrl(Url.Content("~/images/note_delete.png"))
                         .Content("Chọn từ chối&nbsp;"))
                     &nbsp;
-                    @(Html.Kendo().Button().Name("btnCloseAuthorize").Events(ev => ev.Click("onCloseUpdateApproval")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+                    @(Html.Kendo().Button().Name("btnCloseAuthorizeChild").Events(ev => ev.Click("onCloseUpdateApprovalChild")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
                 </div>
             </div>
 
@@ -644,6 +644,13 @@
             $("#btnApprovalChild").hide();
             $("#btnRejectChild").hide();
         }
+        var lcStatusRowChild = $("#Status").val();
+        //  4 - Từ chối cấp TW;   7 - Từ chối cấp Chi nhánh;
+        $("#divReasonReject").hide();
+        if (lcStatusRowChild == "4" || lcStatusRowChild == "7") {
+            $("#divReasonReject").show();
+        }
+
         add_AttachFilesLinkOfUserIdChild();
     });
 

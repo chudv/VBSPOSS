@@ -1908,8 +1908,102 @@ namespace VBSPOSS.Controllers
         }
 
 
+        //
+        /// <summary>
+        /// Hàm thực hiện lưu thông tin và thực thi cho trường hợp Trình duyệt hoặc Phê duyệt yêu cầu về Tài khoản người dùng Intellect iDC
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pFlagCall">Sự kiện: Trình duyệt - EventFlag.EventFlag_Approval.Value; Phê duyệt - EventFlag.EventFlag_Authorize.Value</param>
+        /// <param name="pListRejectData">Mảng dữ liệu danh sách Id (Cách nhau bởi dấu phẩy), UserId, Status
+        ///                         Ex: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
+        /// <param name="pFunctionType">Nghiệp vụ thực hiện: Thêm/Thay đổi quyền.... Giá trị lấy theo:
+        ///                         Thêm mới người dùng: FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
+        ///                         Cấp lại mật khẩu: FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code;
+        ///                         Mở lại người dùng: FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code;
+        ///                         Khóa người dùng: FunctionTypeFlag.FunctionTypeFlag_DISABLE_USER.Code;
+        ///                         Thay đổi thông tin người dùng: FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code;
+        ///                         Thay đổi POS người dùng: FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
+        ///                         Thay đổi quyền/vài trò người dùng: FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
+        ///                         Hủy người dùng: FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+        /// </param>
+        /// <param name="pMainPosCode"></param>
+        /// <returns></returns>
+        [AcceptVerbs("Post")]
+        public async Task<IActionResult> SaveRejectFunctionTypeOfUserIDC([DataSourceRequest] DataSourceRequest request, string pFlagCall, string pListRejectData,
+                    string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate)
+        {
+            List<long> saveFileStatus = null;
+            string sListUserId = "", sListId = "";
+            long iVal = 1;
+            try
+            {
+                string sFunctionTypeNameTmp = string.IsNullOrEmpty(pFunctionType) ? "" : FunctionTypeFlag.GetByCode(pFunctionType).Description;
+                string resultSaveUpdate = "0";
+                var listData = JsonConvert.DeserializeObject<List<UserManagementIDCViewModel>>(pListRejectData);
+                if (listData == null || !listData.Any() || listData.Count <= 0)
+                {
+                    if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
+                        return new JsonResult($"Không có dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần trình duyệt. Vui lòng kiểm tra lại!");
+                    else if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
+                        return new JsonResult($"Không có dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần phê duyệt. Vui lòng kiểm tra lại!");
+                }
 
+                List<UserManagementIDCViewModel> listDataNewTemp = new List<UserManagementIDCViewModel>();
+                foreach (var itemUpdTemp in listData)
+                {
+                    var objUserManagementChangeTemp = (await _userManagementIDCService.GetListUserIDCManagement(itemUpdTemp.Id, "", "", itemUpdTemp.UserId, "", "", -1, "", false)).FirstOrDefault();
+                    
+                }
+                var resultValue = await IsValidApprovalUserIDC(listDataNewTemp, pFlagCall);
+                resultSaveUpdate = resultValue.ToString();
+                if (resultSaveUpdate != "0")
+                {
+                    return new JsonResult(resultSaveUpdate);
+                }
+                foreach (var objUserIDC in listData)
+                {
+                    if (!TryValidateModel(objUserIDC))
+                    {
+                        if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
+                            return new JsonResult($"Dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần trình duyệt không hợp lệ. Vui lòng kiểm tra lại!");
+                        else if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
+                            return new JsonResult($"Dữ liệu danh sách yêu cầu [{sFunctionTypeNameTmp}] về tài khoản người dùng cần phê duyệt không hợp lệ. Vui lòng kiểm tra lại!");
+                    }
 
+                    sListUserId = $"{sListUserId}{objUserIDC.UserId}|";
+                    sListId = $"{sListId}{objUserIDC.Id.ToString()};";
+                }
+                if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
+                {
+                    var listIdUpdateStatus = await _userManagementIDCService.UpdateStatusApproveUserManagementIDC(listData, pFunctionType, pSystemDate, UserName, pFlagCall);
+                    if (listIdUpdateStatus != null && listIdUpdateStatus.Count != 0)
+                        resultSaveUpdate = "0";
+                    else resultSaveUpdate = "-2";
+                }
+                if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
+                {
+                    var listIdAuthorize = await _userManagementIDCService.SaveAuthorizeUserManagementIDC(listData, pFunctionType, pSystemDate, pBusinessDate, UserName, UserGrade, pFlagCall);
+                    if (listIdAuthorize != null && listIdAuthorize.Count != 0)
+                        resultSaveUpdate = "0";
+                    else resultSaveUpdate = "-2";
+                }
+                
+                    ////Thực hiện cập nhật DocumentId vào bảng UserManagementIDC
+                    //var listIdOfUserManagementIDC = StringHelper.ConvertToLongList(sListIdTmp, ';');
+                    //string sListFileIdUploadNew = Utils.Utilities.DeleteChar_FirstAndLast(sListFileIdUpload, ";");
+                    //iCountUpdateDocumentIdRet = await _userManagementIDCService.UpdateDocumentIdUserManagementIDC(listIdOfUserManagementIDC, UserName, sListFileIdUploadNew);
+                
+                return new JsonResult(resultSaveUpdate);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"{System.Reflection.MethodBase.GetCurrentMethod()} Error: {ex.Message}");
+                return new JsonResult("99");
+            }
+        }
+
+        
 
 
 

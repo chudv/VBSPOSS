@@ -165,7 +165,7 @@
     }
    
     function paramLoadGridDataApproval() {
-        var lcStatus = $("#StatusApproval_Find").val();
+        var lcStatus = -1;
         var lcButtonType = $("#ButtonTypeView").val();
         var lcFlagCallView = $("#FlagCallView").val();
 
@@ -193,7 +193,7 @@
         }
     }
 
-    function onSearchApprovalTest(e) {
+    function onLoadDataApprovalOrAuthorize(e) {
         refreshGridIDCApproval();
     }
 
@@ -297,7 +297,8 @@
 
         if (listItemChoice.length === 0) {
             $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + grid.dataSource.total());
-        } else {
+        } 
+        else {
             $("#idRowChoiceTmp").text("Yêu cầu đã chọn: " + listItemChoice.join(", "));
         }
 
@@ -328,14 +329,14 @@
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var lcEventApprovalView = $("#EventFlag_ApprovalView").val();
 
-        // var dSystemDateRow = dataItem.SystemDate;
-        // var dStartDateRow = dataItem.StartDate;
-        // if (dStartDateRow < dSystemDateRow) {
-        //     alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
-        //     $('#EffectiveDate').focus();
-        //     e.preventDefault();
-        //     return false;
-        // }
+        var dSystemDateRow = dataItem.SystemDate;
+        var dStartDateRow = dataItem.StartDate;
+        if (dStartDateRow < dSystemDateRow) {
+            alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
+            $('#EffectiveDate').focus();
+            e.preventDefault();
+            return false;
+        }
         openAuthorizeWindow(dataItem,lcEventApprovalView,"Trình duyệt thông tin người dùng IDC");
     }
 
@@ -343,14 +344,14 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var lcEventAuthorizeView = $("#EventFlag_AuthorizeView").val();
-        // var dSystemDateRow = dataItem.SystemDate;
-        // var dStartDateRow = dataItem.StartDate;
-        // if (dStartDateRow < dSystemDateRow) {
-        //     alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
-        //     $('#EffectiveDate').focus();
-        //     e.preventDefault();
-        //     return false;
-        // }
+        var dSystemDateRow = dataItem.SystemDate;
+        var dStartDateRow = dataItem.StartDate;
+        if (dStartDateRow < dSystemDateRow) {
+            alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
+            $('#EffectiveDate').focus();
+            e.preventDefault();
+            return false;
+        }
         openAuthorizeWindow(dataItem,lcEventAuthorizeView,"Phê duyệt thông tin người dùng IDC");
     }
 
@@ -527,6 +528,111 @@
             console.error("Kendo Grid Error:", e.errors);  // Debug console để xem lỗi backend (F12)
         }
     }
+
+
+     function onCloseUpdateApproval(ev) {
+        mainWindow.data("kendoWindow").close();
+    }
+    function onCloseUpdateAuthorize(ev) {
+        mainWindow.data("kendoWindow").close();
+    }
+
+
+    function onClickRejectApproval(e) {
+        var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
+
+        var lcReasonRejectInput = $("#ReasonReject").val();
+        if (lcReasonRejectInput == "" || lcReasonRejectInput == null) {
+            alert("Bạn phải nhập lý do từ chối đối với các yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người dùng đã tích chọn. Vui lòng kiểm tra lại!");
+            e.preventDefault();
+            $("#ReasonReject").focus();
+            return false;
+        }
+
+        var listUserIdChoiceApprovalTmp = [];
+
+        var grid = $("#gridMainIDCApproval").data("kendoGrid");
+        grid.tbody.find(".depProductCheckSelect:checked").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = grid.dataItem(row);
+
+            if (!dataItem) return;
+            var dataTempRow = {
+                    Id: dataItem.Id,
+                    UserId: dataItem.UserId,
+                    Status: dataItem.Status
+                };
+            listUserIdChoiceApprovalTmp.push(dataTempRow);
+        });
+        if (listUserIdChoiceApprovalTmp.length === 0) {
+            alert("Bạn chưa chọn danh sách yêu cầu [" + lcFunctionTypeNameChoice + "] trên lưới dữ liệu đối với tài khoản người dùng để từ chối. Vui lòng kiểm tra lại!");
+            return;
+        }
+        var iCountUserdChoice = listUserIdChoiceApprovalTmp.length.toString();
+        var bIsQuestion = confirm("Bạn có chắc chắn muốn Từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người dùng này không?");
+        if (bIsQuestion == true) {
+
+            var lcFlagCallView = $("#EventFlag_RejectView").val();
+            var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
+            var lcBusinessDateTextView = $("#BusinessDateTextApprovalView").val();
+            var lcFunctionTypeReject = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+            var lcPosCodeReject = $("#MainPosCodeApproval_Find").data("kendoComboBox").value();
+            
+            var formData = new FormData();      //Tạo FormData
+            // Append list data
+            formData.append("pFlagCall", lcFlagCallView);
+            formData.append("pListRejectData", JSON.stringify(listUserIdChoiceApprovalTmp));
+            formData.append("pFunctionType", lcFunctionTypeReject);
+            formData.append("pMainPosCode", lcPosCodeReject);
+            formData.append("pPosCode", lcPosCodeReject);
+            formData.append("pSystemDate", lcSystemDateTextView);
+            formData.append("pBusinessDate", lcBusinessDateTextView);
+            $.ajax({
+                
+                url: '@Url.Action("SaveRejectFunctionTypeOfUserIDC ", "UserManagementIDC")',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (resultSaveUpdate) {
+                    if (resultSaveUpdate === "0") {
+                        alert("Bạn đã trình duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
+                        dataChange = false;
+                        refreshGridIDCApproval();
+                    }
+                    else if (resultSaveUpdate === "-1") {
+                        alert("Lỗi khi lưu dữ liệu người dùng IDC");
+                    }
+                    else if (resultSaveUpdate === "-2") {
+                        alert("Thực hiện gọi API không thành công: Thay đổi tài khoản người dùng thất bại");
+                    }
+                    else if (resultSaveUpdate == "5") {
+                        alert("Thực hiện cập nhật thay đổi quyền tiền mặt không thành công. Vui lòng thực hiện lại!");
+                    }
+                    else if (resultSaveUpdate == "6") {
+                        alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
+                    }
+                    else if (resultSaveUpdate == "9") {
+                            alert("Người dùng này đang bị khóa, không thể thực hiện chức năng này. Vui lòng kiểm tra lại!");
+                    }
+                    else {
+                        alert("Có lỗi xảy ra!");
+                    }
+                },
+                error: function (xhr) {
+                    console.error(xhr.responseText);
+                    alert("Lỗi hệ thống!");
+                }
+            });
+
+        }
+        else {
+            alert("Thao tác Từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người bị hủy bỏ!");
+        }
+    }
+
+
+
 </script>
 
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
@@ -564,7 +670,7 @@
                 .DataValueField("id")
                 .ClearButton(false)
                 .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchApprovalFind"); }).ServerFiltering(false); })
-                .HtmlAttributes(new { style = "width: 230px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
                 .Suggest(true)
                 .AutoBind(true)
                 .SelectedIndex(0))
@@ -575,29 +681,14 @@
                 .DataValueField("Code")
                 .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
                 .Placeholder("Chọn nghiệp vụ yêu cầu")
-                .HtmlAttributes(new { style = "width: 270px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .Events(e => e.Change("Change_FunctionTypeApproval"))
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="width: 90px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
-            @(Html.Kendo().ComboBox().Name("StatusApproval_Find")
-                .Filter(FilterType.Contains)
-                .DataTextField("Text")
-                .DataValueField("Value")
-                .BindTo(new List<SelectListItem>() {
-                    new SelectListItem() { Text = "Tất cả", Value = "-1" },
-                    new SelectListItem() { Text = "Mở", Value = "1" },
-                    new SelectListItem() { Text = "Đóng", Value = "0" }
-                    })
-                .Suggest(true)
-                .AutoBind(true)
-                .HtmlAttributes(new { style = "padding-left: 3px;width: 130px; color: blue;", })
-                .SelectedIndex(0)
-                )
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
                 .Name("btnSearchApproval")
-                .Events(ev => ev.Click("onSearchApprovalTest"))
+                .Events(ev => ev.Click("onLoadDataApprovalOrAuthorize"))
                 .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue;padding-left: 0px; height: 25px;", title = "Tìm kiếm danh sách quyết định cấu hình lãi suất rút trước hạn TG CKH" })
                 .ImageUrl(Url.Content("~/images/tim_kiem.png"))
                 .Content(" Tìm kiếm "))
@@ -615,7 +706,7 @@
                 {
                     columns.Template("<input type='checkbox' class='depProductCheckSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAllProducts' />")
                         .Title("")
-                        .Width(50)
+                        .Width(40)
                         .HeaderHtmlAttributes(new { style = "text-align:center;" })
                         .HtmlAttributes(new { style = "text-align:center;" });
                     columns.Command(command =>
@@ -638,11 +729,11 @@
                             title = "Xem chi tiết thông tin yêu cầu thêm mới/thay đổi thông tin người dùng Intellect iDC",
                             @class = "btn-view"
                         });
-                    }).Width(90).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(80).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(70).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(60).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupName).Hidden();
@@ -682,7 +773,7 @@
                     columns.Bound(c => c.BusinessDate).Hidden();
                     columns.Bound(c => c.BusinessDateText).Hidden();
                 })
-                .HtmlAttributes(new { style = "height: 470px;color: navy; border: 1px solid #ddd;" })
+                .HtmlAttributes(new { style = "height: 430px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
                 {
                     toolbar.Custom().Text("In tờ trình").HtmlAttributes(new {id = "btnPrintToTrinh",style = "height: 25px;width: 120px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;",title = "In tờ trình"});
@@ -706,7 +797,22 @@
             )
         </div>
     </div>
-    <div id="idRowChoiceTmp" style="margin-top:2px; font-weight:bold;"></div>
+
+    <div id="idRowChoiceTmp" style="margin-top:2px; font-weight:normal;color:green;"></div>
+    <div class="row" style="margin-bottom: 1px; padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+        <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+            <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:7px; ">Lý do từ chối</label>
+            @Html.Kendo().TextBoxFor(m => m.ReasonReject).HtmlAttributes(new { placeholder = "Nhập lý do nếu muốn từ chối danh sách yêu cầu về người dùng đã chọn trên lưới dữ liệu", style = "width: 770px;max-width:100%;color: maroon;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+            &nbsp;
+            @(Html.Kendo().Button()
+                .Name("btnRejectApproval")
+                .Events(ev => ev.Click("onClickRejectApproval"))
+                .HtmlAttributes(new { type = "button", style = "width: 95px; font-weight:bold; color: blue;height: 25px;", title = "Từ chối yêu cầu người dùng Intellect iDC" })
+                .ImageUrl(Url.Content("~/images/note_delete.png"))
+                .Content("Từ chối&nbsp;"))
+        </div>
+    </div>
+    
 
     <hr style='margin-top: 0.3em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: blueviolet; height: 1px; line-height: 0; text-align: center; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
    
@@ -768,10 +874,10 @@
 
     </div> *@
 
-    <div id="divUploadFile" class="row" style="padding-top: 2px;">
+    <div id="divUploadFile" class="row" style="padding-top: 0px;padding-left: 0px; padding-right: 0px;">
 
         <!-- BÊN TRÁI -->
-        <div class="col-md-10">
+        <div class="col-md-9" style="padding-top: 0px;padding-left: 0px; padding-right: 0px;">
 
             <!-- input file -->
             <input type="file"
@@ -789,40 +895,41 @@
             </button>
 
             <!-- danh sách file -->
-            <div id="fileList" style="margin-top:0px;padding-top: 1px;padding-bottom: 1px;"></div>
+            <div id="fileList" style="margin-top:0px;padding-top: 1px;padding-bottom: 1px;padding-left: 0px; padding-right: 0px;"></div>
         </div>
 
         <!-- BÊN PHẢI -->
-        <div class="col-md-2 text-right">
-
-            @(Html.Kendo().Button()
-                        .Name("btnApprovalAll")
-                        .HtmlAttributes(new
-                        {
-                            type = "button",
-                            style = "font-weight:bold; width:135px; color: blue; height: 25px;",
-                            title = "Trình duyệt/Phê duyệt người dùng IDC"
-                        })
-                        .ImageUrl(Url.Content("~/images/note_add.png"))
-                        .Content("Lưu trình duyệt &nbsp;"))
+        <div class="col-md-3 text-right" style="padding-top: 0px;padding-left: 0px; padding-right: 0px;">
+            @(Html.Kendo().Button().Name("btnApprovalAll")
+                .HtmlAttributes(new
+                {
+                    type = "button",
+                    style = "font-weight:bold; width:110px; color: blue; height: 25px;",
+                    title = "Trình duyệt yêu cầu về tài khoản người dùng người dùng Intellect IDC (Theo danh sách tích chọn)"
+                }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Trình duyệt &nbsp;"))
+            &nbsp;
+            @(Html.Kendo().Button().Name("btnCloseApproval").Events(ev => ev.Click("onCloseUpdateApproval")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
 
         </div>
 
     </div>
 
     <div id="divFileAttached"  class="row" style="padding-top: 5px;">
-        <div class="col-md-10 d-flex align-items-center">
+        <div class="col-md-9 d-flex align-items-center">
             <span class="lbcontrol" style="text-align: right; color: navy;width:95px;padding-right:5px;font-weight:bold;">File đính kèm</span>
             <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachfileIdQDKT"><span style="color:red;"></span><span id="_no_file_attachId"></span> </div>
         </div>
-        <div class="col-md-2 text-right">
+        <div class="col-md-3 text-right">
             @(Html.Kendo().Button().Name("btnAuthorizeAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:135px; color: blue; height: 25px;", title = "Trình duyệt/Phê duyệt người dùng IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu phê duyệt &nbsp;"))
+            @(Html.Kendo().Button().Name("btnCloseAuthorize").Events(ev => ev.Click("onCloseUpdateAuthorize")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
         </div>
     </div>
 </div>
 
 
 <script>
+
+   
     $(document).ready(function () {
         $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC ĐỀ NGHỊ THAY ĐỔI</label>");
         var lcFlagCallView = $("#FlagCallView").val();
@@ -837,129 +944,6 @@
             $("#divFileAttached").hide();
             $("#divUploadFile").show();
         }
-
-
-    //            $("#btnChooseFile").click(function () {
-
-    //     $("#fileUpload").click();
-
-    // });
-
-    // $("#fileUpload").on("change", function () {
-
-    //     if (!this.files || this.files.length === 0) {
-
-    //         resetFile();
-
-    //         return;
-    //     }
-
-    //     var file = this.files[0];
-
-    //     var fileName = file.name.toLowerCase();
-
-    //     // chỉ cho phép PDF
-    //     if (!fileName.endsWith(".pdf")) {
-
-    //         alert("Chỉ cho phép upload file PDF");
-
-    //         resetFile();
-
-    //         return;
-    //     }
-
-    //     // hiển thị tên file
-    //     $("#fileName").text(file.name);
-
-    //     // hiện button
-    //     $("#btnRemoveFile").show();
-
-    //     $("#btnViewFile").show();
-
-    //     // tạo url preview
-    //     currentPdfUrl = URL.createObjectURL(file);
-
-    //     // mở preview luôn
-    //     openPdfPreview();
-    // });
-
-    // // nút xem chi tiết
-    // $("#btnViewFile").click(function () {
-
-    //     openPdfPreview();
-
-    // });
-
-    // // nút xóa
-    // $("#btnRemoveFile").click(function () {
-
-    //     resetFile();
-
-    // });
-
-    // function openPdfPreview() {
-
-    //     if (!currentPdfUrl) {
-
-    //         return;
-    //     }
-
-    //     window.open(
-    //         currentPdfUrl,
-    //         "_blank",
-    //         "width=1200,height=800"
-    //     );
-    // }
-
-    // function resetFile() {
-
-    //     $("#fileUpload").val("");
-
-    //     $("#fileName").text("Chưa chọn file");
-
-    //     $("#btnRemoveFile").hide();
-
-    //     $("#btnViewFile").hide();
-
-    //     currentPdfUrl = null;
-    // }
-
-        // $("#btnChooseFile").click(function () {
-        //     $("#fileUpload").click();
-        // });
-        // $("#fileUpload").on("change", function () {
-        //     if (this.files && this.files.length > 0) {
-        //         $("#fileName").text(this.files[0].name);
-        //         $("#btnRemoveFile").show();
-        //     } else {
-        //         resetFile();
-        //     }
-        // });
-        
-        // // Click nút xóa
-        // $("#btnRemoveFile").click(function () {
-        //     resetFile();
-        // });
-        // function resetFile() {
-        //     $("#fileUpload").val("");   // xóa file
-        //     $("#fileName").text("Chưa chọn file");
-        //     $("#btnRemoveFile").hide();
-        // }
-
-        // $("#fileUpload").on("change", function () {
-        //     if (!this.files || this.files.length === 0) return;
-
-        //     var file = this.files[0];
-        //     var fileName = file.name.toLowerCase();
-
-        //     if (!fileName.endsWith(".pdf")) {
-        //         alert("Chỉ cho phép upload file PDF");
-        //         resetFile();
-        //         return;
-        //     }
-        //     $("#fileName").text(file.name);
-        //     $("#btnRemoveFile").show();
-        // });
 
         var cboMainPosCodeApprovalFind = $("#MainPosCodeApproval_Find").data("kendoComboBox");
         var lcMainPosCodeView = $("#MainPosCodeView").val();
@@ -1092,16 +1076,12 @@
                 alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng cầu phải đính kèm tờ trình (dạng file PDF). Vui lòng đính kèm tờ trình!");
                 return;
             }
-            // if (!fileUploadUserIDC.name.toLowerCase().endsWith(".pdf")) {
-            //     alert("Tờ trình đính kèm yêu cầu [" + lcFunctionTypeNameChoice + "] của tài khoản người dùng không phải là file PDF. Vui lòng kiểm tra lại!");
-            //     return;
-            // }
         }
         var cboFunctionTypeChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox");
         var cboMainPosCodeChoice = $("#MainPosCodeApproval_Find").data("kendoComboBox");
         //Tạo FormData
         var formData = new FormData();
-        // append list data
+        // Append list data
         formData.append("pFlagCall", lcFlagCallView);
         formData.append("pListApprovalData", JSON.stringify(listUserIdChoiceApprovalTmp));
         formData.append("pFunctionType", cboFunctionTypeChoice.value());
@@ -1110,17 +1090,15 @@
         formData.append("pSystemDate", lcSystemDateTextView);
         formData.append("pBusinessDate", lcBusinessDateTextView);
         var iCountUserdChoice = listUserIdChoiceApprovalTmp.length.toString();
-        // append file
+        // Append file
         if (fileUploadUserIDC) {
-            //formData.append("pFileUpload", fileUploadUserIDC);
-            // Append nhiều file (quan trọng)           alert(fileUploadUserIDC.length);
             for (let i = 0; i < fileUploadUserIDC.length; i++) {
                 formData.append("pFileUpload", fileUploadUserIDC[i].file);   // Backend nhận nhiều file cùng tên
             }
         }
 
         $.ajax({
-            url: "/UserManagementIDC/SaveUpdateApprovalOrAuthorize",
+            url: '@Url.Action("SaveUpdateApprovalOrAuthorize", "UserManagementIDC")',
             type: "POST",
             data: formData,
             processData: false,
@@ -1160,8 +1138,6 @@
             }
         });
     });
-
-
 
     $("#btnChooseFile").click(function () {
         $("#fileUpload").click();
