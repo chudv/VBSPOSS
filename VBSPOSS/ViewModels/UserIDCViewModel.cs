@@ -139,6 +139,10 @@ namespace VBSPOSS.ViewModels
         public string SystemDateText { get; set; }
         public string ListFileId { get; set; }
         public string ReasonReject { get; set; }
+        public string MainPosCode { get; set; }
+        public string MainPosName { get; set; }
+        public string MainPosCodeOld { get; set; }
+        public string MainPosNameOld { get; set; }
     }
 
     /// <summary>

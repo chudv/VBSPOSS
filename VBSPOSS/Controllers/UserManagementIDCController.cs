@@ -128,11 +128,20 @@ namespace VBSPOSS.Controllers
                 if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) 
                     && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
                 {
-                    if (!string.IsNullOrEmpty(pPosCode) && pPosCode == UserPosCode)
+                    var listPosTMP = _serviceLOV.GetBranchSearch("99", 0, "", "", "", "", "");
+                    if (listPosTMP != null && listPosTMP.Count != 0)
                     {
-                        sMainPosCode = pPosCode;
-                        pPosCode = "";
-                    }
+                        var sMainPosTemp = listPosTMP.Where(w => w.Code == pPosCode).Select(s => s.MainPosCode).FirstOrDefault();
+                        if (sMainPosTemp == pPosCode)
+                        {
+                            sMainPosCode = sMainPosTemp;
+                            pPosCode = "";
+                        }
+                        else
+                        {
+                            sMainPosCode = "";
+                        }
+                    } 
                 }
                 DateTime dBusinessDateTmp = _serviceTransPoint.GetDateInCoreIDC("1").Date;
                 DateTime dSystemDateTemp = _serviceTransPoint.GetDateInCoreIDC("0").Date;
@@ -1172,6 +1181,7 @@ namespace VBSPOSS.Controllers
         ///             20 - Tài khoản người dùng có ngày hết hiệu lực nhỏ hơn ngày hiện thời, không thể thực hiện yêu cầu nghiệp vụ mở lại tài khoản
         ///             21 - Yêu cầu nghiệp vụ thay đổi quyền tài khoản người dùng có ngày bắt đầu lớn hơn ngày kết thúc
         ///             22 - Yêu cầu nghiệp vụ thay đổi POS tài khoản người dùng nhưng đơn vị mới thay đổi có giá trị như đơn vị cũ
+        ///             26 - Yêu cầu nghiệp vụ nđã tồn tại
         /// </returns>
         public async Task<int> IsValidSaveUserManagementIDC(UserManagementIDCViewModel pUserManagementIDCUpdate, string pFlagCall)
         {
@@ -1281,7 +1291,7 @@ namespace VBSPOSS.Controllers
                                     && w.PosCode == pUserManagementIDCUpdate.PosCode
                                     && w.MobileNumber == pUserManagementIDCUpdate.MobileNumber
                                     && w.EmailAddress == pUserManagementIDCUpdate.EmailAddress
-                                    && (pUserManagementIDCUpdate.Id == 0 || w.Id == pUserManagementIDCUpdate.Id)
+                                    && (pUserManagementIDCUpdate.Id == 0 || w.Id != pUserManagementIDCUpdate.Id)
                                     ).OrderByDescending(o => o.Id).FirstOrDefault();
                     if (objUserIDCManagementExists != null && !string.IsNullOrEmpty(objUserIDCManagementExists.UserId))
                         return 26;
@@ -1442,6 +1452,12 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
 
+            TempData["AuthorizePermissionFlag"] = userPermission.AuthorizePermissionFlag;
+            TempData["ReportPermissionFlag"] = userPermission.ReportPermissionFlag;
+            TempData["CreatePermissionFlag"] = userPermission.CreatePermissionFlag;
+            TempData["EditPermissionFlag"] = userPermission.EditPermissionFlag; 
+            TempData["DeletePermissionFlag"] = userPermission.DeletePermissionFlag;
+            TempData["ViewPermissionFlag"] = userPermission.ViewPermissionFlag;
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll(true);
 
             return View("IndexApproveUserManagementIDC");
@@ -1500,7 +1516,8 @@ namespace VBSPOSS.Controllers
         /// <param name="pFlagCall">Sự kiện: Trình duyệt - EventFlag.EventFlag_Approval.Value; Phê duyệt - EventFlag.EventFlag_Authorize.Value</param>
         /// <param name="pButtonType">Chưa sử dụng</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        public async Task<ActionResult> ShowApprovalOrAuthorizeUserManagementIDC(string pMainPosCode, string pFlagCall, string pButtonType)
+        public async Task<ActionResult> ShowApprovalOrAuthorizeUserManagementIDC(string pMainPosCode, string pFlagCall, string pButtonType, string pAuthorizePermissionFlag,
+            string pReportPermissionFlag, string pCreatePermissionFlag, string pEditPermissionFlag, string pDeletePermissionFlag, string pViewPermissionFlag)
         {
             UserManagementIDCViewModel objPosUserIDCManagement = new UserManagementIDCViewModel();
 
@@ -1549,15 +1566,51 @@ namespace VBSPOSS.Controllers
             TempData["Role"] = sRoleUserLoad;
             TempData.Put("UserPermission", userPermission);
 
+            TempData["AuthorizePermissionFlagChild"] = string.IsNullOrEmpty(pAuthorizePermissionFlag) ? "0" : pAuthorizePermissionFlag;
+            TempData["ReportPermissionFlagChild"] = string.IsNullOrEmpty(pReportPermissionFlag) ? "0" : pReportPermissionFlag;
+            TempData["CreatePermissionFlagChild"] = string.IsNullOrEmpty(pCreatePermissionFlag) ? "0" : pCreatePermissionFlag;
+            TempData["EditPermissionFlagChild"] = string.IsNullOrEmpty(pEditPermissionFlag) ? "0" : pEditPermissionFlag;
+            TempData["DeletePermissionFlagChild"] = string.IsNullOrEmpty(pDeletePermissionFlag) ? "0" : pDeletePermissionFlag;
+            TempData["ViewPermissionFlagChild"] = string.IsNullOrEmpty(pViewPermissionFlag) ? "0" : pViewPermissionFlag;
             return PartialView(sNameView, objPosUserIDCManagement);
         }
 
 
         /// <summary>
-        /// Hàm thực hiện kiểm tra thông tin người dùng IDC trước khi lưu
-        ///  6 - Tài khoản người dùng cần khóa đã mở sổ tiền mặt đầu ngày
-        ///  9 - Kiểm tra trạng thái người dùng nếu là khóa thì sẽ báo lỗi
+        /// Hàm thực hiện kiểm tra thông tin người dùng Intellect IDC trước khi lưu vào bảng UserManagementIDC
         /// </summary>
+        /// <param name="listData">Danh sách người dùng cần kiểm tra theo List Model UserManagementIDCViewModel</param>
+        /// <param name="pFlagEventCall">Cờ xác định cập nhật Thêm/Sửa. 
+        ///                                 1 - Thêm mới bản ghi (EventFlag.EventFlag_Add.Value);
+        ///                                 2 - Chỉnh sửa thông tin bản ghi (EventFlag.EventFlag_Edit.Value)
+        ///                                 6 - Tạo mới/Chỉnh sửa bản ghi Yêu cầu nghiệp vụ (EventFlag.EventFlag_EditIDC.Value)
+        /// </param>
+        /// <returns>Kết quả. Giá trị: 
+        ///             0 - Hợp lệ;
+        ///             15 - Yêu cầu tạo mới tài khoản người dùng nhưng trạng thái bản ghi là đóng
+        ///             1 - Mã đơn vị của tài khoản người dùng Intellect iDC không được để trống
+        ///             2 - Mã cán bộ của tài khoản người dùng Intellect iDC không được để trống
+        ///             14 - Số điện thoại của người dùng không được để trống
+        ///             3 - Tài khoản người dùng có ngày hiệu lực bằng ngày hết hiệu lực
+        ///             4 - Tài khoản người dùng có ngày hiệu lực lớn hơn ngày hết hiệu lực
+        ///             12 - Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + lcEffectiveDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + lcBusinessDate + "]. Vui lòng kiểm tra lại!
+        ///             13 - Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + lcStartDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + lcBusinessDate + "]. Vui lòng kiểm tra lại
+        ///             5 - Tài khoản người dùng có phương thức xác thực thứ 2 là OTP nên không thể thực hiện tạo yêu cầu cấp lại mật khẩu
+        ///             6 - Tài khoản người dùng cần khóa đã mở sổ tiền mặt đầu ngày
+        ///             7 - Tài khoản người dùng có yêu cầu nghiệp vụ thay đổi thông tin nhưng thông tin (Quyền/Số điện thoại/Email) vẫn giữ nguyên
+        ///             8 - Ngày bắt đầu nhỏ hơn ngày hiện tại
+        ///             9 - Trạng thái người dùng đã được đóng, không thể thực hiện nghiệp vụ mở lại người dùng
+        ///             11 - Địa chỉ email của người dùng bị trống hoặc không phải email nội bộ của NHCSXH
+        ///             10 - Yêu cầu nghiệp vụ cấp mới tài khoản người dùng đã tồn tại trên hệ thống Intlelect iDC
+        ///             16 - Yêu cầu nghiệp vụ thay đổi tài khoản người dùng nhưng tài khoản người dùng không tồn tại trên hệ thống Intlelect iDC
+        ///             17 - Tài khoản người dùng khóa, nên không thể thực hiện yêu cầu nghiệp vụ Khóa tài khoản
+        ///             18 - Tài khoản người dùng có trạng thái khác đóng, không thể thực hiện yêu cầu nghiệp vụ mở lại người dùng
+        ///             19 - Tài khoản người dùng có ngày hết hiệu lực nhỏ hơn ngày hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ mở lại tài khoản
+        ///             20 - Tài khoản người dùng có ngày hết hiệu lực nhỏ hơn ngày hiện thời, không thể thực hiện yêu cầu nghiệp vụ mở lại tài khoản
+        ///             21 - Yêu cầu nghiệp vụ thay đổi quyền tài khoản người dùng có ngày bắt đầu lớn hơn ngày kết thúc
+        ///             22 - Yêu cầu nghiệp vụ thay đổi POS tài khoản người dùng nhưng đơn vị mới thay đổi có giá trị như đơn vị cũ
+        ///             26 - Yêu cầu nghiệp vụ thêm mới/thay đổi tài khoản người dùng Intellect iDC đã tồn tại
+        /// </returns>
         public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData, string pFlagEventCall)
         {
             int iResultCheckAll = 0;
@@ -1569,24 +1622,12 @@ namespace VBSPOSS.Controllers
                 {
                     if (itemCheck == null)
                         continue;
-
-                    int iResultCheckItem = await IsValidSaveUserManagementIDC(itemCheck, pFlagEventCall);
+                    int iResultCheckItem = await IsValidSaveUserManagementIDC(itemCheck, EventFlag.EventFlag_Add.Value.ToString());
                     if (iResultCheckItem != 0)
                     {
                         iResultCheckAll = iResultCheckItem;
                         break;
-                    }    
-                    /*
-                    var objViewUserIDCByApi = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(itemCheck.UserId);
-                    // Kiểm tra Trạng thái người dùng: 1 = Đóng/Khóa ; 2 = Mở/Active
-                    if (objViewUserIDCByApi.UserStatus == 1 && itemCheck.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
-                        return 9;
-                    //Kiểm tra đảm bảo user KHÔNG mở tiền mặt
-                    string startDate = itemCheck.StartDate.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture)?.ToUpper();
-                    int iCheckOpenCash = _userManagementIDCService.CheckOpenCashByUserId(itemCheck.UserId, startDate);
-                    if (iCheckOpenCash > 0)
-                        return 6;
-                    */
+                    }
                 }
                 return iResultCheckAll;
             }
@@ -1622,7 +1663,6 @@ namespace VBSPOSS.Controllers
         {
             List<long> saveFileStatus = null;
             string sListUserId = "", sListId = "";
-            long iVal = 1;
             try
             {
                 string sFunctionTypeNameTmp = string.IsNullOrEmpty(pFunctionType) ? "" : FunctionTypeFlag.GetByCode(pFunctionType).Description;
@@ -1643,6 +1683,7 @@ namespace VBSPOSS.Controllers
                     #region --- Lấy dữ liệu vào listDataNewTemp cho đầy đủ để kiểm tra ---
                     if (objUserManagementChangeTemp != null && !string.IsNullOrEmpty(objUserManagementChangeTemp.UserId))
                     {
+                        //var objUserIDCInfoByApi= await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserManagementChangeTemp.UserId);
                         var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
                         UserManagementIDCViewModel objUserManagementIDCUpd = new UserManagementIDCViewModel();
                         objUserManagementIDCUpd.Id = objUserManagementChangeTemp.Id;
@@ -1683,14 +1724,6 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.Status = objUserManagementChangeTemp.Status;
                         objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
                         objUserManagementIDCUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
-                        if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-                            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
-                        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-                            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
-                        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-                            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-                        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
-
                         objUserManagementIDCUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
                         objUserManagementIDCUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
                         objUserManagementIDCUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
@@ -1761,9 +1794,16 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
                         objUserManagementIDCUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
                         objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
+                        if (objUserManagementIDCUpd.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
+                            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+                        else if (objUserManagementIDCUpd.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
+                            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+                        else if (objUserManagementIDCUpd.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
+                            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
+                        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+
                         listDataNewTemp.Add(objUserManagementIDCUpd);
                     }
-
                     #endregion
                 }
                 var resultValue = await IsValidApprovalUserIDC(listDataNewTemp, pFlagCall);
@@ -1908,7 +1948,6 @@ namespace VBSPOSS.Controllers
         }
 
 
-        //
         /// <summary>
         /// Hàm thực hiện lưu thông tin và thực thi cho trường hợp Trình duyệt hoặc Phê duyệt yêu cầu về Tài khoản người dùng Intellect iDC
         /// </summary>

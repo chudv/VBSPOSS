@@ -3,10 +3,6 @@
 @using VBSPOSS.Models
 @using VBSPOSS.Constants
 
-@{
-    var userPermission = TempData.Get<RolePermissionModel>("UserPermission");
-    TempData.Keep("UserPermission");
-}
 <div id="myPopupApproval"></div>
 
 <style>
@@ -130,7 +126,6 @@
 
 </style>
 <script>
-    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
     var mainWindowApproval = $("#myPopupApproval");
     //var currentPdfUrl = null;
 
@@ -207,18 +202,17 @@
                 row.css("background-color", "white");
                 row.find("td").css("color", "red");
             }
-            
-            var lcFlagCallView = $("#FlagCallView").val();
-            if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-                row.find(".btn-auth").hide();
-                row.find(".btn-approval").show();
-            }
-            else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
-                row.find(".btn-approval").hide(); 
-                row.find(".btn-auth").show();
-            }
-            // row.find(".btn-approval").hide();
+            //var lcFlagCallView = $("#FlagCallView").val();
+            // if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             //     row.find(".btn-auth").hide();
+            //     row.find(".btn-approval").show();
+            // }
+            // else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+            //     row.find(".btn-approval").hide(); 
+            //     row.find(".btn-auth").show();
+            // }
+            row.find(".btn-approval").hide();
+            row.find(".btn-auth").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
@@ -273,13 +267,26 @@
                 updateSelectedRowIdUsers();
             });
 
-        // Đồng bộ lại giao diện sau databound
-        grid.tbody.find("tr").each(function () {
-            var $row = $(this);
-            var isChecked = $row.find(".depProductCheckSelect").is(":checked");
-            $row.toggleClass("row-selected-custom", isChecked);
-        });
-
+            // Đồng bộ lại giao diện sau databound
+            grid.tbody.find("tr").each(function () {
+                var $row = $(this);
+                var isChecked = $row.find(".depProductCheckSelect").is(":checked");
+                $row.toggleClass("row-selected-custom", isChecked);
+            });
+            
+            // var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
+            // var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
+            // var gridRoleByUser = this;
+            // gridRoleByUser.tbody.find("tr").each(function () {
+            // var dataItem = gridRoleByUser.dataItem(this);
+            
+            // if (lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") {
+            //     $(this).find(".k-grid-Authorize").hide();
+            // }
+            // if (lcReportPermitTmp == "0" || lcReportPermitTmp == "") {
+            //     $(this).find(".k-grid-Approval").hide();
+            // }
+        //});
     }
 
     function updateSelectedRowIdUsers() {
@@ -322,6 +329,74 @@
 
     function Change_FunctionTypeApproval(e) {
         addListAttachfilesLink();
+
+        var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
+        var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
+        var lcFlagCallView = $("#FlagCallView").val();
+        if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+            $("#btnPrintToTrinh").hide();
+            $("#divUploadFile").hide();
+            if (lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") {
+                $("#divFileAttached").hide();
+            }
+            else $("#divFileAttached").show();
+        }
+        else if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+            $("#divFileAttached").hide();
+            if (lcReportPermitTmp == "0" || lcReportPermitTmp == "") {
+                $("#divUploadFile").hide();
+            }
+            else $("#divUploadFile").show();
+        }
+        $("#idRejectDiv").show();
+        if ((lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") && (lcReportPermitTmp == "0" || lcReportPermitTmp == "")) {
+            $("#idRejectDiv").hide();
+        }
+
+        //Lấy yêu cầu nghiệp vụ để xem có quyền với từng cấp không
+        var lcUserGradeView = $("#UserGradeView").val();
+        var lcFunctionCode = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+        var lcFunctionName = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
+
+        if (lcFunctionCode != "" && lcFunctionCode != null) {
+            //Nếu là cấp Phòng giao dịch: Chỉ trình cho một số nghiệp vụ
+            if (lcUserGradeView == 1) {
+                //Cấp PGD: Không phê duyệt; Chỉ Trình duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
+                $("#divFileAttached").hide();
+                if (lcReportPermitTmp == "1") {
+                    if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
+                        $("#divUploadFile").hide();
+                        $("#idRejectDiv").hide();
+                    }
+                }
+            }
+            else if (lcUserGradeView == 2) {
+                //Cấp Chi nhánh: Phê duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
+                //               Trình duyệt: Thêm mới tài khoản; Hủy tài khoản; Thay đổi POS khác chi nhánh
+                if (lcReportPermitTmp == "1") {
+                    if ((lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()
+                            || lcFunctionCode == $("#FunctionTypeFlag_CHANGE_POSView").val())) {
+                        $("#divUploadFile").show();
+                        $("#idRejectDiv").show();
+                    }
+                    else {
+                        $("#divUploadFile").hide();
+                        $("#idRejectDiv").hide();
+                    }
+                }
+                if (lcAuthorizePermitTmp == "1") {
+                    if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
+                        $("#divFileAttached").hide();
+                        $("#divFileAttached").hide();
+                    }
+                    else {
+                        $("#divFileAttached").show();
+                        $("#divFileAttached").show();
+                    }
+                }
+            }
+        }
+        refreshGridIDCApproval();
     }
 
     function submitForApprovalIDC(e) {
@@ -660,6 +735,14 @@
 @Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
 @Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
 @Html.Hidden("FunctionTypeFlag_DELETE_USERView", TempData["FunctionTypeFlag_DELETE_USER"])
+
+@Html.Hidden("AuthorizePermissionFlagChildView", TempData["AuthorizePermissionFlagChild"])
+@Html.Hidden("ReportPermissionFlagChildView", TempData["ReportPermissionFlagChild"])
+@Html.Hidden("CreatePermissionFlagChildView", TempData["CreatePermissionFlagChild"])
+@Html.Hidden("EditPermissionFlagChildView", TempData["EditPermissionFlagChild"])
+@Html.Hidden("DeletePermissionFlagChildView", TempData["DeletePermissionFlagChild"])
+@Html.Hidden("ViewPermissionFlagChildView", TempData["ViewPermissionFlagChild"])
+
 <input type="hidden" id="hiddenApprovalData" name="ApprovalData" />
 <div style="flex-grow: 1; display: flex; flex-direction: column; padding-left: 0px;padding-right: 0px;">
     <div class="row" style="color: navy; padding-top: 0px;padding-bottom: 0px;padding-left: 0px;padding-right: 0px;">
@@ -687,6 +770,8 @@
                 .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .Events(e => e.Change("Change_FunctionTypeApproval"))
+                .Suggest(true)
+                .AutoBind(true)
                 .SelectedIndex(0))
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
@@ -732,11 +817,11 @@
                             title = "Xem chi tiết thông tin yêu cầu thêm mới/thay đổi thông tin người dùng Intellect iDC",
                             @class = "btn-view"
                         });
-                    }).Width(80).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(45).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(135).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(180).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.UserId).Title("Tài khoản").Width(65).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupName).Hidden();
@@ -775,6 +860,13 @@
                     columns.Bound(c => c.SystemDateText).Hidden();
                     columns.Bound(c => c.BusinessDate).Hidden();
                     columns.Bound(c => c.BusinessDateText).Hidden();
+                    columns.Bound(c => c.PosCodeOld).Hidden();
+                    columns.Bound(c => c.PosNameOld).Hidden();
+                    columns.Bound(c => c.MainPosCode).Hidden();
+                    columns.Bound(c => c.MainPosName).Hidden();
+                    columns.Bound(c => c.MainPosCodeOld).Hidden();
+                    columns.Bound(c => c.MainPosNameOld).Hidden();
+                    columns.Bound(c => c.FunctionType).Hidden();
                 })
                 .HtmlAttributes(new { style = "height: 430px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
@@ -802,7 +894,7 @@
     </div>
 
     <div id="idRowChoiceTmp" style="margin-top:2px; font-weight:normal;color:green;"></div>
-    <div class="row" style="margin-bottom: 1px; padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+    <div id="idRejectDiv" class="row" style="margin-bottom: 1px; padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
         <div class="col-md-12" style="vertical-align: bottom; color: navy;">
             <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:7px; ">Lý do từ chối</label>
             @Html.Kendo().TextBoxFor(m => m.ReasonReject).HtmlAttributes(new { placeholder = "Nhập lý do nếu muốn từ chối danh sách yêu cầu về người dùng đã chọn trên lưới dữ liệu", style = "width: 770px;max-width:100%;color: maroon;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
@@ -931,21 +1023,32 @@
 
 
 <script>
-
-   
     $(document).ready(function () {
-        $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH THÔNG TIN NGƯỜI DÙNG IDC ĐỀ NGHỊ THAY ĐỔI</label>");
-        var lcFlagCallView = $("#FlagCallView").val();
+        $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>HÀNG CHỜ DANH SÁCH THÔNG TIN NGƯỜI DÙNG INTELLECT IDC ĐỀ NGHỊ TẠO MỚI/THAY ĐỔI</label>");
+        var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
+        var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
         
+        var lcFlagCallView = $("#FlagCallView").val();
         if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
             $("#btnPrintToTrinh").hide();
             $("#divUploadFile").hide();
-            $("#divFileAttached").show();
+            if (lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") {
+                $("#divFileAttached").hide();
+            }
+            else $("#divFileAttached").show();
+
             addListAttachfilesLink();
         }
-        else if(lcFlagCallView == $("#EventFlag_ApprovalView").val()){
+        else if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             $("#divFileAttached").hide();
-            $("#divUploadFile").show();
+            if (lcReportPermitTmp == "0" || lcReportPermitTmp == "") {
+                $("#divUploadFile").hide();
+            }
+            else $("#divUploadFile").show();
+        }
+        if ((lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") && (lcReportPermitTmp == "0" || lcReportPermitTmp == ""))
+        {
+            $("#idRejectDiv").hide();
         }
 
         var cboMainPosCodeApprovalFind = $("#MainPosCodeApproval_Find").data("kendoComboBox");
@@ -955,6 +1058,8 @@
             // Trigger change để đồng bộ PosName nếu cần
             cboMainPosCodeApprovalFind.trigger("change");
         }
+
+        Change_FunctionTypeApproval();
     });
 
     //Hàm thực hiện gọi In tờ trình
@@ -1042,13 +1147,24 @@
     //Lưu thông tin Trinh duyệt hoặc Phê duyệt với yêu cầu người dùng
     $("#btnApprovalAll, #btnAuthorizeAll").click(function () {
         var listUserIdChoiceApprovalTmp = [];
-
+        var lcUserGradeView = $("#UserGradeView").val();
         var grid = $("#gridMainIDCApproval").data("kendoGrid");
         grid.tbody.find(".depProductCheckSelect:checked").each(function () {
             var row = $(this).closest("tr");
             var dataItem = grid.dataItem(row);
 
             if (!dataItem) return;
+            if (dataItem.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val()) {
+                if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_ApprovalView").val() && lcUserGradeView == "1") {
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện trình duyệt cấp Phòng giao dịch. Vui lòng đính kèm tờ trình!");
+                    return;
+                }
+                if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_AuthorizeView").val() 
+                        && (lcUserGradeView == "1" || lcUserGradeView == "2")) {
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện phê duyệt cấp PGD/Chi nhánh. Vui lòng đính kèm tờ trình!");
+                    return;
+                }
+            }
             var dataTempRow = {
                     Id: dataItem.Id,
                     UserId: dataItem.UserId,
@@ -1060,7 +1176,6 @@
             alert("Bạn chưa chọn danh sách yêu cầu để lưu thông tin trình duyệt/phê duyệt người dùng IDC. Vui chọn trình duyệt/phê duyệt!");
             return;
         }
-        
         var lcFlagCallView = $("#FlagCallView").val();
         var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
         var lcBusinessDateTextView = $("#BusinessDateTextApprovalView").val();
@@ -1080,6 +1195,7 @@
                 return;
             }
         }
+
         var cboFunctionTypeChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox");
         var cboMainPosCodeChoice = $("#MainPosCodeApproval_Find").data("kendoComboBox");
         //Tạo FormData
@@ -1108,29 +1224,70 @@
             contentType: false,
             success: function (resultSaveUpdate) {
                 if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-                    alert("Bạn đã trình duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
+                    alert("Bạn đã trình duyệt thành công " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
                     dataChange = false;
                     refreshGridIDCApproval();
-                } else if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
-                    alert("Bạn đã phê duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
-                    dataChange = false;
-                    refreshGridIDCApproval();
+                    resetFileList();
+                    var gridTmp = $("#gridMainIDCApproval").data("kendoGrid");
+                    $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + gridTmp.dataSource.total());
                 }
-                else if (resultSaveUpdate === "-1") {
-                    alert("Lỗi khi lưu dữ liệu người dùng IDC");
-                } 
-                else if (resultSaveUpdate === "-2") {
-                    alert("Thực hiện gọi API không thành công: Thay đổi tài khoản người dùng thất bại");
-                } 
-                else if (resultSaveUpdate == "5") {
-                    alert("Thực hiện cập nhật thay đổi quyền tiền mặt không thành công. Vui lòng thực hiện lại!");
-                } 
-                else if (resultSaveUpdate == "6") {
-                    alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
-                } 
-                else if (resultSaveUpdate == "9") {
-                        alert("Người dùng này đang bị khóa, không thể thực hiện chức năng này. Vui lòng kiểm tra lại!");
-                } 
+                else if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+                    alert("Bạn đã phê duyệt thành công " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
+                    dataChange = false;
+                    refreshGridIDCApproval();
+                    var gridTmp = $("#gridMainIDCApproval").data("kendoGrid");
+                    $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + gridTmp.dataSource.total());
+                }
+                else if (resultSaveUpdate == "15")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng nhưng tồn tại yêu cầu có trạng thái bản ghi là đóng. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "1")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tồn tại mã đơn vị của tài khoản người dùng Intellect iDC để trống. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "2")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tồn tại mã cán bộ của tài khoản người dùng Intellect iDC để trống. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "14")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tồn tại số điện thoại của người dùng để trống. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "3")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tồn tại Tài khoản người dùng có ngày hiệu lực bằng ngày hết hiệu lực. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "4")
+                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tồn tại tài khoản người dùng có ngày hiệu lực lớn hơn ngày hết hiệu lực. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "5")
+                    alert("Danh sách chọn tồn tại tài khoản người dùng có phương thức xác thực khi đăng nhập là OTP nên không thể thực hiện tạo yêu cầu [" + lcFunctionTypeNameChoice + "]. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "6")
+                    alert("Danh sách chọn tồn tại tài khoản người dùng đã mở sổ tiền mặt đầu ngày, nên không thể thực hiện tạo yêu cầu [" + lcFunctionTypeNameChoice + "] . Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "7")
+                    alert("Danh sách chọn tài khoản người dùng có yêu cầu [" + lcFunctionTypeNameChoice + "], nhưng thông tin (Quyền/Số điện thoại/Email) vẫn giữ nguyên. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "8")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày bắt đầu nhỏ hơn ngày hiện tại. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "9")
+                    alert("Danh sách chọn tồn tại tài khoản người dùng có trạng thái đóng, không thể thực hiện nghiệp vụ [" + lcFunctionTypeNameChoice + "]. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "10")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "], nhưng tài khoản người dùng đã tồn tại trên hệ thống Intellect iDC. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "11")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có địa chỉ email của người dùng bị trống hoặc không phải email nội bộ của NHCSXH. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "12")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày hiệu lực nhỏ hơn ngày mở sổ hiện tại của hệ thống Intelect iDC. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "13")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày bắt đầu nhỏ hơn ngày mở sổ hiện tại của hệ thống Intelect iDC. Vui lòng kiểm tra lại");
+                else if (resultSaveUpdate == "16")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có tài khoản không tồn tại trong hệ thống Intellect iDC. Vui lòng kiểm tra lại!");
+                else if (result == "17")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có tài khoản đang ở trạng thái đóng. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "18")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có tài khoản đang ở trạng thái đang mở. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "19")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày hết hiệu lực nhỏ hơn ngày mở sổ hiện thời của hệ thống Intellect iDC. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "20")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày hết hiệu lực nhỏ hơn ngày hiện tại. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "21")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày bắt đầu lớn hơn ngày kết thúc. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "22")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có đơn vị mới giống đơn vị cũ. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "23" || result == "24")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin địa chỉ email không hợp lệ. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "25")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin số điện thoại không hợp lệ. Vui lòng kiểm tra lại!");
+                else if (resultSaveUpdate == "26")
+                    alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin đã tồn tại. Vui lòng kiểm tra lại!");
                 else {
                     alert("Có lỗi xảy ra!");
                 }
@@ -1145,6 +1302,19 @@
     $("#btnChooseFile").click(function () {
         $("#fileUpload").click();
     });
+
+    function resetFileList() {
+        // 1. Xóa hết file trong mảng
+        uploadedFiles = [];
+
+        // 2. Xóa giao diện
+        $("#fileList").empty();
+
+        // 3. Reset input file
+        $("#fileUpload").val("");
+
+        console.log("Đã reset danh sách file.");
+    }
 
     $("#fileUpload").on("change", function () {
         if (!this.files || this.files.length === 0) {

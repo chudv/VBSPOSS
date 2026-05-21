@@ -194,16 +194,6 @@
             if (lcUserGradeView == "1") {
                 row.find(".btn-auth-main").hide();
             }
-
-            // var lcUserView = $("#UserPosCodeView").val();
-            // if (lcUserView != "000196" && lcUserView != "000100") {
-            //     row.find(".btn-auth-main").hide();
-            //     row.find(".btn-approval-main").show();
-            // }
-            // else {
-            //     row.find(".btn-approval-main").show();
-            //     row.find(".btn-auth-main").show();
-            // }
         }
         
         var grid = this;
@@ -218,7 +208,6 @@
                 $(this).find(".k-grid-Approval").hide();
             }
         });
-
     }
 
     var dataChange = false;
@@ -257,7 +246,13 @@
             data: {
                 pMainPosCode: dataItem.PosCode,
                 pFlagCall: eventCode,
-                pButtonType: ""
+                pButtonType: "",
+                pAuthorizePermissionFlag: $("#AuthorizePermissionFlagView").val(),
+                pReportPermissionFlag: $("#ReportPermissionFlagView").val(),
+                pCreatePermissionFlag: $("#CreatePermissionFlagView").val(),
+                pEditPermissionFlag: $("#EditPermissionFlagView").val(),
+                pDeletePermissionFlag: $("#DeletePermissionFlagView").val(),
+                pViewPermissionFlag: $("#ViewPermissionFlagView").val()
             }
         });
         wnd.center().open();
@@ -345,6 +340,13 @@
 @Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
 @Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
 @Html.Hidden("FunctionTypeFlag_DELETE_USERView", TempData["FunctionTypeFlag_DELETE_USER"])
+
+@Html.Hidden("AuthorizePermissionFlagView", TempData["AuthorizePermissionFlag"])
+@Html.Hidden("ReportPermissionFlagView", TempData["ReportPermissionFlag"])
+@Html.Hidden("CreatePermissionFlagView", TempData["CreatePermissionFlag"])
+@Html.Hidden("EditPermissionFlagView", TempData["EditPermissionFlag"])
+@Html.Hidden("DeletePermissionFlagView", TempData["DeletePermissionFlag"])
+@Html.Hidden("ViewPermissionFlagView", TempData["ViewPermissionFlag"])
 
 <hr style='margin-top: 0.0em; margin-bottom: 0.2em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 

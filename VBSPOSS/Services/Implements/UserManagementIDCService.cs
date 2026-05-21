@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -567,6 +568,7 @@ namespace VBSPOSS.Services.Implements
                             else
                                 return false;
                         }).OrderBy(o => o.PosCode).ThenByDescending(o=>o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
+                var listOfPosALL = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS).OrderBy(o => o.Code).ToList();
 
                 List<string> listUserIds = new List<string>();
                 listUserIds = listUserIDCManagementTemp.Select(s=>s.UserId).Distinct().ToList();
@@ -671,6 +673,13 @@ namespace VBSPOSS.Services.Implements
                                 }
                             }
                             objItem.ExistsInCore = 1;
+                            if (listOfPosALL != null && listOfPosALL.Count != 0)
+                            {
+                                objItem.MainPosCode = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosCode).FirstOrDefault()}";
+                                objItem.MainPosName = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosName).FirstOrDefault()}";
+                                objItem.MainPosCodeOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosCode).FirstOrDefault()}";
+                                objItem.MainPosNameOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosName).FirstOrDefault()}";
+                            }
                             listUserIDCManagement.Add(objItem);
                         }
                     }
@@ -745,6 +754,13 @@ namespace VBSPOSS.Services.Implements
                                 }
                             }
                             objItemMT.ExistsInCore = 1;
+                            if (listOfPosALL != null && listOfPosALL.Count != 0)
+                            {
+                                objItemMT.MainPosCode = $"{listOfPosALL.Where(w => w.Code == itemMT.PosCode).Select(s => s.MainPosCode).FirstOrDefault()}";
+                                objItemMT.MainPosName = $"{listOfPosALL.Where(w => w.Code == itemMT.PosCode).Select(s => s.MainPosName).FirstOrDefault()}";
+                                objItemMT.MainPosCodeOld = objItemMT.MainPosCode;
+                                objItemMT.MainPosNameOld = objItemMT.MainPosName;
+                            }
                             objItemMT.FullNameOld = string.IsNullOrEmpty(objItemMT.FullNameOld) ? objItemMT.FullName : objItemMT.FullNameOld;
                             listUserIDCManagement.Add(objItemMT);
                         }
@@ -1684,8 +1700,7 @@ namespace VBSPOSS.Services.Implements
                                 #endregion
                             }
 
-                            if ((objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code
-                                                || objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
+                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code
                                         && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
                             {
                                 bool bValidAuth = false;
@@ -2960,25 +2975,36 @@ namespace VBSPOSS.Services.Implements
 
                     if (apiResponse != null && (apiResponse.ResponseCode == "0" || apiResponse.ResponseCode == "00000"))
                     {
-                        objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultAddUser.SessionValReq = false;
+                        else
+                            objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+
                         objResultAddUser.PrevStatus = apiResponse.PrevStatus;
                         if (apiResponse.ResponseAttributes != null)
                             objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
                         else objResultAddUser.UserPassword = "";
                         objResultAddUser.ResponseCode = apiResponse.ResponseCode;
                         objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
-                        objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.Status))
+                            objResultAddUser.Status = false;
+                        else objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                     }
                     else
                     {
-                        objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultAddUser.SessionValReq = false;
+                        else
+                            objResultAddUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultAddUser.PrevStatus = apiResponse.PrevStatus;
                         if (apiResponse.ResponseAttributes != null)
                             objResultAddUser.UserPassword = string.IsNullOrEmpty(apiResponse.ResponseAttributes.UsrPasswd) ? "" : apiResponse.ResponseAttributes.UsrPasswd;
                         else objResultAddUser.UserPassword = "";
                         objResultAddUser.ResponseCode = apiResponse.ResponseCode;
                         objResultAddUser.ResponseMsg = apiResponse.ResponseMsg;
-                        objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.Status))
+                            objResultAddUser.Status = false;
+                        else objResultAddUser.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                     }
                 }
             }
@@ -2990,6 +3016,7 @@ namespace VBSPOSS.Services.Implements
             }
             return objResultAddUser;
         }
+
         /*
         {
             "ticket": "",    
@@ -3165,11 +3192,15 @@ namespace VBSPOSS.Services.Implements
                     }
                     else
                     {
-                        objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultChangeUserStatus.SessionValReq = true;
+                        else objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultChangeUserStatus.PrevStatus = apiResponse.PrevStatus ?? 0;
                         objResultChangeUserStatus.ResponseCode = apiResponse.ResponseCode;
                         objResultChangeUserStatus.ResponseMsg = apiResponse.ResponseMsg;
-                        objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.Status))
+                            objResultChangeUserStatus.Status = true;
+                        else objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                         objResultChangeUserStatus.EmailAddress = apiResponse.EmailAddress ?? "";
                         objResultChangeUserStatus.MobileNumber = apiResponse.MobileNumber ?? "";
                         objResultChangeUserStatus.UserId = apiResponse.UserId ?? "";
@@ -3279,11 +3310,15 @@ namespace VBSPOSS.Services.Implements
                     }
                     else
                     {
-                        objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultChangeUserStatus.SessionValReq = true;
+                        else objResultChangeUserStatus.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultChangeUserStatus.PrevStatus = apiResponse.PrevStatus ?? 0;
                         objResultChangeUserStatus.ResponseCode = apiResponse.ResponseCode;
                         objResultChangeUserStatus.ResponseMsg = apiResponse.ResponseMsg;
-                        objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.Status))
+                            objResultChangeUserStatus.Status = true;
+                        else objResultChangeUserStatus.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                         objResultChangeUserStatus.EmailAddress = apiResponse.EmailAddress ?? "";
                         objResultChangeUserStatus.MobileNumber = apiResponse.MobileNumber ?? "";
                         objResultChangeUserStatus.UserId = apiResponse.UserId ?? "";
@@ -3395,11 +3430,17 @@ namespace VBSPOSS.Services.Implements
                     }
                     else
                     {
-                        objResultResetUserPw.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultResetUserPw.SessionValReq = true;
+                        else
+                            objResultResetUserPw.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultResetUserPw.PrevStatus = apiResponse.PrevStatus ?? 0;
                         objResultResetUserPw.ResponseCode = apiResponse.ResponseCode;
                         objResultResetUserPw.ResponseMsg = apiResponse.ResponseMsg;
-                        objResultResetUserPw.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
+                        if (string.IsNullOrEmpty(apiResponse.Status))
+                            objResultResetUserPw.Status = true;
+                        else
+                            objResultResetUserPw.Status = apiResponse.Status.Trim().ToLower().Equals("true") ? true : false;
                         objResultResetUserPw.EmailAddress = apiResponse.EmailAddress ?? "";
                         objResultResetUserPw.MobileNumber = apiResponse.MobileNumber ?? "";
                         objResultResetUserPw.UserId = apiResponse.UserId ?? "";
@@ -3523,7 +3564,11 @@ namespace VBSPOSS.Services.Implements
                     }
                     else
                     {
-                        objResultModifyUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
+                        objResultModifyUser.StatusCode = apiResponse.StatusCode ?? ResultValueAPI.ResultValue_Status_Success;
+                        if (string.IsNullOrEmpty(apiResponse.SessionValReq))
+                            objResultModifyUser.SessionValReq = (objResultModifyUser.StatusCode == ResultValueAPI.ResultValue_Status_Success) ? true : false;
+                        else
+                            objResultModifyUser.SessionValReq = apiResponse.SessionValReq.Trim().ToLower().Equals("true") ? true : false;
                         objResultModifyUser.PrevStatus = apiResponse.PrevStatus ?? 0;
                         objResultModifyUser.ResponseCode = apiResponse.ResponseCode;
                         objResultModifyUser.ResponseMsg = apiResponse.ResponseMsg;
@@ -3540,7 +3585,6 @@ namespace VBSPOSS.Services.Implements
                         objResultModifyUser.MailFlag = "";
                         objResultModifyUser.PosCode = apiResponse.PosCode ?? "";
                         objResultModifyUser.UserRole = apiResponse.UserRole ?? "";
-                        objResultModifyUser.StatusCode = apiResponse.StatusCode ?? ResultValueAPI.ResultValue_Status_Success;
                     }
                 }
             }
@@ -3769,7 +3813,7 @@ namespace VBSPOSS.Services.Implements
                         {
                             objResultPendingTrans.ResponseCode = apiResponseIDC.ResponseCode;
                             objResultPendingTrans.ResponseMsg = apiResponseIDC.ResponseMsg;
-                            objResultPendingTrans.TxnStatus = apiResponseIDC.TxnStatus.Trim();
+                            objResultPendingTrans.TxnStatus = string.IsNullOrEmpty(apiResponseIDC.TxnStatus) ? "" : apiResponseIDC.TxnStatus.Trim();
                             List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
                             if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
                             {
@@ -3807,7 +3851,7 @@ namespace VBSPOSS.Services.Implements
                             {
                                 objResultPendingTrans.ResponseCode = apiResponseLMS.ResponseCode;
                                 objResultPendingTrans.ResponseMsg = apiResponseLMS.ResponseMsg;
-                                objResultPendingTrans.TxnStatus = apiResponseLMS.TxnStatus.Trim();
+                                objResultPendingTrans.TxnStatus = (string.IsNullOrEmpty(apiResponseLMS.TxnStatus)) ? "" : apiResponseLMS.TxnStatus.Trim();
                             }
                             List<PendingTransactionInforRecords> listTransPending = new List<PendingTransactionInforRecords>();
                             if (objResultPendingTrans.Records != null && objResultPendingTrans.Records.Count != 0)
