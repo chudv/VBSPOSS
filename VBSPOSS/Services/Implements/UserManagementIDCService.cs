@@ -1967,6 +1967,65 @@ namespace VBSPOSS.Services.Implements
 
 
 
+        /// <summary>
+        /// Hàm thực hiện từ chối bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
+        /// Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value hoặc StatusBusinessFlow.Status_Branch_Approved.Value
+        /// </summary>
+        /// <param name="pListUserIdReject">Danh sách người dùng cần từ chối. Ví dụ: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
+        /// <param name="pReasonReject">Lý do từ chối</param>
+        /// <param name="pFunctionType">Mã loại yêu cầu về người dùng</param>
+        /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserNameUpd">Người thực hiện trình duyệt</param>
+        /// <param name="pFlagCall">Cờ Trình duyệt/Phê duyệt. Giá trị: EventFlag.EventFlag_Reject.Value</param>
+        /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
+        ///                 1 - PGD (PosGrade.SUB_POS);
+        ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
+        ///                 3 - TW (PosGrade.HEAD_POS)
+        /// </param>
+        /// <returns>Danh sách Id bản ghi được Update từ chối thành công</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<List<long>> UpdateStatusRejectUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdReject, string pReasonReject, string pFunctionType, 
+                                string pSystemDateText, string pUserNameUpd, string pFlagCall,int pUserGradeUpd)
+        {
+            List<long> listIdRejects = new List<long>();
+            int iCountUpdate = 0, iSaveChanges = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            try
+            {
+                
+                if (pListUserIdReject != null && pListUserIdReject.Count != 0)
+                {
+                    foreach (var itemIdReject in pListUserIdReject)
+                    {
+                        var objUserRejectUpdateStatus = _dbContext.UserManagementIDCs.Where(m => m.Id == itemIdReject.Id
+                                            && m.UserId == itemIdReject.UserId
+                                            && (m.Status != StatusBusinessFlow.Status_HeadOffice_Approved.Value && m.Status != StatusBusinessFlow.Status_Branch_Approved.Value)).OrderByDescending(o => o.Id).FirstOrDefault();
+                        if (objUserRejectUpdateStatus != null && !string.IsNullOrEmpty(objUserRejectUpdateStatus.UserId))
+                        {
+                            int statusOld = 0;
+                            statusOld = objUserRejectUpdateStatus.Status;
+                            objUserRejectUpdateStatus.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Rejected.Value : StatusBusinessFlow.Status_Branch_Rejected.Value;
+                            objUserRejectUpdateStatus.ApproverBy = pUserNameUpd;
+                            objUserRejectUpdateStatus.ApprovalDate = dCurrentDateTmp;
+                            objUserRejectUpdateStatus.ReasonReject = string.IsNullOrEmpty(pReasonReject) ? $"Từ chối yêu cầu {objUserRejectUpdateStatus.FunctionType}|{objUserRejectUpdateStatus.UserId}|{statusOld.ToString()}" : pReasonReject;
+                            iSaveChanges = await _dbContext.SaveChangesAsync();
+                            if (iSaveChanges > 0)
+                            {
+                                iCountUpdate++;
+                                listIdRejects.Add(objUserRejectUpdateStatus.Id);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"UpdateStatusRejectUserManagementIDC('{pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật từ chối danh sách yêu cầu về tài khoản người dùng Intellect iDC " +
+                                        $"UpdateStatusRejectUserManagementIDC(' {pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}", ex);
+            }
+            return listIdRejects;
+        }
 
 
 

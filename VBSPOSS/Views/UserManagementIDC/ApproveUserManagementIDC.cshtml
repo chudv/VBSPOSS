@@ -213,7 +213,7 @@
                 row.find(".btn-auth").hide();
                 row.find(".btn-approval").show();
             }
-            else if (lcButtonType == $("#EventFlag_AuthorizeView").val()) {
+            else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                 row.find(".btn-approval").hide(); 
                 row.find(".btn-auth").show();
             }
@@ -394,7 +394,7 @@
         var lcEventDetailView = $("#EventFlag_ViewView").val();
         var lcButtonType = "";
         var lcEventAuthorizeView = $("#EventFlag_AuthorizeView").val();
-        if (eventCodeView==lcEventDetailView) {
+        if (eventCodeView == lcEventDetailView) {
             
             lcButtonType = eventCodeView;
             eventCodeView = lcEventAuthorizeView;
@@ -537,10 +537,9 @@
         mainWindow.data("kendoWindow").close();
     }
 
-
     function onClickRejectApproval(e) {
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
-
+        var iCountRowAuthTmp =  0
         var lcReasonRejectInput = $("#ReasonReject").val();
         if (lcReasonRejectInput == "" || lcReasonRejectInput == null) {
             alert("Bạn phải nhập lý do từ chối đối với các yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người dùng đã tích chọn. Vui lòng kiểm tra lại!");
@@ -548,31 +547,40 @@
             $("#ReasonReject").focus();
             return false;
         }
-
-        var listUserIdChoiceApprovalTmp = [];
-
+        var listUserIdChoiceRejectApprovalTmp = [];
         var grid = $("#gridMainIDCApproval").data("kendoGrid");
         grid.tbody.find(".depProductCheckSelect:checked").each(function () {
             var row = $(this).closest("tr");
             var dataItem = grid.dataItem(row);
 
             if (!dataItem) return;
-            var dataTempRow = {
-                    Id: dataItem.Id,
-                    UserId: dataItem.UserId,
-                    Status: dataItem.Status
+            if (dataItem.Status != 3 & dataItem.Status !=6 ) {
+                var dataTempRow = {
+                        Id: dataItem.Id,
+                        UserId: dataItem.UserId,
+                        Status: dataItem.Status
                 };
-            listUserIdChoiceApprovalTmp.push(dataTempRow);
+                listUserIdChoiceRejectApprovalTmp.push(dataTempRow);
+            }
+            else {
+                iCountRowAuthTmp = iCountRowAuthTmp + 1;
+            }
         });
-        if (listUserIdChoiceApprovalTmp.length === 0) {
+
+        if (listUserIdChoiceRejectApprovalTmp.length === 0) {
             alert("Bạn chưa chọn danh sách yêu cầu [" + lcFunctionTypeNameChoice + "] trên lưới dữ liệu đối với tài khoản người dùng để từ chối. Vui lòng kiểm tra lại!");
             return;
         }
-        var iCountUserdChoice = listUserIdChoiceApprovalTmp.length.toString();
+        if (iCountRowAuthTmp > 0) {
+            alert("Danh sách yêu cầu [" + lcFunctionTypeNameChoice + "] trên lưới dữ liệu đối với tài khoản người dùng để từ chối có yêu cầu đã được phê duyệt. Vui lòng kiểm tra lại!");
+            return;
+        }
+
+        var iCountUserdChoice = listUserIdChoiceRejectApprovalTmp.length.toString();
         var bIsQuestion = confirm("Bạn có chắc chắn muốn Từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người dùng này không?");
         if (bIsQuestion == true) {
 
-            var lcFlagCallView = $("#EventFlag_RejectView").val();
+            var lcFlagCallRejectView = $("#EventFlag_RejectView").val();
             var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
             var lcBusinessDateTextView = $("#BusinessDateTextApprovalView").val();
             var lcFunctionTypeReject = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
@@ -580,43 +588,42 @@
             
             var formData = new FormData();      //Tạo FormData
             // Append list data
-            formData.append("pFlagCall", lcFlagCallView);
-            formData.append("pListRejectData", JSON.stringify(listUserIdChoiceApprovalTmp));
+            formData.append("pFlagCall", lcFlagCallRejectView);
+            formData.append("pListRejectData", JSON.stringify(listUserIdChoiceRejectApprovalTmp));
+            formData.append("pReasonReject", lcReasonRejectInput);
             formData.append("pFunctionType", lcFunctionTypeReject);
             formData.append("pMainPosCode", lcPosCodeReject);
             formData.append("pPosCode", lcPosCodeReject);
             formData.append("pSystemDate", lcSystemDateTextView);
             formData.append("pBusinessDate", lcBusinessDateTextView);
+            
             $.ajax({
                 
-                url: '@Url.Action("SaveRejectFunctionTypeOfUserIDC ", "UserManagementIDC")',
+                url: '@Url.Action("SaveRejectFunctionTypeOfUserIDC", "UserManagementIDC")',
                 type: "POST",
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (resultSaveUpdate) {
+                    var resultSaveUpdateNew = parseInt(resultSaveUpdate, 10);
                     if (resultSaveUpdate === "0") {
-                        alert("Bạn đã trình duyệt thành công danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
+                        alert("Bạn đã từ chối danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng đã chọn thành công!");
                         dataChange = false;
                         refreshGridIDCApproval();
                     }
-                    else if (resultSaveUpdate === "-1") {
-                        alert("Lỗi khi lưu dữ liệu người dùng IDC");
+                    else if (resultSaveUpdateNew > 0) {
+                        alert("Bạn đã từ chối danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng đã chọn, nhưng chỉ thực hiện thành công với " + resultSaveUpdateNew.toString() + " bản ghi có trạng thái hợp lệ!");
+                        dataChange = false;
+                        refreshGridIDCApproval();
                     }
                     else if (resultSaveUpdate === "-2") {
-                        alert("Thực hiện gọi API không thành công: Thay đổi tài khoản người dùng thất bại");
+                        alert("Cờ gọi cập nhật từ chối danh sách " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] không phải là cờ từ chối [" + lcFlagCallRejectView + "]. Vui lòng kiểm tra lại!");
                     }
-                    else if (resultSaveUpdate == "5") {
-                        alert("Thực hiện cập nhật thay đổi quyền tiền mặt không thành công. Vui lòng thực hiện lại!");
-                    }
-                    else if (resultSaveUpdate == "6") {
-                        alert("Người dùng này có mở sổ tiền mặt đầu ngày, không được phép sửa đổi. Vui lòng liên hệ quản trị viên!");
-                    }
-                    else if (resultSaveUpdate == "9") {
-                            alert("Người dùng này đang bị khóa, không thể thực hiện chức năng này. Vui lòng kiểm tra lại!");
+                    else if (resultSaveUpdate === "-1") {
+                        alert("Danh sách từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] thực hiện không thành công (Có thể do trạng thái không cho phép từ chối). Vui lòng kiểm tra lại!");
                     }
                     else {
-                        alert("Có lỗi xảy ra!");
+                        alert("Có lỗi xảy ra khi từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với các tài khoản người dùng được chọn. Vui lòng kiểm tra lại!!");
                     }
                 },
                 error: function (xhr) {
@@ -624,15 +631,11 @@
                     alert("Lỗi hệ thống!");
                 }
             });
-
         }
         else {
             alert("Thao tác Từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người bị hủy bỏ!");
         }
     }
-
-
-
 </script>
 
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
@@ -920,8 +923,8 @@
             <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachfileIdQDKT"><span style="color:red;"></span><span id="_no_file_attachId"></span> </div>
         </div>
         <div class="col-md-3 text-right">
-            @(Html.Kendo().Button().Name("btnAuthorizeAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:135px; color: blue; height: 25px;", title = "Trình duyệt/Phê duyệt người dùng IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Lưu phê duyệt &nbsp;"))
-            @(Html.Kendo().Button().Name("btnCloseAuthorize").Events(ev => ev.Click("onCloseUpdateAuthorize")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+            @(Html.Kendo().Button().Name("btnAuthorizeAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue; height: 25px;", title = "Phê duyệt yêu cầu với tài khoản người dùng Intellect IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Phê duyệt &nbsp;"))
+            @(Html.Kendo().Button().Name("btnCloseAuthorize").Events(ev => ev.Click("onCloseUpdateAuthorize")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 92px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
         </div>
     </div>
 </div>

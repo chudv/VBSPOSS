@@ -82,6 +82,26 @@ namespace VBSPOSS.Services.Interfaces
                                     string pUserNameUpd, string pFlagCall);
 
         /// <summary>
+        /// Hàm thực hiện từ chối bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
+        /// Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value hoặc StatusBusinessFlow.Status_Branch_Approved.Value
+        /// </summary>
+        /// <param name="pListUserIdReject">Danh sách người dùng cần từ chối. Ví dụ: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
+        /// <param name="pReasonReject">Lý do từ chối</param>
+        /// <param name="pFunctionType">Mã loại yêu cầu về người dùng</param>
+        /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserNameUpd">Người thực hiện trình duyệt</param>
+        /// <param name="pFlagCall">Cờ Trình duyệt/Phê duyệt. Giá trị: EventFlag.EventFlag_Reject.Value</param>
+        /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
+        ///                 1 - PGD (PosGrade.SUB_POS);
+        ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
+        ///                 3 - TW (PosGrade.HEAD_POS)
+        /// </param>
+        /// <returns>Danh sách Id bản ghi được Update từ chối thành công</returns>
+        /// <exception cref="Exception"></exception>
+        Task<List<long>> UpdateStatusRejectUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdReject, string pReasonReject, string pFunctionType,
+                                string pSystemDateText, string pUserNameUpd, string pFlagCall, int pUserGradeUpd);
+
+        /// <summary>
         /// Hàm tổng hợp số lượng yêu cầu của các chi nhánh về người dùng iDC để hiển thị hàng chờ phê duyệt
         /// </summary>
         /// <param name="pStartDateBegin">Ngày bắt đầu - Bắt đầu. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
