@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Kendo.Mvc.Extensions;
+using Kendo.Mvc.Infrastructure.Implementation;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -110,9 +111,11 @@ namespace VBSPOSS.Controllers
         /// <param name="pNickName">Mã UserId tài khoản người dùng</param>
         /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
         /// <param name="pStatus">Trạng thái</param>
+        /// <param name="pAuthorizePermission">Có quyền phê duyệt của UserName không: 0 hoặc 1</param>
+        /// <param name="pReportPermission">Có quyền trình duyệt của UserName không: 0 hoặc 1</param>
         /// <returns>Danh sách người người dùng thay đổi</returns>
         public async Task<ActionResult> LoadGridData_UserIDCManagement([DataSourceRequest] DataSourceRequest request, string pPosCode, string pFunctionType, 
-                                string pNickName, string pFullName, int pStatus, string pEventCode = "")
+                                string pNickName, string pFullName, int pStatus, string pEventCode = "", string pAuthorizePermission = "", string pReportPermission = "")
         {
             try
             {
@@ -131,7 +134,7 @@ namespace VBSPOSS.Controllers
                     var listPosTMP = _serviceLOV.GetBranchSearch("99", 0, "", "", "", "", "");
                     if (listPosTMP != null && listPosTMP.Count != 0)
                     {
-                        var sMainPosTemp = listPosTMP.Where(w => w.Code == pPosCode).Select(s => s.MainPosCode).FirstOrDefault();
+                        var sMainPosTemp = listPosTMP.Where(w => w.Code == pPosCode).Where(w => w.Status == StatusLov.StatusOpenPOS).Select(s => s.MainPosCode).FirstOrDefault();
                         if (sMainPosTemp == pPosCode)
                         {
                             sMainPosCode = sMainPosTemp;
@@ -146,9 +149,10 @@ namespace VBSPOSS.Controllers
                 DateTime dBusinessDateTmp = _serviceTransPoint.GetDateInCoreIDC("1").Date;
                 DateTime dSystemDateTemp = _serviceTransPoint.GetDateInCoreIDC("0").Date;
                 List<UserManagementIDCViewModel> listUserManagementIDCTmp = new List<UserManagementIDCViewModel>();
+                string sValueTmp = "";
                 if (pEventCode == EventFlag.EventFlag_Approval.Value.ToString())
                 {
-                    var listUserManagementIDCTmp01 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, true);
+                    var listUserManagementIDCTmp01 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, false);
                     listUserManagementIDCTmp = listUserManagementIDCTmp01.Where(w => w.Status == StatusBusinessFlow.Status_Created.Value
                                     || w.Status == StatusBusinessFlow.Status_Modified.Value).ToList();
                     if (listUserManagementIDCTmp != null && listUserManagementIDCTmp.Count != 0)
@@ -156,30 +160,40 @@ namespace VBSPOSS.Controllers
                         int iCountTemp = 0;
                         foreach(var itemUMIDC in listUserManagementIDCTmp)
                         {
+                            sValueTmp = "";
                             iCountTemp++;
                             itemUMIDC.OrderNo = iCountTemp;
                             itemUMIDC.SystemDate = dSystemDateTemp;
                             itemUMIDC.SystemDateText = dSystemDateTemp.ToString(FormatParameters.FORMAT_DATE);
                             itemUMIDC.BusinessDate = dBusinessDateTmp;
                             itemUMIDC.BusinessDateText = dBusinessDateTmp.ToString(FormatParameters.FORMAT_DATE);
-                        }    
+                            sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Approval.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
+                            itemUMIDC.ApprovalUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
+                            sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Authorize.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
+                            itemUMIDC.AuthorizeUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
+                        }
                     } 
                 }
                 else if (pEventCode == EventFlag.EventFlag_Authorize.Value.ToString())
                 {
-                    var listUserManagementIDCTmp02 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, true);
+                    var listUserManagementIDCTmp02 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, false);
                     listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.Status == StatusBusinessFlow.Status_Submitted.Value).ToList();
                     if (listUserManagementIDCTmp != null && listUserManagementIDCTmp.Count != 0)
                     {
                         int iCountTemp = 0;
                         foreach (var itemUMIDC in listUserManagementIDCTmp)
                         {
+                            sValueTmp = "";
                             iCountTemp++;
                             itemUMIDC.OrderNo = iCountTemp;
                             itemUMIDC.SystemDate = dSystemDateTemp;
                             itemUMIDC.SystemDateText = dSystemDateTemp.ToString(FormatParameters.FORMAT_DATE);
                             itemUMIDC.BusinessDate = dBusinessDateTmp;
                             itemUMIDC.BusinessDateText = dBusinessDateTmp.ToString(FormatParameters.FORMAT_DATE);
+                            sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Approval.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
+                            itemUMIDC.ApprovalUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
+                            sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Authorize.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
+                            itemUMIDC.AuthorizeUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
                         }
                     }
                 }
@@ -197,6 +211,7 @@ namespace VBSPOSS.Controllers
                 return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
             }
         }
+
 
         /// <summary>
         /// Hàm show màn hình nghiệp vụ Thêm mới hoặc Thay đổi thông tin bản ghi yêu cầu nghiệp vụ tài khoản người dùng Intellect iDC
@@ -411,7 +426,7 @@ namespace VBSPOSS.Controllers
                 }
                 #endregion
             }
-            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && string.IsNullOrEmpty(pButtonType))
+            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType)|| pButtonType.Length>2))
             {
                 #region ---3. Sự kiện xem chi tiết bản ghi Yêu cầu nghiệp vụ tài khoản người dùng ---
                 if (string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
@@ -1097,7 +1112,7 @@ namespace VBSPOSS.Controllers
                 sNameView = "UpdateUserManagementIDC";
             else if (pFlagCall == EventFlag.EventFlag_Edit.Value.ToString() && pId != 0 && pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
                 sNameView = "UpdateUserManagementIDC";
-            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && string.IsNullOrEmpty(pButtonType))
+            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType) || pButtonType.Length > 2))
             {
                 if (string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
                 {
@@ -2245,26 +2260,85 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        
 
-
-       
-        ///// <summary>
-        ///// Hàm lấy danh sách file đính kèm theo Phân loại file và Chỉ số danh mục chứa file (
-        ///// </summary>
-        ///// <param name="pDocumentId">Chỉ số xác định mã Pos Chi nhánh</param>
-        ///// <param name="pDocumentNumber">Chỉ số xác định loại nghiệp vụ </param>
-        ///// <returns>Danh sách các file đính kèm</returns>
-        //public JsonResult GetListAttachFile_ForGroupFile(int pDocumentId, string pDocumentNumber)
-        //{
-        //    ArrayList data = new ArrayList();
-        //    var files = _userManagementIDCService.GetAttachFileSearch(0, pDocumentId, "", "", pDocumentNumber, 1);
-        //    for (int i = 0; i < files.Count; i++)
-        //    {
-        //        data.Add(new { OwnerId = files[i].DocumentId, Id = files[i].FileId, FileName = files[i].FileName, Description = files[i].ContentDescription, FileNameNew = files[i].FileNameNew, PhanLoaiChiTiet = files[i].DocumentNumber });
-        //    }
-        //    return new JsonResult(data);
-        //}
+        /// <summary>
+        /// Hàm kiểm tra UserName thực hiện có quyền Trình duyệt hoặc Phê duyệt đối với nghiệp vụ yêu cầu về người dùng không?
+        /// Ví dụ: Nếu có quyền Trình duyệt nhưng với yêu cầu Tạo người dùng/Hủy User/Chuyển POS khác chi nhánh thì cấp PGD không được trình duyệt
+        /// Ví dụ: Nếu có quyền Phê duyệt nhưng với yêu cầu Tạo người dùng/Hủy User/Chuyển POS khác chi nhánh thì cấp Chi nhánh không được phê duyệt
+        /// </summary>
+        /// <param name="pEventCodeCheck">Cờ lấy giá trị Trình duyệt hay Phê duyệt: EventFlag.EventFlag_Approval.Value hoặc EventFlag.EventFlag_Authorize.Value</param>
+        /// <param name="pUserGrade">Cấp UserName. Giá trị 1 - PGD (PosGrade.SUB_POS); 2 - Chi nhánh (PosGrade.MAIN_POS); 3 - HSC/TTCNTT (PosGrade.HEAD_POS)</param>
+        /// <param name="pFunctionCode">Yêu cầu nghiệp vụ: Tạo mới; Thay đổi quyền... FunctionTypeFlag. </param>
+        /// <param name="pMainPosCode">Mã chi nhánh mới - Ấp dụng khi thay đổi POS</param>
+        /// <param name="pMainPosCodeOld">Mã chi nhánh cũ - Ấp dụng khi thay đổi POS</param>
+        /// <param name="pAuthorizePermission">Quyền phê duyệt: 0 - Không có quyền; 1 - Có quyền</param>
+        /// <param name="pReportPermission">Quyền trình duyệt: 0 - Không có quyền; 1 - Có quyền</param>
+        /// <returns></returns>
+        private string GetPermitApprovalOrAuthorizeForUserName(string pEventCodeCheck, int pUserGrade, string pFunctionCode,
+                                                               string pMainPosCode, string pMainPosCodeOld, string pAuthorizePermission, string pReportPermission)
+        {
+            string sResultValue = "";
+            try
+            {
+                if (pEventCodeCheck == EventFlag.EventFlag_Approval.Value.ToString())
+                {
+                    if (pReportPermission == "0")
+                        sResultValue = "0";
+                    else
+                    {
+                        if (pUserGrade == PosGrade.SUB_POS)
+                        {
+                            if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                                sResultValue = "0";
+                            else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
+                                sResultValue = "0";
+                            else sResultValue = "1";
+                        }
+                        else if (pUserGrade == PosGrade.MAIN_POS)
+                        {
+                            if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                                sResultValue = "1";
+                            else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
+                                sResultValue = "1";
+                            else sResultValue = "0";
+                        }
+                        else if (pUserGrade == PosGrade.HEAD_POS)
+                        {
+                            sResultValue = "1";
+                        }
+                    }
+                }
+                else if (pEventCodeCheck == EventFlag.EventFlag_Authorize.Value.ToString())
+                {
+                    if (pAuthorizePermission == "0")
+                        sResultValue = "0";
+                    else
+                    {
+                        if (pUserGrade == PosGrade.SUB_POS)
+                            sResultValue = "0";
+                        else if (pUserGrade == PosGrade.MAIN_POS)
+                        {
+                            if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                                sResultValue = "0";
+                            else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
+                                sResultValue = "0";
+                            else sResultValue = "1";
+                        }
+                        else if (pUserGrade == PosGrade.HEAD_POS)
+                        {
+                            sResultValue = "1";
+                        }
+                    }
+                }
+                return sResultValue;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"GetPermitApprovalOrAuthorizeForUserName('{pEventCodeCheck}',{pUserGrade},'{pFunctionCode}','{pMainPosCode}','{pMainPosCodeOld}','{pAuthorizePermission}','{pReportPermission}') => Error: {ex.Message}");
+                sResultValue = "-1";
+            }
+            return sResultValue;
+        }
 
         /// <summary>
         /// Hàm hiển thị file đính kèm lên Tab mới của trình duyệt

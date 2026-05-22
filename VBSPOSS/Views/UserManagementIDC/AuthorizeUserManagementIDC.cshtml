@@ -126,32 +126,6 @@
     }
 
     function onClickAuthorizeChild(e) {
-        var lcPosCode = $("#PosCode").val();
-        var lcStaffId = $("#StaffCode").val();
-        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
-            alert('Phòng giao dịch/Hội sở tỉnh không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#PosCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcStaffId == null || lcStaffId == "") {
-            alert('Cán bộ được phân giao quản lý địa bàn không được để trống. Bạn vui lòng kiểm tra lại!');
-            $('#StaffCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        var effectPicker = new Date();
-        var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
-        if (effectPicker && expirePicker) {
-            var dEffectDate = effectPicker.value();
-            var dExpiryDate = expirePicker.value();
-            if (dEffectDate && dExpiryDate && dEffectDate > dExpiryDate) {
-                alert('Ngày hết hiệu lực nhỏ hơn ngày hiện tại. Bạn vui lòng kiểm tra lại!');
-                $('#ExpiryDate').focus();
-                e.preventDefault();
-                return false;
-            }
-        }
         sendDataToParent($("#EventFlag_AuthorizeView").val(), $("#Status").val());
     }
 
@@ -235,7 +209,7 @@
                         $("#_no_file_attachIdUserIdChild").text("");
                         for (i = 0; i < files.length; i++) {
                             var iOrderNoTmp = i + 1;
-                            html = '<a title="' + files[i].ContentDescription + '" href="#" onclick=showFileApprovalUserIDC(' + files[i].DocumentId + ',' + files[i].FileId + ',"' + files[i].FileNameNew + '","' + lcUserIdTmp + '")' + '>' + ' [' + iOrderNoTmp + '] ' + "</a>&nbsp;";
+                            html = '<a title="' + files[i].ContentDescription + '" href="#" onclick=showFileApprovalChildUserIDC(' + files[i].DocumentId + ',' + files[i].FileId + ',"' + files[i].FileNameNew + '","' + lcUserIdTmp + '")' + '>' + ' [' + iOrderNoTmp + '] ' + "</a>&nbsp;";
                             $("#_no_file_attachIdUserIdChild").append(html);
                         }
                     }
@@ -243,8 +217,8 @@
             });
         }
     }
-
-    function showFileApprovalUserIDC(documentId, fileId, fileNameNew, userId) {
+    
+    function showFileApprovalChildUserIDC(documentId, fileId, fileNameNew, userId) {
         var win = window.open('../UserManagementIDC/LoadPdfFile?pDocumentId=' + documentId + '&' + 'pFileId=' + fileId + '&' + 'pFileName=' + fileNameNew, '_blank');
         if (win) {
             win.focus();
@@ -517,7 +491,7 @@
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
 
                 <div class="col-md-8 d-flex align-items-center">
-                    <span class="lbcontrol" style="text-align: right; color: navy;width:120px;padding-right:5px;font-weight:bold;">Tệp tin đính kèm</span>
+                    <span class="lbcontrol" style="text-align: right; color: navy;width:120px;padding-right:5px;font-weight:bold;padding-top:7px;">Tờ trình đính kèm</span>
                     <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachFileIdUserIdChild"><span style="color:red;"></span><span id="_no_file_attachIdUserIdChild"></span> </div>
                 </div>
                 <div class="col-md-4 text-right">

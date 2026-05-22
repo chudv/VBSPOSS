@@ -143,6 +143,14 @@ namespace VBSPOSS.ViewModels
         public string MainPosName { get; set; }
         public string MainPosCodeOld { get; set; }
         public string MainPosNameOld { get; set; }
+        /// <summary>
+        /// Có quyền thực hiện Phê duyệt yêu cầu với Người dùng hay không. Giá trị 0/1
+        /// </summary>
+        public int AuthorizeUserIDC { get; set; }
+        /// <summary>
+        /// Có quyền thực hiện Trình duyệt yêu cầu với Người dùng hay không. Giá trị 0/1
+        /// </summary>
+        public int ApprovalUserIDC { get; set; }
     }
 
     /// <summary>

@@ -124,6 +124,10 @@
         color: blue;
     }
 
+    #gridMainIDCApproval tbody tr:hover {
+        background-color: #e6f3ff !important;
+        cursor: pointer;
+    }
 </style>
 <script>
     var mainWindowApproval = $("#myPopupApproval");
@@ -170,14 +174,17 @@
         if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
             lcStatus = 1;
         }
-
+        var lcAuthorizePermissionFlagChildView = $("#AuthorizePermissionFlagChildView").val();
+        var lcReportPermissionFlagChildView = $("#ReportPermissionFlagChildView").val();
         return {
             pPosCode: $("#MainPosCodeApproval_Find").val(),
             pFunctionType: $("#FunctionTypeApproval_Find").val(),
             pNickName: "",
             pFullName: "",
             pStatus: lcStatus,
-            pEventCode: lcFlagCallView
+            pEventCode: lcFlagCallView,
+            pAuthorizePermission: lcAuthorizePermissionFlagChildView,
+            pReportPermission: lcReportPermissionFlagChildView
         };
     }
 
@@ -328,8 +335,6 @@
     }
 
     function Change_FunctionTypeApproval(e) {
-        addListAttachfilesLink();
-
         var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
         var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
         var lcFlagCallView = $("#FlagCallView").val();
@@ -434,14 +439,14 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var lcEventDetailView = $("#EventFlag_ViewView").val();
-        // var dSystemDateRow = dataItem.SystemDate;
-        // var dStartDateRow = dataItem.StartDate;
-        // if (dStartDateRow < dSystemDateRow) {
-        //     alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
-        //     $('#EffectiveDate').focus();
-        //     e.preventDefault();
-        //     return false;
-        // }
+        var dSystemDateRow = dataItem.SystemDate;
+        var dStartDateRow = dataItem.StartDate;
+        if (dStartDateRow < dSystemDateRow) {
+            alert("Yêu cầu [" + dataItem.FunctionTypeName + "] của tài khoản người dùng Intellect iDC [" + dataItem.UserId + "] có ngày bắt đầu [" + dataItem.StartDateText + "] nhỏ hơn ngày hiện thời của hệ thống [" + dataItem.SystemDateText + "], không thể thực hiện trình duyệt được. Vui lòng kiểm tra lại!");
+            $('#EffectiveDate').focus();
+            e.preventDefault();
+            return false;
+        }
         openAuthorizeWindow(dataItem,lcEventDetailView,"Xem chi tiết thông tin yêu cầu người dùng Intellect iDC");
     }
     
@@ -538,41 +543,7 @@
         $("#hiddenApprovalData").val(JSON.stringify(listApprovalData));
     }
 
-    function addListAttachfilesLink() {
-        var pMainPosCode = parseInt($("#MainPosCodeView").val(), 10) || 0;
-        var pFunctionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
-        $("#_no_file_attachId").text("");
-        if (pMainPosCode != 0) {
-            $.ajax({
-                type: "GET",
-                url: "../UserManagementIDC/GetListAttachFile_ForGroupFile?pDocumentId=" + pMainPosCode + '&' + 'pDocumentNumber=' + pFunctionType,
-                success: function (data) {
-                    files = data;
-                    if (files != null) {
-                        $("#_no_file_attachId").text("");
-                        for (i = 0; i < files.length; i++) {
-                            var thutu = i + 1;
-                            html = '<a title="' + files[i].Description + '" href="#" ' +
-                                    'onclick="showAttachtFileUserIDC(' + pMainPosCode + ',' + files[i].Id + ',\'' + files[i].FileNameNew + '\')">' +
-                                    ' [' + thutu + '] </a>&nbsp;';
-                            $("#_no_file_attachId").append(html);
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function showAttachtFileUserIDC(vanbanId, fileId, tenFileMoi) {
-        var win = window.open('../UserManagementIDC/LoadPdfFile?pDocumentId=' + vanbanId + '&' + 'pFileId=' + fileId + '&' + 'pFileName=' + tenFileMoi, '_blank');
-        if (win) {
-            win.focus();
-        } else {
-            alert('Please allow popups for this website');
-        }
-    }
-
-     function onSaveGridApprovalIDC(e) {
+    function onSaveGridApprovalIDC(e) {
         if (e != null && e.response != null) {
             if (!e.response.Errors) {
                 if (e.type == "create") {
@@ -711,6 +682,58 @@
             alert("Thao tác Từ chối " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] đối với tài khoản người bị hủy bỏ!");
         }
     }
+
+    function add_AttachFilesLinkOfUserId(listFileId, userId) {
+        var lcFileTypeTmp = "2";
+        var lcDelimiter = ";"
+        if (listFileId != "") {
+            $.ajax({
+                type: "GET",
+                url: "../ListOfValue/GetListAttachedFileInfoForDocumentId?pListFileId=" + listFileId + '&' + 'pFileType=' + lcFileTypeTmp + '&' + 'pDelimiter=' + lcDelimiter,
+                success: function (data) {
+                    files = data;
+                    if (files != null) {
+                        $("#_no_file_attachIdDocumentApproval").text("");
+                        for (i = 0; i < files.length; i++) {
+                            var iOrderNoTmp = i + 1;
+                            html = '<a title="' + files[i].ContentDescription + '" href="#" onclick=showFileApprovalUserIDC(' + files[i].DocumentId + ',' + files[i].FileId + ',"' + files[i].FileNameNew + '","' + userId + '")' + '>' + ' [' + iOrderNoTmp + '] ' + "</a>&nbsp;";
+                            $("#_no_file_attachIdDocumentApproval").append(html);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    function showFileApprovalUserIDC(documentId, fileId, fileNameNew, userId) {
+        var win = window.open('../UserManagementIDC/LoadPdfFile?pDocumentId=' + documentId + '&' + 'pFileId=' + fileId + '&' + 'pFileName=' + fileNameNew, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            alert('Please allow popups for this website');
+        }
+    }
+    
+    function onRowSelectUserId(e) {
+        $("#_no_file_attachIdDocumentApproval").text("");
+        $("#divInforUserSelect").text("");
+        var gridApprovalUserIDC = $("#gridMainIDCApproval").data("kendoGrid");
+        if (gridApprovalUserIDC.dataSource.total() === 0) {
+            console.log("Grid không có bản ghi nào!");
+            return; // Thoát hàm
+        }
+        // Lấy row đang được chọn
+        var selectedRow = this.select();           // "this" ở đây là Grid
+
+        if (selectedRow.length > 0) {
+            var dataItem = gridApprovalUserIDC.dataItem(selectedRow);   // ← Đây là dataItem bạn cần
+            add_AttachFilesLinkOfUserId(dataItem.ListFileId, dataItem.UserId)
+            $("#divInforUserSelect").text(" Tài khoản đang xem " + dataItem.UserId + " | " + dataItem.FullName + "   ");            
+        } 
+        else {
+            console.log("Không có bản ghi nào được chọn");
+        }
+    }
 </script>
 
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
@@ -789,7 +812,8 @@
         <div class="col-md-12">
             @(Html.Kendo().Grid<VBSPOSS.ViewModels.UserManagementIDCViewModel>()
                 .Name("gridMainIDCApproval")
-                .Events(e => e.DataBound("onRowBoundIDCApproval"))
+                .Events(e => e.DataBound("onRowBoundIDCApproval").Change("onRowSelectUserId"))
+                .Selectable(s => s.Mode(GridSelectionMode.Single))   // Single hoặc Multiple
                 .Columns(columns =>
                 {
                     columns.Template("<input type='checkbox' class='depProductCheckSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAllProducts' />")
@@ -867,6 +891,9 @@
                     columns.Bound(c => c.MainPosCodeOld).Hidden();
                     columns.Bound(c => c.MainPosNameOld).Hidden();
                     columns.Bound(c => c.FunctionType).Hidden();
+                    columns.Bound(c => c.ApprovalUserIDC).Hidden();
+                    columns.Bound(c => c.AuthorizeUserIDC).Hidden();
+                    columns.Bound(c => c.ListFileId).Hidden();
                 })
                 .HtmlAttributes(new { style = "height: 430px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
@@ -1011,8 +1038,10 @@
 
     <div id="divFileAttached"  class="row" style="padding-top: 5px;">
         <div class="col-md-9 d-flex align-items-center">
-            <span class="lbcontrol" style="text-align: right; color: navy;width:95px;padding-right:5px;font-weight:bold;">File đính kèm</span>
-            <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachfileIdQDKT"><span style="color:red;"></span><span id="_no_file_attachId"></span> </div>
+            <span class="lbcontrol" style="text-align: right; color: navy;width:120px;padding-right:5px;padding-top:7px;font-weight:bold;">Tờ trình đính kèm: </span>
+            <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachfileIdDocumentApproval"><span style="color:red;"></span><span id="_no_file_attachIdDocumentApproval"></span> </div>
+            &nbsp;&nbsp;
+            <div id="divInforUserSelect" style="margin-top:2px; font-weight:normal;color:maroon;padding-top:7px;"></div>
         </div>
         <div class="col-md-3 text-right">
             @(Html.Kendo().Button().Name("btnAuthorizeAll").HtmlAttributes(new { type = "button", style = "font-weight:bold; width:100px; color: blue; height: 25px;", title = "Phê duyệt yêu cầu với tài khoản người dùng Intellect IDC" }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Phê duyệt &nbsp;"))
@@ -1037,7 +1066,6 @@
             }
             else $("#divFileAttached").show();
 
-            addListAttachfilesLink();
         }
         else if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
             $("#divFileAttached").hide();
@@ -1154,39 +1182,52 @@
             var dataItem = grid.dataItem(row);
 
             if (!dataItem) return;
-            if (dataItem.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val()) {
-                if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_ApprovalView").val() && lcUserGradeView == "1") {
-                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện trình duyệt cấp Phòng giao dịch. Vui lòng đính kèm tờ trình!");
-                    return;
-                }
-                if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_AuthorizeView").val() 
-                        && (lcUserGradeView == "1" || lcUserGradeView == "2")) {
-                    alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện phê duyệt cấp PGD/Chi nhánh. Vui lòng đính kèm tờ trình!");
+            if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+                if (dataItem.ApprovalUserIDC == 0) {
+                    alert("Bạn không có quyền trình duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
                     return;
                 }
             }
-            var dataTempRow = {
-                    Id: dataItem.Id,
-                    UserId: dataItem.UserId,
-                    Status: dataItem.Status
-                };
+            if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+                if (dataItem.AuthorizeUserIDC == 0) {
+                    alert("Bạn không có quyền trình duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
+                    return;
+                }
+            }
+            // if (dataItem.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val()) {
+            //     if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_ApprovalView").val() && lcUserGradeView == "1") {
+            //         alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện trình duyệt cấp Phòng giao dịch. Vui lòng kiểm tra lại!");
+            //         return;
+            //     }
+            //     if (dataItem.MainPosCode != dataItem.MainPosCodeOld && lcFlagCallView == $("#EventFlag_AuthorizeView").val() 
+            //             && (lcUserGradeView == "1" || lcUserGradeView == "2")) {
+            //         alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] khác chi nhánh nên không thực hiện phê duyệt cấp PGD/Chi nhánh. Vui lòng kiểm tra lại!");
+            //         return;
+            //     }
+            // }
+
+            var dataTempRow = { Id: dataItem.Id, UserId: dataItem.UserId, Status: dataItem.Status };
             listUserIdChoiceApprovalTmp.push(dataTempRow);
         });
+
+        var lcFlagCallView = $("#FlagCallView").val();
         if (listUserIdChoiceApprovalTmp.length === 0) {
             alert("Bạn chưa chọn danh sách yêu cầu để lưu thông tin trình duyệt/phê duyệt người dùng IDC. Vui chọn trình duyệt/phê duyệt!");
             return;
         }
-        var lcFlagCallView = $("#FlagCallView").val();
+        if (listUserIdChoiceApprovalTmp.length > 1 && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+            alert("Phê duyệt yêu cầu người dùng chỉ cho phép chọn một yêu cầu (Bạn đang chọn " + listUserIdChoiceApprovalTmp.length.toString() + " yêu cầu về người dùng để phê duyệt). Vui chọn chọn lại!");
+            return;
+        }
+
+        
         var lcSystemDateTextView = $("#SystemDateTextApprovalView").val();
         var lcBusinessDateTextView = $("#BusinessDateTextApprovalView").val();
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();        
         var requireFileTypes = [$("#FunctionTypeFlag_ADDNEW_USERView").val(), $("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_MODIFY_USERView").val(), $("#FunctionTypeFlag_CHANGE_ROLEView").val()];
     
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
-
-        var fileInput = $("#fileUpload")[0];
         
-        //var fileUploadUserIDC = fileInput.files.length > 0 ? fileInput.files[0] : null;
         var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình
         if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
@@ -1230,6 +1271,7 @@
                     resetFileList();
                     var gridTmp = $("#gridMainIDCApproval").data("kendoGrid");
                     $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + gridTmp.dataSource.total());
+                    $("#divInforUserSelect").text("");
                 }
                 else if (resultSaveUpdate === "0" && lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                     alert("Bạn đã phê duyệt thành công " + iCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng đã chọn!");
@@ -1237,6 +1279,7 @@
                     refreshGridIDCApproval();
                     var gridTmp = $("#gridMainIDCApproval").data("kendoGrid");
                     $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + gridTmp.dataSource.total());
+                    $("#divInforUserSelect").text("");
                 }
                 else if (resultSaveUpdate == "15")
                     alert("Yêu cầu [" + lcFunctionTypeNameChoice + "] tài khoản người dùng nhưng tồn tại yêu cầu có trạng thái bản ghi là đóng. Vui lòng kiểm tra lại!");
