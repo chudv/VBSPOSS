@@ -363,44 +363,44 @@
         var lcFunctionCode = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
         var lcFunctionName = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
 
-        if (lcFunctionCode != "" && lcFunctionCode != null) {
-            //Nếu là cấp Phòng giao dịch: Chỉ trình cho một số nghiệp vụ
-            if (lcUserGradeView == 1) {
-                //Cấp PGD: Không phê duyệt; Chỉ Trình duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
-                $("#divFileAttached").hide();
-                if (lcReportPermitTmp == "1") {
-                    if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
-                        $("#divUploadFile").hide();
-                        $("#idRejectDiv").hide();
-                    }
-                }
-            }
-            else if (lcUserGradeView == 2) {
-                //Cấp Chi nhánh: Phê duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
-                //               Trình duyệt: Thêm mới tài khoản; Hủy tài khoản; Thay đổi POS khác chi nhánh
-                if (lcReportPermitTmp == "1") {
-                    if ((lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()
-                            || lcFunctionCode == $("#FunctionTypeFlag_CHANGE_POSView").val())) {
-                        $("#divUploadFile").show();
-                        $("#idRejectDiv").show();
-                    }
-                    else {
-                        $("#divUploadFile").hide();
-                        $("#idRejectDiv").hide();
-                    }
-                }
-                if (lcAuthorizePermitTmp == "1") {
-                    if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
-                        $("#divFileAttached").hide();
-                        $("#divFileAttached").hide();
-                    }
-                    else {
-                        $("#divFileAttached").show();
-                        $("#divFileAttached").show();
-                    }
-                }
-            }
-        }
+        // if (lcFunctionCode != "" && lcFunctionCode != null) {
+        //     //Nếu là cấp Phòng giao dịch: Chỉ trình cho một số nghiệp vụ
+        //     if (lcUserGradeView == 1) {
+        //         //Cấp PGD: Không phê duyệt; Chỉ Trình duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
+        //         $("#divFileAttached").hide();
+        //         if (lcReportPermitTmp == "1") {
+        //             if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
+        //                 $("#divUploadFile").hide();
+        //                 $("#idRejectDiv").hide();
+        //             }
+        //         }
+        //     }
+        //     else if (lcUserGradeView == 2) {
+        //         //Cấp Chi nhánh: Phê duyệt: Thay đổi POS cùng CN; Cấp lại mật khẩu; Đổi quyền; Khóa/Mở khóa người dùng
+        //         //               Trình duyệt: Thêm mới tài khoản; Hủy tài khoản; Thay đổi POS khác chi nhánh
+        //         if (lcReportPermitTmp == "1") {
+        //             if ((lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()
+        //                     || lcFunctionCode == $("#FunctionTypeFlag_CHANGE_POSView").val())) {
+        //                 $("#divUploadFile").show();
+        //                 $("#idRejectDiv").show();
+        //             }
+        //             else {
+        //                 $("#divUploadFile").hide();
+        //                 $("#idRejectDiv").hide();
+        //             }
+        //         }
+        //         if (lcAuthorizePermitTmp == "1") {
+        //             if (lcFunctionCode == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionCode == $("#FunctionTypeFlag_DELETE_USERView").val()) {
+        //                 $("#divFileAttached").hide();
+        //                 $("#divFileAttached").hide();
+        //             }
+        //             else {
+        //                 $("#divFileAttached").show();
+        //                 $("#divFileAttached").show();
+        //             }
+        //         }
+        //     }
+        // }
         refreshGridIDCApproval();
     }
 
@@ -1055,19 +1055,22 @@
     $(document).ready(function () {
         $("#gridMainIDCApproval .k-grid-excel").after("<label id='lbl_spaceApprove' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>HÀNG CHỜ DANH SÁCH THÔNG TIN NGƯỜI DÙNG INTELLECT IDC ĐỀ NGHỊ TẠO MỚI/THAY ĐỔI</label>");
         var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
-        var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
-        
+        var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();        
         var lcFlagCallView = $("#FlagCallView").val();
+
         if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
             $("#btnPrintToTrinh").hide();
             $("#divUploadFile").hide();
             if (lcAuthorizePermitTmp == "0" || lcAuthorizePermitTmp == "") {
                 $("#divFileAttached").hide();
             }
-            else $("#divFileAttached").show();
-
+            else {
+                $("#divFileAttached").show();
+            }
         }
         else if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+            alert("Vào nhầm sự kiện Trình duyệt không");
+
             $("#divFileAttached").hide();
             if (lcReportPermitTmp == "0" || lcReportPermitTmp == "") {
                 $("#divUploadFile").hide();
@@ -1176,6 +1179,9 @@
     $("#btnApprovalAll, #btnAuthorizeAll").click(function () {
         var listUserIdChoiceApprovalTmp = [];
         var lcUserGradeView = $("#UserGradeView").val();
+        var lcFlagCallView = $("#FlagCallView").val();
+        var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
+
         var grid = $("#gridMainIDCApproval").data("kendoGrid");
         grid.tbody.find(".depProductCheckSelect:checked").each(function () {
             var row = $(this).closest("tr");
@@ -1190,7 +1196,7 @@
             }
             if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                 if (dataItem.AuthorizeUserIDC == 0) {
-                    alert("Bạn không có quyền trình duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
+                    alert("Bạn không có quyền phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
                     return;
                 }
             }
@@ -1210,7 +1216,7 @@
             listUserIdChoiceApprovalTmp.push(dataTempRow);
         });
 
-        var lcFlagCallView = $("#FlagCallView").val();
+        
         if (listUserIdChoiceApprovalTmp.length === 0) {
             alert("Bạn chưa chọn danh sách yêu cầu để lưu thông tin trình duyệt/phê duyệt người dùng IDC. Vui chọn trình duyệt/phê duyệt!");
             return;
@@ -1226,7 +1232,7 @@
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();        
         var requireFileTypes = [$("#FunctionTypeFlag_ADDNEW_USERView").val(), $("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_MODIFY_USERView").val(), $("#FunctionTypeFlag_CHANGE_ROLEView").val()];
     
-        var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
+        
         
         var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         //Chỉ có cấp lại mật khẩu là không có tờ trình

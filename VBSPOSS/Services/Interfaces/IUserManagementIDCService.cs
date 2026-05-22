@@ -110,10 +110,12 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
         /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
+        /// <param name="pSystemDateCoreIDC">Ngày hiện thời hệ thống Intellect iDC</param>
+        /// <param name="pBusinessDateCoreIDC">Ngày mở sổ hệ thống Intellect iDC</param>
         /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
         /// <returns></returns>
         List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
-            string pPosCode, int pUserGrade, string pListStatus, int pFlagCall);
+            string pPosCode, int pUserGrade, string pListStatus, string pSystemDateCoreIDC, string pBusinessDateCoreIDC, int pFlagCall);
 
         /// <summary>
         /// Hàm thực hiện Phê duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC

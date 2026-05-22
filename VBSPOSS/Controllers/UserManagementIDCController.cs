@@ -803,8 +803,8 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
                     objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDate.ToString(FormatParameters.FORMAT_DATE);
 
-                    objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.BusinessDate;
-                    objUserManagementIDCUpd.EndDateChangeRole = DateTime.Now.Date;// CustConverter.StringToDateTime(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).Date;
+                    objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.SystemDate;
+                    objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.SystemDate.AddDays(10);// CustConverter.StringToDateTime(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).Date;
                     objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
                     objUserManagementIDCUpd.GenderCode = objUserManagementMTFind.GenderCode;
                     objUserManagementIDCUpd.GenderText = objUserManagementMTFind.GenderText;
@@ -1510,10 +1510,12 @@ namespace VBSPOSS.Controllers
                     sPosCode = string.IsNullOrEmpty(pPosCode) ? UserPosCode : pPosCode;
                 }
                 DateTime dSystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                DateTime dBusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
+                
                 string sSystemDateText = dSystemDate.ToString(FormatParameters.FORMAT_DATE);
-
+                string sBusinessDateText = dBusinessDate.ToString(FormatParameters.FORMAT_DATE);
                 var listSumRequirementUserIDC = _userManagementIDCService.UserManagementIDC_SumRequirement_GetSearch(pFromStartDate, pToStartDate, sMainPosCode,
-                                sPosCode, UserGrade, sListStatus, 1);
+                                sPosCode, UserGrade, sListStatus, sSystemDateText, sBusinessDateText, 1);
                 return Json(listSumRequirementUserIDC.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -1546,7 +1548,7 @@ namespace VBSPOSS.Controllers
             string sBusinessDateText = dBusinessDate.ToString(FormatParameters.FORMAT_DATE);
 
             string sNameView = "";
-            var listStaffVBSP = (await _userManagementIDCService.GetListUserIDCManagement(0, "", pMainPosCode, "", "", "", 0, "", true)).FirstOrDefault();
+            //var listStaffVBSP = (await _userManagementIDCService.GetListUserIDCManagement(0, "", pMainPosCode, "", "", "", 0, "", true)).FirstOrDefault();
             sNameView = (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString()) ? "ApproveUserManagementIDC" : "ApproveUserManagementIDC";
             TempData["FlagCall"] = pFlagCall;
             TempData["UserPosCode"] = UserPosCode;

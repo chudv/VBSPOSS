@@ -1148,10 +1148,12 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
         /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
+        /// <param name="pSystemDateCoreIDC">Ngày hiện thời hệ thống Intellect iDC</param>
+        /// <param name="pBusinessDateCoreIDC">Ngày mở sổ hệ thống Intellect iDC</param>
         /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
         /// <returns></returns>
         public List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
-            string pPosCode, int pUserGrade, string pListStatus, int pFlagCall)
+            string pPosCode, int pUserGrade, string pListStatus, string pSystemDateCoreIDC, string pBusinessDateCoreIDC, int pFlagCall)
         {
             var answer = new List<UserManagementIDCSumRequirementViewModel>();
             try
@@ -1164,14 +1166,19 @@ namespace VBSPOSS.Services.Implements
                 paramMainPosCode.Value = pMainPosCode;
                 SqlParameter paramPosCode = new SqlParameter("@pPosCode", SqlDbType.VarChar);
                 paramPosCode.Value = pPosCode;
-                SqlParameter paramListStatus = new SqlParameter("@pListStatus", SqlDbType.VarChar);
-                paramListStatus.Value = pListStatus;
                 SqlParameter paramUserGrade = new SqlParameter("@pUserGrade", SqlDbType.Int);
                 paramUserGrade.Value = pUserGrade;
+                SqlParameter paramListStatus = new SqlParameter("@pListStatus", SqlDbType.VarChar);
+                paramListStatus.Value = pListStatus;
+                SqlParameter paramSystemDateCoreIDCs = new SqlParameter("@pSystemDateCoreIDC", SqlDbType.VarChar);
+                paramSystemDateCoreIDCs.Value = pSystemDateCoreIDC;
+                SqlParameter paramBusinessDateCoreIDC = new SqlParameter("@pBusinessDateCoreIDC", SqlDbType.VarChar);
+                paramBusinessDateCoreIDC.Value = pBusinessDateCoreIDC;
+
                 SqlParameter paramFlagCall = new SqlParameter("@pFlagCall", SqlDbType.Int);
                 paramFlagCall.Value = pFlagCall;
 
-                var listUserManagementIDCSumRequirement = _dbContext.UserManagementIDCSumRequirements.FromSqlRaw($"Exec [dbo].[UserManagementIDC_SumRequirement_GetSearch] @pStartDateBegin,@pStartDateEnd,@pMainPosCode,@pPosCode,@pUserGrade,@pListStatus,@pFlagCall", paramStartDateBegin, paramStartDateEnd, paramMainPosCode, paramPosCode, paramUserGrade, paramListStatus, paramFlagCall).ToList();
+                var listUserManagementIDCSumRequirement = _dbContext.UserManagementIDCSumRequirements.FromSqlRaw($"Exec [dbo].[UserManagementIDC_SumRequirement_GetSearch] @pStartDateBegin,@pStartDateEnd,@pMainPosCode,@pPosCode,@pUserGrade,@pListStatus,@pSystemDateCoreIDC,@pBusinessDateCoreIDC,@pFlagCall", paramStartDateBegin, paramStartDateEnd, paramMainPosCode, paramPosCode, paramUserGrade, paramListStatus, paramSystemDateCoreIDCs, paramBusinessDateCoreIDC, paramFlagCall).ToList();
                 if (listUserManagementIDCSumRequirement != null && listUserManagementIDCSumRequirement.Count != 0)
                 {
                     if (pFlagCall == 1)
@@ -1867,7 +1874,7 @@ namespace VBSPOSS.Services.Implements
                                 }
                                 #endregion
                             }
-                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code && pUserGradeUpd == PosGrade.MAIN_POS)
+                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code && pUserGradeUpd == PosGrade.HEAD_POS)
                             {
                                 #region --- 7. Hủy người dùng ---
                                 bool bIsContinueTmpCloseUserId = true;
