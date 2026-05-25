@@ -10,11 +10,11 @@
         font-size: 12px;
     }
 
-    .btn-view-edit,
+    /* .btn-view-edit,
     .btn-delete {
         padding: 0 2px !important;
         min-width: 20px !important;
-    }
+    } */
 
     #gridMainIDCApproval .k-grid td {
         border-right: 1px solid #ddd !important;
@@ -24,7 +24,7 @@
         border-right: 1px solid #ddd !important;
     }
 
-    .k-grid-header .k-header > .k-link {
+    /* .k-grid-header .k-header > .k-link {
         font-family: Tahoma !important;
         font-weight: bold !important;
         color: navy;
@@ -34,7 +34,7 @@
         font-family: tahoma;
         color: navy;
     }
-
+ */
     red {
         color: red;
     }
@@ -73,7 +73,7 @@
         height: 21px;
     }
 
-    .k-grid .btn-view.k-button {
+    .k-grid .btn-view-idc.k-button {
         background: url('../images/icon_view.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -81,7 +81,7 @@
         border: none;
     }
 
-    .k-grid .btn-view-edit.k-button {
+    .k-grid .btn-view-edit-idc.k-button {
         background: url('../images/icon_edit.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -89,7 +89,7 @@
         border: none;
     }
 
-    .k-grid .btn-delete.k-button {
+    .k-grid .btn-delete-idc.k-button {
         background: url('../images/icon_delete.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -97,7 +97,7 @@
         border: none;
     }
 
-    .k-grid .btn-auth.k-button {
+    .k-grid .btn-auth-idc.k-button {
         background: url('../images/icon_auth.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -105,7 +105,7 @@
         border: none;
     }
 
-    .k-grid .btn-approval.k-button {
+    .k-grid .btn-approval-idc.k-button {
         background: url('../images/icon_approval.png') no-repeat center center;
         background-size: 15px 15px;
         width: 15px;
@@ -130,6 +130,7 @@
     }
 </style>
 <script>
+   
     var mainWindowApproval = $("#myPopupApproval");
     //var currentPdfUrl = null;
 
@@ -212,14 +213,34 @@
                 row.css("background-color", "white");
                 row.find("td").css("color", "red");
             }
-            row.find(".btn-approval").hide();
-            row.find(".btn-auth").hide();
+            
+            var lcFlagCallView = $("#FlagCallView").val();
+            if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+                row.find(".btn-auth").hide();
+                row.find(".btn-approval").show();
+            }
+            else if (lcButtonType == $("#EventFlag_AuthorizeView").val()) {
+                row.find(".btn-approval").hide(); 
+                row.find(".btn-auth").show();
+            }
+            // row.find(".btn-approval").hide();
+            //     row.find(".btn-auth").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
                 row.css("background-color", "white");
                 row.find("td").css("color", "red");
-            }
+
+                 // disable checkbox
+            row.find(".depProductCheckSelect")
+                .prop("checked", false)
+                .prop("disabled", true);
+                    } else{
+                           
+        row.find(".depProductCheckSelect")
+            .prop("disabled", false);
+    
+                    }
         }
 
         var grid = e.sender;
@@ -254,26 +275,49 @@
                 updateSelectedRowIdUsers();
             });
 
-        // Checkbox header chọn tất cả
-        $("#chkSelectAllProducts")
-            .off("change.depProduct")
-            .on("change.depProduct", function (ev) {
-                ev.stopPropagation();
+                // Checkbox header chọn tất cả
+    $("#chkSelectAllProducts")
+        .off("change.depProduct")
+        .on("change.depProduct", function (ev) {
 
-                var isChecked = $(this).is(":checked");
+            ev.stopPropagation();
 
-                grid.tbody.find(".depProductCheckSelect").prop("checked", isChecked);
-                grid.tbody.find("tr").toggleClass("row-selected-custom", isChecked);
+            var isChecked = $(this).is(":checked");
 
-                updateSelectedRowIdUsers();
-            });
+            // chỉ check các row hợp lệ
+            grid.tbody
+                .find(".depProductCheckSelect:not(:disabled)")
+                .prop("checked", isChecked);
 
-            // Đồng bộ lại giao diện sau databound
+            // update css cho từng row
             grid.tbody.find("tr").each(function () {
+
                 var $row = $(this);
-                var isChecked = $row.find(".depProductCheckSelect").is(":checked");
-                $row.toggleClass("row-selected-custom", isChecked);
+
+                var $checkbox =
+                    $row.find(".depProductCheckSelect");
+
+                // bỏ qua row disable
+                if ($checkbox.is(":disabled")) {
+
+                    return;
+                }
+
+                $row.toggleClass(
+                    "row-selected-custom",
+                    isChecked
+                );
             });
+
+            updateSelectedRowIdUsers();
+        });
+
+        // Đồng bộ lại giao diện sau databound
+        grid.tbody.find("tr").each(function () {
+            var $row = $(this);
+            var isChecked = $row.find(".depProductCheckSelect").is(":checked");
+            $row.toggleClass("row-selected-custom", isChecked);
+        });
 
             // var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
             // var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
@@ -763,23 +807,23 @@
                     .HtmlAttributes(new { style = "text-align:center;" });
                     columns.Command(command =>
                     {
-                        command.Custom("Approval").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
+                        command.Custom("ApprovalIDC").Text("<span style='color: blue;'></span>").Click("submitForApprovalIDC").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                             title = "Trình duyệt yêu cầu người dùng IDC",
-                            @class = "btn-approval"
+                            @class = "btn-approval-idc"
                         });
-                        command.Custom("Authorize").Text("<span style='color: blue;'></span>").Click("submitForAuthorizeIDC").HtmlAttributes(new
+                        command.Custom("AuthorizeIDC").Text("<span style='color: blue;'></span>").Click("submitForAuthorizeIDC").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                             title = "Phê duyệt yêu cầu người dùng IDC",
-                            @class = "btn-auth"
+                            @class = "btn-auth-idc"
                         });
-                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDCForApprovalOrAuthorize").HtmlAttributes(new
+                        command.Custom("ViewIDC").Text("<span style='color: blue;'></span>").Click("showDetailUserIDCForApprovalOrAuthorize").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
                             title = "Xem chi tiết thông tin yêu cầu thêm mới/thay đổi thông tin người dùng Intellect iDC",
-                            @class = "btn-view"
+                            @class = "btn-view-idc"
                         });
                     }).Width(42).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
