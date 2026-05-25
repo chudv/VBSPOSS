@@ -196,7 +196,8 @@
             var totalRecordTmp02 = grid.dataSource.data().length || 0;
             $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp02);
         }
-        else $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
+        else 
+            $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
     }
         
     function onLoadDataApprovalOrAuthorize(e) {
@@ -332,6 +333,11 @@
             //     $(this).find(".k-grid-Approval").hide();
             // }
         //});
+
+
+        // Phần label 
+        var totalRecordTmp01 = grid.dataSource.data().length || 0;
+                        $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp01);
     }
 
     function updateSelectedRowIdUsers() {
@@ -1220,14 +1226,14 @@
                     refreshGridIDCApproval();
                     resetFileList();
                     
-                    var gridTmp01 = $("#gridMainIDCApproval").data("kendoGrid");
-                    if (gridTmp01) {
-                        var totalRecordTmp01 = gridTmp01.dataSource.data().length || 0;
-                        $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp01);
-                    } 
-                    else {
-                        $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
-                    }
+                    // var gridTmp01 = $("#gridMainIDCApproval").data("kendoGrid");
+                    // if (gridTmp01) {
+                    //     var totalRecordTmp01 = gridTmp01.dataSource.data().length || 0;
+                    //     $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp01);
+                    // } 
+                    // else {
+                    //     $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
+                    // }
 
                     $("#divInforUserSelect").text("");
                 }
@@ -1235,14 +1241,14 @@
                     alert("Bạn đã phê duyệt thành công " + sCountUserdChoice + " yêu cầu [" + lcFunctionTypeNameChoice + "] của [" + lcUserInfo + "]!");
                     dataChange = false;
                     refreshGridIDCApproval();
-                    var gridTmp02 = $("#gridMainIDCApproval").data("kendoGrid");
-                    if (gridTmp02) {
-                        var totalRecordTmp02 = gridTmp02.dataSource.data().length || 0;
-                        $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp02);
-                    } 
-                    else {
-                        $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
-                    }
+                    // var gridTmp02 = $("#gridMainIDCApproval").data("kendoGrid");
+                    // if (gridTmp02) {
+                    //     var totalRecordTmp02 = gridTmp02.dataSource.data().length || 0;
+                    //     $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp02);
+                    // } 
+                    // else {
+                    //     $("#idRowChoiceTmp").text("Tổng số yêu cầu: 0");
+                    // }
 
                     $("#_no_file_attachIdDocumentApproval").text("");
                     $("#divInforUserSelect").text("");
