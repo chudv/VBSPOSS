@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.Differencing;
 using Newtonsoft.Json;
 using System.Collections;
+using System.Diagnostics.Metrics;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.OSS.Models;
@@ -454,7 +455,7 @@ namespace VBSPOSS.Controllers
         /// </summary>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public async Task<IActionResult> DownloadTransferFile(long documentId)
+        public async Task<IActionResult> DownloadTransferFile_BK(long documentId)
         {
             try
             {
@@ -478,6 +479,47 @@ namespace VBSPOSS.Controllers
                 return BadRequest("Có lỗi xảy ra");
             }
         }
+
+        /// <summary>
+        /// Mở tờ trình
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> DownloadTransferFile(long documentId)
+        {
+            try
+            {
+                var fileInfo = await _serviceTranferDataPos.DownloadTransferAttachFile(documentId);
+
+                if (fileInfo == null)
+                {
+                    return NotFound("Không tìm thấy file");
+                }
+
+                string fullPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    fileInfo.PathFile,
+                    fileInfo.FileNameNew);
+
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    return NotFound("File không tồn tại");
+                }
+
+                byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+
+                Response.Headers.Add("Content-Disposition", $"inline; filename={fileInfo.FileName}");
+
+                return File(fileBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DownloadTransferFile Error");
+                return BadRequest("Có lỗi xảy ra");
+            }
+        }
+
 
         /// <summary>
         /// Xóa tờ trình
@@ -683,6 +725,7 @@ namespace VBSPOSS.Controllers
             TempData.Put("UserPermission", userPermission);
             TempData["UserName"] = UserName;
             TempData["UserPosCode"] = UserPosCode;
+            TempData["SourceTarget"] = "S";
 
             TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
             TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
@@ -694,7 +737,7 @@ namespace VBSPOSS.Controllers
 
             ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfTransPoint();
 
-            return View("IndexTransferDataPosSoure");
+            return View("IndexTransferDataPosSoureTarget");
         }
 
         [HttpPost]
@@ -724,10 +767,22 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        public ActionResult ShowTransferDataLoanDetail(long pId, string pFromPos)
+        public ActionResult ShowTransferDataLoanDetail(long pId, string pFromPos, string pToPos, string pSourceTarget)
         {
             ViewBag.PId = pId;
             ViewBag.PFromPos = pFromPos;
+            ViewBag.PToPos = pToPos;
+            ViewBag.PSourceTarget = pSourceTarget;
+
+            // THÔN NGUỒN
+            ViewData["FromVillages"] = _serviceTranferDataPos.GetListSubCommuneOfPos(pFromPos)
+                .Select(x => new SelectListItem { Value = x.Code, Text = x.Description })
+                .ToList();
+
+            // THÔN ĐÍCH
+            ViewData["ToVillages"] = _serviceTranferDataPos.GetListSubCommuneOfPos(pToPos)
+                .Select(x => new SelectListItem { Value = x.Code, Text = x.Description })
+                .ToList();
 
             return PartialView("_ShowTransferDataLoanDetail");
         }
@@ -751,6 +806,7 @@ namespace VBSPOSS.Controllers
             TempData["UserName"] = UserName;
             TempData["UserPosCode"] = UserPosCode;
             TempData["UserGrade"] = UserGrade;
+            TempData["SourceTarget"] = "T";
 
             TempData["EventFlag_Add"] = EventFlag.EventFlag_Add.Value.ToString();
             TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
@@ -762,7 +818,7 @@ namespace VBSPOSS.Controllers
 
             ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfTransPoint();
 
-            return View("IndexTransferDataPosTarget");
+            return View("IndexTransferDataPosSoureTarget");
         }
 
         public ActionResult LoadGridData_TransPointTarget([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus, string pTotrinh)
@@ -796,6 +852,11 @@ namespace VBSPOSS.Controllers
             }
         }
 
+        /// <summary>
+        /// Lưu dữ liệu xác nhận chi tiết tài khoản (loan, casa, tide,...)
+        /// </summary>
+        /// <param name="data"></param>Lưới dữ liệu hiển thị
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> SaveAcceptMove([FromBody] List<ChangePosDataCheckingViewModel> data)
         {
@@ -828,8 +889,10 @@ namespace VBSPOSS.Controllers
         }
 
 
-        public ActionResult LoadGridData_TransPointTarget1([DataSourceRequest] DataSourceRequest request, long pId, string pFromPos)
+        public ActionResult LoadGridData_TransPointTarget1([DataSourceRequest] DataSourceRequest request, long pId, string pFromPos, string pToPos, string pSourceTarget,
+            string pFromVillages, string pToVillages, string pTextDetil)
         {
+            TempData["SourceTarget"] = pSourceTarget;
             var data = _serviceTranferDataPos.GetListChangePosDataChecking(pFromPos, pId.ToString());
             return Json(data.ToDataSourceResult(request));
         }

@@ -692,7 +692,7 @@ namespace VBSPOSS.Services.Implements
                 var query = _dbContextIDC.ChangePosDataCheckings.AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(pPosCode))
-                    query = query.Where(x => x.NEW_POS_CD == pPosCode);
+                    query = query.Where(x => x.POS_CD == pPosCode);
 
                 return query.Select(x => new ChangePosDataCheckingViewModel
                 {

@@ -282,6 +282,7 @@
 
     var dataChangeTransPointWork = false;
 
+    //Popup thêm mới yêu cầu điều chuyển pos - master
     $(document).on('click', '#btnCreateTranferDataPos', function (e) {
         e.preventDefault();
         var pPosCode = $("#PosCode_Find").val();
@@ -335,7 +336,7 @@
         mainWindow.data("kendoWindow").center().open().title("Chi tiết điều chuyển dữ liệu khác pos (thôn)");
     }
 
-    function showApproveTransferDetail(id, typeAction) {
+    function showApproveTransferDetail(id) {
 
         if (!id) {
             return;
@@ -412,6 +413,7 @@
         }
     }
 
+    //Xem chi tiết tờ trình yêu cầu điều chuyển pos -popup
     function showDetail(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -471,12 +473,19 @@
         }
     }
 
+
+    //Xóa tờ trình điều chuyển
     function deleteItem(e) {
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var sMessInfor = "Tờ trình [" + dataItem.Id + "]";
 
         if (dataItem.Status.toString() != "0" && dataItem.Status.toString() != "1") {
             alert("Tờ trình [" + dataItem.Id + "] đã được phê duyệt nên không thể xóa. Vui lòng kiểm tra lại!");
+            return;
+        }
+        else if (dataItem.Status.toString() == "0") {
+            alert("Tờ trình [" + dataItem.Id + "] đã được xóa trước đó. Vui lòng kiểm tra lại!");
+            return;
         }
         else {
             var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa dữ liệu thông tin tờ trình " + sMessInfor + " không?");
@@ -717,7 +726,7 @@
                         {
                             command.Custom("PrintToTrinh").Text("<span style='color: blue;'>In</span>").Click("printToTrinh").HtmlAttributes(new { @class = "btn-print-totrinh", style = "width: 45px !important; display: inline-block; vertical-align: middle; padding: 0 2px !important;", title = "In tờ trình điều chuyển dữ liệu" });
                             command.Custom("UploadToTrinh").Text("<span style='color: green;'>Upload</span>").Click("uploadToTrinh").HtmlAttributes(new { @class = "btn-upload-totrinh", style = "width: 70px !important; display: inline-block; vertical-align: middle; padding: 0 2px !important;", title = "Upload tờ trình đã ký đóng dấu" });
-                            command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Tải</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
+                            command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Xem</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
 
                         }).Width(190).Title("Tờ trình").HtmlAttributes(new { style = "text-align: center;" });
                     }
@@ -725,7 +734,7 @@
                     {
                         columns.Command(command =>
                         {
-                            command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Tải</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
+                            command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Xem</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
 
                         }).Width(90).Title("Tờ trình").HtmlAttributes(new { style = "text-align: center;" });
                     }
@@ -827,11 +836,13 @@
 </div>
 
 <script>
+
+    //Xem tờ trình đã upload
     function downloadTransferFileGrid(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var sMessInfor = "Yêu cầu [" + dataItem.Id + "]";
-        if (dataItem.Status.toString() == "1") {
+        if (dataItem.Status.toString() == "1" && userPermission.AuthorizePermissionFlag == 0) {
             alert(sMessInfor + " chưa được cấp phê duyệt cập nhật tờ trình!");
             return;
         }
@@ -844,174 +855,143 @@
         downloadTransferFile(
             dataItem.Id);
     }
-
     function printToTrinh(e) {
-
         e.preventDefault();
 
-        var dataItem =
-            this.dataItem(
-                $(e.currentTarget)
-                    .closest("tr"));
-
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         if (!dataItem) {
-
-            alert(
-                "Không tìm thấy dữ liệu tờ trình");
-
+            alert("Không tìm thấy dữ liệu tờ trình");
             return;
         }
 
-        var lcListId =
-            dataItem.Id;
-
-        var lcMainPosName =
-            dataItem.MainPosName || "";
+        var lcListId = dataItem.Id;
+        var lcMainPosName = dataItem.MainPosName || "";
 
         $.ajax({
-
-            url:
-                '/Report/GenerateFileReport_UserIDC',
-
-            type:
-                'POST',
-
-            data:
-            {
-                pId:
-                    "91",
-
-                pMainPosName:
-                    "000301",
-
-                pFunctionType:
-                    'ADDNEW_USER'
+            url: '/Report/GenerateFileReport_UserIDC',
+            type: 'POST',
+            data: {
+                pId: "91",
+                pMainPosName: "000301",
+                pFunctionType: 'ADDNEW_USER'
             },
+            xhrFields: { responseType: 'blob' },
+            success: function (data, status, xhr) {
+                var fileName = "To_Trinh_Dieu_Chuyen_POS_" + lcListId + ".pdf";
 
-            xhrFields:
-            {
-                responseType:
-                    'blob'
-            },
-
-            success:
-                function (
-                    data,
-                    status,
-                    xhr) {
-
-                    var fileName =
-                        "To_Trinh_Dieu_Chuyen_POS_"
-                        + lcListId
-                        + ".pdf";
-
-                    var disposition =
-                        xhr.getResponseHeader(
-                            "Content-Disposition");
-
-                    if (disposition) {
-
-                        var utf8Match =
-                            disposition.match(
-                                /filename\*\=UTF-8''(.+)/);
-
-                        if (
-                            utf8Match
-                            &&
-                            utf8Match.length > 1) {
-                            fileName =
-                                decodeURIComponent(
-                                    utf8Match[1]);
-                        }
-                        else {
-
-                            var asciiMatch =
-                                disposition.match(
-                                    /filename="?([^";]+)"?/);
-
-                            if (
-                                asciiMatch
-                                &&
-                                asciiMatch.length > 1) {
-                                fileName =
-                                    asciiMatch[1];
-                            }
+                var disposition = xhr.getResponseHeader("Content-Disposition");
+                if (disposition) {
+                    var utf8Match = disposition.match(/filename\*\=UTF-8''(.+)/);
+                    if (utf8Match && utf8Match.length > 1) {
+                        fileName = decodeURIComponent(utf8Match[1]);
+                    } else {
+                        var asciiMatch = disposition.match(/filename="?([^";]+)"?/);
+                        if (asciiMatch && asciiMatch.length > 1) {
+                            fileName = asciiMatch[1];
                         }
                     }
-
-                    var blob =
-                        new Blob(
-                            [data],
-                            {
-                                type:
-                                    xhr.getResponseHeader(
-                                        "Content-Type")
-                                    ||
-                                    "application/pdf"
-                            });
-
-                    var url =
-                        window.URL
-                            .createObjectURL(
-                                blob);
-
-                    var link =
-                        document
-                            .createElement("a");
-
-                    link.href =
-                        url;
-
-                    link.download =
-                        fileName;
-
-                    document.body
-                        .appendChild(
-                            link);
-
-                    link.click();
-
-                    window.URL
-                        .revokeObjectURL(
-                            url);
-
-                    link.remove();
-                },
-
-            error:
-                function () {
-
-                    alert(
-                        "Không tải được file tờ trình điều chuyển dữ liệu POS. Vui lòng kiểm tra lại!");
                 }
+
+                var blob = new Blob([data], {
+                    type: xhr.getResponseHeader("Content-Type") || "application/pdf"
+                });
+
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+
+                document.body.appendChild(link);
+                link.click();
+
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            },
+            error: function () {
+                alert("Không tải được file tờ trình điều chuyển dữ liệu POS. Vui lòng kiểm tra lại!");
+            }
         });
     }
 
-    function downloadTransferFile(id) {
 
+    // function downloadTransferFile(id) {
+
+    //     if (!id) {
+    //         alert("Không tồn tại hồ sơ");
+    //         return;
+    //     }
+    //     window.location = '/TransferDataPos/DownloadTransferFile?documentId=' + id;
+    // }
+
+
+    //Ko mở tab mới
+    function downloadTransferFile1(id) {
         if (!id) {
             alert("Không tồn tại hồ sơ");
             return;
         }
-        window.location = '/TransferDataPos/DownloadTransferFile?documentId=' + id;
+
+        window.open(
+            '/TransferDataPos/DownloadTransferFile?documentId=' + id,
+            '_blank'
+        );
     }
 
-    function onShowApproveTransferDetail(e) {
 
-        e.preventDefault();
-
-        var dataItem =
-            this.dataItem(
-                $(e.currentTarget)
-                    .closest("tr"));
-
-        if (!dataItem) {
-
+    function downloadTransferFile(id) {
+        if (!id) {
+            alert("Không tồn tại hồ sơ");
             return;
         }
 
-        showApproveTransferDetail(dataItem.Id, "2");
+        var url = '/TransferDataPos/DownloadTransferFile?documentId=' + encodeURIComponent(id);
+
+        var a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
+
+    //Popup màn hình tw phê duyệt
+    function onShowApproveTransferDetail(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (!dataItem || !dataItem.Id) {
+            return;
+        }
+
+        mainWindow.kendoWindow({
+            width: "1024px",
+            height: "600px",
+            title: "Chi tiết điều chuyển dữ liệu khác pos (thôn)",
+            content: {
+                url: '@Url.Action("ApproveTransferDataPosDetail", "TransferDataPos")',
+                data: {
+                    pId: dataItem.Id,
+                    pTypeAction: "5"
+                }
+            },
+            resizable: false,
+            visible: false,
+            modal: true,
+            close: onCloseTransPointWork,
+            actions: ["Refresh", "Close"]
+        });
+
+        mainWindow.data("kendoWindow")
+            .wrapper.css({ height: 600, width: 1024 });
+
+        mainWindow.data("kendoWindow")
+            .center()
+            .open()
+            .title("Chi tiết điều chuyển dữ liệu khác pos (thôn)");
+    }
+
 
     function onSaveGridIDC(e) {
         if (e != null && e.response != null) {
