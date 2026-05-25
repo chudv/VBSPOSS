@@ -340,6 +340,7 @@
 @Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
 @Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
 @Html.Hidden("FunctionTypeFlag_DELETE_USERView", TempData["FunctionTypeFlag_DELETE_USER"])
+@Html.Hidden("FunctionTypeFlag_RESTORE_USERView", TempData["FunctionTypeFlag_RESTORE_USER"])
 
 @Html.Hidden("AuthorizePermissionFlagView", TempData["AuthorizePermissionFlag"])
 @Html.Hidden("ReportPermissionFlagView", TempData["ReportPermissionFlag"])
@@ -439,7 +440,8 @@
                         infoCountRequest.Bound(x => x.NumberOfModifyUser).Title("Chỉnh sửa").Width(60).HtmlAttributes(new { style = "text-align: right;" });
                         infoCountRequest.Bound(x => x.NumberOfChangePos).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                         infoCountRequest.Bound(x => x.NumberOfChangeRole).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfCloseUser).Title("Hủy User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequest.Bound(x => x.NumberOfCloseUser).Title("Đóng User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequest.Bound(x => x.NumberOfRestoreUser).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                     }));
                     columns.Group(groupCountRequestValid => groupCountRequestValid.Title("Số lượng yêu cầu hợp lệ hàng chờ")
                     .Columns(infoCountRequestValid =>
@@ -452,6 +454,7 @@
                         infoCountRequestValid.Bound(x => x.NumberOfChangePosValid).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                         infoCountRequestValid.Bound(x => x.NumberOfChangeRoleValid).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                         infoCountRequestValid.Bound(x => x.NumberOfCloseUserValid).Title("Hủy User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestValid.Bound(x => x.NumberOfRestoreUserValid).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                     }));
                     columns.Bound(c => c.StylePrint).Hidden();
                     columns.Bound(c => c.OrderNo).Hidden();

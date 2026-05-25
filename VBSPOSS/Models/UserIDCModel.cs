@@ -134,6 +134,7 @@ namespace VBSPOSS.Models
         public int NumberOfChangePos { get; set; }
         public int NumberOfChangeRole { get; set; }
         public int NumberOfCloseUser { get; set; }
+        public int NumberOfRestoreUser { get; set; }
         public int NumberOfOtherUser { get; set; }
         public int NumberOfAddNewUserValid { get; set; }
         public int NumberOfResetPasswordValid { get; set; }
@@ -143,6 +144,7 @@ namespace VBSPOSS.Models
         public int NumberOfChangePosValid { get; set; }
         public int NumberOfChangeRoleValid { get; set; }
         public int NumberOfCloseUserValid { get; set; }
+        public int NumberOfRestoreUserValid { get; set; }
         public int NumberOfOtherUserValid { get; set; }
         public string StartDatePeriodText { get; set; }
         public string SumaryStatus { get; set; }

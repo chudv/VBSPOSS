@@ -105,7 +105,8 @@
         $("#EndDateChangeRole").closest(".k-datepicker").hide();
         var lcFunctionType = $("#FunctionType").val();
         if(lcFunctionType == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_ResetPasswordView").val()
-            || lcFunctionType == $("#FunctionTypeFlag_ENABLE_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_DISABLE_USERView").val()) 
+            || lcFunctionType == $("#FunctionTypeFlag_ENABLE_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_DISABLE_USERView").val()
+            || lcFunctionType == $("#FunctionTypeFlag_RESTORE_USERView").val())
         {
             $("#divPosCode").hide();
             $("#divModify").hide();
@@ -197,6 +198,12 @@
         var lcEndDateChangeRole = $("#EndDateChangeRole").val();
         var dEndDateChangeRole = stringToDate(lcEndDateChangeRole, "dd/MM/yyyy", "/");
         var lcExistsInCore = $("#ExistsInCore").val();
+        
+        var lcExpiryDateOldText = $("#ExpiryDateOldText").val();
+        var dExpiryDateOldText = stringToDate(lcExpiryDateOldText, "dd/MM/yyyy", "/");
+        var lcSystemDateText = $("#SystemDateText").val();
+        var dSystemDateText = stringToDate(lcSystemDateText, "dd/MM/yyyy", "/");
+        
         if (lcExistsInCore == 0) {
             alert("Tài khoản người dùng [" + lcUserId + "] không tồn tại trong hệ thống Intellect iDC, không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
             $('#EffectiveDate').focus();
@@ -255,6 +262,27 @@
                 return false;
             }
         }
+        if (lcFunctionType == $("#FunctionTypeFlag_RESTORE_USERView").val()) {
+            if (lcUserStatus == "2") {
+                alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có trạng thái [" + lcUserStatusText + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                $('#FunctionType').focus();
+                e.preventDefault();
+                return false;
+            }
+            if (dExpiryDateOldText > dBusinessDate) {
+                alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + dExpiryDateOldText + "] trên Intellect iDC lớn hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                $('#FunctionType').focus();
+                e.preventDefault();
+                return false;
+            }
+            if (dExpiryDateOldText > dSystemDateText) {
+                alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + dExpiryDateOldText + "] trên Intellect iDC lớn hơn ngày hiện tại [" + lcSystemDateText + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                $('#FunctionType').focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+
         if (lcFunctionType == $("#FunctionTypeFlag_MODIFY_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val() ||
             lcFunctionType == $("#FunctionTypeFlag_CHANGE_ROLEView").val())
         {
@@ -331,6 +359,7 @@
     @Html.Hidden("FunctionTypeFlag_MODIFY_USERView", TempData["FunctionTypeFlag_MODIFY_USER"])
     @Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
     @Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
+    @Html.Hidden("FunctionTypeFlag_RESTORE_USERView", TempData["FunctionTypeFlag_RESTORE_USER"])
 
     @Html.HiddenFor(m => m.FlagCall, new { @Value = Model == null ? "" : Model.FlagCall })
     @Html.HiddenFor(m => m.FunctionTypeName, new { @Value = Model == null ? "" : Model.FunctionTypeName })
@@ -353,8 +382,6 @@
     @Html.HiddenFor(m => m.OrtherNotes, new { @Value = Model == null ? "" : Model.OrtherNotes })
     @Html.HiddenFor(m => m.Status, new { @Value = Model == null ? 0 : Model.Status })
     @Html.HiddenFor(m => m.UserStatus, new { @Value = Model == null ? "" : Model.UserStatus })
-    @Html.HiddenFor(m => m.UserStatusText, new { @Value = Model == null ? "" : Model.UserStatusText })
-
     @Html.HiddenFor(m => m.StatusUpdateCore, new { @Value = Model == null ? 0 : Model.StatusUpdateCore })
     @Html.HiddenFor(m => m.SessionValReq, new { @Value = Model == null ? true : Model.SessionValReq })
     @Html.HiddenFor(m => m.PrevStatus, new { @Value = Model == null ? 0 : Model.PrevStatus })
@@ -398,6 +425,11 @@
     @Html.HiddenFor(m => m.StaffEmail, new { @Value = Model == null ? "" : Model.StaffEmail })
     @Html.HiddenFor(m => m.StaffMobileNo, new { @Value = Model == null ? "" : Model.StaffMobileNo })
     @Html.HiddenFor(m => m.ExistsInCore, new { @Value = Model == null ? 0 : Model.ExistsInCore })
+    @Html.HiddenFor(m => m.ExpiryDateOld, new { @Value = Model == null ? Model.ExpiryDate : Model.ExpiryDateOld })
+    @Html.HiddenFor(m => m.ExpiryDateOldText, new { @Value = Model == null ? "" : Model.ExpiryDateOldText })
+    
+    @Html.HiddenFor(m => m.SystemDate, new { @Value = Model == null ? DateTime.Today : Model.SystemDate })
+    @Html.HiddenFor(m => m.SystemDateText, new { @Value = Model == null ? "" : Model.SystemDateText })
     
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 3px;padding-bottom: 3px;font-weight: bold;">
         @* @(TempData["FlagEventCall"]?.ToString() == "7" ? "YÊU CẦU NGHIỆP VỤ THAY ĐỔI THÔNG TIN NGƯỜI DÙNG INTELLECT IDC" : "CHI TIẾT THÔNG TIN NGƯỜI DÙNG INTELLECT IDC") *@
@@ -462,9 +494,9 @@
                 <label class="lbcontrol" style="color: navy;text-align:left;width:90px;padding-top: 7px;">Chức vụ</label>
                 @Html.Kendo().TextBoxFor(m => m.StaffPositionName).HtmlAttributes(new { @readonly = "readonly", style = " width: 220px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:90px;padding-top: 7px;padding-right: 10px!important;">Phòng ban</label>
-                @Html.Kendo().TextBoxFor(m => m.StaffDepartmentName).HtmlAttributes(new { @readonly = "readonly", style = " width: 300px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 10px!important;">Trạng thái</label>
-                @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 175px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                @Html.Kendo().TextBoxFor(m => m.StaffDepartmentName).HtmlAttributes(new { @readonly = "readonly", style = " width: 290px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:170px;padding-top: 7px;padding-right: 10px!important;">Trạng thái người dùng</label>
+                @Html.Kendo().TextBoxFor(m => m.UserStatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 115px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
             </div>
         </div>
 
@@ -502,14 +534,14 @@
         <div class="row" style="padding-top: 5px;color: navy;padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;"> Ngày bắt đầu</label>
-                @Html.Kendo().TextBoxFor(m => m.StartDateOldText).HtmlAttributes(new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma; font-size:12px;padding-left: 2px;padding-right: 2px;" })
+                @Html.Kendo().TextBoxFor(m => m.StartDateOldText).HtmlAttributes(new { @readonly = "readonly", style = "width: 82px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma; font-size:12px;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:120px;padding-top: 7px;padding-right: 10px!important;">Ngày hiệu lực</label>
-                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
+                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 82px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
 
-                <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
-                @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:240px;padding-top: 7px;padding-right: 10px!important;">Ngày hiện tại của hệ thống iDC</label>
-                @Html.TextBoxFor(m => m.BusinessDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:145px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
+                @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 82px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:280px;padding-top: 7px;padding-right: 10px!important;">Ngày mở sổ của hệ thống Intellect iDC</label>
+                @Html.TextBoxFor(m => m.BusinessDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 82px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
 
             </div>
         </div>
@@ -519,10 +551,14 @@
         <div id="divChange">
             <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
                 <div class="col-md-12" style="display: inline-flex;">
-                    <label class="lbcontrol" style="color: maroon;text-align:left;width:500px;padding-top: 5px;">Thông tin thay đổi người dùng IDC</label>
+                    <label class="lbcontrol" style="color: maroon;text-align:left;width:600px;padding-top: 5px;">Thông tin thay đổi người dùng IDC</label>
+
+                    <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Trạng thái bản ghi</label>
+                    @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+
                 </div>
             </div>
-            <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="row" style="padding-top: 7px; padding-left: 0px; padding-bottom: 0px;">
                 <div class="col-md-12" style="display: inline-flex;">
                     <label class="lbcontrol" style="color: navy;text-align:left;width:140px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
                     @(Html.Kendo().ComboBoxFor(m => m.FunctionType)
@@ -651,6 +687,7 @@
                 var lcUserId = $("#UserId").val();
                 var lcUserStatusText = $("#UserStatusText").val();
                 var lcExpiryDate = $("#ExpiryDate").val();
+                var lcExpiryDateOldText = $("#ExpiryDateOldText").val();
                 var lcCurrentDateTmp = getCurrentDate();
                 var lcBusinessDate = $("#BusinessDate").val();
                 var lcStartDate = $("#StartDate").val();
@@ -706,7 +743,7 @@
                     else if (result == "17")
                         alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có trạng thái [" + lcUserStatusText + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                     else if (result == "18")
-                        alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có trạng thái [" + lcUserStatusText + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                        alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + lcExpiryDate + "] nhỏ hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                     else if (result == "19")
                         alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + lcExpiryDate + "] nhỏ hơn ngày hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                     else if (result == "20")
@@ -721,6 +758,11 @@
                         alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC có thông tin số điện thoại [" + lcMobileNumber + "] không hợp lệ. Vui lòng kiểm tra lại!");
                     else if (result == "26")
                         alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC [" + lcUserId + "] đã tồn tại. Vui lòng kiểm tra lại!");
+
+                    else if (result == "28")
+                        alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực trong Intellect iDC [" + lcExpiryDateOldText + "] lớn hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                    else if (result == "29")
+                        alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực trong Intellect iDC [" + lcExpiryDateOldText + "] lớn hơn ngày hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                 }
             },
             error: function (xhr, status, error) {
@@ -768,7 +810,8 @@
         }
         else {
             if (lcFunctionType == $("#FunctionTypeFlag_ADDNEW_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_ResetPasswordView").val()
-                    || lcFunctionType == $("#FunctionTypeFlag_ENABLE_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_DISABLE_USERView").val()) {
+                    || lcFunctionType == $("#FunctionTypeFlag_ENABLE_USERView").val() || lcFunctionType == $("#FunctionTypeFlag_DISABLE_USERView").val()
+                    || lcFunctionType == $("#FunctionTypeFlag_RESTORE_USERView").val()) {
                 $("#divPosCode").hide();
                 $("#divModify").hide();
                 $("#divRole").hide();

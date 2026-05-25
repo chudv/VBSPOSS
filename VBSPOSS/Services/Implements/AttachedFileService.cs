@@ -213,12 +213,7 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        public async Task<string> UploadFileAsync(
-    IFormFile file,
-    string description,
-    string createdBy,
-    string valueFileType,
-    string DocumentNumber)
+        public async Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType, string DocumentNumber)
         {
             try
             {

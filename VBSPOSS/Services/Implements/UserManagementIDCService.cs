@@ -992,6 +992,7 @@ namespace VBSPOSS.Services.Implements
                         objUserManagementIDCsUpdNew.ExtraAttributeBranchCode = pUserManagementUpd.ExtraAttributeBranchCode;
                         objUserManagementIDCsUpdNew.EffectiveDate = pUserManagementUpd.EffectiveDate;
                         objUserManagementIDCsUpdNew.ExpiryDate = pUserManagementUpd.ExpiryDate.Date;
+
                         objUserManagementIDCsUpdNew.Ticket = string.IsNullOrEmpty(pUserManagementUpd.Ticket) ? "" : pUserManagementUpd.Ticket;      //Xử lý khi gọi API
                         objUserManagementIDCsUpdNew.Remark = Utilities.Find_Replace(pUserManagementUpd.Remark);
                         objUserManagementIDCsUpdNew.OrtherNotes = Utilities.Find_Replace(pUserManagementUpd.OrtherNotes);
@@ -1227,6 +1228,7 @@ namespace VBSPOSS.Services.Implements
                             objUserApproveUpdateStatus.Status = StatusBusinessFlow.Status_Submitted.Value;
                             objUserApproveUpdateStatus.ModifiedBy = pUserNameUpd;
                             objUserApproveUpdateStatus.ModifiedDate = dCurrentDateTmp;
+                            _dbContext.UserManagementIDCs.Update(objUserApproveUpdateStatus);
                             iSaveChanges = await _dbContext.SaveChangesAsync();
                             if (iSaveChanges > 0)
                             {
@@ -1246,6 +1248,67 @@ namespace VBSPOSS.Services.Implements
             return listIdApprove;
         }
 
+        /// <summary>
+        /// Hàm thực hiện từ chối bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
+        /// Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value hoặc StatusBusinessFlow.Status_Branch_Approved.Value
+        /// </summary>
+        /// <param name="pListUserIdReject">Danh sách người dùng cần từ chối. Ví dụ: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
+        /// <param name="pReasonReject">Lý do từ chối</param>
+        /// <param name="pFunctionType">Mã loại yêu cầu về người dùng</param>
+        /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserNameUpd">Người thực hiện trình duyệt</param>
+        /// <param name="pFlagCall">Cờ Trình duyệt/Phê duyệt. Giá trị: EventFlag.EventFlag_Reject.Value</param>
+        /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
+        ///                 1 - PGD (PosGrade.SUB_POS);
+        ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
+        ///                 3 - TW (PosGrade.HEAD_POS)
+        /// </param>
+        /// <returns>Danh sách Id bản ghi được Update từ chối thành công</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<List<long>> UpdateStatusRejectUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdReject, string pReasonReject, string pFunctionType,
+                                string pSystemDateText, string pUserNameUpd, string pFlagCall, int pUserGradeUpd)
+        {
+            List<long> listIdRejects = new List<long>();
+            int iCountUpdate = 0, iSaveChanges = 0;
+            DateTime dCurrentDateTmp = DateTime.Now;
+            try
+            {
+
+                if (pListUserIdReject != null && pListUserIdReject.Count != 0)
+                {
+                    foreach (var itemIdReject in pListUserIdReject)
+                    {
+                        var objUserRejectUpdateStatus = _dbContext.UserManagementIDCs.Where(m => m.Id == itemIdReject.Id
+                                            && m.UserId == itemIdReject.UserId
+                                            && (m.Status != StatusBusinessFlow.Status_HeadOffice_Approved.Value && m.Status != StatusBusinessFlow.Status_Branch_Approved.Value)).OrderByDescending(o => o.Id).FirstOrDefault();
+                        if (objUserRejectUpdateStatus != null && !string.IsNullOrEmpty(objUserRejectUpdateStatus.UserId))
+                        {
+                            int statusOld = 0;
+                            statusOld = objUserRejectUpdateStatus.Status;
+                            objUserRejectUpdateStatus.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Rejected.Value : StatusBusinessFlow.Status_Branch_Rejected.Value;
+                            objUserRejectUpdateStatus.ApproverBy = pUserNameUpd;
+                            objUserRejectUpdateStatus.ApprovalDate = dCurrentDateTmp;
+                            objUserRejectUpdateStatus.ReasonReject = string.IsNullOrEmpty(pReasonReject) ? $"Từ chối yêu cầu {objUserRejectUpdateStatus.FunctionType}|{objUserRejectUpdateStatus.UserId}|{statusOld.ToString()}" : pReasonReject;
+                            _dbContext.UserManagementIDCs.Update(objUserRejectUpdateStatus);
+                            iSaveChanges = await _dbContext.SaveChangesAsync();
+                            if (iSaveChanges > 0)
+                            {
+                                iCountUpdate++;
+                                listIdRejects.Add(objUserRejectUpdateStatus.Id);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"UpdateStatusRejectUserManagementIDC('{pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}");
+                throw new Exception($"Lỗi gọi hàm cập nhật từ chối danh sách yêu cầu về tài khoản người dùng Intellect iDC " +
+                                        $"UpdateStatusRejectUserManagementIDC(' {pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}", ex);
+            }
+            return listIdRejects;
+        }
+        
         /// <summary>
         /// Hàm thực hiện Phê duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
         ///     - Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_Submitted.Value;
@@ -1268,11 +1331,11 @@ namespace VBSPOSS.Services.Implements
                                     string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pFlagCall)
         {
             List<long> listIdAuthorize = new List<long>();
-            int iCountUpdate = 0, iSaveChanges = 0, iStatusUpdateCoreTmp = 0;
+            int iCountUpdate = 0, iSaveChangeAuthTmp = 0, iStatusUpdateCoreTmp = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             DateTime dBusinessDateOfIDC = CustConverter.StringToDate(pBusinessDateText, FormatParameters.FORMAT_DATE).Date;
             DateTime dSystemDateOfIDC = CustConverter.StringToDate(pSystemDateText, FormatParameters.FORMAT_DATE).Date;
-            string sMainPosNew = "", sMainPosOld = "";
+            string sMainPosNew = "", sMainPosOld = "", sMessageInfo = "";
             try
             {
                 var listPosTmp = _dbContext.ListOfPoss.Where(w => w.Status == StatusLov.StatusOpenPOS).ToList();
@@ -1285,10 +1348,11 @@ namespace VBSPOSS.Services.Implements
                         var objUserAuth = _dbContext.UserManagementIDCs.Where(m => m.Id == itemIdAuth.Id && m.UserId == itemIdAuth.UserId).OrderByDescending(o => o.Id).FirstOrDefault();
                         if (objUserAuth != null && !string.IsNullOrEmpty(objUserAuth.UserId))
                         {
-                            sMainPosNew = ""; sMainPosOld = "";
+                            sMainPosNew = ""; sMainPosOld = ""; sMessageInfo = "";
                             sMainPosNew = listPosTmp.Where(w => w.Code == objUserAuth.PosCode).Select(s => s.MainPosCode).FirstOrDefault();
                             sMainPosOld = listPosTmp.Where(w => w.Code == objUserAuth.PosCodeOld).Select(s => s.MainPosCode).FirstOrDefault();
-                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code && pUserGradeUpd == PosGrade.HEAD_POS)
+                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code 
+                                && (pUserGradeUpd == PosGrade.MAIN_POS || pUserGradeUpd == PosGrade.HEAD_POS))
                             {
                                 #region --- 1. Trường hợp tạo mới tài khoản người dùng ---
                                 //Gọi API để thêm mới người dùng vào IDC
@@ -1327,7 +1391,6 @@ namespace VBSPOSS.Services.Implements
                                 objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
                                 objUserAuth.CallApiResponseCode = objCreateUserIDCByApi.ResponseCode;
                                 objUserAuth.CallApiResponseMsg = objCreateUserIDCByApi.ResponseMsg;
-                                //
                                 if (objCreateUserIDCByApi != null && objCreateUserIDCByApi.Status
                                     && (objCreateUserIDCByApi.ResponseCode == "0" || objCreateUserIDCByApi.ResponseCode == "00000"))
                                 {
@@ -1340,18 +1403,40 @@ namespace VBSPOSS.Services.Implements
                                         var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssign, pUserNameUpd);
                                         if (objTellerRoleAssign == null || (objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000"))
                                         {
-                                            objUserAuth.OrtherNotes = $"Người dùng có quyền tiền mặt nhưng gọi API thiết lập quyền tiền mặt bị lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg}";
+                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign thiết lập quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
                                         }
                                     }
                                     //Thực hiện Update vào bảng UserIDCManagement
                                     objUserAuth.CallApiAutoGeneratedPassword = objCreateUserIDCByApi.UserPassword;
-                                    //Thực hiện Update vào bảng UserIDCMaster 
+                                    //Thực hiện Update vào bảng UserIDCMaster
+
+                                    //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                    var objUserInforByApiCall01 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                    if (objUserInforByApiCall01 != null && !string.IsNullOrEmpty(objUserInforByApiCall01.UserId)
+                                                && objUserInforByApiCall01?.ServiceStatusResponseResponseCode == "0")
+                                    {
+                                        objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall01.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall01.MobileNumber;
+                                        objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall01.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall01.EmailAddress;
+                                        objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall01.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall01.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall01.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall01.FirstName;
+                                        objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall01.LastName) ? objUserAuth.LastName : objUserInforByApiCall01.LastName;
+                                        objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall01.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall01.GroupName;
+                                        objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall01.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall01.BranchCode;
+                                        objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall01.NickName) ? objUserAuth.NickName : objUserInforByApiCall01.NickName;
+                                        objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall01.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall01.DefaultBranch;
+                                        objUserAuth.UserStatus = objUserInforByApiCall01.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall01.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall01.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall01.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall01.MailIdFlag;
+                                        objUserAuth.AuthType = objUserInforByApiCall01.AuthType.ToString() ?? objUserAuth.AuthType;
+                                        objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall01.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall01.AuthsecType;
+                                    }
                                     UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                     objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
                                     objUserIDCMaster.ApproverBy = pUserNameUpd;
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
+                                    objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Add.Value.ToString());
                                     if (objCreateUserIDCMaster > 0)
                                     {
@@ -1378,8 +1463,11 @@ namespace VBSPOSS.Services.Implements
                                     objUserAuth.CallApiResponseMsg = objCreateUserIDCByApi.ResponseMsg;
                                 }
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                iSaveChanges = await _dbContext.SaveChangesAsync();
-                                if (iSaveChanges > 0)
+                                sMessageInfo = $"{sMessageInfo} {objUserAuth.CallApiResponseMsg}";
+                                objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
+                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
                                     listIdAuthorize.Add(objUserAuth.Id);
@@ -1429,8 +1517,9 @@ namespace VBSPOSS.Services.Implements
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
                                 }
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                iSaveChanges = await _dbContext.SaveChangesAsync();
-                                if (iSaveChanges > 0)
+                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
                                     listIdAuthorize.Add(objUserAuth.Id);
@@ -1465,6 +1554,38 @@ namespace VBSPOSS.Services.Implements
 
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
+
+                                    //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                    var objUserInforByApiCall02 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                    if (objUserInforByApiCall02 != null && !string.IsNullOrEmpty(objUserInforByApiCall02.UserId)
+                                                && objUserInforByApiCall02?.ServiceStatusResponseResponseCode == "0")
+                                    {
+                                        objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall02.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall02.MobileNumber;
+                                        objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall02.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall02.EmailAddress;
+                                        objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall02.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall02.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall02.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall02.FirstName;
+                                        objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall02.LastName) ? objUserAuth.LastName : objUserInforByApiCall02.LastName;
+                                        objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall02.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall02.GroupName;
+                                        objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall02.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall02.BranchCode;
+                                        objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall02.NickName) ? objUserAuth.NickName : objUserInforByApiCall02.NickName;
+                                        objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall02.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall02.DefaultBranch;
+                                        objUserAuth.UserStatus = objUserInforByApiCall02.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall02.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall02.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall02.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall02.MailIdFlag;
+                                        objUserAuth.AuthType = objUserInforByApiCall02.AuthType.ToString() ?? objUserAuth.AuthType;
+                                        objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall02.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall02.AuthsecType;
+                                    }
+                                    //Update thay đổi vào bảng UserIDCMaster: Mở khóa cho người dùng => Chỉ cần Update UserStatus là đủ
+                                    UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
+                                    objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
+                                    objUserIDCMaster.Id = 0;
+                                    objUserIDCMaster.ModifiedBy = pUserNameUpd;
+                                    objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
+                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                    objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
+                                    objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                    var iRowIdUserIDCMasterUpdate = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                    
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     objUserAuth.ApproverBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
@@ -1480,8 +1601,9 @@ namespace VBSPOSS.Services.Implements
                                     objUserAuth.CallApiResponseMsg = objEnableUserIDCByApiResult.ResponseMsg;
                                 }
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                iSaveChanges = await _dbContext.SaveChangesAsync();
-                                if (iSaveChanges > 0)
+                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
                                     listIdAuthorize.Add(objUserAuth.Id);
@@ -1532,6 +1654,38 @@ namespace VBSPOSS.Services.Implements
 
                                         //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                         objUserAuth.EffectiveDate = dEffectiveDateTmp;
+
+                                        //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                        var objUserInforByApiCall03 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                        if (objUserInforByApiCall03 != null && !string.IsNullOrEmpty(objUserInforByApiCall03.UserId)
+                                                    && objUserInforByApiCall03?.ServiceStatusResponseResponseCode == "0")
+                                        {
+                                            objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall03.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall03.MobileNumber;
+                                            objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall03.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall03.EmailAddress;
+                                            objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall03.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall03.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall03.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall03.FirstName;
+                                            objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall03.LastName) ? objUserAuth.LastName : objUserInforByApiCall03.LastName;
+                                            objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall03.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall03.GroupName;
+                                            objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall03.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall03.BranchCode;
+                                            objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall03.NickName) ? objUserAuth.NickName : objUserInforByApiCall03.NickName;
+                                            objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall03.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall03.DefaultBranch;
+                                            objUserAuth.UserStatus = objUserInforByApiCall03.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                            objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall03.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall03.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall03.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall03.MailIdFlag;
+                                            objUserAuth.AuthType = objUserInforByApiCall03.AuthType.ToString() ?? objUserAuth.AuthType;
+                                            objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall03.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall03.AuthsecType;
+                                        }
+                                        //Update thay đổi vào bảng UserIDCMaster: Chủ yếu là thay đổi UserStatus thành trạng thái là 1
+                                        UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
+                                        objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
+                                        objUserIDCMaster.Id = 0;
+                                        objUserIDCMaster.ModifiedBy = pUserNameUpd;
+                                        objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
+                                        objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                        objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
+                                        objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                        var iRowIdUserIDCMaster03 = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                        
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
@@ -1548,8 +1702,9 @@ namespace VBSPOSS.Services.Implements
                                     }
                                 }
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                iSaveChanges = await _dbContext.SaveChangesAsync();
-                                if (iSaveChanges > 0)
+                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
                                     listIdAuthorize.Add(objUserAuth.Id);
@@ -1598,6 +1753,7 @@ namespace VBSPOSS.Services.Implements
                                             objUserAuth.CallApiReqRecordSl = 0;
                                             objUserAuth.CallApiResponseCode = objTellerRoleAssign.ResponseCode;
                                             objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRoleAssign.ResponseMsg}";
+                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign bỏ quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
                                             bIsContinueTmp = false;
                                         }
                                     }
@@ -1618,7 +1774,7 @@ namespace VBSPOSS.Services.Implements
                                     objModifyUser.EmailAddress = objUserAuth.EmailAddress;
                                     objModifyUser.ExpiryDate = objUserAuth.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                     objModifyUser.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                    objModifyUser.Language = "vi_VN";
+                                    objModifyUser.Language = DefaultValue.Language;
                                     objModifyUser.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
                                     objModifyUser.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
                                     objModifyUser.IpSet = objUserAuth.IpSetDetail;
@@ -1650,6 +1806,7 @@ namespace VBSPOSS.Services.Implements
                                                         objUserAuth.CallApiReqRecordSl = 0;
                                                         objUserAuth.CallApiResponseCode = objTellerRoleAssign.ResponseCode;
                                                         objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi gán quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRoleAssign.ResponseMsg}";
+                                                        sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign gán quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
                                                     }
                                                 }
                                             }
@@ -1676,15 +1833,37 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
 
+                                        //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                        var objUserInforByApiCall04 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                        if (objUserInforByApiCall04 != null && !string.IsNullOrEmpty(objUserInforByApiCall04.UserId)
+                                                    && objUserInforByApiCall04?.ServiceStatusResponseResponseCode == "0")
+                                        {
+                                            objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall04.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall04.MobileNumber;
+                                            objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall04.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall04.EmailAddress;
+                                            objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall04.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall04.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall04.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall04.FirstName;
+                                            objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall04.LastName) ? objUserAuth.LastName : objUserInforByApiCall04.LastName;
+                                            objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall04.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall04.GroupName;
+                                            objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall04.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall04.BranchCode;
+                                            objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall04.NickName) ? objUserAuth.NickName : objUserInforByApiCall04.NickName;
+                                            objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall04.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall04.DefaultBranch;
+                                            objUserAuth.UserStatus = objUserInforByApiCall04.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                            objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall04.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall04.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall04.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall04.MailIdFlag;
+                                            objUserAuth.AuthType = objUserInforByApiCall04.AuthType.ToString() ?? objUserAuth.AuthType;
+                                            objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall04.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall04.AuthsecType;
+                                        }
+
                                         //Update thay đổi vào bảng UserIDCMaster
                                         UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                         objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
                                         objUserIDCMaster.Id = 0;
+                                        objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                         objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
                                         objUserIDCMaster.ApproverBy = pUserNameUpd;
                                         objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
-                                        var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                        var iRowIdUserIDCUpdate04 = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
                                     }
                                     else
                                     {
@@ -1697,8 +1876,11 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
                                     }
                                     //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                    iSaveChanges = await _dbContext.SaveChangesAsync();
-                                    if (iSaveChanges > 0)
+                                    sMessageInfo = $"{sMessageInfo} {objUserAuth.CallApiResponseMsg}";
+                                    objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
+                                    _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                    iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                    if (iSaveChangeAuthTmp > 0)
                                     {
                                         iCountUpdate++;
                                         listIdAuthorize.Add(objUserAuth.Id);
@@ -1751,6 +1933,7 @@ namespace VBSPOSS.Services.Implements
                                             objUserAuth.CallApiReqRecordSl = 0;
                                             objUserAuth.CallApiResponseCode = objTellerRemoveRoleAssign.ResponseCode;
                                             objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRemoveRoleAssign.ResponseMsg}";
+                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign bỏ quyền tiền mặt lỗi {objTellerRemoveRoleAssign.ResponseCode}-{objTellerRemoveRoleAssign.ResponseMsg} | ";
                                             bValidAuth = false;
                                         }
 
@@ -1767,6 +1950,7 @@ namespace VBSPOSS.Services.Implements
                                                 objUserAuth.CallApiReqRecordSl = 0;
                                                 objUserAuth.CallApiResponseCode = objTellerRemoveRoleAssign.ResponseCode;
                                                 objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ xác thực 2 lớp với tài khoản người dùng: {objDeleteOTPRegister.Success.ToString()}";
+                                                sMessageInfo = $"{sMessageInfo} Gọi hàm bỏ xác thực 2 lớp {objDeleteOTPRegister.Success.ToString()} | ";
                                                 bValidAuth = false;
                                             }
                                         }
@@ -1789,7 +1973,7 @@ namespace VBSPOSS.Services.Implements
                                             objModifyUserChangePos.EmailAddress = objUserAuth.EmailAddress;
                                             objModifyUserChangePos.ExpiryDate = objUserAuth.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                             objModifyUserChangePos.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                            objModifyUserChangePos.Language = "vi_VN";
+                                            objModifyUserChangePos.Language = DefaultValue.Language;
                                             objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
                                             objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
                                             objModifyUserChangePos.IpSet = objUserAuth.IpSetDetail;
@@ -1819,6 +2003,7 @@ namespace VBSPOSS.Services.Implements
                                                             objUserAuth.CallApiReqRecordSl = 0;
                                                             objUserAuth.CallApiResponseCode = objTellerRoleAssign.ResponseCode;
                                                             objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi gán quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRoleAssign.ResponseMsg}";
+                                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign gán quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
                                                         }
                                                     }
                                                 }
@@ -1834,7 +2019,26 @@ namespace VBSPOSS.Services.Implements
                                                 objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                                 objUserAuth.ApproverBy = pUserNameUpd;
                                                 objUserAuth.ApprovalDate = dCurrentDateTmp;
-
+                                                //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                                var objUserInforByApiCall05 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                                if (objUserInforByApiCall05 != null && !string.IsNullOrEmpty(objUserInforByApiCall05.UserId)
+                                                            && objUserInforByApiCall05?.ServiceStatusResponseResponseCode == "0")
+                                                {
+                                                    objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall05.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall05.MobileNumber;
+                                                    objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall05.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall05.EmailAddress;
+                                                    objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall05.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall05.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                                    objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall05.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall05.FirstName;
+                                                    objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall05.LastName) ? objUserAuth.LastName : objUserInforByApiCall05.LastName;
+                                                    objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall05.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall05.GroupName;
+                                                    objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall05.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall05.BranchCode;
+                                                    objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall05.NickName) ? objUserAuth.NickName : objUserInforByApiCall05.NickName;
+                                                    objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall05.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall05.DefaultBranch;
+                                                    objUserAuth.UserStatus = objUserInforByApiCall05.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                                    objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall05.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall05.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                                    objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall05.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall05.MailIdFlag;
+                                                    objUserAuth.AuthType = objUserInforByApiCall05.AuthType.ToString() ?? objUserAuth.AuthType;
+                                                    objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall05.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall05.AuthsecType;
+                                                }
                                                 //Update thay đổi vào bảng UserIDCMaster
                                                 UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                                 objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
@@ -1844,8 +2048,9 @@ namespace VBSPOSS.Services.Implements
                                                 objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
                                                 objUserIDCMaster.ApproverBy = pUserNameUpd;
                                                 objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
-                                                var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
-                                                if (objCreateUserIDCMaster > 0)
+                                                objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                                var iResultRowUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                                if (iResultRowUpdateTmp > 0)
                                                 {
                                                     //Gửi thông báo Noti cho người dùng: NHCSXH thông báo tài khoản iDC: <USER_LOGIN> đã được đổi sang đơn vị mới <POS mới> với quyền <Quyền mới đổi>, có hiệu lực từ <Thời gian thực thi vào hệ thống>.
                                                     var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
@@ -1862,8 +2067,11 @@ namespace VBSPOSS.Services.Implements
                                                 objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
                                             }
                                             //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                            iSaveChanges = await _dbContext.SaveChangesAsync();
-                                            if (iSaveChanges > 0)
+                                            sMessageInfo = $"{sMessageInfo} {objUserAuth.CallApiResponseMsg}";
+                                            objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
+                                            _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                            iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                            if (iSaveChangeAuthTmp > 0)
                                             {
                                                 iCountUpdate++;
                                                 listIdAuthorize.Add(objUserAuth.Id);
@@ -1874,7 +2082,8 @@ namespace VBSPOSS.Services.Implements
                                 }
                                 #endregion
                             }
-                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code && pUserGradeUpd == PosGrade.HEAD_POS)
+                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code 
+                                && (pUserGradeUpd == PosGrade.MAIN_POS|| pUserGradeUpd == PosGrade.HEAD_POS))
                             {
                                 #region --- 7. Hủy người dùng ---
                                 bool bIsContinueTmpCloseUserId = true;
@@ -1909,7 +2118,7 @@ namespace VBSPOSS.Services.Implements
                                     objModifyUserDelete.EmailAddress = objUserAuth.EmailAddress;
                                     objModifyUserDelete.ExpiryDate = dSystemDateOfIDC.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                     objModifyUserDelete.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                    objModifyUserDelete.Language = "vi_VN";
+                                    objModifyUserDelete.Language = DefaultValue.Language;
                                     objModifyUserDelete.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
                                     objModifyUserDelete.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
                                     objModifyUserDelete.IpSet = objUserAuth.IpSetDetail;
@@ -1927,7 +2136,7 @@ namespace VBSPOSS.Services.Implements
                                         if (objDisableUserIDCByApi != null && (objDisableUserIDCByApi.ResponseCode == "0" || objDisableUserIDCByApi.ResponseCode == "00000"))
                                         {
                                             objUserAuth.UserStatus = DefaultValue.UserIDC_UserStatus_Closed;
-                                        } 
+                                        }
                                         objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
                                         objUserAuth.SessionValReq = objResultModifyUserIDCByApi.SessionValReq;
                                         objUserAuth.PrevStatus = objResultModifyUserIDCByApi.PrevStatus;
@@ -1941,6 +2150,27 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
 
+                                        //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                        var objUserInforByApiCall06 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                        if (objUserInforByApiCall06 != null && !string.IsNullOrEmpty(objUserInforByApiCall06.UserId)
+                                                    && objUserInforByApiCall06?.ServiceStatusResponseResponseCode == "0")
+                                        {
+                                            objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall06.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall06.MobileNumber;
+                                            objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall06.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall06.EmailAddress;
+                                            objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall06.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall06.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall06.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall06.FirstName;
+                                            objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall06.LastName) ? objUserAuth.LastName : objUserInforByApiCall06.LastName;
+                                            objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall06.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall06.GroupName;
+                                            objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall06.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall06.BranchCode;
+                                            objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall06.NickName) ? objUserAuth.NickName : objUserInforByApiCall06.NickName;
+                                            objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall06.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall06.DefaultBranch;
+                                            objUserAuth.UserStatus = objUserInforByApiCall06.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                            objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall06.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall06.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                            objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall06.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall06.MailIdFlag;
+                                            objUserAuth.AuthType = objUserInforByApiCall06.AuthType.ToString() ?? objUserAuth.AuthType;
+                                            objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall06.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall06.AuthsecType;
+                                        }
+
                                         //Update thay đổi vào bảng UserIDCMaster
                                         UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                         objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
@@ -1951,7 +2181,8 @@ namespace VBSPOSS.Services.Implements
                                         objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
                                         objUserIDCMaster.ApproverBy = pUserNameUpd;
                                         objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
-                                        var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                        objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                        var iResultIdUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
                                     }
                                     else
                                     {
@@ -1964,8 +2195,9 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
                                     }
                                     //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                    iSaveChanges = await _dbContext.SaveChangesAsync();
-                                    if (iSaveChanges > 0)
+                                    _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                    iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                    if (iSaveChangeAuthTmp > 0)
                                     {
                                         iCountUpdate++;
                                         listIdAuthorize.Add(objUserAuth.Id);
@@ -1989,68 +2221,6 @@ namespace VBSPOSS.Services.Implements
 
 
 
-        /// <summary>
-        /// Hàm thực hiện từ chối bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
-        /// Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value hoặc StatusBusinessFlow.Status_Branch_Approved.Value
-        /// </summary>
-        /// <param name="pListUserIdReject">Danh sách người dùng cần từ chối. Ví dụ: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
-        /// <param name="pReasonReject">Lý do từ chối</param>
-        /// <param name="pFunctionType">Mã loại yêu cầu về người dùng</param>
-        /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
-        /// <param name="pUserNameUpd">Người thực hiện trình duyệt</param>
-        /// <param name="pFlagCall">Cờ Trình duyệt/Phê duyệt. Giá trị: EventFlag.EventFlag_Reject.Value</param>
-        /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
-        ///                 1 - PGD (PosGrade.SUB_POS);
-        ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
-        ///                 3 - TW (PosGrade.HEAD_POS)
-        /// </param>
-        /// <returns>Danh sách Id bản ghi được Update từ chối thành công</returns>
-        /// <exception cref="Exception"></exception>
-        public async Task<List<long>> UpdateStatusRejectUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdReject, string pReasonReject, string pFunctionType, 
-                                string pSystemDateText, string pUserNameUpd, string pFlagCall,int pUserGradeUpd)
-        {
-            List<long> listIdRejects = new List<long>();
-            int iCountUpdate = 0, iSaveChanges = 0;
-            DateTime dCurrentDateTmp = DateTime.Now;
-            try
-            {
-                
-                if (pListUserIdReject != null && pListUserIdReject.Count != 0)
-                {
-                    foreach (var itemIdReject in pListUserIdReject)
-                    {
-                        var objUserRejectUpdateStatus = _dbContext.UserManagementIDCs.Where(m => m.Id == itemIdReject.Id
-                                            && m.UserId == itemIdReject.UserId
-                                            && (m.Status != StatusBusinessFlow.Status_HeadOffice_Approved.Value && m.Status != StatusBusinessFlow.Status_Branch_Approved.Value)).OrderByDescending(o => o.Id).FirstOrDefault();
-                        if (objUserRejectUpdateStatus != null && !string.IsNullOrEmpty(objUserRejectUpdateStatus.UserId))
-                        {
-                            int statusOld = 0;
-                            statusOld = objUserRejectUpdateStatus.Status;
-                            objUserRejectUpdateStatus.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Rejected.Value : StatusBusinessFlow.Status_Branch_Rejected.Value;
-                            objUserRejectUpdateStatus.ApproverBy = pUserNameUpd;
-                            objUserRejectUpdateStatus.ApprovalDate = dCurrentDateTmp;
-                            objUserRejectUpdateStatus.ReasonReject = string.IsNullOrEmpty(pReasonReject) ? $"Từ chối yêu cầu {objUserRejectUpdateStatus.FunctionType}|{objUserRejectUpdateStatus.UserId}|{statusOld.ToString()}" : pReasonReject;
-                            iSaveChanges = await _dbContext.SaveChangesAsync();
-                            if (iSaveChanges > 0)
-                            {
-                                iCountUpdate++;
-                                listIdRejects.Add(objUserRejectUpdateStatus.Id);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"UpdateStatusRejectUserManagementIDC('{pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}");
-                throw new Exception($"Lỗi gọi hàm cập nhật từ chối danh sách yêu cầu về tài khoản người dùng Intellect iDC " +
-                                        $"UpdateStatusRejectUserManagementIDC(' {pListUserIdReject.Count.ToString()}', '{pUserNameUpd}', '{pFlagCall}') => Error: {ex.Message}", ex);
-            }
-            return listIdRejects;
-        }
-
-
-
 
 
 
@@ -2065,7 +2235,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pFlagCall">Cờ thêm/sửa. Giá trị: Sửa - EventFlag.EventFlag_Edit.Value; Thêm - EventFlag.EventFlag_Add.Value</param>
         /// <returns>Chỉ số Id được cập nhật. -1: Lỗi; 0: Không tìm thấy bản ghi cập nhật chỉnh sửa hoặc thông tin truyền vào pUserIDCMasterUpd Null</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType)
+        public async Task<long> Xoa_SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType)
         {
             int iCountUpdate = 0, iSaveChanges = 0, iCreateUserIDC = 0;
             long iRetIdUpd = 0;
@@ -2215,7 +2385,7 @@ namespace VBSPOSS.Services.Implements
                                 objModifyUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
                                 objModifyUser.ExpiryDate = objUserManagementIDCsUpdNew.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                 objModifyUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                objModifyUser.Language = "vi_VN";
+                                objModifyUser.Language = DefaultValue.Language;
                                 objModifyUser.AddUserExtraAttributeRequestViewModel.BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0');
                                 objModifyUser.AddUserExtraAttributeRequestViewModel.UserRole = objUserManagementIDCsUpdNew.GroupName;
                                 objModifyUser.IpSet = objUserManagementIDCsUpdNew.IpSetDetail;
@@ -2328,7 +2498,7 @@ namespace VBSPOSS.Services.Implements
                                 objModifyUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
                                 objModifyUser.ExpiryDate = objUserManagementIDCsUpdNew.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                 objModifyUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                objModifyUser.Language = "vi_VN";
+                                objModifyUser.Language = DefaultValue.Language;
                                 objModifyUser.AddUserExtraAttributeRequestViewModel.BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0');
                                 objModifyUser.AddUserExtraAttributeRequestViewModel.UserRole = objUserManagementIDCsUpdNew.GroupName;
                                 objModifyUser.IpSet = objUserManagementIDCsUpdNew.IpSetDetail;
@@ -2498,7 +2668,7 @@ namespace VBSPOSS.Services.Implements
                             objModifyUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
                             objModifyUser.ExpiryDate = objUserManagementIDCsUpdNew.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                             objModifyUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                            objModifyUser.Language = "vi_VN";
+                            objModifyUser.Language = DefaultValue.Language;
                             objModifyUser.AddUserExtraAttributeRequestViewModel.BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0');
                             objModifyUser.AddUserExtraAttributeRequestViewModel.UserRole = objUserManagementIDCsUpdNew.GroupName;
                             objModifyUser.IpSet = objUserManagementIDCsUpdNew.IpSetDetail;
@@ -2582,7 +2752,7 @@ namespace VBSPOSS.Services.Implements
                             objModifyUser.EmailAddress = objUserManagementIDCsUpdNew.EmailAddress;
                             objModifyUser.ExpiryDate = dCurrentDateTmp.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                             objModifyUser.DateOfBirth = objUserManagementIDCsUpdNew.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                            objModifyUser.Language = "vi_VN";
+                            objModifyUser.Language = DefaultValue.Language;
                             objModifyUser.AddUserExtraAttributeRequestViewModel.BranchCode = objUserManagementIDCsUpdNew.PosCode?.TrimStart('0');
                             objModifyUser.AddUserExtraAttributeRequestViewModel.UserRole = objUserManagementIDCsUpdNew.GroupName;
                             objModifyUser.IpSet = objUserManagementIDCsUpdNew.IpSetDetail;

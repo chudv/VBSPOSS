@@ -97,6 +97,7 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_POS"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+            TempData["FunctionTypeFlag_RESTORE_USER"] = FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code;
             ViewBag.FunctionTypes = FunctionTypeFlag.GetAll(true);
             ViewBag.StatusFlowUserIDC = StatusBusinessFlow.GetListStatusOfUserIDC();
             return View("IndexUserManagementIDC");
@@ -171,6 +172,33 @@ namespace VBSPOSS.Controllers
                             itemUMIDC.ApprovalUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
                             sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Authorize.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
                             itemUMIDC.AuthorizeUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
+                            
+                            itemUMIDC.DescriptionUserRequest = "";
+                            if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
+                            {
+                                itemUMIDC.DescriptionUserRequest = $"Đổi quyền {itemUMIDC.GroupNameOld} - {itemUMIDC.GroupNameOldText} sang {itemUMIDC.GroupName} - {itemUMIDC.GroupNameOld}";
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
+                            {
+                                if (itemUMIDC.MainPosCode == itemUMIDC.MainPosCodeOld)
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
+                                else
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName} ({itemUMIDC.MainPosName})";
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
+                            {
+                                sValueTmp = "Thay đổi thông tin: ";
+                                if (itemUMIDC.MobileNumberOld != itemUMIDC.MobileNumber)
+                                    sValueTmp = $"{sValueTmp}Điện thoại {itemUMIDC.MobileNumberOld} thành {itemUMIDC.MobileNumber}; ";
+                                if (itemUMIDC.EmailAddressOld != itemUMIDC.EmailAddress)
+                                    sValueTmp = $"{sValueTmp}Email {itemUMIDC.EmailAddressOld} thành {itemUMIDC.EmailAddress}; ";
+                                sValueTmp = sValueTmp.Replace("  "," ");
+                                itemUMIDC.DescriptionUserRequest = Utilities.DeleteChar_FirstAndLast(sValueTmp, ";");
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
+                            {
+                                itemUMIDC.DescriptionUserRequest = $"Khôi phục TK được dóng từ ngày {itemUMIDC.ExpiryDate.ToString(FormatParameters.FORMAT_DATE)} hiện đang có trạng thái {itemUMIDC.UserStatusText}";
+                            }
                         }
                     } 
                 }
@@ -194,6 +222,33 @@ namespace VBSPOSS.Controllers
                             itemUMIDC.ApprovalUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
                             sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Authorize.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
                             itemUMIDC.AuthorizeUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
+
+                            itemUMIDC.DescriptionUserRequest = $"{itemUMIDC.FunctionTypeName}";
+                            if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
+                            {
+                                itemUMIDC.DescriptionUserRequest = $"Đổi quyền {itemUMIDC.GroupNameOld} - {itemUMIDC.GroupNameOldText} sang {itemUMIDC.GroupName} - {itemUMIDC.GroupNameOld}";
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
+                            {
+                                if (itemUMIDC.MainPosCode == itemUMIDC.MainPosCodeOld)
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
+                                else
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName} ({itemUMIDC.MainPosName})";
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
+                            {
+                                sValueTmp = "Thay đổi thông tin: ";
+                                if (itemUMIDC.MobileNumberOld != itemUMIDC.MobileNumber)
+                                    sValueTmp = $"{sValueTmp}Điện thoại {itemUMIDC.MobileNumberOld} thành {itemUMIDC.MobileNumber}; ";
+                                if (itemUMIDC.EmailAddressOld != itemUMIDC.EmailAddress)
+                                    sValueTmp = $"{sValueTmp}Email {itemUMIDC.EmailAddressOld} thành {itemUMIDC.EmailAddress}; ";
+                                sValueTmp = sValueTmp.Replace("  ", " ");
+                                itemUMIDC.DescriptionUserRequest = Utilities.DeleteChar_FirstAndLast(sValueTmp, ";");
+                            }
+                            else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
+                            {
+                                itemUMIDC.DescriptionUserRequest = $"Khôi phục TK được dóng từ ngày {itemUMIDC.ExpiryDate.ToString(FormatParameters.FORMAT_DATE)} hiện đang có trạng thái {itemUMIDC.UserStatusText}";
+                            }
                         }
                     }
                 }
@@ -232,7 +287,8 @@ namespace VBSPOSS.Controllers
                 pUserId = "";
             if (string.IsNullOrEmpty(pEffectiveDate))
                 pEffectiveDate = CustConverter.StringToDate(DefaultValue.MinDate.ToString(), FormatParameters.FORMAT_DATE_INT).ToString(FormatParameters.FORMAT_DATE);
-
+            DateTime dSystemDateIDCTmp = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+            DateTime dBusinessDateIDCTmp = _serviceTransPoint.GetDateInCoreIDC("1").Date;
             string sNameView = "";
             if (pFlagCall == EventFlag.EventFlag_Add.Value.ToString())        //Trường hợp yêu cầu tạo mới tài khoản
             {
@@ -262,10 +318,10 @@ namespace VBSPOSS.Controllers
                 objUserManagementIDCUpd.AuthsecType = AuthSecType.AuthSecType_Single.Code;
                 objUserManagementIDCUpd.ExtraAttributeUserRole = "";
                 objUserManagementIDCUpd.ExtraAttributeBranchCode = "";
-                objUserManagementIDCUpd.EffectiveDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
-                objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
+                objUserManagementIDCUpd.EffectiveDate = dSystemDateIDCTmp.Date;
+                objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
                 objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
                 objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
                 objUserManagementIDCUpd.ExpiryDate = CustConverter.StringToDate(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).AddYears(10).Date;
                 objUserManagementIDCUpd.Ticket = "";
@@ -357,8 +413,8 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.AuthsecType = objUserManagementIDCFind01.AuthsecType;
                     objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCFind01.GroupName;
                     objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCFind01.PosCode;
-                    objUserManagementIDCUpd.EffectiveDate = objUserManagementIDCFind01.EffectiveDate;
-                    objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
+                    objUserManagementIDCUpd.EffectiveDate = dSystemDateIDCTmp.Date;
+                    objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
                     objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCFind01.ExpiryDate;
                     objUserManagementIDCUpd.Ticket = objUserManagementIDCFind01.Ticket;
@@ -426,7 +482,7 @@ namespace VBSPOSS.Controllers
                 }
                 #endregion
             }
-            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType)|| pButtonType.Length>2))
+            else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType)|| pButtonType.Length > 2))
             {
                 #region ---3. Sự kiện xem chi tiết bản ghi Yêu cầu nghiệp vụ tài khoản người dùng ---
                 if (string.IsNullOrEmpty(pButtonType) || pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
@@ -468,9 +524,9 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCViewTmp.GroupName;
                         objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCViewTmp.PosCode;
                         objUserManagementIDCUpd.EffectiveDate = objUserManagementIDCViewTmp.EffectiveDate;
-                        objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
+                        objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
                         objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                        objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                        objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
                         objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
                         objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCViewTmp.ExpiryDate;
                         objUserManagementIDCUpd.Ticket = string.IsNullOrEmpty(objUserManagementIDCViewTmp.Ticket) ? "" : objUserManagementIDCViewTmp.Ticket;
@@ -592,9 +648,9 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCTemp01.GroupName;
                         objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCTemp01.PosCode;
                         objUserManagementIDCUpd.EffectiveDate = objUserManagementIDCTemp01.EffectiveDate;
-                        objUserManagementIDCUpd.BusinessDate = objUserManagementIDCTemp01.BusinessDate;//_serviceTransPoint.GetDateInCoreIDC("1").Date;
+                        objUserManagementIDCUpd.BusinessDate = objUserManagementIDCTemp01.BusinessDate;
                         objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                        objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                        objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
                         objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE); 
                         objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCTemp01.ExpiryDate;
                         objUserManagementIDCUpd.Ticket = objUserManagementIDCTemp01.Ticket;
@@ -730,11 +786,13 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementMTFind.GroupName;
                     objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementMTFind.PosCode;
                     objUserManagementIDCUpd.EffectiveDate = objUserManagementMTFind.EffectiveDate;
-                    objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date;
+                    objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
                     objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                    objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                    objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
                     objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.ExpiryDate = objUserManagementMTFind.ExpiryDate;
+                    objUserManagementIDCUpd.ExpiryDateOld = objUserManagementMTFind.ExpiryDate;
+                    objUserManagementIDCUpd.ExpiryDateOldText = objUserManagementMTFind.ExpiryDate.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.Ticket = "";
                     objUserManagementIDCUpd.Remark = "";
                     objUserManagementIDCUpd.OrtherNotes = "";
@@ -802,8 +860,8 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail;
                     objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
                     objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDate.ToString(FormatParameters.FORMAT_DATE);
-
-                    objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.SystemDate;
+                    objUserManagementIDCUpd.StartDate = dSystemDateIDCTmp.Date;
+                    objUserManagementIDCUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.SystemDate.AddDays(10);// CustConverter.StringToDateTime(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).Date;
                     objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
                     objUserManagementIDCUpd.GenderCode = objUserManagementMTFind.GenderCode;
@@ -862,10 +920,10 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
                     objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
                     objUserManagementIDCUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
-                    objUserManagementIDCUpd.BusinessDate = objUserManagementChangeTemp.BusinessDate;//_serviceTransPoint.GetDateInCoreIDC("1").Date;
+                    objUserManagementIDCUpd.BusinessDate = objUserManagementChangeTemp.BusinessDate;
                     objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                    objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
-                    objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
+                    objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
+                    objUserManagementIDCUpd.SystemDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
                     objUserManagementIDCUpd.Ticket = objUserManagementChangeTemp.Ticket;
                     objUserManagementIDCUpd.Remark = objUserManagementChangeTemp.Remark;
@@ -905,9 +963,7 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
                         objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
                         objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
-
                         objUserManagementIDCUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
-
                     }
                     objUserManagementIDCUpd.StartDate = objUserManagementChangeTemp.StartDate;
                     objUserManagementIDCUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
@@ -936,12 +992,13 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld;
                     objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
                     objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
-
+                    objUserManagementIDCUpd.StartDate = dSystemDateIDCTmp.Date;
+                    objUserManagementIDCUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
                     //objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.BusinessDate;
                     objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.ExpiryDate;
                     objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
                     int numberDays = (objUserManagementIDCUpd.ExpiryDate - objUserManagementIDCUpd.StartDate).Days;
-                    if (numberDays <= 90)
+                    if (numberDays > 0 && numberDays <= 90 && objUserManagementChangeTemp.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                         objUserManagementIDCUpd.ChoiceEndDateChangeRole = 1;
 
                     objUserManagementIDCUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
@@ -960,8 +1017,13 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
                     objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
                     objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
+                    var objUserInfoIDCTmp = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserManagementChangeTemp.UserId);
+                    if (objUserInfoIDCTmp != null && !string.IsNullOrEmpty(objUserInfoIDCTmp.UserId))
+                    {
+                        objUserManagementIDCUpd.ExpiryDateOld = CustConverter.StringToDate(objUserInfoIDCTmp.ExpiryDate.Trim().Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT).Date;//yyyy-MM-dd
+                        objUserManagementIDCUpd.ExpiryDateOldText = objUserManagementIDCUpd.ExpiryDateOld.ToString(FormatParameters.FORMAT_DATE);
+                    }
                 }
-
                 #endregion
 
                 sNameView = "CreateChangeInforUserManagementIDC";
@@ -1003,9 +1065,9 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
                     objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
                     objUserManagementIDCUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
-                    objUserManagementIDCUpd.BusinessDate = _serviceTransPoint.GetDateInCoreIDC("1").Date; //objUserManagementChangeTemp.BusinessDate;
+                    objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
                     objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-                    objUserManagementIDCUpd.SystemDate = _serviceTransPoint.GetDateInCoreIDC("0").Date;
+                    objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
                     objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
                     objUserManagementIDCUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
                     objUserManagementIDCUpd.Ticket = objUserManagementChangeTemp.Ticket;
@@ -1143,6 +1205,7 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_POS"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+            TempData["FunctionTypeFlag_RESTORE_USER"] = FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code;
 
             TempData["EventFlag_EditIDC"] = EventFlag.EventFlag_EditIDC.Value.ToString();
             TempData["EventFlag_Edit"] = EventFlag.EventFlag_Edit.Value.ToString();
@@ -1186,7 +1249,7 @@ namespace VBSPOSS.Controllers
         ///             6 - Tài khoản người dùng cần khóa đã mở sổ tiền mặt đầu ngày
         ///             7 - Tài khoản người dùng có yêu cầu nghiệp vụ thay đổi thông tin nhưng thông tin (Quyền/Số điện thoại/Email) vẫn giữ nguyên
         ///             8 - Ngày bắt đầu nhỏ hơn ngày hiện tại
-        ///             9 - Trạng thái người dùng đã được đóng, không thể thực hiện nghiệp vụ mở lại người dùng
+        ///             9 - Trạng thái người dùng đã được đóng, không thể thực hiện nghiệp vụ khác yêu cầu: Mở lại tài khoản và Khôi phục tài khoản)
         ///             11 - Địa chỉ email của người dùng bị trống hoặc không phải email nội bộ của NHCSXH
         ///             10 - Yêu cầu nghiệp vụ cấp mới tài khoản người dùng đã tồn tại trên hệ thống Intlelect iDC
         ///             16 - Yêu cầu nghiệp vụ thay đổi tài khoản người dùng nhưng tài khoản người dùng không tồn tại trên hệ thống Intlelect iDC
@@ -1197,6 +1260,9 @@ namespace VBSPOSS.Controllers
         ///             21 - Yêu cầu nghiệp vụ thay đổi quyền tài khoản người dùng có ngày bắt đầu lớn hơn ngày kết thúc
         ///             22 - Yêu cầu nghiệp vụ thay đổi POS tài khoản người dùng nhưng đơn vị mới thay đổi có giá trị như đơn vị cũ
         ///             26 - Yêu cầu nghiệp vụ nđã tồn tại
+        ///             27 - Tài khoản người dùng có trạng thái không phảilaà đóng, không thể thực hiện yêu cầu Khôi phục lại tài khoản người dùng
+        ///             28 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày mở sổ hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
+        ///             29 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
         /// </returns>
         public async Task<int> IsValidSaveUserManagementIDC(UserManagementIDCViewModel pUserManagementIDCUpdate, string pFlagCall)
         {
@@ -1246,6 +1312,12 @@ namespace VBSPOSS.Controllers
                     if (pUserManagementIDCUpdate.ExpiryDate.Date < DateTime.Now.Date)
                         return 20;//User cần mở có ngày hết hạn nhỏ hơn ngày hiện thời
                 }
+                if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
+                {
+                    //Kiểm tra với dữ liệu nhập trên chức năng yêu cầu
+                    if (pUserManagementIDCUpdate.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
+                        return 27;//Mở/Khôi phục User nhưng trạng thái đang mở rồi
+                }
                 if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                 {
                     if (pUserManagementIDCUpdate.ChoiceEndDateChangeRole == 1)
@@ -1284,7 +1356,8 @@ namespace VBSPOSS.Controllers
                             return 7;
                     }
                 }
-                if (objViewUserIDCByApi.UserStatus == 1 && pUserManagementIDCUpdate.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code)
+                if (objViewUserIDCByApi.UserStatus == 1 && (pUserManagementIDCUpdate.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ENABLE_USER.Code 
+                    && pUserManagementIDCUpdate.FunctionType != FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code))
                     return 9;
                 if (objViewUserIDCByApi != null && !string.IsNullOrEmpty(objViewUserIDCByApi.UserId)
                                 && pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
@@ -1293,6 +1366,20 @@ namespace VBSPOSS.Controllers
                 if ((objViewUserIDCByApi == null || string.IsNullOrEmpty(objViewUserIDCByApi.UserId))
                                 && (pUserManagementIDCUpdate.FunctionType != FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code))
                     return 16;
+
+                if (objViewUserIDCByApi == null || string.IsNullOrEmpty(objViewUserIDCByApi.UserId))
+                {
+                    //Kiểm  tra dữ liệu cũ trên Intellect iDC xem có đủ điều kiện để phục hồi không?
+                    if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
+                    {
+                        if (objViewUserIDCByApi.UserStatus.ToString() != DefaultValue.UserIDC_UserStatus_Closed)
+                            return 27;//Mở/Khôi phục User nhưng trạng thái đang mở rồi
+                        if (CustConverter.StringToDate( objViewUserIDCByApi.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD).Date > pUserManagementIDCUpdate.BusinessDate.Date)
+                            return 28;//User cần khôi phục có ngày hết hạn lớn hơn ngày mở sổ hiện thời
+                        if (CustConverter.StringToDate(objViewUserIDCByApi.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD).Date > pUserManagementIDCUpdate.SystemDate.Date)
+                            return 29;//User cần khôi phục có ngày hết hạn lớn hơn ngày hiện thời
+                    }
+                }
                 //Kiểm tra đã tồn tại bản ghi yêu cầu với tài khoản người dùng chưa?
                 var listUserIDCManagementTmp = await _userManagementIDCService.GetListUserIDCManagement(0, "", "", pUserManagementIDCUpdate.UserId, "", "", -1, pUserManagementIDCUpdate.FunctionType, false);
                 if (listUserIDCManagementTmp != null && listUserIDCManagementTmp.Count != 0)
@@ -1383,6 +1470,11 @@ namespace VBSPOSS.Controllers
                     objUserIDCUpd.CallApiResponseCode = string.IsNullOrEmpty(objUserIDCUpd.CallApiResponseCode) ? "" : objUserIDCUpd.CallApiResponseCode;
                     objUserIDCUpd.CallApiResponseMsg = string.IsNullOrEmpty(objUserIDCUpd.CallApiResponseMsg) ? "" : objUserIDCUpd.CallApiResponseMsg;
                     objUserIDCUpd.CallApiAutoGeneratedPassword = string.IsNullOrEmpty(objUserIDCUpd.CallApiAutoGeneratedPassword) ? "" : objUserIDCUpd.CallApiAutoGeneratedPassword;
+                    if (objUserIDCUpd.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
+                    {
+                        objUserIDCUpd.ExpiryDateOld = objUserIDCUpd.ExpiryDate;
+                        //objUserIDCUpd.ExpiryDate = CustConverter.StringToDate(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).AddYears(10).Date;
+                    }    
                     if (string.IsNullOrEmpty(pFlagCall))
                         pFlagCall = objUserIDCUpd.FlagCall;
                     long iResultUpdate = await _userManagementIDCService.SaveUserManagementIDC(objUserIDCUpd, UserName, pFlagCall);
@@ -1466,6 +1558,7 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_POS"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+            TempData["FunctionTypeFlag_RESTORE_USER"] = FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code;
 
             TempData["AuthorizePermissionFlag"] = userPermission.AuthorizePermissionFlag;
             TempData["ReportPermissionFlag"] = userPermission.ReportPermissionFlag;
@@ -1570,6 +1663,7 @@ namespace VBSPOSS.Controllers
             TempData["FunctionTypeFlag_CHANGE_POS"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
             TempData["FunctionTypeFlag_CHANGE_ROLE"] = FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
             TempData["FunctionTypeFlag_DELETE_USER"] = FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+            TempData["FunctionTypeFlag_RESTORE_USER"] = FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code;
 
             // Hoặc cách khác qua RouteData
             var controllerFromRoute = RouteData.Values["controller"]?.ToString();
@@ -1981,6 +2075,7 @@ namespace VBSPOSS.Controllers
         ///                         Thay đổi POS người dùng: FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code;
         ///                         Thay đổi quyền/vài trò người dùng: FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code;
         ///                         Hủy người dùng: FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
+        ///                         Khôi phục người dùng: FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code;
         /// </param>
         /// <param name="pMainPosCode">Mã chi nhánh</param>
         /// <param name="pMainPosCode">Mã POS</param>
@@ -2286,23 +2381,25 @@ namespace VBSPOSS.Controllers
                 {
                     if (pReportPermission == "0")
                         sResultValue = "0";
-                    else
+                    else if (pReportPermission == "1")
                     {
                         if (pUserGrade == PosGrade.SUB_POS)
                         {
                             if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
-                                sResultValue = "0";
+                                sResultValue = "1";         //Nếu không cho phép cấp PGD trình duyệt sResultValue = "0";
                             else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
-                                sResultValue = "0";
+                                sResultValue = "1";         //Nếu không cho phép cấp PGD trình duyệt sResultValue = "0";
                             else sResultValue = "1";
                         }
                         else if (pUserGrade == PosGrade.MAIN_POS)
                         {
-                            if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
-                                sResultValue = "1";
-                            else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
-                                sResultValue = "1";
-                            else sResultValue = "0";
+                            //if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
+                            //    sResultValue = "1";
+                            //else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
+                            //    sResultValue = "1";
+                            //else sResultValue = "0";
+                            //Điều chỉnh lại cấp Chi nhánh sẽ không trình duyệt. Mà sẽ thực hiện phê duyệt
+                            sResultValue = "0";
                         }
                         else if (pUserGrade == PosGrade.HEAD_POS)
                         {
@@ -2321,9 +2418,9 @@ namespace VBSPOSS.Controllers
                         else if (pUserGrade == PosGrade.MAIN_POS)
                         {
                             if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code || pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code)
-                                sResultValue = "0";
+                                sResultValue = "1";//Điều chỉnh nếu không cho chi nhánh Phê duyệt thì sResultValue = "0";
                             else if (pFunctionCode == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && pMainPosCode != pMainPosCodeOld)
-                                sResultValue = "0";
+                                sResultValue = "1";
                             else sResultValue = "1";
                         }
                         else if (pUserGrade == PosGrade.HEAD_POS)

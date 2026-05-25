@@ -279,6 +279,17 @@
             e.preventDefault();
             return false;
         }
+
+         var lcFlagCallView = $("#FlagEventCallView").val();
+         if (lcFlagCallView == $("#EventFlag_AddView").val())
+         {
+             if (dEffectiveDate < dStartDate) {
+                alert("Tài khoản người dùng Intellect iDC tạo mới ngày bắt đầu [" + lcStartDate + "] lơn hơn ngày hiệu lực [" +  lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+                $('#EffectiveDate').focus();
+                e.preventDefault();
+                return false;
+             }
+         }
     }
 
     function setEditMode() {
@@ -570,6 +581,8 @@
                         new SelectListItem() { Text = "Từ chối cấp Chi nhánh", Value = "7" },
                         new SelectListItem() { Text = "Phê duyệt cấp TTCNTT", Value = "3" },
                         new SelectListItem() { Text = "Từ chối cấp TTCNTT", Value = "4" },
+                        new SelectListItem() { Text = "Phê duyệt của đơn vị nhận", Value = "8" },
+                        new SelectListItem() { Text = "Từ chối của đơn vị nhận", Value = "10" },
                         new SelectListItem() { Text = "Đóng (Đánh dấu xóa)", Value = "0" }
                         })
                     .Suggest(true)
@@ -578,7 +591,7 @@
                     .Events(e => e.Change("Change_Status"))
                     .SelectedIndex(0)
                     )
-                <label class="lbcontrol" style="color: navy;text-align:right;width:310px;padding-top: 7px;padding-right: 10px;"> Ngày hiện tại của hệ thống Intellect iDC</label>
+                <label class="lbcontrol" style="color: navy;text-align:right;width:310px;padding-top: 7px;padding-right: 10px;"> Ngày mở sổ của hệ thống Intellect iDC</label>
                 @Html.Kendo().TextBoxFor(m => m.BusinessDateText).HtmlAttributes(new { @readonly = "readonly", style = " width: 125px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 3px;padding-right: 2px;" })
             </div>
         </div>

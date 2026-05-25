@@ -371,6 +371,6 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Kết quả</returns>
         Task<ExecuteResultModelModel> ChangeOTPRegisterByUserId(string pUserId, int pRegisterFlag);
 
-        Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+        Task<long> Xoa_SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
     }
 }
