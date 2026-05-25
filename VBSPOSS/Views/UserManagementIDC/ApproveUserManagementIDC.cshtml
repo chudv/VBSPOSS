@@ -216,16 +216,16 @@
             }
             
             var lcFlagCallView = $("#FlagCallView").val();
-            if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
-                row.find(".btn-auth").hide();
-                row.find(".btn-approval").show();
-            }
-            else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
-                row.find(".btn-approval").hide(); 
-                row.find(".btn-auth").show();
-            }
-            row.find(".btn-approval").hide();
-            row.find(".btn-auth").hide();
+            // if (lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
+            //     row.find(".btn-auth-idc").hide();
+            //     row.find(".btn-approval-idc").show();
+            // }
+            // else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
+            //     row.find(".btn-approval-idc").hide(); 
+            //     row.find(".btn-auth-idc").show();
+            // }
+            row.find(".btn-approval-idc").hide();
+            row.find(".btn-auth-idc").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
