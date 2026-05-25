@@ -1570,7 +1570,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall02.NickName) ? objUserAuth.NickName : objUserInforByApiCall02.NickName;
                                         objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall02.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall02.DefaultBranch;
                                         objUserAuth.UserStatus = objUserInforByApiCall02.UserStatus.ToString() ?? objUserAuth.UserStatus;
-                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall02.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall02.ExpiryDateReplace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
+                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall02.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall02.ExpiryDate.Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
                                         objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall02.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall02.MailIdFlag;
                                         objUserAuth.AuthType = objUserInforByApiCall02.AuthType.ToString() ?? objUserAuth.AuthType;
                                         objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall02.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall02.AuthsecType;
