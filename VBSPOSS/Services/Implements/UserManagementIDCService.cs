@@ -2205,6 +2205,153 @@ namespace VBSPOSS.Services.Implements
                                 }
                                 #endregion
                             }
+                            if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code
+                                && (pUserGradeUpd == PosGrade.MAIN_POS || pUserGradeUpd == PosGrade.HEAD_POS))
+                            {
+                                #region --- 8. Phục hồi tài khoản người dùng (RESTORE_USER) ---
+                                //Khôi phục tài khoản người dùng:
+                                //B1: Thực hiện Mở khóa người dùng để UserStatus = 2
+                                //B2: Thay đổi thông tin người dùng với ExpiryDate là ngày 2060 - 12 - 31
+                                bool bIsContinueTmpRestoreUserId = true;
+                                //B1: Thực hiện Mở khóa người dùng để UserStatus = 2
+                                ViewUserRequestViewModel objEnableUserStep01 = new ViewUserRequestViewModel();
+                                objEnableUserStep01.Ticket = objUserAuth.Ticket;
+                                objEnableUserStep01.UserId = objUserAuth.UserId;
+
+                                var objEnableUserIDCByApiResultStep01 = await ChangeUserStatusByApiEnableUser(objEnableUserStep01, pUserNameUpd);
+                                if (objEnableUserIDCByApiResultStep01 != null && (objEnableUserIDCByApiResultStep01.ResponseCode == "0" || objEnableUserIDCByApiResultStep01.ResponseCode == "00000"))
+                                {
+                                    objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
+                                    objUserAuth.SessionValReq = objEnableUserIDCByApiResultStep01.SessionValReq;
+                                    objUserAuth.PrevStatus = objEnableUserIDCByApiResultStep01.PrevStatus;
+                                    objUserAuth.CallApiStatus = (objEnableUserIDCByApiResultStep01.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                    objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
+                                    objUserAuth.CallApiResponseCode = objEnableUserIDCByApiResultStep01.ResponseCode;
+                                    objUserAuth.CallApiResponseMsg = objEnableUserIDCByApiResultStep01.ResponseMsg;
+                                    sMessageInfo = $"{sMessageInfo} Gọi API EnableUser {objEnableUserIDCByApiResultStep01.ResponseCode}-{objEnableUserIDCByApiResultStep01.ResponseMsg} | ";
+                                    objUserAuth.UserStatus = DefaultValue.UserIDC_UserStatus_Open;
+                                    bIsContinueTmpRestoreUserId = true;
+                                }
+                                else
+                                {
+                                    objUserAuth.StatusUpdateCore = 0;
+                                    objUserAuth.SessionValReq = false;
+                                    objUserAuth.PrevStatus = objEnableUserIDCByApiResultStep01.PrevStatus;
+                                    objUserAuth.CallApiStatus = (objEnableUserIDCByApiResultStep01.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                    objUserAuth.CallApiReqRecordSl = 0;
+                                    objUserAuth.CallApiResponseCode = objEnableUserIDCByApiResultStep01.ResponseCode;
+                                    objUserAuth.CallApiResponseMsg = objEnableUserIDCByApiResultStep01.ResponseMsg;
+                                    sMessageInfo = $"{sMessageInfo} Gọi API EnableUser {objEnableUserIDCByApiResultStep01.ResponseCode}-{objEnableUserIDCByApiResultStep01.ResponseMsg} | ";
+                                    bIsContinueTmpRestoreUserId = false;
+                                }
+                                //B2: Cập nhật ngày hết hiệu lực là 2020 và ngày bắt đầu là ngày StartDate
+                                if (bIsContinueTmpRestoreUserId)
+                                {
+                                    var objModifyUserRestoreStep02 = new ModifyUserRequestViewModel
+                                    {
+                                        AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest()
+                                    };
+                                    objModifyUserRestoreStep02.Ticket = objUserAuth.Ticket;
+                                    objModifyUserRestoreStep02.UserId = objUserAuth.UserId;
+                                    objModifyUserRestoreStep02.NickName = objUserAuth.NickName;
+                                    objModifyUserRestoreStep02.FirstName = objUserAuth.FirstName;
+                                    objModifyUserRestoreStep02.LastName = objUserAuth.LastName;
+                                    objModifyUserRestoreStep02.GroupName = objUserAuth.GroupName;
+                                    objModifyUserRestoreStep02.EntityList = objUserAuth.EntityList;
+                                    objModifyUserRestoreStep02.MobileNumber = objUserAuth.MobileNumber;
+                                    objModifyUserRestoreStep02.EmailAddress = objUserAuth.EmailAddress;
+                                    DateTime dMaxDateTemp = CustConverter.StringToDate(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).AddYears(10).Date;
+                                    objModifyUserRestoreStep02.ExpiryDate = dMaxDateTemp.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                    objModifyUserRestoreStep02.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                    objModifyUserRestoreStep02.Language = DefaultValue.Language;
+                                    objModifyUserRestoreStep02.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
+                                    objModifyUserRestoreStep02.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
+                                    objModifyUserRestoreStep02.IpSet = objUserAuth.IpSetDetail;
+                                    objModifyUserRestoreStep02.AuthsecType = objUserAuth.AuthsecType;
+                                    objModifyUserRestoreStep02.SubType = objUserAuth.SubType;
+                                    objModifyUserRestoreStep02.StartDate = objUserAuth.StartDate?.ToString(FormatParameters.FORMAT_DATE_INT);
+                                    var objResultModifyUserIDCByApiStep02 = await ModifyUserByApiModifyUser(objModifyUserRestoreStep02, pUserNameUpd);
+                                    if (objResultModifyUserIDCByApiStep02 != null
+                                        && (objResultModifyUserIDCByApiStep02.ResponseCode == "0" || objResultModifyUserIDCByApiStep02.ResponseCode == "00000"))
+                                    {
+                                        objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
+                                        objUserAuth.SessionValReq = objResultModifyUserIDCByApiStep02.SessionValReq;
+                                        objUserAuth.PrevStatus = objResultModifyUserIDCByApiStep02.PrevStatus;
+                                        objUserAuth.CallApiStatus = (objResultModifyUserIDCByApiStep02.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                        objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
+                                        objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApiStep02.ResponseCode;
+                                        objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApiStep02.ResponseMsg;
+                                        sMessageInfo = $"{sMessageInfo} Gọi API ModifyUser {objResultModifyUserIDCByApiStep02.ResponseCode}-{objResultModifyUserIDCByApiStep02.ResponseMsg} | ";
+                                        objUserAuth.ExpiryDate = dMaxDateTemp.Date;
+                                        objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                        objUserAuth.ApproverBy = pUserNameUpd;
+                                        objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                        bIsContinueTmpRestoreUserId = true;
+                                    }
+                                    else
+                                    {
+                                        objUserAuth.StatusUpdateCore = 0;
+                                        objUserAuth.SessionValReq = false;
+                                        objUserAuth.PrevStatus = objResultModifyUserIDCByApiStep02.PrevStatus;
+                                        objUserAuth.CallApiStatus = (objResultModifyUserIDCByApiStep02.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                        objUserAuth.CallApiReqRecordSl = 0;
+                                        objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApiStep02.ResponseCode;
+                                        objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApiStep02.ResponseMsg;
+                                        sMessageInfo = $"{sMessageInfo} Gọi API ModifyUser {objResultModifyUserIDCByApiStep02.ResponseCode}-{objResultModifyUserIDCByApiStep02.ResponseMsg} | ";
+                                        bIsContinueTmpRestoreUserId = false;
+                                    }
+                                }
+                                //Cập nhật dữ liệu vào Master nếu thành công
+                                if(bIsContinueTmpRestoreUserId)
+                                {
+                                    //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                    var objUserInforByApiCall08 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                    if (objUserInforByApiCall08 != null && !string.IsNullOrEmpty(objUserInforByApiCall08.UserId)
+                                                && objUserInforByApiCall08?.ServiceStatusResponseResponseCode == "0")
+                                    {
+                                        objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall08.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall08.MobileNumber;
+                                        objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall08.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall08.EmailAddress;
+                                        objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall08.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall08.DOB, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall08.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall08.FirstName;
+                                        objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall08.LastName) ? objUserAuth.LastName : objUserInforByApiCall08.LastName;
+                                        objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall08.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall08.GroupName;
+                                        objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall08.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall08.BranchCode;
+                                        objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall08.NickName) ? objUserAuth.NickName : objUserInforByApiCall08.NickName;
+                                        objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall08.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall08.DefaultBranch;
+                                        objUserAuth.UserStatus = objUserInforByApiCall08.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall08.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall08.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall08.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall08.MailIdFlag;
+                                        objUserAuth.AuthType = objUserInforByApiCall08.AuthType.ToString() ?? objUserAuth.AuthType;
+                                        objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall08.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall08.AuthsecType;
+                                    }
+
+                                    //Update thay đổi vào bảng UserIDCMaster
+                                    UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
+                                    objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
+                                    objUserIDCMaster.Id = 0;
+                                    objUserIDCMaster.PosCode = objUserAuth.PosCode;
+                                    objUserIDCMaster.ModifiedBy = pUserNameUpd;
+                                    objUserIDCMaster.ExpiryDate = dSystemDateOfIDC.Date;
+                                    objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
+                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                    objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
+                                    objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                    var iResultIdUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                }    
+
+                                //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
+                                sMessageInfo = $"{sMessageInfo}";
+                                objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
+                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                if (iSaveChangeAuthTmp > 0)
+                                {
+                                    iCountUpdate++;
+                                    listIdAuthorize.Add(objUserAuth.Id);
+                                }
+
+                                #endregion
+                            }
                         }
                     }
                 }

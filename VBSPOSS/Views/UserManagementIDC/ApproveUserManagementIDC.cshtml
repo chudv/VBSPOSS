@@ -220,26 +220,26 @@
                 row.find(".btn-auth").hide();
                 row.find(".btn-approval").show();
             }
-            else if (lcButtonType == $("#EventFlag_AuthorizeView").val()) {
+            else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                 row.find(".btn-approval").hide(); 
                 row.find(".btn-auth").show();
             }
-            // row.find(".btn-approval").hide();
-            //     row.find(".btn-auth").hide();
+            row.find(".btn-approval").hide();
+            row.find(".btn-auth").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
                 row.css("background-color", "white");
                 row.find("td").css("color", "red");
 
-                 // disable checkbox
+                // disable checkbox
             row.find(".depProductCheckSelect")
                 .prop("checked", false)
                 .prop("disabled", true);
                     } else{
                            
-        row.find(".depProductCheckSelect")
-            .prop("disabled", false);
+            row.find(".depProductCheckSelect")
+                .prop("disabled", false);
     
                     }
         }
@@ -1146,15 +1146,15 @@
                     return;
                 }
                 //Trường hợp đổi quyền tương lai => Kiểm tra ngày StartDate có lớn hơn ngày hệ thống không KHÔNG cho phê duyệt
-                var lcStartDate = $("#StartDateText").val();
-                var dStartDate = stringToDate(lcStartDate, "dd/MM/yyyy", "/");
+                var lcStartDateTmp = dataItem.StartDateText;
+                var dStartDateTmp = stringToDate(lcStartDateTmp, "dd/MM/yyyy", "/");
 
-                var lcSystemDate = $("#SystemDateText").val();
-                var dSystemDate = stringToDate(lcSystemDate, "dd/MM/yyyy", "/");
+                var lcSystemDateTmp = dataItem.SystemDateText;
+                var dSystemDateTmp = stringToDate(lcSystemDateTmp, "dd/MM/yyyy", "/");
 
                 if (dataItem.functionType == $("#FunctionTypeFlag_CHANGE_ROLEView").val()) {
-                    if (dStartDate > dSystemDate) {
-                        alert("Phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] có ngày hiệu lực [" + lcStartDate + "] lớn hơn ngày hiện tại [" + lcSystemDate + "]. Vui lòng kiểm tra lại!\n Chú ý: Yêu cầu này sẽ được hệ thống tự động phê duyệt vào đầu ngày [" + lcStartDate + "] ");
+                    if (dStartDateTmp > dSystemDateTmp) {
+                        alert("Phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] có ngày hiệu lực [" + lcStartDateTmp + "] lớn hơn ngày hiện tại [" + lcSystemDate + "]. Vui lòng kiểm tra lại!\n Chú ý: Yêu cầu này sẽ được hệ thống tự động phê duyệt vào đầu ngày [" + lcStartDateTmp + "] ");
                         return;
                     }
                 }
