@@ -269,12 +269,12 @@
                 e.preventDefault();
                 return false;
             }
-            if (dExpiryDateOldText > dBusinessDate) {
-                alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + dExpiryDateOldText + "] trên Intellect iDC lớn hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
-                $('#FunctionType').focus();
-                e.preventDefault();
-                return false;
-            }
+            // if (dExpiryDateOldText > dBusinessDate) {
+            //     alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + dExpiryDateOldText + "] trên Intellect iDC lớn hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+            //     $('#FunctionType').focus();
+            //     e.preventDefault();
+            //     return false;
+            // }
             if (dExpiryDateOldText > dSystemDateText) {
                 alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực [" + dExpiryDateOldText + "] trên Intellect iDC lớn hơn ngày hiện tại [" + lcSystemDateText + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                 $('#FunctionType').focus();
