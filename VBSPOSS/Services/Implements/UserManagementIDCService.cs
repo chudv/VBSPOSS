@@ -2319,7 +2319,10 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall08.NickName) ? objUserAuth.NickName : objUserInforByApiCall08.NickName;
                                         objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall08.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall08.DefaultBranch;
                                         objUserAuth.UserStatus = objUserInforByApiCall08.UserStatus.ToString() ?? objUserAuth.UserStatus;
-                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall08.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall08.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                        if (objUserInforByApiCall08.ExpiryDate == null || objUserInforByApiCall08.ExpiryDate == "" || string.IsNullOrEmpty(objUserInforByApiCall08.ExpiryDate))
+                                            objUserAuth.ExpiryDate = objUserAuth.ExpiryDate;
+                                        else
+                                            objUserAuth.ExpiryDate = CustConverter.StringToDate(objUserInforByApiCall08.ExpiryDate, FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
                                         objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall08.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall08.MailIdFlag;
                                         objUserAuth.AuthType = objUserInforByApiCall08.AuthType.ToString() ?? objUserAuth.AuthType;
                                         objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall08.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall08.AuthsecType;
@@ -2331,13 +2334,24 @@ namespace VBSPOSS.Services.Implements
                                     objUserIDCMaster.Id = 0;
                                     objUserIDCMaster.PosCode = objUserAuth.PosCode;
                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
-                                    objUserIDCMaster.ExpiryDate = dSystemDateOfIDC.Date;
+                                    objUserIDCMaster.ExpiryDate = objUserAuth.ExpiryDate;
                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
+                                    objUserIDCMaster.UserStatus = objUserAuth.UserStatus;
                                     objUserIDCMaster.ApproverBy = pUserNameUpd;
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var iResultIdUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
-                                }    
+
+                                    //Hà bổ sung hàm gọi thông báo đến người dùng sau khi khóa hoặc mở khóa tài khoản đến APP QLTDCS
+                                    //Cấu trúc thông báo:
+                                    DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
+                                    objUserAuth.EffectiveDate = dCurrentDateTmp;
+                                    //Gọi Noti để thông báo đến Email người dùng
+
+
+                                    //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
+                                    objUserAuth.EffectiveDate = dEffectiveDateTmp;
+                                }
 
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
                                 sMessageInfo = $"{sMessageInfo}";
