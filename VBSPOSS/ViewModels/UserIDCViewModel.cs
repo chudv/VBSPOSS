@@ -34,6 +34,11 @@ namespace VBSPOSS.ViewModels
         public string ExtraAttributeBranchCode { get; set; }
         public DateTime EffectiveDate { get; set; }
         public DateTime ExpiryDate { get; set; }
+        /// <summary>
+        /// Ngày hết hiệu lực trên Corebanking (Không thay đổi khi chỉnh sửa trên phần mềm)
+        /// </summary>
+        public DateTime ExpiryDateOld { get; set; }
+        public string ExpiryDateOldText { get; set; }
         public string Ticket { get; set; }
         public string Remark { get; set; }
         public string OrtherNotes { get; set; }
@@ -139,6 +144,20 @@ namespace VBSPOSS.ViewModels
         public string SystemDateText { get; set; }
         public string ListFileId { get; set; }
         public string ReasonReject { get; set; }
+        public string MainPosCode { get; set; }
+        public string MainPosName { get; set; }
+        public string MainPosCodeOld { get; set; }
+        public string MainPosNameOld { get; set; }
+        /// <summary>
+        /// Có quyền thực hiện Phê duyệt yêu cầu với Người dùng hay không. Giá trị 0/1
+        /// </summary>
+        public int AuthorizeUserIDC { get; set; }
+        /// <summary>
+        /// Có quyền thực hiện Trình duyệt yêu cầu với Người dùng hay không. Giá trị 0/1
+        /// </summary>
+        public int ApprovalUserIDC { get; set; }
+
+        public string DescriptionUserRequest { get; set; }
     }
 
     /// <summary>
@@ -162,7 +181,19 @@ namespace VBSPOSS.ViewModels
         public int NumberOfChangePos { get; set; }
         public int NumberOfChangeRole { get; set; }
         public int NumberOfCloseUser { get; set; }
+        public int NumberOfRestoreUser { get; set; }        
         public int NumberOfOtherUser { get; set; }
+        public int NumberOfAddNewUserValid { get; set; }
+        public int NumberOfResetPasswordValid { get; set; }
+        public int NumberOfEnableUserValid { get; set; }
+        public int NumberOfDisableUserValid { get; set; }
+        public int NumberOfModifyUserValid { get; set; }
+        public int NumberOfChangePosValid { get; set; }
+        public int NumberOfChangeRoleValid { get; set; }
+        public int NumberOfCloseUserValid { get; set; }
+        public int NumberOfRestoreUserValid { get; set; }
+        public int NumberOfOtherUserValid { get; set; }
+
         public string StartDatePeriodText { get; set; }
         public string SumaryStatus { get; set; }
     }
@@ -299,6 +330,9 @@ namespace VBSPOSS.ViewModels
         /// </summary>
         public string AuthsecType { get; set; }         //Phương thức xác thực thứ 2. Giá trị mặc định '0'
 
+        /// <summary>
+        /// Ngày sinh của người dùng.Định dạng yyyy-MM-dd
+        /// </summary>
         public string DOB { get; set; }                 //Ngày sinh của người dùng.Định dạng yyyy-MM-dd
 
         public string InvalidAttempt { get; set; }      //Số lần đăng nhập sai
@@ -356,8 +390,11 @@ namespace VBSPOSS.ViewModels
         /// Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
         /// </summary>
         public string LastLoginDate { get; set; }       //Lần cuối cùng login vào hệ thống (yyyyMMddHHmmss)
-
-        public string ExpiryDate { get; set; }          //Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
+        
+        /// <summary>
+        /// Ngày hết hiệu lực của người dùng, định dạng yyyy-MM-dd
+        /// </summary>
+        public string ExpiryDate { get; set; }
 
         public string CheckerDate { get; set; }         //Ngày duyệt tạo người dùng, định dạng yyyy-MM-dd
 
