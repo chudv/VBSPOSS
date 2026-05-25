@@ -219,26 +219,26 @@
                 row.find(".btn-auth").hide();
                 row.find(".btn-approval").show();
             }
-            else if (lcButtonType == $("#EventFlag_AuthorizeView").val()) {
+            else if (lcFlagCallView == $("#EventFlag_AuthorizeView").val()) {
                 row.find(".btn-approval").hide(); 
                 row.find(".btn-auth").show();
             }
-            // row.find(".btn-approval").hide();
-            //     row.find(".btn-auth").hide();
+            row.find(".btn-approval").hide();
+            row.find(".btn-auth").hide();
             var dSystemDateRow = dataItem.get("SystemDate");
             var dStartDateRow = dataItem.get("StartDate");
             if (dStartDateRow < dSystemDateRow) {
                 row.css("background-color", "white");
                 row.find("td").css("color", "red");
 
-                 // disable checkbox
+                // disable checkbox
             row.find(".depProductCheckSelect")
                 .prop("checked", false)
                 .prop("disabled", true);
                     } else{
                            
-        row.find(".depProductCheckSelect")
-            .prop("disabled", false);
+            row.find(".depProductCheckSelect")
+                .prop("disabled", false);
     
                     }
         }
