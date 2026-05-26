@@ -859,9 +859,9 @@
             url: '/Report/GenerateFileReport_UserIDC',
             type: 'POST',
             data: {
-                pId: "91",
+                pId: dataItem.Id,
                 pMainPosName: "000301",
-                pFunctionType: 'ADDNEW_USER'
+                pFunctionType: 'TRANFER_POS'
             },
             xhrFields: { responseType: 'blob' },
             success: function (data, status, xhr) {
