@@ -263,7 +263,7 @@
                 .Name("gridMainTranferTarget")
                 .Columns(columns =>
                 {
-                    if (ViewBag.PSourceTarget?.ToString() == "T")
+                if (ViewBag.PSourceTarget?.ToString() == "T" && ViewBag.PStatus?.ToString() != "9")
                     {
                         columns.Bound(c => c.ACCEPT_MOV)
                         .Title("Xác nhận")
@@ -282,11 +282,11 @@
                     .HtmlAttributes(new { style = "text-align:center;" });
                 }
 
-                columns.Bound(c => c.TYPE_CD).Title("Loại dữ liệu").Width(120);
+                columns.Bound(c => c.TYPE_CD).Title("Loại dữ liệu").Width(100);
                 columns.Bound(c => c.CUST_ID).Title("Mã KH").Width(120);
                 columns.Bound(c => c.CUST_NAME).Title("Tên khách hàng").Width(250);
                 columns.Bound(c => c.AC_NO).Title("Số tài khoản").Width(150);
-                columns.Bound(c => c.PROD_CD).Title("Sản phẩm").Width(120);
+                columns.Bound(c => c.PROD_CD).Title("Sản phẩm").Width(100);
                 columns.Bound(c => c.PRIN_AMOUNT)
                 .Title("Dư nợ")
                 .Width(120)
@@ -294,8 +294,8 @@
                 .HtmlAttributes(new { style = "text-align:right;" });
                 columns.Bound(c => c.POS_CD).Title("POS cũ").Width(100);
                 columns.Bound(c => c.NEW_POS_CD).Title("POS mới").Width(100);
-                columns.Bound(c => c.SCOM_CD).Title("Thôn cũ").Width(120);
-                columns.Bound(c => c.NEW_SCOM_CD).Title("Thôn mới").Width(120);
+                columns.Bound(c => c.SCOM_CD).Title("Thôn cũ").Width(110);
+                columns.Bound(c => c.NEW_SCOM_CD).Title("Thôn mới").Width(110);
             })
             .ToolBar(toolbar => { toolbar.Excel().Text("Xuất Excel"); })
             .Excel(excel => excel
@@ -309,7 +309,7 @@
             .Scrollable()
             @* .Filterable() *@
             .Resizable(resize => resize.Columns(true))
-            .HtmlAttributes(new { style = "height:515px;" })
+            .HtmlAttributes(new { style = "height:480px;" })
             .DataSource(dataSource => dataSource
             .Ajax()
             .PageSize(15)
@@ -323,9 +323,9 @@
 </div>
 
 
-@if (ViewBag.PSourceTarget?.ToString() == "T")
+@if (ViewBag.PSourceTarget?.ToString() == "T" && ViewBag.PStatus?.ToString() != "9")
 {
-    <label class="control-label" id="lblMessageInfor" style="width: 1260px; text-align: left; color: red;"></label>
+    <label class="control-label" id="lblMessageInfor1" style="width: 1190px; text-align: right; color: red;"></label>
     <div class="row" style="padding-top:10px;">
         <div class="col-md-12">
 

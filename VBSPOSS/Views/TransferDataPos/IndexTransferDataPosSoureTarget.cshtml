@@ -227,22 +227,6 @@
     }
 
     function onSearchTransPointWork(e) {
-        // var pPosCode =
-        //     $("#PosCode_Find").val();
-        // if (
-        //     !pPosCode
-        //     ||
-        //     pPosCode == "000100"
-        //     ||
-        //     pPosCode == "000199"
-        //     ||
-        //     pPosCode == "000196"
-        // ) {
-
-        //     alert("Bạn không có quyền với menu này!");
-
-        //     return false;
-        // }
         refreshGridTransPointWork();
     }
 
@@ -297,7 +281,6 @@
         }
     }
 
-
     var dataChangeTransPointWork = false;
 
     $(document).on('click', '#btnCreateTranferDataPos', function (e) {
@@ -327,13 +310,11 @@
         mainWindow.data("kendoWindow").center().open();
     });
 
-
     function showTransferDetail(id) {
 
         if (!id) {
             return;
         }
-
 
         mainWindow.kendoWindow({
             width: "1024px",
@@ -358,7 +339,6 @@
         if (!id) {
             return;
         }
-
 
         mainWindow.kendoWindow({
             width: "1024px",
@@ -392,7 +372,6 @@
         mainWindow.data("kendoWindow").close();
     }
 
-
     //Popup hiển thị danh sách dữ liệu xác nhận: Loan, casa, tide,...
     function showDataDetailLoan(e) {
         e.preventDefault();
@@ -407,8 +386,8 @@
         var sourceTarget = $("#SourceTarget").val();
         // alert(sourceTarget);
         mainWindow.kendoWindow({
-            width: ($(window).width() * 0.99) + "px",
-            height: ($(window).height() * 0.95) + "px",
+            width: "1400px",
+            height: "640px",
             title: "Số liệu chi tiết yêu cầu điều chuyển dữ liệu khác pos",
             content: {
                 url: '@Url.Action("ShowTransferDataLoanDetail", "TransferDataPos")',
@@ -417,6 +396,7 @@
                     pFromPos: dataItem.FromPosCode,
                     pToPos: dataItem.ToPosCode,
                     pSourceTarget: sourceTarget,
+                    pStatus: dataItem.Status
                 }
             },
             resizable: false,
@@ -823,7 +803,7 @@
 
                             columns.Command(command =>
                             {
-                                command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Tải</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
+                                command.Custom("DownloadToTrinh").Text("<span style='color: darkorange;'>Xem</span>").Click("downloadTransferFileGrid").HtmlAttributes(new { });
 
                             }).Width(70).Title("Tờ trình").HtmlAttributes(new { style = "text-align: center;" });
 
@@ -930,14 +910,15 @@
 </div>
 
 <script>
+    //Xem tờ trình đã upload
     function downloadTransferFileGrid(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        // var sMessInfor = "Yêu cầu [" + dataItem.Id + "]";
-        // if (dataItem.Status.toString() == "1") {
-        //     alert(sMessInfor + " chưa được cấp phê duyệt cập nhật tờ trình!");
-        //     return;
-        // }
+        var sMessInfor = "Yêu cầu [" + dataItem.Id + "]";
+        if (dataItem.Status.toString() == "1" && userPermission.AuthorizePermissionFlag == 0) {
+            alert(sMessInfor + " chưa được cấp phê duyệt cập nhật tờ trình!");
+            return;
+        }
 
         var dataItem =
             this.dataItem(
@@ -948,155 +929,22 @@
             dataItem.Id);
     }
 
-    function printToTrinh(e) {
-
-        e.preventDefault();
-
-        var dataItem =
-            this.dataItem(
-                $(e.currentTarget)
-                    .closest("tr"));
-
-        if (!dataItem) {
-
-            alert(
-                "Không tìm thấy dữ liệu tờ trình");
-
-            return;
-        }
-
-        var lcListId =
-            dataItem.Id;
-
-        var lcMainPosName =
-            dataItem.MainPosName || "";
-
-        $.ajax({
-
-            url:
-                '/Report/GenerateFileReport_UserIDC',
-
-            type:
-                'POST',
-
-            data:
-            {
-                pId:
-                    "91",
-
-                pMainPosName:
-                    "000301",
-
-                pFunctionType:
-                    'ADDNEW_USER'
-            },
-
-            xhrFields:
-            {
-                responseType:
-                    'blob'
-            },
-
-            success:
-                function (
-                    data,
-                    status,
-                    xhr) {
-
-                    var fileName =
-                        "To_Trinh_Dieu_Chuyen_POS_"
-                        + lcListId
-                        + ".pdf";
-
-                    var disposition =
-                        xhr.getResponseHeader(
-                            "Content-Disposition");
-
-                    if (disposition) {
-
-                        var utf8Match =
-                            disposition.match(
-                                /filename\*\=UTF-8''(.+)/);
-
-                        if (
-                            utf8Match
-                            &&
-                            utf8Match.length > 1) {
-                            fileName =
-                                decodeURIComponent(
-                                    utf8Match[1]);
-                        }
-                        else {
-
-                            var asciiMatch =
-                                disposition.match(
-                                    /filename="?([^";]+)"?/);
-
-                            if (
-                                asciiMatch
-                                &&
-                                asciiMatch.length > 1) {
-                                fileName =
-                                    asciiMatch[1];
-                            }
-                        }
-                    }
-
-                    var blob =
-                        new Blob(
-                            [data],
-                            {
-                                type:
-                                    xhr.getResponseHeader(
-                                        "Content-Type")
-                                    ||
-                                    "application/pdf"
-                            });
-
-                    var url =
-                        window.URL
-                            .createObjectURL(
-                                blob);
-
-                    var link =
-                        document
-                            .createElement("a");
-
-                    link.href =
-                        url;
-
-                    link.download =
-                        fileName;
-
-                    document.body
-                        .appendChild(
-                            link);
-
-                    link.click();
-
-                    window.URL
-                        .revokeObjectURL(
-                            url);
-
-                    link.remove();
-                },
-
-            error:
-                function () {
-
-                    alert(
-                        "Không tải được file tờ trình điều chuyển dữ liệu POS. Vui lòng kiểm tra lại!");
-                }
-        });
-    }
-
     function downloadTransferFile(id) {
-
         if (!id) {
             alert("Không tồn tại hồ sơ");
             return;
         }
-        window.location = '/TransferDataPos/DownloadTransferFile?documentId=' + id;
+
+        var url = '/TransferDataPos/DownloadTransferFile?documentId=' + encodeURIComponent(id);
+
+        var a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     function onShowApproveTransferDetail(e) {

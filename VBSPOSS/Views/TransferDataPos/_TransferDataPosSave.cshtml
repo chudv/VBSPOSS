@@ -42,29 +42,27 @@
         refreshGridIDC();
     }
 
-
     $(document).ready(function () {
+        var details = @Html.Raw(
+            Newtonsoft.Json.JsonConvert.SerializeObject(Model.Details)
+            );
 
-        var details =
-    @Html.Raw(
-            Newtonsoft.Json.JsonConvert
-            .SerializeObject(
-            Model.Details));
-
-        var grid =
-            $("#gridTransferVillage")
-                .data("kendoGrid");
-
+        var grid = $("#gridTransferVillage").data("kendoGrid");
         if (grid) {
-
-            grid.dataSource.data(
-                details);
-
+            grid.dataSource.data(details);
             grid.refresh();
         }
     });
 
+    @{
+        var firstDayNextMonth = new DateTime(
+        DateTime.Today.Year,
+        DateTime.Today.Month,
+        1
+        ).AddMonths(1);
+    }
 </script>
+
 
 <form asp-controller="TransferDataPos" asp-action="SaveTransferDataPos" method="post" enctype="multipart/form-data" id="formTransferDataPos">
 
@@ -80,10 +78,8 @@
     <!-- ========================= -->
 
     <div class="row" style="margin-bottom:10px;">
-
         <div class="row" style="margin-bottom: 10px;padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
-
                 <label class="lbcontrol" style="color: navy;text-align:left;width:106px;padding-top: 7px;">Pos nguồn</label>
                 @(Html.Kendo().ComboBoxFor(m => m.Master.FromPosCode)
                     .DataTextField("Description")
@@ -118,16 +114,14 @@
                 @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
                     .Format("dd/MM/yyyy")
                     .Min(DateTime.Today)
+                    .Value(firstDayNextMonth)
                     .HtmlAttributes(new
                     {
                         style = "width:110px; color:blue;"
                     })
                     )
-
-
             </div>
         </div>
-
     </div>
 
 
@@ -143,42 +137,31 @@
         {
             columns.Bound(p => p.FromVillageId)
             .Title("Thôn nguồn")
-            .ClientTemplate(
-            "#= FromVillageName ? FromVillageName : '' #")
-            .EditorTemplateName(
-            "FromVillageEditor");
+            .ClientTemplate("#= FromVillageName ? FromVillageName : '' #")
+            .EditorTemplateName("FromVillageEditor");
 
             columns.Bound(p => p.ToVillageId)
             .Title("Thôn đích")
-            .ClientTemplate(
-            "#= ToVillageName ? ToVillageName : '' #")
-            .EditorTemplateName(
-            "ToVillageEditor");
+            .ClientTemplate("#= ToVillageName ? ToVillageName : '' #")
+            .EditorTemplateName("ToVillageEditor");
 
             columns.Command(command =>
             {
-                command.Destroy()
-            .Text("Xóa");
+                command.Destroy().Text("Xóa");
             })
             .Width(100);
         })
         .ToolBar(toolbar =>
         {
-            toolbar.Create()
-            .Text("Thêm thôn");
+            toolbar.Create().Text("Thêm thôn");
         })
-        .Editable(editable =>
-        editable.Mode(GridEditMode.InCell)
-        )
+        .Editable(editable => editable.Mode(GridEditMode.InCell))
         .Scrollable()
         .Navigatable()
         .Resizable(resize => resize.Columns(true))
         .DataSource(dataSource => dataSource
         .Ajax()
-        .Model(model =>
-        {
-            model.Id(p => p.Id);
-        })
+        .Model(model => { model.Id(p => p.Id); })
         .Read(read => read.Action(
         "ReadTransferVillage",
         "TransferDataPos",
@@ -186,6 +169,7 @@
         ))
         )
         )
+
 
 
 
@@ -205,26 +189,17 @@
 
             @(Html.Kendo().Button()
                 .Name("btnClose")
-                .Events(ev =>
-                ev.Click(
-                "onCloseTransferWindow"))
+                .Events(ev => ev.Click("onCloseTransferWindow"))
                 .HtmlAttributes(new
                 {
                     type = "button",
-
-                    style =
-                "height: 25px;" +
-                "width: 100px;" +
-                "font-weight:bold;" +
-                "color: blue;",
-
-                    title =
-                "Đóng lại màn hình cập nhật thông tin"
+                    style = "height:25px; width:100px; font-weight:bold; color:blue;",
+                    title = "Đóng lại màn hình cập nhật thông tin"
                 })
-                .ImageUrl(
-                Url.Content(
-                "~/images/close_icon.gif"))
-                .Content("Quay ra"))
+                .ImageUrl(Url.Content("~/images/close_icon.gif"))
+                .Content("Quay ra")
+                )
+
         </div>
 
     </div>
