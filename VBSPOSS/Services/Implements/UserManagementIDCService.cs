@@ -1507,8 +1507,7 @@ namespace VBSPOSS.Services.Implements
                                     DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
                                     objUserAuth.EffectiveDate = dCurrentDateTmp;
                                     //Gọi Noti để thông báo đến Email người dùng
-
-
+                                    var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
 
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
@@ -1550,7 +1549,7 @@ namespace VBSPOSS.Services.Implements
                                     DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
                                     objUserAuth.EffectiveDate = dCurrentDateTmp;
                                     //Gọi Noti để thông báo đến Email người dùng
-
+                                    var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
 
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
@@ -1650,7 +1649,7 @@ namespace VBSPOSS.Services.Implements
                                         DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
                                         objUserAuth.EffectiveDate = dCurrentDateTmp;
                                         //Gọi Noti để thông báo đến Email người dùng
-
+                                        var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
 
                                         //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                         objUserAuth.EffectiveDate = dEffectiveDateTmp;
@@ -1815,7 +1814,7 @@ namespace VBSPOSS.Services.Implements
                                             DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
                                             objUserAuth.EffectiveDate = dCurrentDateTmp;
                                             //Gọi Noti để thông báo đến Email người dùng
-
+                                            var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
 
                                             //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                             objUserAuth.EffectiveDate = dEffectiveDateTmp;
@@ -2347,7 +2346,7 @@ namespace VBSPOSS.Services.Implements
                                     DateTime dEffectiveDateTmp = objUserAuth.EffectiveDate.Value.Date;
                                     objUserAuth.EffectiveDate = dCurrentDateTmp;
                                     //Gọi Noti để thông báo đến Email người dùng
-
+                                    var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
 
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
