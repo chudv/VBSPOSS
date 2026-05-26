@@ -767,12 +767,13 @@ namespace VBSPOSS.Controllers
             }
         }
 
-        public ActionResult ShowTransferDataLoanDetail(long pId, string pFromPos, string pToPos, string pSourceTarget)
+        public ActionResult ShowTransferDataLoanDetail(long pId, string pFromPos, string pToPos, string pSourceTarget, string pStatus)
         {
             ViewBag.PId = pId;
             ViewBag.PFromPos = pFromPos;
             ViewBag.PToPos = pToPos;
             ViewBag.PSourceTarget = pSourceTarget;
+            ViewBag.PStatus = pStatus;
 
             // THÔN NGUỒN
             ViewData["FromVillages"] = _serviceTranferDataPos.GetListSubCommuneOfPos(pFromPos)
