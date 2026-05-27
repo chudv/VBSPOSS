@@ -288,9 +288,10 @@ namespace VBSPOSS.Controllers
                     _ => productGroupCode
                 }
             };
-
+            
             return PartialView("_Approve", model);
         }
+
 
         [HttpPost]
         public async Task<JsonResult> LoadComparisonForApprove([FromBody] LoadProductRequest request)

@@ -130,8 +130,7 @@ namespace VBSPOSS.Controllers
         /// Hiển thị form Thêm mới thông tin danh mục địa phương
         /// </summary>
         /// <summary>
-        /// Hiển thị form Thêm mới thông tin danh mục địa phương
-        /// </summary>
+       
         public ActionResult ShowUpdateListOfCommuneWork(string pButtonType, long pId, string pPosCode, string pEventCode, string pFlagCall)
         {
             ListOfCommuneWorksViewModel model = new ListOfCommuneWorksViewModel();
@@ -144,18 +143,14 @@ namespace VBSPOSS.Controllers
             if (pFlagCall == EventFlag.EventFlag_Add.Value.ToString() || pFlagCall == "1")
             {
                 #region --- THÊM MỚI ---
-
                 model.OrderNo = 0;
-                model.EventCode = string.IsNullOrEmpty(pEventCode)
-                                ? EventBusinessCode.EventCode_Locality_AddNew.Code
-                                : pEventCode;
-
+                model.EventCode = EventBusinessCode.EventCode_Locality_AddNew.Code;
                 model.EventName = EventBusinessCode.EventCode_Locality_AddNew.Description;
-
                 model.ParentId = 0;
                 model.PosCode = pPosCode;
                 model.PosName = "";
 
+                // Thông tin hành chính
                 model.ProvinceCode = "";
                 model.ProvinceName = "";
                 model.DistrictCode = "";
@@ -165,29 +160,28 @@ namespace VBSPOSS.Controllers
                 model.SubCommuneCode = "";
                 model.SubCommuneName = "";
 
-                model.DistrictFlag30A = "";
+                // Các cờ
+                model.DistrictFlag30A = "N";
                 model.AreaEconomic = "";
-                model.CommuneFlag135 = "";
-                model.Region_01 = "";
-                model.Region_02 = "";
-                model.Region_03 = "";
-                model.Region_04 = "";
-                model.DiffAreaCode = "";
-                model.IsNewCountryside = "0";
+                model.CommuneFlag135 = "N";
+                model.Region_01 = "N";
+                model.Region_02 = "N";
+                model.Region_03 = "N";
+                model.Region_04 = "N";
+                model.DiffAreaCode = "0";
+                model.IsNewCountryside = "N";
 
+                // Điểm giao dịch
                 model.TxnPointCode = "";
                 model.TxnPointName = "";
-
-                model.VisitDate = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
+               // model.VisitDate = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
                 model.VisitDateText = DateTime.Now.ToString(FormatParameters.FORMAT_DATE);
-
                 model.TimeBegin = "08:00";
                 model.TimeEnd = "17:00";
                 model.TimeBeginNum = 8.0m;
                 model.TimeEndNum = 17.0m;
                 model.Hours = 8.0m;
                 model.Minutes = 0.0m;
-
                 model.Longitude = 0;
                 model.Latitude = 0;
 
@@ -196,14 +190,14 @@ namespace VBSPOSS.Controllers
                 model.IsInterWard = "0";
                 model.InterWardName = "";
 
+                // Workflow
                 model.Status = StatusBusinessFlow.Status_Created.Value;
                 model.StatusText = StatusBusinessFlow.Status_Created.Description;
-                model.RecordStatus = "1";
+                model.RecordStatus = "A";
                 model.RecordStatusText = "Hoạt động";
 
                 model.EffectDate = _serviceTransPoint?.GetDateInCoreIDC("1").Date ?? DateTime.Now.Date;
-                model.BusinessDate = _serviceTransPoint?.GetDateInCoreIDC("1").Date ?? DateTime.Now.Date;
-
+                model.BusinessDate = model.EffectDate;
                 model.EffectDateText = model.EffectDate.ToString(FormatParameters.FORMAT_DATE);
                 model.BusinessDateText = model.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
 
@@ -213,8 +207,8 @@ namespace VBSPOSS.Controllers
                 model.CreatedDate = DateTime.Now;
                 model.ModifiedBy = UserName;
                 model.ModifiedDate = DateTime.Now;
-                model.ApproverBy = UserName;
-                model.ApprovalDate = DateTime.Now;
+                model.ApproverBy = "";
+            //    model.ApprovalDate = null;
 
                 model.StatusUpdateCore = 0;
                 model.CallApiTxnStatus = "";
@@ -222,22 +216,14 @@ namespace VBSPOSS.Controllers
                 model.CallApiResponseCode = "";
                 model.CallApiResponseMsg = "";
 
-                // OldInfo để trống
+                // Old Info
                 model.PosCodeOldInfo = "";
                 model.ProvinceCodeOldInfo = "";
-                model.DistrictCodeOldInfo = "";
-                model.CommuneCodeOldInfo = "";
-                model.SubCommuneCodeOldInfo = "";
-                model.StatusOldInfo = 0;
-             //   model.EffectDateOldInfo = DefaultValue.MinDate;
-            //    model.BusinessDateOldInfo = DefaultValue.MinDate;
-                model.DocumentIdOldInfo = 0;
+               
 
                 model.FlagCall = pFlagCall;
-
                 #endregion
             }
-
             sNameView = "UpdateListOfCommuneWork";
 
 

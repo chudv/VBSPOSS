@@ -637,115 +637,90 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pCommuneCode">Mã xã/phường/thị trấn</param>
         /// <param name="pPosCode">Mã POS (Không bắt buộc)</param>
         /// <returns>Danh sách Xã/Phường/Thị trấn</returns>
-        public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode, string pDistrictCode, string pCommuneCode, string pPosCode, string pSubCommuneCode)
+        //public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode, string pDistrictCode, string pCommuneCode, string pPosCode, string pSubCommuneCode)
+        //{
+        //    var answer = new List<ListOfCommuneViewModel>();
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(pPosCode) && string.IsNullOrEmpty(pProvinceCode) && string.IsNullOrEmpty(pDistrictCode) && string.IsNullOrEmpty(pCommuneCode))
+        //        {
+        //            return answer;
+        //        }
+
+        //        var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => string.IsNullOrEmpty(pProvinceCode) || (w.ProvinceCode == pProvinceCode)
+        //                                && (string.IsNullOrEmpty(pDistrictCode) || w.DistrictCode == pDistrictCode)
+        //                                && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
+        //                                && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode == pCommuneCode)
+        //                                && (string.IsNullOrEmpty(pSubCommuneCode) || w.SubCommuneCode == pSubCommuneCode)
+        //                                ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.DistrictCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.SubCommuneCode).ToList();
+
+        //        if (profileBranchTMPs != null)
+        //        {
+        //            foreach (var item in profileBranchTMPs)
+        //            {
+        //                ListOfCommuneViewModel objItem = new ListOfCommuneViewModel();
+        //                objItem = _mapper.Map<ListOfCommuneViewModel>(item);
+        //                answer.Add(objItem);
+        //            }
+        //        }
+        //        return answer;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        /// <summary>
+        /// Hàm lấy danh sách thông tin Xã/Phường/Thị trấn (Bao gồm cả thông tin Mã/Tên/Ngày của điểm GDX)
+        /// </summary>
+        public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode = "", string pDistrictCode = "",
+    string pCommuneCode = "", string pPosCode = "", string pSubCommuneCode = "")
         {
             var answer = new List<ListOfCommuneViewModel>();
+
             try
             {
-                if (string.IsNullOrEmpty(pPosCode) && string.IsNullOrEmpty(pProvinceCode) && string.IsNullOrEmpty(pDistrictCode) && string.IsNullOrEmpty(pCommuneCode))
-                {
-                    return answer;
-                }
-
-                var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => string.IsNullOrEmpty(pProvinceCode) || (w.ProvinceCode == pProvinceCode)
-                                        && (string.IsNullOrEmpty(pDistrictCode) || w.DistrictCode == pDistrictCode)
-                                        && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
-                                        && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode == pCommuneCode)
-                                        && (string.IsNullOrEmpty(pSubCommuneCode) || w.SubCommuneCode == pSubCommuneCode)
-                                        ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.DistrictCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.SubCommuneCode).ToList();
-
-                if (profileBranchTMPs != null)
-                {
-                    foreach (var item in profileBranchTMPs)
+                var query = _dbContext.ListOfCommunes
+                    .AsNoTracking()
+                    .Select(x => new ListOfCommuneViewModel
                     {
-                        ListOfCommuneViewModel objItem = new ListOfCommuneViewModel();
-                        objItem = _mapper.Map<ListOfCommuneViewModel>(item);
-                        answer.Add(objItem);
-                    }
-                }
-                return answer;
+                        PosCode = x.PosCode,
+                        PosName = x.PosName,
+                        ProvinceCode = x.ProvinceCode,
+                        ProvinceName = x.ProvinceName,
+                        DistrictCode = x.DistrictCode,
+                        DistrictName = x.DistrictName,
+                        CommuneCode = x.CommuneCode,
+                        CommuneName = x.CommuneName,
+                        SubCommuneCode = x.SubCommuneCode,
+                        SubCommuneName = x.SubCommuneName,
+                    //    Status = x.Status,
+                     //   RecordStatus = x.RecordStatus,
+                   //     VisitDate = x.VisitDate,
+                       
+                    });
+
+                if (!string.IsNullOrEmpty(pProvinceCode))
+                    query = query.Where(w => w.ProvinceCode == pProvinceCode);
+
+                if (!string.IsNullOrEmpty(pCommuneCode))
+                    query = query.Where(w => w.CommuneCode == pCommuneCode);
+
+                if (!string.IsNullOrEmpty(pPosCode))
+                    query = query.Where(w => w.PosCode == pPosCode);
+
+                var result = query.ToList();
+                return result;
             }
             catch (Exception ex)
             {
-                throw ex;
+                // Log chi tiết để xem lỗi chính xác
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.InnerException?.Message);
+                throw;
             }
         }
-
-        //  public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode, string pDistrictCode,
-        //string pCommuneCode, string pPosCode, string pSubCommuneCode)
-        //  {
-        //      var answer = new List<ListOfCommuneViewModel>();
-        //      try
-        //      {
-        //          var query = _dbContext.ListOfCommunes.AsQueryable();
-
-        //          if (!string.IsNullOrEmpty(pProvinceCode))
-        //              query = query.Where(w => w.ProvinceCode == pProvinceCode);
-
-        //          if (!string.IsNullOrEmpty(pDistrictCode))
-        //              query = query.Where(w => w.DistrictCode == pDistrictCode);
-
-        //          if (!string.IsNullOrEmpty(pCommuneCode))
-        //              query = query.Where(w => w.CommuneCode == pCommuneCode);
-
-        //          if (!string.IsNullOrEmpty(pSubCommuneCode))
-        //              query = query.Where(w => w.SubCommuneCode == pSubCommuneCode);
-
-        //          if (!string.IsNullOrEmpty(pPosCode))
-        //              query = query.Where(w => w.PosCode == pPosCode);
-
-        //          var listData = query
-        //              .OrderBy(o => o.ProvinceCode)
-        //              .ThenBy(o => o.DistrictCode)
-        //              .ThenBy(o => o.CommuneCode)
-        //              .ThenBy(o => o.SubCommuneCode)
-        //              .ToList();
-
-        //          foreach (var item in listData)
-        //          {
-        //              var vm = new ListOfCommuneViewModel();
-
-        //              vm.ProvinceCode = item.ProvinceCode ?? "";
-        //              vm.ProvinceName = item.ProvinceName ?? "";
-        //              vm.DistrictCode = item.DistrictCode ?? "";
-        //              vm.DistrictName = item.DistrictName ?? "";
-        //              vm.CommuneCode = item.CommuneCode ?? "";
-        //              vm.CommuneName = item.CommuneName ?? "";
-        //              vm.SubCommuneCode = item.SubCommuneCode ?? "";
-        //              vm.SubCommuneName = item.SubCommuneName ?? "";
-        //              vm.PosCode = item.PosCode ?? "";
-        //              vm.PosName = item.PosName ?? "";
-
-        //              // Ép kiểu an toàn
-        //             // vm.Status = item.Status;                    // int
-        //             // vm.VisitDate = item.VisitDate;              // int
-
-        //             // vm.RecordStatus = item.RecordStatus ?? "";
-        //              vm.DistrictFlag30A = item.DistrictFlag30A ?? "";
-        //              vm.AreaEconomic = item.AreaEconomic ?? "";
-        //              vm.CommuneFlag135 = item.CommuneFlag135 ?? "";
-        //              vm.IsNewCountryside = item.IsNewCountryside ?? "";
-        //              vm.TxnPointCode = item.TxnPointCode ?? "";
-        //              vm.TxnPointName = item.TxnPointName ?? "";
-        //              vm.TimeBegin = item.TimeBegin ?? "";
-        //              vm.TimeEnd = item.TimeEnd ?? "";
-        //              vm.IsInCommune = item.IsInCommune ?? "";
-        //              vm.IsInPos = item.IsInPos ?? "";
-        //              vm.IsInterWard = item.IsInterWard ?? "";
-        //              vm.InterWardName = item.InterWardName ?? "";
-
-        //              answer.Add(vm);
-        //          }
-
-        //          return answer;
-        //      }
-        //      catch (Exception ex)
-        //      {
-        //          throw ex;
-        //      }
-        //  }
-
-
 
         /// <summary>
         /// Hàm lấy danh sách sản phẩm TIDE/CASA theo điều kiện truyền vào (Danh sách trong bảng ListOfProducts)

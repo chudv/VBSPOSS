@@ -75,7 +75,7 @@ namespace VBSPOSS.Services.Implements
                                             && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
                                             && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
                                             && (string.IsNullOrEmpty(pRecordStatus) || w.RecordStatus.Contains(pRecordStatus))
-                                        && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
+                                     //   && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
                                         )
                                         .Where(delegate (ListOfCommune c)
                                         {
@@ -98,7 +98,7 @@ namespace VBSPOSS.Services.Implements
                         ListOfCommunesViewModel objItem = new ListOfCommunesViewModel();
                         objItem = _mapper.Map<ListOfCommunesViewModel>(item);
                         objItem.OrderNo = iCountTMP;
-                        objItem.VisitDateText = item.VisitDate.ToString("D2");
+                      //  objItem.VisitDateText = item.VisitDate.ToString("D2");
                         objItem.EffectDateText = item.EffectDate.ToString(FormatParameters.FORMAT_DATE);
                         objItem.RecordStatusText = (item.RecordStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
                         objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
@@ -145,7 +145,7 @@ namespace VBSPOSS.Services.Implements
                     objCommune.IsNewCountryside = model.IsNewCountryside;
                     objCommune.TxnPointCode = model.TxnPointCode;
                     objCommune.TxnPointName = model.TxnPointName;
-                    objCommune.VisitDate = model.VisitDate;
+                  //  objCommune.VisitDate = model.VisitDate;
                     objCommune.Times = model.Times;
                     objCommune.TimeBegin = model.TimeBegin;
                     objCommune.TimeEnd = model.TimeEnd;
@@ -295,7 +295,7 @@ namespace VBSPOSS.Services.Implements
                                             && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
                                             && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
                                             && (string.IsNullOrEmpty(pRecordStatus) || w.RecordStatus.Contains(pRecordStatus))
-                                            && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
+                                         //   && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
                                             && (w.EffectDate >= dEffectDateBegin.Date && w.EffectDate <= dEffectDateEnd.Date)
                                             && (pStatus == -1 || w.Status == pStatus)
                                         )
@@ -343,7 +343,7 @@ namespace VBSPOSS.Services.Implements
                         ListOfCommuneWorksViewModel objItem = new ListOfCommuneWorksViewModel();
                         objItem = _mapper.Map<ListOfCommuneWorksViewModel>(item);
                         objItem.OrderNo = iCountTMP;
-                        objItem.VisitDateText = item.VisitDate.ToString("D2");
+                    //    objItem.VisitDateText = item.VisitDate.ToString("D2");
                         objItem.EventName = EventBusinessCode.GetByCode(item.EventCode).Description;
                         objItem.EffectDateText = item.EffectDate.ToString(FormatParameters.FORMAT_DATE);
                         objItem.BusinessDateText = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
@@ -375,8 +375,8 @@ namespace VBSPOSS.Services.Implements
                                 objItem.IsNewCountrysideOldInfo = listOfCommuneHistTmp.IsNewCountryside;
                                 objItem.TxnPointCodeOldInfo = listOfCommuneHistTmp.TxnPointCode;
                                 objItem.TxnPointNameOldInfo = listOfCommuneHistTmp.TxnPointName;
-                                objItem.VisitDateOldInfo = listOfCommuneHistTmp.VisitDate;
-                                objItem.VisitDateTextOldInfo = listOfCommuneHistTmp.VisitDate.ToString(FormatParameters.FORMAT_DATE);
+                              //  objItem.VisitDateOldInfo = listOfCommuneHistTmp.VisitDate;
+                            //    objItem.VisitDateTextOldInfo = listOfCommuneHistTmp.VisitDate.ToString(FormatParameters.FORMAT_DATE);
                                 objItem.TimesOldInfo = listOfCommuneHistTmp.Times;
                                 objItem.TimeBeginOldInfo = listOfCommuneHistTmp.TimeBegin;
                                 objItem.TimeEndOldInfo = listOfCommuneHistTmp.TimeEnd;
@@ -437,8 +437,8 @@ namespace VBSPOSS.Services.Implements
                             objItem.IsNewCountrysideOldInfo = item.IsNewCountryside;
                             objItem.TxnPointCodeOldInfo = item.TxnPointCode;
                             objItem.TxnPointNameOldInfo = item.TxnPointName;
-                            objItem.VisitDateOldInfo = item.VisitDate;
-                            objItem.VisitDateTextOldInfo = item.VisitDate.ToString(FormatParameters.FORMAT_DATE);
+                          //  objItem.VisitDateOldInfo = item.VisitDate;
+                         //   objItem.VisitDateTextOldInfo = item.VisitDate.ToString(FormatParameters.FORMAT_DATE);
                             objItem.TimesOldInfo = item.Times;
                             objItem.TimeBeginOldInfo = item.TimeBegin;
                             objItem.TimeEndOldInfo = item.TimeEnd;
@@ -552,7 +552,7 @@ namespace VBSPOSS.Services.Implements
                         objCommuneWorkUpdate.IsNewCountryside = pCommuneWorkUpd.IsNewCountryside;
                         //objCommuneWorkUpdate.TxnPointCode = pCommuneWorkUpd.TxnPointCode;
                         objCommuneWorkUpdate.TxnPointName = pCommuneWorkUpd.TxnPointName;
-                        objCommuneWorkUpdate.VisitDate = pCommuneWorkUpd.VisitDate;
+                     //   objCommuneWorkUpdate.VisitDate = pCommuneWorkUpd.VisitDate;
                         objCommuneWorkUpdate.Times = pCommuneWorkUpd.Times;
                         objCommuneWorkUpdate.TimeBegin = pCommuneWorkUpd.TimeBegin;
                         objCommuneWorkUpdate.TimeEnd = pCommuneWorkUpd.TimeEnd;
@@ -689,7 +689,7 @@ namespace VBSPOSS.Services.Implements
                                             && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
                                             && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
                                             && (string.IsNullOrEmpty(pRecordStatus) || w.RecordStatus.Contains(pRecordStatus))
-                                            && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
+                                         //   && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
                                             && (w.EffectDate >= dEffectDateBegin.Date && w.EffectDate <= dEffectDateEnd.Date)
                                             && (pStatus == -1 || w.Status == pStatus)
                                         )
@@ -737,7 +737,7 @@ namespace VBSPOSS.Services.Implements
                         ListOfCommuneHistsViewModel objItem = new ListOfCommuneHistsViewModel();
                         objItem = _mapper.Map<ListOfCommuneHistsViewModel>(item);
                         objItem.OrderNo = iCountTMP;
-                        objItem.VisitDateText = item.VisitDate.ToString("D2");
+                    //    objItem.VisitDateText = item.VisitDate.ToString("D2");
                         objItem.EventName = EventBusinessCode.GetByCode(item.EventCode).Description;
                         objItem.EffectDateText = item.EffectDate.ToString(FormatParameters.FORMAT_DATE);
                         objItem.RecordStatusText = (item.RecordStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
@@ -827,7 +827,7 @@ namespace VBSPOSS.Services.Implements
                         objCommuneHistUpdate.TxnPointCode = pCommuneHistUpd.TxnPointCode;
                         objCommuneHistUpdate.TxnPointName = pCommuneHistUpd.TxnPointName;
 
-                        objCommuneHistUpdate.VisitDate = pCommuneHistUpd.VisitDate;
+                    //    objCommuneHistUpdate.VisitDate = pCommuneHistUpd.VisitDate;
                         objCommuneHistUpdate.Times = pCommuneHistUpd.Times;
                         objCommuneHistUpdate.TimeBegin = pCommuneHistUpd.TimeBegin;
                         objCommuneHistUpdate.TimeEnd = pCommuneHistUpd.TimeEnd;

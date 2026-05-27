@@ -298,178 +298,6 @@
 </script>
 
 
-@* <script>
-    var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
-    var notification = $("#notification").kendoNotification({
-        position: { top: 20, right: 20 },
-        autoHideAfter: 5000
-    }).data("kendoNotification");
-    
-    var mainWindow = $("#myPopup");
-
-    function paramLoadGridData() {
-        return {
-            productGroupCode: $("#ProductGroup_Find").val() || "",
-            productCode: $("#ProductCode_Find").val() || "",
-          //  effectDate: $("#EffectDate_Find").val() || ""
-            effectDateBegin: $("#EffectDateBegin_Find").val() || "",   // Từ ngày
-        effectDateEnd: $("#EffectDateEnd_Find").val() || ""        // Đến ngày
-
-
-        };
-    }
-
-    function refreshGrid() {
-        $("#gridProductParameter").data("kendoGrid").dataSource.read();
-    }
-
-    function onSearch() {
-        refreshGrid();
-    }
-
-    function onRowBound(e) {
-        var grid = e.sender;
-        grid.tbody.find("tr").each(function () {
-            var dataItem = grid.dataItem(this);
-            var status = dataItem.Status;
-            if (status == 0 || status == 4 || status == null) {
-                $(this).addClass("status-closed");
-            } else if (status == 3) {
-                $(this).addClass("status-approved");
-            } else if (status == 1 || status == 2) {
-                $(this).addClass("status-pending");
-            }
-
-            // Ẩn/hiện nút theo quyền
-            if (userPermission.EditPermissionFlag == 0) $(this).find(".k-grid-Edit").hide();
-            if (userPermission.DeletePermissionFlag == 0) $(this).find(".k-grid-Delete").hide();
-            if (userPermission.AuthorizePermissionFlag == 0) $(this).find(".k-grid-Auth").hide();
-            if (userPermission.ReportPermissionFlag == 0) $(this).find(".k-grid-Approval").hide();
-        });
-    }
-
-    // $(document).ready(function () {
-    //     $("#btnCreate").on("click", function () {
-    //         mainWindow.kendoWindow({
-    //             width: "1100px",
-    //             height: "680px",
-    //             title: "Thêm mới cấu hình sản phẩm tiền gửi/thanh toán",
-    //             content: { url: '@Url.Action("ShowCreateConfig", "ProductParameter")' },
-    //             modal: true,
-    //             resizable: false,
-    //             close: function () { refreshGrid(); },
-    //             actions: ["Close"]
-    //         }).data("kendoWindow").center().open();
-    //     });
-    // });
-
-
-        var dataChangeProductParameter = false; // Biến flag để kiểm tra có thay đổi hay không
-
-    function onCloseProductParameter() {
-        if (dataChangeProductParameter == true) {
-            refreshGrid(); // Refresh grid khi popup đóng (nếu có thay đổi)
-            dataChangeProductParameter = false;
-        }
-    }
-
-
-        $(document).on('click', '#btnCreate', function (e) {
-        e.preventDefault();
-        if (mainWindow.data("kendoWindow")) {
-            mainWindow.data("kendoWindow").destroy();
-        }
-
-        mainWindow.kendoWindow({
-            width: "1200px",
-            height: "680px",
-            title: "Thêm mới cấu hình sản phẩm tiền gửi/thanh toán",
-            content: {
-                url: '@Url.Action("ShowCreateConfig", "ProductParameter")',
-                data: { pId: 0, pFlagCall: "1" }
-            },
-            resizable: true,
-            visible: false,
-            close: onCloseProductParameter,  // <-- Sửa thành hàm mới
-            modal: true,
-            actions: ["Refresh", "Close"],
-            error: function (e) {
-                notification.show({
-                    message: "Có lỗi xảy ra: " + e.xhr.statusText,
-                    type: "error"
-                }, "error");
-                mainWindow.data("kendoWindow").close();
-            }
-        });
-        mainWindow.data("kendoWindow").center().open();
-    });
-
-
-    function showDetail(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        mainWindow.kendoWindow({
-            width: "1000px",
-            height: "650px",
-            title: "Chi tiết cấu hình",
-            content: { url: '@Url.Action("ShowDetail", "ProductParameter")', data: { id: dataItem.Id } },
-            modal: true,
-            close: refreshGrid,
-            actions: ["Close"]
-        }).data("kendoWindow").center().open();
-    }
-
-    function showEdit(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        mainWindow.kendoWindow({
-            width: "1100px",
-            height: "680px",
-            title: "Sửa cấu hình",
-            content: { url: '@Url.Action("ShowEdit", "ProductParameter")', data: { id: dataItem.Id } },
-            modal: true,
-            close: refreshGrid,
-            actions: ["Close"]
-        }).data("kendoWindow").center().open();
-    }
-
-    function deleteItem(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (!confirm("Bạn có chắc muốn xóa cấu hình này?")) return;
-        $.ajax({
-            url: '@Url.Action("Delete", "ProductParameter")',
-            type: "POST",
-            data: { id: dataItem.Id },
-            success: function (res) {
-                if (res.success) {
-                    notification.show({ message: "Xóa thành công!", type: "success" });
-                    refreshGrid();
-                } else {
-                    notification.show({ message: res.message || "Xóa thất bại!", type: "error" });
-                }
-            },
-            error: function () {
-                notification.show({ message: "Lỗi hệ thống khi xóa!", type: "error" });
-            }
-        });
-    }
-
-    function showApproval(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        mainWindow.kendoWindow({
-            width: "1100px",
-            height: "680px",
-            title: "Phê duyệt cấu hình",
-            content: { url: '@Url.Action("ShowApproval", "ProductParameter")', data: { id: dataItem.Id } },
-            modal: true,
-            close: refreshGrid,
-            actions: ["Close"]
-        }).data("kendoWindow").center().open();
-    }
-</script>
- *@
 <div class="row" style="margin-bottom: 10px;">
     <div class="col-md-12">
         <label style="color: navy; padding-top: 10px;padding-right: 10px;">Phân loại </label>
@@ -493,24 +321,6 @@
             .Name("ProductCode_Find")
             .HtmlAttributes(new { placeholder = "Nhập mã SP", style = "width: 150px;" })
             )
-        <!-- Phần Ngày hiệu lực -->
-       @*  <label class="lbcontrol" style="color: navy; text-align:right; width:100px; padding-top: 10px;padding-right: 10px; margin-left: 20px;">
-            Ngày hiệu lực
-        </label>
-        @(Html.Kendo().DatePicker()
-            .Name("EffectDateBegin_Find")
-            .Format("dd/MM/yyyy")
-            .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Từ ngày" })
-            .Value(DateTime.Today.AddMonths(-1))
-            )
-        <span style="color: #ca8f5c; padding: 0 8px;">&nbsp;-&nbsp;</span>
-        @(Html.Kendo().DatePicker()
-            .Name("EffectDateEnd_Find")
-            .Format("dd/MM/yyyy")
-            .HtmlAttributes(new { style = "background-color: white !important; width: 120px !important;", title = "Đến ngày" })
-            .Value(DateTime.Today.AddMonths(1))
-            )
- *@
 
 
         <!-- Ngày hiệu lực -->
@@ -555,11 +365,7 @@
 
 
       
-       @*  @(Html.Kendo().Button()
-            .Name("btnCreate")
-            .Content("Thêm mới")
-            .HtmlAttributes(new { @class = "k-button k-primary", style = "margin-left: 10px;" })
-            ) *@
+       
     </div>
 </div>
 

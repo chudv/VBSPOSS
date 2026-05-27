@@ -712,26 +712,69 @@ namespace VBSPOSS.Controllers
         ///                      3 - Hiển thị [Vùng -> Mã - Tên] trên danh sách ComBoBox
         /// </param>
         /// <returns>Danh sách Tỉnh/Thành phố trên Combobox</returns>
-        public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
+        //public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
+        //{
+        //    string sTitleChoice = "";
+        //    sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
+        //    ArrayList data = new ArrayList();
+        //    var listProvinces = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", "", "");
+        //    if (sTitleChoice != "")
+        //        data.Add(new { id = "", value = sTitleChoice });
+        //    foreach (ListOfCommuneViewModel item in listProvinces)
+        //    {
+        //        if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
+        //        {
+        //            if (pFlagTextShow == "1") //Hiển thị duy nhất Tên trên danh sách ComBoBox
+        //                data.Add(new { id = item.ProvinceCode, value = item.ProvinceName.Trim() });
+        //            else if (pFlagTextShow == "2") //Hiển thị [Mã - Tên] trên danh sách ComBoBox
+        //                data.Add(new { id = item.ProvinceCode, value = $"{item.ProvinceCode} - {item.ProvinceName}" });
+        //            else if (pFlagTextShow == "3") //Hiển thị [Vùng -> Mã - Tên] trên danh sách ComBoBox
+        //                data.Add(new { id = item.ProvinceCode, value = $"{item.Region_01} => {item.ProvinceCode} - {item.ProvinceName}" });
+        //        }
+        //    }
+        //    return Json(data);
+        //}
+
+
+
+        // tạm
+
+        public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0",
+                                    string pTitleChoice = "", string pFlagTextShow = "1")
         {
-            string sTitleChoice = "";
-            sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
+            string sTitleChoice = (string.IsNullOrEmpty(pTitleChoice))
+                                ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
+
             ArrayList data = new ArrayList();
-            var listProvinces = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", "", "");
-            if (sTitleChoice != "")
+            var listAll = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", "", "");
+
+            if (!string.IsNullOrEmpty(sTitleChoice))
                 data.Add(new { id = "", value = sTitleChoice });
-            foreach (ListOfCommuneViewModel item in listProvinces)
+
+            // Lấy danh sách Tỉnh duy nhất
+            var dictProvince = new Dictionary<string, ListOfCommuneViewModel>();
+
+            foreach (ListOfCommuneViewModel item in listAll)
+            {
+                if (!string.IsNullOrEmpty(item.ProvinceCode) && !dictProvince.ContainsKey(item.ProvinceCode))
+                {
+                    dictProvince[item.ProvinceCode] = item;
+                }
+            }
+
+            foreach (var item in dictProvince.Values)
             {
                 if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
                 {
-                    if (pFlagTextShow == "1") //Hiển thị duy nhất Tên trên danh sách ComBoBox
-                        data.Add(new { id = item.ProvinceCode, value = item.ProvinceName.Trim() });
-                    else if (pFlagTextShow == "2") //Hiển thị [Mã - Tên] trên danh sách ComBoBox
-                        data.Add(new { id = item.ProvinceCode, value = $"{item.ProvinceCode} - {item.ProvinceName}" });
-                    else if (pFlagTextShow == "3") //Hiển thị [Vùng -> Mã - Tên] trên danh sách ComBoBox
-                        data.Add(new { id = item.ProvinceCode, value = $"{item.Region_01} => {item.ProvinceCode} - {item.ProvinceName}" });
+                    string displayText = item.ProvinceName?.Trim() ?? "";
+
+                    if (pFlagTextShow == "2")
+                        displayText = $"{item.ProvinceCode} - {displayText}";
+
+                    data.Add(new { id = item.ProvinceCode, value = displayText });
                 }
             }
+
             return Json(data);
         }
 
