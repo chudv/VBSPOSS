@@ -213,14 +213,10 @@
     var rowNumber = 0;
 
     $(document).ready(function () {
-
-        var grid = $("#gridTransferVillage")
-            .data("kendoGrid");
+        var grid = $("#gridTransferVillage").data("kendoGrid");
 
         if (grid) {
-
             grid.bind("dataBinding", function () {
-
                 rowNumber = 0;
             });
         }
@@ -228,182 +224,96 @@
 
 
 
-    $("#formTransferDataPos")
-        .submit(function (e) {
+    $("#formTransferDataPos").submit(function (e) {
+        e.preventDefault();
 
-            e.preventDefault();
+        var grid = $("#gridTransferVillage").data("kendoGrid");
+        grid.closeCell();
 
-            var grid = $("#gridTransferVillage")
-                .data("kendoGrid");
+        var details = [];
+        var data = grid.dataSource.data();
 
-            grid.closeCell();
-
-            var details = [];
-
-            var data = grid.dataSource.data();
-
-            for (var i = 0; i < data.length; i++) {
-
-                details.push({
-
-                    Id: data[i].Id || 0,
-
-                    FromVillageId:
-                        data[i].FromVillageId,
-
-                    ToVillageId:
-                        data[i].ToVillageId
-                });
-            }
-
-            var formData = new FormData(this);
-
-            formData.append(
-                "DetailsJson",
-                JSON.stringify(details));
-
-            $.ajax({
-
-                url: this.action,
-
-                type: "POST",
-
-                data: formData,
-
-                processData: false,
-
-                contentType: false,
-
-                success: function (res) {
-
-                    if (res == "1") {
-
-                        alert(
-                            "Lưu dữ liệu thành công");
-
-                        refreshGridIDC();
-
-                        onCloseTransferWindow();
-                    }
-                    else if (res == "2") {
-
-                        alert(
-                            "POS nguồn và POS đích không được trùng nhau");
-                    }
-                    else if (res == "3") {
-
-                        alert(
-                            "Bạn chưa khai báo danh sách thôn điều chuyển");
-                    }
-                    else if (res == "4") {
-
-                        alert(
-                            "Bạn chưa chọn đầy đủ thôn nguồn/thôn đích");
-                    }
-                    else if (res == "5") {
-
-                        alert(
-                            "Danh sách thôn nguồn bị trùng");
-                    }
-                    else if (res == "6") {
-
-                        alert(
-                            "Danh sách thôn đích bị trùng");
-                    }
-                    else {
-
-                        alert(
-                            "Lưu dữ liệu thất bại");
-                    }
-                },
-
-                error: function () {
-
-                    alert(
-                        "Có lỗi xảy ra");
-                }
+        for (var i = 0; i < data.length; i++) {
+            details.push({
+                Id: data[i].Id || 0,
+                FromVillageId: data[i].FromVillageId,
+                ToVillageId: data[i].ToVillageId
             });
+        }
+
+        var formData = new FormData(this);
+        formData.append("DetailsJson", JSON.stringify(details));
+
+        $.ajax({
+            url: this.action,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res == "1") {
+                    alert("Lưu dữ liệu thành công");
+                    refreshGridIDC();
+                    onCloseTransferWindow();
+                } else if (res == "2") {
+                    alert("POS nguồn và POS đích không được trùng nhau");
+                } else if (res == "3") {
+                    alert("Bạn chưa khai báo danh sách thôn điều chuyển");
+                } else if (res == "4") {
+                    alert("Bạn chưa chọn đầy đủ thôn nguồn/thôn đích");
+                } else if (res == "5") {
+                    alert("Danh sách thôn nguồn bị trùng");
+                } else if (res == "6") {
+                    alert("Danh sách thôn đích bị trùng");
+                } else {
+                    alert("Lưu dữ liệu thất bại");
+                }
+            },
+            error: function () {
+                alert("Có lỗi xảy ra");
+            }
         });
+    });
+
 
 
     function getFromPos() {
-
-        var combo =
-            $("#Master_FromPosCode")
-                .data("kendoComboBox");
-
+        var combo = $("#Master_FromPosCode").data("kendoComboBox");
         return {
-
-            pPosCode:
-                combo
-                    ? combo.value()
-                    : ""
+            pPosCode: combo ? combo.value() : ""
         };
     }
+
 
     function getToPos() {
-
-        var combo =
-            $("#Master_ToPosCode")
-                .data("kendoComboBox");
-
+        var combo = $("#Master_ToPosCode").data("kendoComboBox");
         return {
-
-            pPosCode:
-                combo
-                    ? combo.value()
-                    : ""
+            pPosCode: combo ? combo.value() : ""
         };
     }
 
+
     function onChangeToVillage(e) {
-
-        var grid =
-            $("#gridTransferVillage")
-                .data("kendoGrid");
-
-        var row =
-            $(e.sender.element)
-                .closest("tr");
-
-        var item =
-            grid.dataItem(row);
-
-        var dataItem =
-            e.sender.dataItem();
+        var grid = $("#gridTransferVillage").data("kendoGrid");
+        var row = $(e.sender.element).closest("tr");
+        var item = grid.dataItem(row);
+        var dataItem = e.sender.dataItem();
 
         if (dataItem) {
-
-            item.set(
-                "ToVillageName",
-                dataItem.Text);
+            item.set("ToVillageName", dataItem.Text);
         }
     }
+
 
     function onChangeFromVillage(e) {
-
-        var grid =
-            $("#gridTransferVillage")
-                .data("kendoGrid");
-
-        var row =
-            $(e.sender.element)
-                .closest("tr");
-
-        var item =
-            grid.dataItem(row);
-
-        var dataItem =
-            e.sender.dataItem();
+        var grid = $("#gridTransferVillage").data("kendoGrid");
+        var row = $(e.sender.element).closest("tr");
+        var item = grid.dataItem(row);
+        var dataItem = e.sender.dataItem();
 
         if (dataItem) {
-
-            item.set(
-                "FromVillageName",
-                dataItem.Text);
+            item.set("FromVillageName", dataItem.Text);
         }
     }
-
-
 
 </script>

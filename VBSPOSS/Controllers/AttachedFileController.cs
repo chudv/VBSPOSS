@@ -64,10 +64,10 @@ namespace VBSPOSS.Controllers
                     new { Value = "6", Description = "File dữ liệu đầu ngày giao dịch Offline", Code = "OFFLINE_TXN" },
                     new { Value = "7", Description = "File tài liệu khác", Code = "OTHER" }
                 };
-                    }
-                    else
-                    {
-                        statuses = new List<object>
+            }
+            else
+            {
+                statuses = new List<object>
                 {
                     new { Value = "-1", Description = "Tất cả", Code = "ALL" },
                     new { Value = "5", Description = "File đính kèm bản cập nhật phần mềm Offline (Execution File)", Code = "OFFLINE_EXE" },
@@ -79,43 +79,51 @@ namespace VBSPOSS.Controllers
 
         }
 
+        /// <summary>
+        /// Lấy danh sách các file
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Pos tìm kiếm</param> 
+        /// <param name="pFileType">Loại file</param> 
+        /// <param name="pFromTranDateFind">Từ ngày</param>
+        /// <param name="pToTranDateFind">Đến ngày</param>
+        /// <param name="pFileName">Tên file chứa ký tự</param>
+        /// <returns></returns>
         public async Task<ActionResult> LoadAttachedFileGridData(
-       [DataSourceRequest] DataSourceRequest request,
-       string pPosCode,
-       string pFileType,
-       string pFromTranDateFind, string pToTranDateFind, string pFileName)
+            [DataSourceRequest] DataSourceRequest request,
+            string pPosCode, string pFileType, string pFromTranDateFind,
+            string pToTranDateFind, string pFileName)
         {
-           
             try
             {
-                //if ((string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "-1") && pFileType !="6")
-                //{
-                //    return Json(new List<AttachedFileInfoView>().ToDataSourceResult(request));
-                //}
-
                 var list = await _attachedFile.GetttachedFileSync(pPosCode, pFileType, pFromTranDateFind, pToTranDateFind, pFileName);
-
                 return Json(list.ToDataSourceResult(request));
             }
             catch (Exception ex)
             {
                 WriteLog(LogType.ERROR,
                     $"LoadAttachedFileGridData Error: {ex.Message} | Inner: {ex.InnerException?.Message ?? "None"}");
-
                 return Json(new { Errors = "Có lỗi xảy ra khi lấy danh sách file đính kèm." });
             }
         }
 
+
+
         public IActionResult DownloadFile(long fileId, string fileName)
         {
             var result = _attachedFile.DownloadFile(fileId, fileName);
-
             if (result == null)
                 return NotFound();
 
             return File(result.Stream, "application/octet-stream", result.FileName);
         }
 
+        /// <summary>
+        /// Khới tạo upload file
+        /// </summary>
+        /// <param name="valueFileType"></param>
+        /// <param name="nameFileType"></param>
+        /// <returns></returns>
         public ActionResult UploadFileInit(string valueFileType, string nameFileType)
         {
             var model = new AttachedFileInfoView
@@ -130,10 +138,19 @@ namespace VBSPOSS.Controllers
             return PartialView("_UploadFile", model);
         }
 
+
+        /// <summary>
+        /// Upload file
+        /// </summary>
+        /// <param name="files">File</param>
+        /// <param name="Mo_Ta">Mo tả file</param>
+        /// <param name="valueFileType">Loại file</param>
+        /// <param name="DocumentNumber">Số quyết đinh, trích yếu</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<string> Upload(IFormFile files, string Mo_Ta, string valueFileType, string DocumentNumber)
         {
-            string result = await  _attachedFile.UploadFileAsync(files, Mo_Ta, UserName, valueFileType, DocumentNumber);
+            string result = await _attachedFile.UploadFileAsync(files, Mo_Ta, UserName, valueFileType, DocumentNumber);
             return result;
         }
 
