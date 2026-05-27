@@ -527,7 +527,8 @@
 @Html.Hidden("FunctionTypeFlag_MODIFY_USERView", TempData["FunctionTypeFlag_MODIFY_USER"])
 @Html.Hidden("FunctionTypeFlag_CHANGE_POSView", TempData["FunctionTypeFlag_CHANGE_POS"])
 @Html.Hidden("FunctionTypeFlag_CHANGE_ROLEView", TempData["FunctionTypeFlag_CHANGE_ROLE"])
-
+@Html.Hidden("FunctionTypeFlag_DELETE_USERView", TempData["FunctionTypeFlag_DELETE_USER"])
+@Html.Hidden("FunctionTypeFlag_RESTORE_USERView", TempData["FunctionTypeFlag_RESTORE_USER"])
 
 <hr style='margin-top: 0.1em; margin-bottom: 0.1em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
 
@@ -635,12 +636,13 @@
                     columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").Width(100).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.RoleToTransferCashName).Title("Q. TM").Width(45).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.GroupName).Hidden();
-                    columns.Bound(c => c.EffectiveDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(83).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.StartDate).Title("Ngày hiệu lực").Format("{0:dd/MM/yyyy}").Width(83).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.ExpiryDate).Title("Ngày hết hiệu lực").Format("{0:dd/MM/yyyy}").Width(83).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.StatusText).Title("Trạng thái").Width(130).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.CreatedDate).Title("Ngày tạo yêu cầu").Format("{0:dd/MM/yyyy}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Id).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
+                    columns.Bound(c => c.EffectiveDate).Hidden();
                     columns.Bound(c => c.StaffId).Hidden(); ;
                     columns.Bound(c => c.StaffCode).Hidden();
                     columns.Bound(c => c.NickName).Hidden();

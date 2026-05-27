@@ -149,6 +149,14 @@
         font-size: 12px;
     }
 
+    #StartDate, #FromTranDate_Find, #ToTranDate_Find {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
 </style>
 <script>
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
@@ -511,7 +519,10 @@
             @(Html.Kendo().DatePicker()
                 .Name("FromTranDate_Find")
                 .Format("dd/MM/yyyy")
-                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Ngày cần tìm kiếm" })
+                .HtmlAttributes(new
+                {
+                    style = "width:140px; color:blue;"
+                })
                 .Value(DateTime.Today.AddDays(-1))
                 @* .Value(new DateTime(2026, 4, 7)) *@
                 )
@@ -523,7 +534,10 @@
             @(Html.Kendo().DatePicker()
                 .Name("ToTranDate_Find")
                 .Format("dd/MM/yyyy")
-                .HtmlAttributes(new { style = "background-color: While !important; width: 120px !important;", title = "Ngày cần tìm kiếm" })
+                .HtmlAttributes(new
+                {
+                    style = "width:140px; color:blue;"
+                })
                 .Value(DateTime.Today.AddMonths(-0))
                 @* .Value(new DateTime(2026, 4, 7)) *@
                 )
@@ -532,7 +546,7 @@
             @(Html.Kendo().Button()
                 .Name("btnSearchCasaRateConfigure")
                 .Events(ev => ev.Click("onSearchAttachedFileConfigure"))
-                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:120px; color: blue;padding-left: 0px; ", title = "Tìm kiếm file" })
+                .HtmlAttributes(new { type = "button", style = "font-weight:bold; width:120px;height:28px; line-height:28px; color: blue;padding-left: 0px; ", title = "Tìm kiếm file" })
                 .ImageUrl(Url.Content("~/images/tim_kiem.png"))
                 .Content(" Tìm kiếm "))
         </div>

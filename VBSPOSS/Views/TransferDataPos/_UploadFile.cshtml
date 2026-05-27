@@ -28,76 +28,57 @@
 
     @Html.AntiForgeryToken()
 
-    <input type="hidden" name="FileId"
-           value="@(Model?.FileId ?? 0)" />
+    <input type="hidden" name="FileId" value="@(Model?.FileId ?? 0)" />
+    <input type="hidden" name="idTranfer" value="@idTranfer" />
 
-    <input type="hidden" name="idTranfer"
-           value="@idTranfer" />
-
-        <!-- chọn file -->
-    <div class="row" style="margin-bottom:8px;margin-top:34px;">
-            <div class="col-md-2">
-                <label style="color:navy;">Chọn file</label>
-            </div>
-
-            <div class="col-md-3" style="width:600px;">
-                <input type="file"
-                       id="files"
-                       name="files"
-                       style="width:100%;color:blue;" />
-            </div>
-
-            <div class="col-md-2">
-                <label style="color:navy;">Số VB / Trích yếu</label>
-            </div>
-
-            <div class="col-md-4">
-                <input type="text"
-                       id="DocumentNumber"
-                       name="DocumentNumber"
-                       class="k-textbox"
-                       style="width:100%;color:blue;" />
-            </div>
+    <!-- chọn file -->
+    <div class="row" style="margin-bottom:8px; margin-top:34px;">
+        <div class="col-md-2">
+            <label style="color:navy;">Chọn file</label>
         </div>
-
-        <hr>
-
-        <!-- mô tả -->
-        <div class="row" style="margin-bottom:5px;">
-            <div class="col-md-2">
-                <label style="color:navy;">Mô tả</label>
-            </div>
-
-            <div class="col-md-8">
-                <textarea id="Mo_Ta"
-                          name="Mo_Ta"
-                          placeholder="Nhập mô tả"
-                          style="width:600px;
-                             height:53px;
-                             border:0;
-                             border-bottom:1px dotted;
-                             color:blue;"></textarea>
-            </div>
-
-            <div class="col-md-2" style="padding-top:6px;">
-                <label style="color:orangered;white-space:nowrap;width:150px">
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(File <= 50MB)
-                </label>
-            </div>
+        <div class="col-md-3" style="width:600px;">
+            <input type="file" id="files" name="files" accept=".pdf,application/pdf" style="width:100%; color:blue;" />
         </div>
-        <hr>
-        <!-- button -->
-        <div style="width:100%; max-width:100%;">
-            <div style="text-align:right;">
-                <button type="submit" class="btn-upload">
-                    <span class="k-icon k-i-upload"></span>
-                    Tải lên
-                </button>
-            </div>
+        <div class="col-md-2">
+            <label style="color:navy;">Số VB / Trích yếu</label>
         </div>
+        <div class="col-md-4">
+            <input type="text" id="DocumentNumber" name="DocumentNumber"
+                   class="k-textbox" style="width:100%; color:blue;" />
+        </div>
+    </div>
 
+    <hr>
+
+    <!-- mô tả -->
+    <div class="row" style="margin-bottom:5px;">
+        <div class="col-md-2">
+            <label style="color:navy;">Mô tả</label>
+        </div>
+        <div class="col-md-8">
+            <textarea id="Mo_Ta" name="Mo_Ta" placeholder="Nhập mô tả"
+                      style="width:600px; height:53px; border:0; border-bottom:1px dotted; color:blue;"></textarea>
+        </div>
+        <div class="col-md-2" style="padding-top:6px;">
+            <label style="color:orangered; white-space:nowrap; width:150px">
+                (File &lt;= 50MB)
+            </label>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- button -->
+    <div style="width:100%; max-width:100%;">
+        <div style="text-align:right;">
+            <button type="submit" class="btn-upload">
+                <span class="k-icon k-i-upload"></span>
+                Tải lên
+            </button>
+        </div>
     </div>
 </form>
+
 
 <script>
     $("#uploadFormTranferPos").on("submit", function (e) {
@@ -108,9 +89,6 @@
         var documentNumber = $("#DocumentNumber").val();
         var idTranfer = $("#IdTranferDataPos").val();
 
-
-
-       
         if (!file) {
             alert("Chưa chọn file");
             return;
@@ -121,10 +99,7 @@
             return;
         }
 
-
-
         var formData = new FormData(this);
-
         formData.set("idTranfer", idTranfer);
         formData.set("DocumentNumber", documentNumber);
 
@@ -135,8 +110,7 @@
             contentType: false,
             processData: false,
             success: function (res) {
-
-                if (res == "0") {
+                if (res === "0") {
                     alert("Upload thành công");
 
                     $("#files").val("");
@@ -144,8 +118,7 @@
 
                     var grid = $("#gridMainCasaRate").data("kendoGrid");
                     if (grid) grid.dataSource.read();
-                }
-                else {
+                } else {
                     alert("Upload lỗi");
                 }
             },

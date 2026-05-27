@@ -2,6 +2,8 @@
 @using VBSPOSS.Models
 @using VBSPOSS.Constants
 
+
+
 @{
     var userPosCode = TempData.Peek("UserPosCode")?.ToString();
 }
@@ -34,6 +36,15 @@
 
     .hidden-block {
         display: none !important;
+    }
+
+    #StartDate, #ExpiryDate, #Master_EffectiveDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    
     }
 </style>
 <script>
@@ -148,7 +159,7 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:center;padding-top:3px;">Ngày hiệu lực</label>
 
-                @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
+               @*  @(Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate)
                     .Format("dd/MM/yyyy")
                     .Min(DateTime.Today)
                     .Enable(false)
@@ -156,7 +167,9 @@
                     {
                         style = "width:110px;color:blue;"
                     })
-                    )
+                    ) *@
+
+                @Html.Kendo().DatePickerFor(m => m.Master.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
             </div>
         </div>
 

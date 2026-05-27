@@ -262,6 +262,10 @@ namespace VBSPOSS.Services.Implements
                 {
                     objReportInput = new ReportInput { ReportId = "BC0111116", FileType = "PDF" };
                 }
+                else if (pFunctionType == FunctionTypeFlag.FunctionTypeFlag_TRANFER_POS.Code)
+                {
+                    objReportInput = new ReportInput { ReportId = "BC0111117", FileType = "PDF" };
+                }
 
                 objReportInput.Parameters = new List<Parameter>();
                 objReportInput.Parameters.Add(new Parameter() { ParaName = "Id", ParaType = "string", ParaValue = $"{pId}" });

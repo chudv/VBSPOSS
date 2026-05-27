@@ -82,6 +82,26 @@ namespace VBSPOSS.Services.Interfaces
                                     string pUserNameUpd, string pFlagCall);
 
         /// <summary>
+        /// Hàm thực hiện từ chối bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
+        /// Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_HeadOffice_Approved.Value hoặc StatusBusinessFlow.Status_Branch_Approved.Value
+        /// </summary>
+        /// <param name="pListUserIdReject">Danh sách người dùng cần từ chối. Ví dụ: [{"Id":"101","UserId":"20032","Status":"2"},{"Id":"102","UserId":"20004","Status":"5"}]</param>
+        /// <param name="pReasonReject">Lý do từ chối</param>
+        /// <param name="pFunctionType">Mã loại yêu cầu về người dùng</param>
+        /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
+        /// <param name="pUserNameUpd">Người thực hiện trình duyệt</param>
+        /// <param name="pFlagCall">Cờ Trình duyệt/Phê duyệt. Giá trị: EventFlag.EventFlag_Reject.Value</param>
+        /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
+        ///                 1 - PGD (PosGrade.SUB_POS);
+        ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
+        ///                 3 - TW (PosGrade.HEAD_POS)
+        /// </param>
+        /// <returns>Danh sách Id bản ghi được Update từ chối thành công</returns>
+        /// <exception cref="Exception"></exception>
+        Task<List<long>> UpdateStatusRejectUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdReject, string pReasonReject, string pFunctionType,
+                                string pSystemDateText, string pUserNameUpd, string pFlagCall, int pUserGradeUpd);
+
+        /// <summary>
         /// Hàm tổng hợp số lượng yêu cầu của các chi nhánh về người dùng iDC để hiển thị hàng chờ phê duyệt
         /// </summary>
         /// <param name="pStartDateBegin">Ngày bắt đầu - Bắt đầu. Định dạng dd/MM/yyyy (Bắt buộc phải truyền)</param>
@@ -90,10 +110,12 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc phải truyền)</param>
         /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <param name="pListStatus">Danh sách trạng thái truyền vào cách nhau bởi dấu phẩy. Ex: 1,5,2</param>
+        /// <param name="pSystemDateCoreIDC">Ngày hiện thời hệ thống Intellect iDC</param>
+        /// <param name="pBusinessDateCoreIDC">Ngày mở sổ hệ thống Intellect iDC</param>
         /// <param name="pFlagCall">Cờ xác định cách tổng hợp (Chưa sử dụng)</param>
         /// <returns></returns>
         List<UserManagementIDCSumRequirementViewModel> UserManagementIDC_SumRequirement_GetSearch(string pStartDateBegin, string pStartDateEnd, string pMainPosCode,
-            string pPosCode, int pUserGrade, string pListStatus, int pFlagCall);
+            string pPosCode, int pUserGrade, string pListStatus, string pSystemDateCoreIDC, string pBusinessDateCoreIDC, int pFlagCall);
 
         /// <summary>
         /// Hàm thực hiện Phê duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
@@ -332,8 +354,6 @@ namespace VBSPOSS.Services.Interfaces
         
         //Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId);
 
-        List<AttachedFileInfo> GetAttachFileSearch(int pFileId, long pDocumentId, string pTenFile, string pTenFileMoi, string pMoTa, int pTrangThai);
-
         /// <summary>
         /// Hàm xóa thông tin phân quyền chức năng của người dùng trên iDC khi người dùng bị khóa tài khoản hoặc xóa tài khoản trên iDC. Thực hiện xóa bản ghi trong bảng AuthSecType theo UserId
         /// </summary>
@@ -351,6 +371,6 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Kết quả</returns>
         Task<ExecuteResultModelModel> ChangeOTPRegisterByUserId(string pUserId, int pRegisterFlag);
 
-        Task<long> SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
+        Task<long> Xoa_SaveApproveUserManagementIDC(UserManagementIDCViewModel pUserManagementUpd, string pUserNameUpd, string pFlagCall, string pButtonType);
     }
 }

@@ -3,36 +3,33 @@
     var userPosCode =
         TempData["UserPosCode"]?.ToString();
 }
+
+@* Màn hình cấp tw phê duyệt hoặc từ chối *@
 <div style="padding:10px;">
     @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
     <!-- HEADER -->
     <div class="row" style="margin-bottom:10px;">
-
         <div class="col-md-12">
-
             <table style="width:100%;">
-
                 <tr>
-
-                    <td style="width:110px;color:navy;font-weight:bold;">
+                    <td style="width:110px; color:navy; font-weight:bold;">
                         POS nguồn:
                     </td>
-                    <td style="color:blue;font-weight:bold;">
+                    <td style="color:blue; font-weight:bold;">
                         @Model.FromPosCode - @Model.FromPosName
                     </td>
                     <td style="width:40px;"></td>
-
-                    <td style="width:110px;color:navy;font-weight:bold;">
+                    <td style="width:110px; color:navy; font-weight:bold;">
                         POS đích:
                     </td>
-
-                    <td style="color:blue;font-weight:bold;">
+                    <td style="color:blue; font-weight:bold;">
                         @Model.ToPosCode - @Model.ToPosName
                     </td>
                 </tr>
             </table>
         </div>
     </div>
+
 
     <hr />
 
@@ -54,14 +51,8 @@
                     columns.Template("#= getRowNumber() #")
                     .Title("STT")
                     .Width(50)
-                    .HtmlAttributes(new
-                    {
-                        style = "text-align:center;"
-                    })
-                    .HeaderHtmlAttributes(new
-                    {
-                        style = "text-align:center;font-weight:bold;"
-                    });
+                    .HtmlAttributes(new { style = "text-align:center;" })
+                    .HeaderHtmlAttributes(new { style = "text-align:center; font-weight:bold;" });
 
                     columns.ForeignKey(
                     p => p.FromVillageId,
@@ -79,20 +70,14 @@
                     .Title("Xã đích - Thôn đích")
                     .Width(320);
                 })
-
-
-                .Editable(editable =>
-                editable.Mode(GridEditMode.InCell)
-                )
+                .Editable(editable => editable.Mode(GridEditMode.InCell))
                 .Scrollable()
                 .Navigatable()
+                .Editable(editable => editable.Enabled(false))
                 .Resizable(resize => resize.Columns(true))
                 .DataSource(dataSource => dataSource
                 .Ajax()
-                .Model(model =>
-                {
-                    model.Id(p => p.Id);
-                })
+                .Model(model => { model.Id(p => p.Id); })
                 .Read(read => read.Action(
                 "ReadTransferVillage",
                 "TransferDataPos",
@@ -100,28 +85,16 @@
                 ))
                 )
                 )
-
         </div>
-
     </div>
 
+
     <!-- FOOTER -->
-
-
-
-    <div style="
-     display:flex;
-     align-items:center;
-     gap:10px;
-     margin-top:10px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
 
         <textarea id="txtApproveRemark"
                   class="k-textbox"
-                  style="
-              width:350px;
-              height:60px;
-              resize:none;
-              color:blue;"
+                  style="width:350px; height:60px; resize:none; color:blue;"
                   placeholder="Lý do từ chối..."></textarea>
 
         @(Html.Kendo().Button()
@@ -130,14 +103,8 @@
             .HtmlAttributes(new
             {
                 type = "button",
-
-                style =
-            "width:110px;" +
-            "color:blue;" +
-            "font-weight:bold;",
-
-                onclick =
-            "onApproveTransferDataPos()"
+                style = "width:110px; color:blue; font-weight:bold;",
+                onclick = "onApproveTransferDataPos()"
             })
             )
 
@@ -147,14 +114,8 @@
             .HtmlAttributes(new
             {
                 type = "button",
-
-                style =
-            "width:110px;" +
-            "color:red;" +
-            "font-weight:bold;",
-
-                onclick =
-            "onRejectTransferDataPos()"
+                style = "width:110px; color:red; font-weight:bold;",
+                onclick = "onRejectTransferDataPos()"
             })
             )
 
@@ -164,22 +125,26 @@
             .HtmlAttributes(new
             {
                 type = "button",
-
-                style =
-            "width:100px;" +
-            "color:blue;" +
-            "font-weight:bold;",
-
-                onclick =
-            "onCloseTransferVillage()"
+                style = "width:100px; color:blue; font-weight:bold;",
+                onclick = "onCloseTransferVillage()"
             })
+            .ImageUrl(Url.Content("~/images/close_icon.gif"))
             )
 
+
+
     </div>
+
 
 </div>
 
 <script>
+
+    function onCloseTransferVillage() {
+        mainWindow.data("kendoWindow").close();
+        refreshGridIDC();
+    }
+
     var rowNumber = 0;
 
     function getRowNumber() {
@@ -257,7 +222,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: 'APPROVE'
+                pAction: '5'
             },
             success: function (res) {
                 if (res == "1") {
@@ -290,7 +255,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: 'REJECT'
+                pAction: '6' //Trung ương từ chối
             },
             success: function (res) {
                 if (res == "1") {

@@ -37,135 +37,142 @@ namespace VBSPOSS.Services.Implements
                 if (pFileType == "6")
                 {
                     var list = new List<AttachedFileInfoView>();
+
                     string folderPath = _config["AttachedFileSettings:FolderTXN"];
 
-                    if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+                    if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
                         return list;
 
-                    //var files = Directory.GetFiles(folderPath, "TXN*.*")
-                    //                     .OrderByDescending(f => new FileInfo(f).LastWriteTime);
-
-                    var files = Directory.GetFiles(
-                        folderPath,
-                        "TXN*.*",
-                        SearchOption.AllDirectories 
-                    )
-                    .OrderByDescending(f => new FileInfo(f).LastWriteTime);
-
-                    int stt = 1;
-
-                    foreach (var file in files)
-                    {
-                        var fi = new FileInfo(file);
-
-                        string baseName = fi.Name.Split('.')[0];
-                        string txnPoint = baseName.Substring(0, baseName.Length - 8);
-                        var point = await _dbContext.ListOfTransPoints
-                           .FirstOrDefaultAsync(x => x.TxnPointCode == txnPoint);
-                        string transDate = "";
-                        if (baseName.Length >= 8)
-                        {
-                            string datePart = baseName.Substring(baseName.Length - 8);
-                            
-
-                            if (DateTime.TryParseExact(
-                                datePart,
-                                "yyyyMMdd",
-                                null,
-                                System.Globalization.DateTimeStyles.None,
-                                out DateTime d))
-                            {
-                                transDate = d.ToString("dd/MM/yyyy");
-                            }
-
-                             
-                        }
-                       
-
-
-                        list.Add(new AttachedFileInfoView
-                        {
-                            FileId =0,
-                            Orderby = stt++,
-                            PosCode = point?.PosCode,
-                            PosName = point?.PosName,
-
-                            FileName = fi.Name,
-                            SizeKB = Math.Round(fi.Length / 1024m / 1024m, 2),
-
-                            TransactionDate = transDate,
-                            ExportDate = fi.LastWriteTime.ToString("dd/MM/yyyy"),
-                            ExportTime = fi.LastWriteTime.ToString("HH:mm:ss"),
-
-                            DownloadCount = 1,
-                            CreatedDate = fi.CreationTime,
-                            TxnPointCode = point.TxnPointCode,
-                            TxnPointName = point.TxnPointName,
-                            ProvinceCode = point.ProvinceCode,
-                            EffectiveDate = point.EffectiveDate,
-                            DownloadUrl = "/AttachedFile/DownloadFile?fileName=" + fi.Name
-                        });
-                    }
+                    // Parse ngày tìm kiếm
                     DateTime fromDate = DateTime.ParseExact(
-                    pFromTranDateFind,
-                    "dd/MM/yyyy",
-                    System.Globalization.CultureInfo.InvariantCulture);
+                        pFromTranDateFind,
+                        "dd/MM/yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture);
 
                     DateTime toDate = DateTime.ParseExact(
                         pToTranDateFind,
                         "dd/MM/yyyy",
                         System.Globalization.CultureInfo.InvariantCulture);
 
+                    // Load toàn bộ txn point 1 lần
+                    var transPointDict = await _dbContext.ListOfTransPoints
+                        .AsNoTracking()
+                        .ToDictionaryAsync(x => x.TxnPointCode, x => x);
 
-                    if (pPosCode == "000100")
+                    // EnumerateFiles tối ưu hơn GetFiles
+                    var files = Directory.EnumerateFiles(
+                        folderPath,
+                        "TXN*.*",
+                        SearchOption.AllDirectories);
+
+                    int stt = 1;
+
+                    foreach (var file in files)
                     {
-                        var filteredAll = list
-                            .Where(x =>
-                            {
-                                DateTime tranDate;
+                        FileInfo fi;
 
-                                return DateTime.TryParseExact(
-                                           x.TransactionDate,
-                                           "dd/MM/yyyy",
-                                           System.Globalization.CultureInfo.InvariantCulture,
-                                           System.Globalization.DateTimeStyles.None,
-                                           out tranDate)
+                        try
+                        {
+                            fi = new FileInfo(file);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
 
-                                       && tranDate >= fromDate
-                                       && tranDate <= toDate
+                        string baseName = Path.GetFileNameWithoutExtension(fi.Name);
 
-                                       && (string.IsNullOrEmpty(pFileName)
-                                           || (!string.IsNullOrEmpty(x.FileName) &&
-                                               x.FileName.ToUpper().Contains(pFileName.ToUpper())));
-                            })
-                            .ToList();
-                        return filteredAll;
-                    }
-                    //var posNew = _dbContext.ListOfPoss.FirstOrDefaultAsync(x => x.Code == pPosCode);
-                    //string provinceCode = posNew.Result.Code.Substring(2, 2); // "05"
-                    var filtered = list
-                    .Where(x =>
-                    {
-                        DateTime tranDate;
+                        if (string.IsNullOrEmpty(baseName) || baseName.Length < 8)
+                            continue;
 
-                        return x.PosCode == pPosCode
+                        // Lấy mã ĐGD
+                        string txnPointCode = baseName.Substring(0, baseName.Length - 8);
 
-                            && DateTime.TryParseExact(
-                                x.TransactionDate,
-                                "dd/MM/yyyy",
+                        // Lấy yyyyMMdd
+                        string datePart = baseName.Substring(baseName.Length - 8);
+
+                        // Parse ngày giao dịch
+                        if (!DateTime.TryParseExact(
+                                datePart,
+                                "yyyyMMdd",
                                 System.Globalization.CultureInfo.InvariantCulture,
                                 System.Globalization.DateTimeStyles.None,
-                                out tranDate)
+                                out DateTime tranDate))
+                        {
+                            continue;
+                        }
 
-                            && tranDate >= fromDate
-                            && tranDate <= toDate
+                        // Filter ngày sớm
+                        if (tranDate < fromDate || tranDate > toDate)
+                            continue;
 
-                            && (string.IsNullOrEmpty(pFileName)
-                                || (!string.IsNullOrEmpty(x.FileName) &&
-                                    x.FileName.ToUpper().Contains(pFileName.ToUpper())));
-                    })
+                        // Tìm txn point trong dictionary
+                        transPointDict.TryGetValue(txnPointCode, out var point);
+
+                        // Filter POS sớm
+                        if (pPosCode != "000100")
+                        {
+                            if (point == null || point.PosCode != pPosCode)
+                                continue;
+                        }
+
+                        // Filter tên file
+                        //if (!string.IsNullOrWhiteSpace(pFileName))
+                        //{
+                        //    if (string.IsNullOrWhiteSpace(fi.Name) || !fi.Name.Contains(pFileName, StringComparison.OrdinalIgnoreCase))
+                        //    {
+                        //        continue;
+                        //    }
+                        //}
+
+                        if (!string.IsNullOrWhiteSpace(pFileName))
+                        {
+                            bool matchFileName =
+                                !string.IsNullOrWhiteSpace(fi.Name) &&
+                                fi.Name.Contains(pFileName, StringComparison.OrdinalIgnoreCase);
+
+                            bool matchTxnPointName =
+                                !string.IsNullOrWhiteSpace(point?.TxnPointName) &&
+                                point.TxnPointName.Contains(pFileName, StringComparison.OrdinalIgnoreCase);
+
+                            if (!matchFileName && !matchTxnPointName)
+                            {
+                                continue;
+                            }
+                        }
+
+                        list.Add(new AttachedFileInfoView
+                        {
+                            FileId = 0,
+                            Orderby = stt++,
+                            PosCode = point?.PosCode,
+                            PosName = point?.PosName,
+                            TxnPointCode = point?.TxnPointCode,
+                            TxnPointName = point?.TxnPointName,
+                            ProvinceCode = point?.ProvinceCode,
+                            //EffectiveDate = point?.EffectiveDate,
+                            FileName = fi.Name,
+                            SizeKB = Math.Round(fi.Length / 1024m / 1024m, 2),
+                            TransactionDate = tranDate.ToString("dd/MM/yyyy"),
+                            ExportDate = fi.LastWriteTime.ToString("dd/MM/yyyy"),
+                            ExportTime = fi.LastWriteTime.ToString("HH:mm:ss"),
+                            DownloadCount = 1,
+                            CreatedDate = fi.CreationTime,
+                            DownloadUrl = "/AttachedFile/DownloadFile?fileName=" + fi.Name
+                        });
+                    }
+
+                    // Sort sau cùng
+                    list = list
+                    .OrderByDescending(x => x.CreatedDate)
                     .ToList();
-                    return filtered;
+
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        list[i].Orderby = i + 1;
+                    }
+
+                    return list;
                 }
                 else
                 {
@@ -213,12 +220,7 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-        public async Task<string> UploadFileAsync(
-    IFormFile file,
-    string description,
-    string createdBy,
-    string valueFileType,
-    string DocumentNumber)
+        public async Task<string> UploadFileAsync(IFormFile file, string description, string createdBy, string valueFileType, string DocumentNumber)
         {
             try
             {
@@ -524,7 +526,7 @@ namespace VBSPOSS.Services.Implements
                     string sTypeChildTmp = Utilities.ProperUnicode(pTypeChild.Replace("_", " "));
                     sTypeChildTmp = sTypeChildTmp.Replace(" ", "_");
                     sFileNameNew = $"{FileType.FileType_User_IDC.Code}_{sTypeChildTmp}_{pAttachDate.Year.ToString()}_{iFileIdTemp.ToString("D" + 10)}";
-                }    
+                }
             }
             return sFileNameNew;
         }
@@ -542,7 +544,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pTypeChild">Mã phụ nếu muốn đưa vào tên file/param>
         /// <returns>Chuỗi FileId được thêm mới hoặc cập nhật chỉnh sửa</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<long>> SaveAttachedFileInfo(long pDocumentId, List<AttachedFileInfo> pListAttachedFiles, string pFileType, string pProductGroupCode, 
+        public async Task<List<long>> SaveAttachedFileInfo(long pDocumentId, List<AttachedFileInfo> pListAttachedFiles, string pFileType, string pProductGroupCode,
                     string pUserNameUpd, string pTypeChild)
         {
             int iCountDocumentId = 0;
