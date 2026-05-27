@@ -107,8 +107,12 @@ namespace VBSPOSS.Controllers
             }
         }
 
-
-
+        /// <summary>
+        /// Download file về
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public IActionResult DownloadFile(long fileId, string fileName)
         {
             var result = _attachedFile.DownloadFile(fileId, fileName);
