@@ -596,6 +596,15 @@
                 {
                     columns.Command(command =>
                     {
+                        command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC",
+                            @class = "btn-EditIDC"
+                        });
+                    }).Width(80).Title("Nghiệp vụ thay đổi").HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
+                    columns.Command(command =>
+                    {
                         command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEditUserManagementIDC").HtmlAttributes(new
                         {
                             @class = "btn-view-edit",
@@ -615,16 +624,6 @@
                             @class = "btn-view"
                         });
                     }).Width(100).Title("Sửa/Xóa").HtmlAttributes(new { style = "text-align: center;" });
-
-                    columns.Command(command =>
-                    {
-                        command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
-                        {
-                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Yêu cầu nghiệp vụ thay đổi thông tin tài khoản người dùng Intellect iDC",
-                            @class = "btn-EditIDC"
-                        });
-                    }).Width(80).Title("Nghiệp vụ thay đổi").HtmlAttributes(new { style = "text-align: center;text-wrap: auto;" });
 
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: center;" });

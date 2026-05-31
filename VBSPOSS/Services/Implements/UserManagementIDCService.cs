@@ -552,6 +552,7 @@ namespace VBSPOSS.Services.Implements
                                                             && (string.IsNullOrEmpty(pMainPosCode) || w.MainPosCode.StartsWith(pMainPosCode))
                                                             ).OrderBy(o => o.Code).Select(s => s.Code).ToList();
                 List<UserManagementIDCViewModel> listUserIDCManagement = new List<UserManagementIDCViewModel>();
+
                 var listUserIDCManagementTemp = _dbContext.UserManagementIDCs.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
                                                 && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
                                                 && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
@@ -561,13 +562,14 @@ namespace VBSPOSS.Services.Implements
                         .Where(delegate (UserManagementIDC c)
                         {
                             if (string.IsNullOrEmpty(pFullName)
-                                || (c.FullName != null && pFullName.ToLower().Contains(c.FullName.ToLower()))
-                                || (c.FullName != null && Utilities.ConvertToUnSign(pFullName.ToLower()).IndexOf(c.FullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                || (c.FullName != null && c.FullName.ToLower().Contains(pFullName.ToLower()))
+                                || (c.FullName != null && Utilities.ConvertToUnSign(c.FullName.ToLower()).IndexOf(pFullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
                                 )
                                 return true;
                             else
                                 return false;
-                        }).OrderBy(o => o.PosCode).ThenByDescending(o=>o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
+                        }).OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
+
                 var listOfPosALL = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS).OrderBy(o => o.Code).ToList();
 
                 List<string> listUserIds = new List<string>();
@@ -584,13 +586,13 @@ namespace VBSPOSS.Services.Implements
                        .Where(delegate (UserIDCMaster c)
                        {
                            if (string.IsNullOrEmpty(pFullName)
-                               || (c.FullName != null && pFullName.ToLower().Contains(c.FullName.ToLower()))
-                               || (c.FullName != null && Utilities.ConvertToUnSign(pFullName.ToLower()).IndexOf(c.FullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                               || (c.FullName != null && c.FullName.ToLower().Contains(pFullName.ToLower()))
+                               || (c.FullName != null && Utilities.ConvertToUnSign(c.FullName.ToLower()).IndexOf(pFullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
                                )
                                return true;
                            else
                                return false;
-                       }).OrderBy(o => o.PosCode).ThenBy(o => o.UserId).ThenByDescending(o => o.EffectiveDate).ToList();
+                       }).OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenBy(o => o.UserId).ToList();
                 }
 
                 if ((listUserIDCManagementTemp != null && listUserIDCManagementTemp.Count != 0) || (listUserIDCMasterTemp != null && listUserIDCMasterTemp.Count != 0))
