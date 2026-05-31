@@ -36,6 +36,23 @@ namespace VBSPOSS.Services.Interfaces
         Task<List<UserManagementIDCViewModel>> GetListUserIDCManagement(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, string pStaffCode,
                                 int pStatus, string pFunctionType, bool pIsJoinUserIDCMaster);
 
+
+
+        /// <summary>
+        /// Hàm lấy danh sách bản ghi trong bảng vUserManagementIDC Thông tin tài khoản người dùng Intellect iDC (Duy nhất mỗi người dùng một dòng bản ghi Bảng Master và bảng UserManagementIDC (Nhiều dòng nếu chưa phê duyệt)
+        /// </summary>
+        /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
+        /// <param name="pMainPosCode">Mã Chi nhánh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
+        /// <param name="pUserId">Tên đăng nhập người dùng</param>
+        /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
+        /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
+        /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
+        Task<List<UserManagementIDCViewModel>> GetListvUserManagementIDCSearch(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName,
+                                string pStaffCode, int pStatus, string pFunctionType);
+
         /// <summary>
         /// Hàm thực hiện Xóa (Đóng) bản ghi nghiệp vụ thêm mới hoặc thay đổi thông tin tài khoản người dùng Intellect iDC (Bảng UserManagementIDC)
         /// </summary>

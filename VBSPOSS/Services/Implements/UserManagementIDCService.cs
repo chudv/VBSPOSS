@@ -778,6 +778,141 @@ namespace VBSPOSS.Services.Implements
 
 
         /// <summary>
+        /// Hàm lấy danh sách bản ghi trong bảng vUserManagementIDC Thông tin tài khoản người dùng Intellect iDC (Duy nhất mỗi người dùng một dòng bản ghi Bảng Master và bảng UserManagementIDC (Nhiều dòng nếu chưa phê duyệt)
+        /// </summary>
+        /// <param name="pId">Chỉ số khóa xác định bản ghi (Không bắt buộc)</param>
+        /// <param name="pMainPosCode">Mã Chi nhánh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã đơn vị POS (Không bắt buộc)</param>
+        /// <param name="pUserId">Tên đăng nhập người dùng</param>
+        /// <param name="pFullName">Họ và tên (Không bắt buộc)</param>
+        /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
+        /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
+        public async Task<List<UserManagementIDCViewModel>> GetListvUserManagementIDCSearch(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, 
+                                string pStaffCode, int pStatus, string pFunctionType)
+        {
+            try
+            {
+                List<string> listOfPosFind = new List<string>();
+                listOfPosFind = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS
+                                                            && (string.IsNullOrEmpty(pPosCode) || w.Code.StartsWith(pPosCode))
+                                                            && (string.IsNullOrEmpty(pMainPosCode) || w.MainPosCode.StartsWith(pMainPosCode))
+                                                            ).OrderBy(o => o.Code).Select(s => s.Code).ToList();
+                List<UserManagementIDCViewModel> listUserIDCManagement = new List<UserManagementIDCViewModel>();
+
+                var listvUserIDCManagementTemp = _dbContext.vUserManagementIDCs.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
+                                                && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
+                                                && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                                                && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
+                                                && (pStatus == -1 || w.Status == pStatus)
+                                                && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode))
+                        .Where(delegate (vUserManagementIDC c)
+                        {
+                            if (string.IsNullOrEmpty(pFullName)
+                                || (c.FullName != null && c.FullName.ToLower().Contains(pFullName.ToLower()))
+                                || (c.FullName != null && Utilities.ConvertToUnSign(c.FullName.ToLower()).IndexOf(pFullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                )
+                                return true;
+                            else
+                                return false;
+                        }).OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
+
+                var listOfPosALL = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS).OrderBy(o => o.Code).ToList();
+
+                if (listvUserIDCManagementTemp != null && listvUserIDCManagementTemp.Count != 0)
+                {
+                    int iCountTemp = 0;
+                    var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+                    if (listvUserIDCManagementTemp != null && listvUserIDCManagementTemp.Count != 0)
+                    {
+                        foreach (var item in listvUserIDCManagementTemp)
+                        {
+                            iCountTemp++;
+                            UserManagementIDCViewModel objItem = new UserManagementIDCViewModel();
+                            objItem = _mapper.Map<UserManagementIDCViewModel>(item);
+                            objItem.OrderNo = iCountTemp;
+                            objItem.StatusText = StatusBusinessFlow.GetByValue(item.Status).Description;
+                            if (item.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
+                                objItem.UserStatusText = "Khóa (Đóng)";
+                            else if (item.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
+                                objItem.UserStatusText = "Mở (Bình thường)";
+                            else if (item.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
+                                objItem.UserStatusText = "Tạm khóa (Lock)";
+                            else objItem.UserStatusText = "Không xác định";
+                            objItem.StartDateText = item.StartDate.Value.ToString(FormatParameters.FORMAT_DATE);
+                            objItem.AuthsecType = (string.IsNullOrEmpty(objItem.AuthsecType) || objItem.AuthsecType == "0") ? AuthSecType.AuthSecType_Native.Value.ToString() : objItem.AuthsecType;
+                            objItem.AuthsecTypeName = int.TryParse(objItem.AuthsecType, out var v) ? AuthSecType.GetByValue(v)?.Description : "";
+                            objItem.MailIdFlagName = int.TryParse(objItem.MailIdFlag, out var y) ? MailIdFlag.GetByValue(y)?.Description : "";
+                            objItem.GroupNameText = item.GroupName;
+                            objItem.FunctionTypeName = string.IsNullOrEmpty(objItem.FunctionType) ? "" : FunctionTypeFlag.GetByCode(objItem.FunctionType).Description;
+                            if (string.IsNullOrEmpty(objItem.GroupNameOld))
+                            {
+                                var objUserOldTemp = listvUserIDCManagementTemp.Where(w => w.UserId == item.UserId && w.Id < item.Id).OrderByDescending(o => o.Id).FirstOrDefault();
+                                if (objUserOldTemp != null && objUserOldTemp.Id > 0)
+                                    objItem.GroupNameOld = objUserOldTemp.GroupName;
+                               else objItem.GroupNameOld = objItem.GroupName;
+                            }
+                            if (listRoleUsers != null && listRoleUsers.Count != 0)
+                            {
+                                objItem.GroupNameText = $"{item.GroupName} - {listRoleUsers.Where(w => w.Code == item.GroupName).Select(s => s.ShortName).FirstOrDefault()}";
+                                objItem.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == item.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+                                objItem.RoleToTransferCashName = (objItem.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+                                objItem.RoleToTransferCashDescription = (objItem.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+                                objItem.GroupNameOldText = $"{item.GroupNameOld} - {listRoleUsers.Where(w => w.Code == objItem.GroupNameOld).Select(s => s.ShortName).FirstOrDefault()}";
+                            }
+
+                            //Lấy một số thông tin trong QLNS
+                            objItem.GenderCode = "";
+                            objItem.GenderText = "";
+                            objItem.StaffPosCode = "";
+                            objItem.StaffPosName = "";
+                            objItem.StaffDepartmentCode = "";
+                            objItem.StaffDepartmentName = "";
+                            objItem.StaffPositionCode = "";
+                            objItem.StaffPositionName = "";
+                            if (!string.IsNullOrEmpty(pUserId) || !string.IsNullOrEmpty(pPosCode))
+                            {
+                                var objStaffInfoTemp = await _internalServiceAPI.GetListStaffByStaffId(objItem.StaffId);
+                                if (objStaffInfoTemp != null && objStaffInfoTemp.Success && objStaffInfoTemp.Result != null && objStaffInfoTemp.Result.Count > 0)
+                                {
+                                    var objStaffInfo = objStaffInfoTemp.Result.FirstOrDefault();
+                                    if (objStaffInfo != null && !string.IsNullOrEmpty(objStaffInfo.StaffId))
+                                    {
+                                        objItem.GenderCode = objStaffInfo.GenderCode;
+                                        objItem.GenderText = objStaffInfo.GenderText;
+                                        objItem.StaffPosCode = objStaffInfo.StaffPosCode;
+                                        objItem.StaffPosName = objStaffInfo.StaffPosName;
+                                        objItem.StaffDepartmentCode = objStaffInfo.StaffDepartmentCode;
+                                        objItem.StaffDepartmentName = objStaffInfo.StaffDepartmentName;
+                                        objItem.StaffPositionCode = objStaffInfo.StaffPositionCode;
+                                        objItem.StaffPositionName = objStaffInfo.StaffPositionName;
+                                        objItem.StaffEmail = objStaffInfo.StaffEmail;
+                                        objItem.StaffMobileNo = objStaffInfo.StaffMobileNo;
+                                    }
+                                }
+                            }
+                            objItem.ExistsInCore = string.IsNullOrEmpty(item.FunctionType) ? 1 : 0;
+                            if (listOfPosALL != null && listOfPosALL.Count != 0)
+                            {
+                                objItem.MainPosCode = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosCode).FirstOrDefault()}";
+                                objItem.MainPosName = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosName).FirstOrDefault()}";
+                                objItem.MainPosCodeOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosCode).FirstOrDefault()}";
+                                objItem.MainPosNameOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosName).FirstOrDefault()}";
+                            }
+                            listUserIDCManagement.Add(objItem);
+                        }
+                    }
+                }
+                return listUserIDCManagement;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
         /// Hàm thực hiện thêm mới/chỉnh sửa thông tin bản ghi bảng dữ liệu quản lý người dùng trên Intellect iDC UserManagementIDC
         /// </summary>
         /// <param name="pUserManagementUpd">Thông tin người dùng cập nhật theo Model UserIDCMasterViewModel</param>

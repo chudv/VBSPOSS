@@ -254,7 +254,8 @@ namespace VBSPOSS.Controllers
                 }
                 else
                 {
-                    listUserManagementIDCTmp = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, true); 
+                    listUserManagementIDCTmp = await _userManagementIDCService.GetListvUserManagementIDCSearch(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType);
+                    //listUserManagementIDCTmp = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, true);
                 }
 
                 return Json(listUserManagementIDCTmp.ToDataSourceResult(request, ModelState));
@@ -1393,6 +1394,7 @@ namespace VBSPOSS.Controllers
                                     && w.PosCode == pUserManagementIDCUpdate.PosCode
                                     && w.MobileNumber == pUserManagementIDCUpdate.MobileNumber
                                     && w.EmailAddress == pUserManagementIDCUpdate.EmailAddress
+                                    //&& w.Status == pUserManagementIDCUpdate.Status
                                     && (pUserManagementIDCUpdate.Id == 0 || w.Id != pUserManagementIDCUpdate.Id)
                                     ).OrderByDescending(o => o.Id).FirstOrDefault();
                     if (objUserIDCManagementExists != null && !string.IsNullOrEmpty(objUserIDCManagementExists.UserId))
