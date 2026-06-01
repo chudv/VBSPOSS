@@ -144,6 +144,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pBusinessDateText">Ngày mở sổ của hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pUserNameUpd">Người thực hiện Phê duyệt</param>
+        /// <param name="pUserPosCodeUpd">Mã POS của người thực hiện Phê duyệt</param>
         /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
         ///                 1 - PGD (PosGrade.SUB_POS);
         ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
@@ -153,7 +154,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Danh sách Id bản ghi được Update thành công</returns>
         /// <exception cref="Exception"></exception>
         Task<List<long>> SaveAuthorizeUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdAuthorize, string pFunctionType, string pSystemDateText,
-                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pFlagCall);
+                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pUserPosCodeUpd, string pFlagCall);
 
 
         /// <summary>

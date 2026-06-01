@@ -1445,7 +1445,7 @@ namespace VBSPOSS.Services.Implements
             }
             return listIdRejects;
         }
-        
+
         /// <summary>
         /// Hàm thực hiện Phê duyệt bản ghi Yêu cầu về tài khoản người dùng Intellect iDC
         ///     - Cập nhật trạng thái các bản ghi sang trình duyệt Status = StatusBusinessFlow.Status_Submitted.Value;
@@ -1456,6 +1456,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pBusinessDateText">Ngày mở sổ của hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pUserNameUpd">Người thực hiện Phê duyệt</param>
+        /// <param name="pUserPosCodeUpd">Mã POS của người thực hiện Phê duyệt</param>
         /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
         ///                 1 - PGD (PosGrade.SUB_POS);
         ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
@@ -1465,7 +1466,7 @@ namespace VBSPOSS.Services.Implements
         /// <returns>Danh sách Id bản ghi được Update thành công</returns>
         /// <exception cref="Exception"></exception>
         public async Task<List<long>> SaveAuthorizeUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdAuthorize, string pFunctionType, string pSystemDateText,
-                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pFlagCall)
+                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pUserPosCodeUpd, string pFlagCall)
         {
             List<long> listIdAuthorize = new List<long>();
             int iCountUpdate = 0, iSaveChangeAuthTmp = 0, iStatusUpdateCoreTmp = 0, iCountSuccess = 0;
@@ -2040,56 +2041,63 @@ namespace VBSPOSS.Services.Implements
                                         && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
                             {
                                 bool bValidAuth = false;
-                                #region --- 6. Thay đổi POS người dùng ---
-                                if (sMainPosNew == sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
-                                    bValidAuth = true;
-                                if (sMainPosNew != sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS))
-                                    bValidAuth = true;
-                                iCountSuccess = 0;
-                                if (bValidAuth)
+                                if (pUserGradeUpd == PosGrade.MAIN_POS && sMainPosNew != sMainPosOld && objUserAuth.Status != StatusBusinessFlow.Status_MovingBranch_Approved.Value
+                                    && pUserPosCodeUpd != "000101" && pUserPosCodeUpd != "000199" && pUserPosCodeUpd != "000196")
                                 {
-                                    //Kiểm tra còn giao dịch Pending hay không?
-
-                                    //Kiểm tra đã mở tiền mặt với User đổi quyền chưa?
-                                    int iCheckOpenCash = CheckOpenCashByUserId(objUserAuth.UserId, dBusinessDateOfIDC.ToString(FormatParameters.FORMAT_DATE_ORA));
-                                    if (iCheckOpenCash != 0 && iCheckOpenCash != 3)
+                                    #region --- 6. Thay đổi POS người dùng - Khi phê duyệt của chi nhánh Chuyển đi ---
+                                    var objUserMovingUpdateStatus = _dbContext.UserManagementIDCs.Where(m => m.Id == objUserAuth.Id
+                                            && m.UserId == objUserAuth.UserId
+                                            && (m.Status != StatusBusinessFlow.Status_HeadOffice_Approved.Value && m.Status != StatusBusinessFlow.Status_Branch_Approved.Value)).OrderByDescending(o => o.Id).FirstOrDefault();
+                                    if (objUserMovingUpdateStatus != null && !string.IsNullOrEmpty(objUserMovingUpdateStatus.UserId))
                                     {
-                                        //0 - Chưa mở sổ tiền mặt đầu ngày;     3 - Đã mở và đóng không còn tồn quỹ tiền mặt
-                                        objUserAuth.StatusUpdateCore = 0;
-                                        objUserAuth.SessionValReq = false;
-                                        objUserAuth.PrevStatus = 0;
-                                        objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
-                                        objUserAuth.CallApiReqRecordSl = 0;
-                                        objUserAuth.CallApiResponseCode = "";
-                                        objUserAuth.CallApiResponseMsg = $"Đã mở sổ tiền mặt đầu ngày hoặc Mở sổ tiền mặt đầu ngày đã đóng nhưng vẫn còn tồn quỹ tiền mặt - Mã kiểm tra {iCheckOpenCash.ToString()}";
-                                        bValidAuth = false;
+                                        objUserMovingUpdateStatus.Status = StatusBusinessFlow.Status_MovingBranch_Approved.Value;
+                                        objUserMovingUpdateStatus.ApproverBy = pUserNameUpd;
+                                        objUserMovingUpdateStatus.ApprovalDate = dCurrentDateTmp;
+                                        _dbContext.UserManagementIDCs.Update(objUserMovingUpdateStatus);
+                                        iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                        if (iSaveChangeAuthTmp > 0)
+                                        {
+                                            iCountUpdate++;
+                                            listIdAuthorize.Add(objUserAuth.Id);
+                                        }
                                     }
-
+                                    #endregion
+                                }
+                                else
+                                {
+                                    #region --- 6. Thay đổi POS người dùng ---
+                                    if (sMainPosNew == sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
+                                        bValidAuth = true;
+                                    if (sMainPosNew != sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS))
+                                        bValidAuth = true;
+                                    iCountSuccess = 0;
                                     if (bValidAuth)
                                     {
-                                        //Bỏ quyền tiền mặt của người dùng
-                                        TellerRoleAssignRequestViewModel listTellerRoleRemove = new TellerRoleAssignRequestViewModel();
-                                        listTellerRoleRemove.TellerId = objUserAuth.UserId;
-                                        listTellerRoleRemove.TellerRoleAllowed = 0; //Bỏ quyền tiền mặt
-                                        var objTellerRemoveRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleRemove, pUserNameUpd);
-                                        if (objTellerRemoveRoleAssign == null || (objTellerRemoveRoleAssign.ResponseCode != "0" && objTellerRemoveRoleAssign.ResponseCode != "00000"))
+                                        //Kiểm tra còn giao dịch Pending hay không?
+
+                                        //Kiểm tra đã mở tiền mặt với User đổi quyền chưa?
+                                        int iCheckOpenCash = CheckOpenCashByUserId(objUserAuth.UserId, dBusinessDateOfIDC.ToString(FormatParameters.FORMAT_DATE_ORA));
+                                        if (iCheckOpenCash != 0 && iCheckOpenCash != 3)
                                         {
+                                            //0 - Chưa mở sổ tiền mặt đầu ngày;     3 - Đã mở và đóng không còn tồn quỹ tiền mặt
                                             objUserAuth.StatusUpdateCore = 0;
                                             objUserAuth.SessionValReq = false;
                                             objUserAuth.PrevStatus = 0;
                                             objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
                                             objUserAuth.CallApiReqRecordSl = 0;
-                                            objUserAuth.CallApiResponseCode = objTellerRemoveRoleAssign.ResponseCode;
-                                            objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRemoveRoleAssign.ResponseMsg}";
-                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign bỏ quyền tiền mặt lỗi {objTellerRemoveRoleAssign.ResponseCode}-{objTellerRemoveRoleAssign.ResponseMsg} | ";
+                                            objUserAuth.CallApiResponseCode = "";
+                                            objUserAuth.CallApiResponseMsg = $"Đã mở sổ tiền mặt đầu ngày hoặc Mở sổ tiền mặt đầu ngày đã đóng nhưng vẫn còn tồn quỹ tiền mặt - Mã kiểm tra {iCheckOpenCash.ToString()}";
                                             bValidAuth = false;
                                         }
 
-                                        //Bỏ xác thực 2 lớp với tài khoản người dùng này
                                         if (bValidAuth)
                                         {
-                                            var objDeleteOTPRegister = await ChangeOTPRegisterByUserId(objUserAuth.UserId, 0);
-                                            if (objDeleteOTPRegister == null || objDeleteOTPRegister.Success != 1)
+                                            //Bỏ quyền tiền mặt của người dùng
+                                            TellerRoleAssignRequestViewModel listTellerRoleRemove = new TellerRoleAssignRequestViewModel();
+                                            listTellerRoleRemove.TellerId = objUserAuth.UserId;
+                                            listTellerRoleRemove.TellerRoleAllowed = 0; //Bỏ quyền tiền mặt
+                                            var objTellerRemoveRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleRemove, pUserNameUpd);
+                                            if (objTellerRemoveRoleAssign == null || (objTellerRemoveRoleAssign.ResponseCode != "0" && objTellerRemoveRoleAssign.ResponseCode != "00000"))
                                             {
                                                 objUserAuth.StatusUpdateCore = 0;
                                                 objUserAuth.SessionValReq = false;
@@ -2097,140 +2105,159 @@ namespace VBSPOSS.Services.Implements
                                                 objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
                                                 objUserAuth.CallApiReqRecordSl = 0;
                                                 objUserAuth.CallApiResponseCode = objTellerRemoveRoleAssign.ResponseCode;
-                                                objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ xác thực 2 lớp với tài khoản người dùng: {objDeleteOTPRegister.Success.ToString()}";
-                                                sMessageInfo = $"{sMessageInfo} Gọi hàm bỏ xác thực 2 lớp {objDeleteOTPRegister.Success.ToString()} | ";
+                                                objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRemoveRoleAssign.ResponseMsg}";
+                                                sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign bỏ quyền tiền mặt lỗi {objTellerRemoveRoleAssign.ResponseCode}-{objTellerRemoveRoleAssign.ResponseMsg} | ";
                                                 bValidAuth = false;
                                             }
-                                        }
-                                        if (bValidAuth)
-                                        {
-                                            //-------------------------------------------------------------------------------------------------------------
-                                            //Gọi vào API chỉnh sửa người dùng trên IDC
-                                            var objModifyUserChangePos = new ModifyUserRequestViewModel
+
+                                            //Bỏ xác thực 2 lớp với tài khoản người dùng này
+                                            if (bValidAuth)
                                             {
-                                                AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest()
-                                            };
-                                            objModifyUserChangePos.Ticket = objUserAuth.Ticket;
-                                            objModifyUserChangePos.UserId = objUserAuth.UserId;
-                                            objModifyUserChangePos.NickName = objUserAuth.NickName;
-                                            objModifyUserChangePos.FirstName = objUserAuth.FirstName;
-                                            objModifyUserChangePos.LastName = objUserAuth.LastName;
-                                            objModifyUserChangePos.GroupName = objUserAuth.GroupName;
-                                            objModifyUserChangePos.EntityList = objUserAuth.EntityList;
-                                            objModifyUserChangePos.MobileNumber = objUserAuth.MobileNumber;
-                                            objModifyUserChangePos.EmailAddress = objUserAuth.EmailAddress;
-                                            objModifyUserChangePos.ExpiryDate = objUserAuth.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                            objModifyUserChangePos.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
-                                            objModifyUserChangePos.Language = DefaultValue.Language;
-                                            objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
-                                            objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
-                                            objModifyUserChangePos.IpSet = objUserAuth.IpSetDetail;
-                                            objModifyUserChangePos.AuthsecType = objUserAuth.AuthsecType;
-                                            objModifyUserChangePos.SubType = objUserAuth.SubType;
-                                            objModifyUserChangePos.StartDate = objUserAuth.StartDate?.ToString(FormatParameters.FORMAT_DATE_INT);
-                                            var objResultModifyUserIDCByApi = await ModifyUserByApiModifyUser(objModifyUserChangePos, pUserNameUpd);
-                                            if (objResultModifyUserIDCByApi != null && (objResultModifyUserIDCByApi.ResponseCode == "0" || objResultModifyUserIDCByApi.ResponseCode == "00000"))
-                                            {
-                                                //Thực hiện gán quyền tiền mặt nếu người dùng có quyền tiền mặt
-                                                if (listRoleUsers != null && listRoleUsers.Count != 0)
+                                                var objDeleteOTPRegister = await ChangeOTPRegisterByUserId(objUserAuth.UserId, 0);
+                                                if (objDeleteOTPRegister == null || objDeleteOTPRegister.Success != 1)
                                                 {
-                                                    string flagRoleToTransferCashValue = "";
-                                                    flagRoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserAuth.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-                                                    if (flagRoleToTransferCashValue == StatusLov.StatusYes)
+                                                    objUserAuth.StatusUpdateCore = 0;
+                                                    objUserAuth.SessionValReq = false;
+                                                    objUserAuth.PrevStatus = 0;
+                                                    objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
+                                                    objUserAuth.CallApiReqRecordSl = 0;
+                                                    objUserAuth.CallApiResponseCode = objTellerRemoveRoleAssign.ResponseCode;
+                                                    objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi bỏ xác thực 2 lớp với tài khoản người dùng: {objDeleteOTPRegister.Success.ToString()}";
+                                                    sMessageInfo = $"{sMessageInfo} Gọi hàm bỏ xác thực 2 lớp {objDeleteOTPRegister.Success.ToString()} | ";
+                                                    bValidAuth = false;
+                                                }
+                                            }
+                                            if (bValidAuth)
+                                            {
+                                                //-------------------------------------------------------------------------------------------------------------
+                                                //Gọi vào API chỉnh sửa người dùng trên IDC
+                                                var objModifyUserChangePos = new ModifyUserRequestViewModel
+                                                {
+                                                    AddUserExtraAttributeRequestViewModel = new AddUserExtraAttributeRequest()
+                                                };
+                                                objModifyUserChangePos.Ticket = objUserAuth.Ticket;
+                                                objModifyUserChangePos.UserId = objUserAuth.UserId;
+                                                objModifyUserChangePos.NickName = objUserAuth.NickName;
+                                                objModifyUserChangePos.FirstName = objUserAuth.FirstName;
+                                                objModifyUserChangePos.LastName = objUserAuth.LastName;
+                                                objModifyUserChangePos.GroupName = objUserAuth.GroupName;
+                                                objModifyUserChangePos.EntityList = objUserAuth.EntityList;
+                                                objModifyUserChangePos.MobileNumber = objUserAuth.MobileNumber;
+                                                objModifyUserChangePos.EmailAddress = objUserAuth.EmailAddress;
+                                                objModifyUserChangePos.ExpiryDate = objUserAuth.ExpiryDate.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                                objModifyUserChangePos.DateOfBirth = objUserAuth.DateOfBirth.ToString(FormatParameters.FORMAT_DATE_TIME_SHORT_UPD);
+                                                objModifyUserChangePos.Language = DefaultValue.Language;
+                                                objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.BranchCode = objUserAuth.PosCode?.TrimStart('0');
+                                                objModifyUserChangePos.AddUserExtraAttributeRequestViewModel.UserRole = objUserAuth.GroupName;
+                                                objModifyUserChangePos.IpSet = objUserAuth.IpSetDetail;
+                                                objModifyUserChangePos.AuthsecType = objUserAuth.AuthsecType;
+                                                objModifyUserChangePos.SubType = objUserAuth.SubType;
+                                                objModifyUserChangePos.StartDate = objUserAuth.StartDate?.ToString(FormatParameters.FORMAT_DATE_INT);
+                                                var objResultModifyUserIDCByApi = await ModifyUserByApiModifyUser(objModifyUserChangePos, pUserNameUpd);
+                                                if (objResultModifyUserIDCByApi != null && (objResultModifyUserIDCByApi.ResponseCode == "0" || objResultModifyUserIDCByApi.ResponseCode == "00000"))
+                                                {
+                                                    //Thực hiện gán quyền tiền mặt nếu người dùng có quyền tiền mặt
+                                                    if (listRoleUsers != null && listRoleUsers.Count != 0)
                                                     {
-                                                        TellerRoleAssignRequestViewModel listTellerRoleAssignYes = new TellerRoleAssignRequestViewModel();
-                                                        listTellerRoleAssignYes.TellerId = objUserAuth.UserId;
-                                                        listTellerRoleAssignYes.TellerRoleAllowed = 1; //Gán quyền tiền mặt
-                                                        var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssignYes, pUserNameUpd);
-                                                        if (objTellerRoleAssign == null || (objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000"))
+                                                        string flagRoleToTransferCashValue = "";
+                                                        flagRoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserAuth.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+                                                        if (flagRoleToTransferCashValue == StatusLov.StatusYes)
                                                         {
-                                                            objUserAuth.StatusUpdateCore = 0;
-                                                            objUserAuth.SessionValReq = false;
-                                                            objUserAuth.PrevStatus = 0;
-                                                            objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
-                                                            objUserAuth.CallApiReqRecordSl = 0;
-                                                            objUserAuth.CallApiResponseCode = objTellerRoleAssign.ResponseCode;
-                                                            objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi gán quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRoleAssign.ResponseMsg}";
-                                                            sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign gán quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
+                                                            TellerRoleAssignRequestViewModel listTellerRoleAssignYes = new TellerRoleAssignRequestViewModel();
+                                                            listTellerRoleAssignYes.TellerId = objUserAuth.UserId;
+                                                            listTellerRoleAssignYes.TellerRoleAllowed = 1; //Gán quyền tiền mặt
+                                                            var objTellerRoleAssign = await ChangeRoleToTransferCashByApiTellerRoleAssign(listTellerRoleAssignYes, pUserNameUpd);
+                                                            if (objTellerRoleAssign == null || (objTellerRoleAssign.ResponseCode != "0" && objTellerRoleAssign.ResponseCode != "00000"))
+                                                            {
+                                                                objUserAuth.StatusUpdateCore = 0;
+                                                                objUserAuth.SessionValReq = false;
+                                                                objUserAuth.PrevStatus = 0;
+                                                                objUserAuth.CallApiStatus = ResultValueAPI.ResultValue_Status_Failed;
+                                                                objUserAuth.CallApiReqRecordSl = 0;
+                                                                objUserAuth.CallApiResponseCode = objTellerRoleAssign.ResponseCode;
+                                                                objUserAuth.CallApiResponseMsg = $"Lỗi khi gọi gán quyền tiền mặt của tài khoản người dùng (API TellerRoleAssign): {objTellerRoleAssign.ResponseMsg}";
+                                                                sMessageInfo = $"{sMessageInfo} Gọi API TellerRoleAssign gán quyền tiền mặt lỗi {objTellerRoleAssign.ResponseCode}-{objTellerRoleAssign.ResponseMsg} | ";
+                                                            }
                                                         }
                                                     }
-                                                }
 
-                                                objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
-                                                objUserAuth.SessionValReq = objResultModifyUserIDCByApi.SessionValReq;
-                                                objUserAuth.PrevStatus = objResultModifyUserIDCByApi.PrevStatus;
-                                                objUserAuth.CallApiStatus = (objResultModifyUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
-                                                objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
-                                                objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApi.ResponseCode;
-                                                objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
+                                                    objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
+                                                    objUserAuth.SessionValReq = objResultModifyUserIDCByApi.SessionValReq;
+                                                    objUserAuth.PrevStatus = objResultModifyUserIDCByApi.PrevStatus;
+                                                    objUserAuth.CallApiStatus = (objResultModifyUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                                    objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
+                                                    objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApi.ResponseCode;
+                                                    objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
 
-                                                objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                                objUserAuth.ApproverBy = pUserNameUpd;
-                                                objUserAuth.ApprovalDate = dCurrentDateTmp;
-                                                iCountSuccess++;
-                                                //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
-                                                var objUserInforByApiCall05 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
-                                                if (objUserInforByApiCall05 != null && !string.IsNullOrEmpty(objUserInforByApiCall05.UserId)
-                                                            && objUserInforByApiCall05?.ServiceStatusResponseResponseCode == "0")
-                                                {
-                                                    objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall05.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall05.MobileNumber;
-                                                    objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall05.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall05.EmailAddress;
-                                                    objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall05.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall05.DOB.Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
-                                                    objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall05.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall05.FirstName;
-                                                    objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall05.LastName) ? objUserAuth.LastName : objUserInforByApiCall05.LastName;
-                                                    objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall05.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall05.GroupName;
-                                                    objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall05.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall05.BranchCode;
-                                                    objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall05.NickName) ? objUserAuth.NickName : objUserInforByApiCall05.NickName;
-                                                    objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall05.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall05.DefaultBranch;
-                                                    objUserAuth.UserStatus = objUserInforByApiCall05.UserStatus.ToString() ?? objUserAuth.UserStatus;
-                                                    objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall05.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall05.ExpiryDate.Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
-                                                    objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall05.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall05.MailIdFlag;
-                                                    objUserAuth.AuthType = objUserInforByApiCall05.AuthType.ToString() ?? objUserAuth.AuthType;
-                                                    objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall05.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall05.AuthsecType;
+                                                    objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                                    objUserAuth.ApproverBy = pUserNameUpd;
+                                                    objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                                    iCountSuccess++;
+                                                    //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
+                                                    var objUserInforByApiCall05 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
+                                                    if (objUserInforByApiCall05 != null && !string.IsNullOrEmpty(objUserInforByApiCall05.UserId)
+                                                                && objUserInforByApiCall05?.ServiceStatusResponseResponseCode == "0")
+                                                    {
+                                                        objUserAuth.MobileNumber = string.IsNullOrEmpty(objUserInforByApiCall05.MobileNumber) ? objUserAuth.MobileNumber : objUserInforByApiCall05.MobileNumber;
+                                                        objUserAuth.EmailAddress = string.IsNullOrEmpty(objUserInforByApiCall05.EmailAddress) ? objUserAuth.EmailAddress : objUserInforByApiCall05.EmailAddress;
+                                                        objUserAuth.DateOfBirth = string.IsNullOrEmpty(objUserInforByApiCall05.DOB) ? objUserAuth.DateOfBirth : CustConverter.StringToDate(objUserInforByApiCall05.DOB.Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
+                                                        objUserAuth.FirstName = string.IsNullOrEmpty(objUserInforByApiCall05.FirstName) ? objUserAuth.FirstName : objUserInforByApiCall05.FirstName;
+                                                        objUserAuth.LastName = string.IsNullOrEmpty(objUserInforByApiCall05.LastName) ? objUserAuth.LastName : objUserInforByApiCall05.LastName;
+                                                        objUserAuth.GroupName = string.IsNullOrEmpty(objUserInforByApiCall05.GroupName) ? objUserAuth.GroupName : objUserInforByApiCall05.GroupName;
+                                                        objUserAuth.PosCode = string.IsNullOrEmpty(objUserInforByApiCall05.BranchCode) ? objUserAuth.PosCode : objUserInforByApiCall05.BranchCode;
+                                                        objUserAuth.NickName = string.IsNullOrEmpty(objUserInforByApiCall05.NickName) ? objUserAuth.NickName : objUserInforByApiCall05.NickName;
+                                                        objUserAuth.EntityList = string.IsNullOrEmpty(objUserInforByApiCall05.DefaultBranch) ? objUserAuth.EntityList : objUserInforByApiCall05.DefaultBranch;
+                                                        objUserAuth.UserStatus = objUserInforByApiCall05.UserStatus.ToString() ?? objUserAuth.UserStatus;
+                                                        objUserAuth.ExpiryDate = string.IsNullOrEmpty(objUserInforByApiCall05.ExpiryDate) ? objUserAuth.ExpiryDate : CustConverter.StringToDate(objUserInforByApiCall05.ExpiryDate.Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT);
+                                                        objUserAuth.MailIdFlag = string.IsNullOrEmpty(objUserInforByApiCall05.MailIdFlag) ? objUserAuth.MailIdFlag : objUserInforByApiCall05.MailIdFlag;
+                                                        objUserAuth.AuthType = objUserInforByApiCall05.AuthType.ToString() ?? objUserAuth.AuthType;
+                                                        objUserAuth.AuthsecType = string.IsNullOrEmpty(objUserInforByApiCall05.AuthsecType) ? objUserAuth.AuthsecType : objUserInforByApiCall05.AuthsecType;
+                                                    }
+                                                    //Update thay đổi vào bảng UserIDCMaster
+                                                    UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
+                                                    objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
+                                                    objUserIDCMaster.Id = 0;
+                                                    objUserIDCMaster.PosCode = objUserAuth.PosCode;
+                                                    objUserIDCMaster.ModifiedBy = pUserNameUpd;
+                                                    objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
+                                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                                    objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
+                                                    objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
+                                                    var iResultRowUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
+                                                    if (iResultRowUpdateTmp > 0)
+                                                    {
+                                                        //Gửi thông báo Noti cho người dùng: NHCSXH thông báo tài khoản iDC: <USER_LOGIN> đã được đổi sang đơn vị mới <POS mới> với quyền <Quyền mới đổi>, có hiệu lực từ <Thời gian thực thi vào hệ thống>.
+                                                        var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
+                                                    }
                                                 }
-                                                //Update thay đổi vào bảng UserIDCMaster
-                                                UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
-                                                objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
-                                                objUserIDCMaster.Id = 0;
-                                                objUserIDCMaster.PosCode = objUserAuth.PosCode;
-                                                objUserIDCMaster.ModifiedBy = pUserNameUpd;
-                                                objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                                objUserIDCMaster.ApproverBy = pUserNameUpd;
-                                                objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
-                                                objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                                var iResultRowUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
-                                                if (iResultRowUpdateTmp > 0)
+                                                else
                                                 {
-                                                    //Gửi thông báo Noti cho người dùng: NHCSXH thông báo tài khoản iDC: <USER_LOGIN> đã được đổi sang đơn vị mới <POS mới> với quyền <Quyền mới đổi>, có hiệu lực từ <Thời gian thực thi vào hệ thống>.
-                                                    var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
+                                                    objUserAuth.StatusUpdateCore = 0;
+                                                    objUserAuth.SessionValReq = false;
+                                                    objUserAuth.PrevStatus = objResultModifyUserIDCByApi.PrevStatus;
+                                                    objUserAuth.CallApiStatus = (objResultModifyUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
+                                                    objUserAuth.CallApiReqRecordSl = 0;
+                                                    objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApi.ResponseCode;
+                                                    objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
                                                 }
+                                                //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
+                                                sMessageInfo = $"{sMessageInfo} {objUserAuth.CallApiResponseMsg}";
+                                                objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
+                                                _dbContext.UserManagementIDCs.Update(objUserAuth);
+                                                iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
+                                                if (iSaveChangeAuthTmp > 0)
+                                                {
+                                                    iCountUpdate++;
+                                                    if (iCountSuccess > 0)
+                                                        listIdAuthorize.Add(objUserAuth.Id);
+                                                }
+                                                //=============================================================================================================
                                             }
-                                            else
-                                            {
-                                                objUserAuth.StatusUpdateCore = 0;
-                                                objUserAuth.SessionValReq = false;
-                                                objUserAuth.PrevStatus = objResultModifyUserIDCByApi.PrevStatus;
-                                                objUserAuth.CallApiStatus = (objResultModifyUserIDCByApi.Status == true) ? ResultValueAPI.ResultValue_Status_Success : ResultValueAPI.ResultValue_Status_Failed;
-                                                objUserAuth.CallApiReqRecordSl = 0;
-                                                objUserAuth.CallApiResponseCode = objResultModifyUserIDCByApi.ResponseCode;
-                                                objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
-                                            }
-                                            //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
-                                            sMessageInfo = $"{sMessageInfo} {objUserAuth.CallApiResponseMsg}";
-                                            objUserAuth.CallApiResponseMsg = sMessageInfo.Trim();
-                                            _dbContext.UserManagementIDCs.Update(objUserAuth);
-                                            iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
-                                            if (iSaveChangeAuthTmp > 0)
-                                            {
-                                                iCountUpdate++;
-                                                if (iCountSuccess > 0)
-                                                    listIdAuthorize.Add(objUserAuth.Id);
-                                            }
-                                            //=============================================================================================================
-                                        } 
+                                        }
                                     }
+                                    #endregion
                                 }
-                                #endregion
+
                             }
                             if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code 
                                 && (pUserGradeUpd == PosGrade.MAIN_POS|| pUserGradeUpd == PosGrade.HEAD_POS))

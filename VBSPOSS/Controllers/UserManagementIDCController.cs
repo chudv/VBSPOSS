@@ -1979,7 +1979,8 @@ namespace VBSPOSS.Controllers
                 }
                 if (pFlagCall == EventFlag.EventFlag_Authorize.Value.ToString())
                 {
-                    var listIdAuthorize = await _userManagementIDCService.SaveAuthorizeUserManagementIDC(listData, pFunctionType, pSystemDate, pBusinessDate, UserName, UserGrade, pFlagCall);
+                    var listIdAuthorize = await _userManagementIDCService.SaveAuthorizeUserManagementIDC(listData, pFunctionType, pSystemDate, pBusinessDate, UserName,
+                                                    UserGrade, UserPosCode, pFlagCall);
                     if (listIdAuthorize != null && listIdAuthorize.Count != 0)
                         resultSaveUpdate = "0";
                     else resultSaveUpdate = "-2";

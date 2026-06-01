@@ -164,12 +164,12 @@ namespace VBSPOSS.Constants
         /// <summary>
         /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
         /// </summary>
-        public static ValueConstModel Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        public static ValueConstModel Status_MovingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị chuyển đi" };
 
         /// <summary>
         /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
         /// </summary>
-        public static ValueConstModel Status_ReceivingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị tiếp nhận" };
+        public static ValueConstModel Status_MovingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị chuyển đi" };
 
 
         public static ValueConstModel GetByValue(int value)
@@ -185,8 +185,8 @@ namespace VBSPOSS.Constants
                 3 => Status_HeadOffice_Approved,
                 4 => Status_HeadOffice_Rejected,
                 9 => Status_ITC_Applied,
-                8 => Status_ReceivingBranch_Approved,
-                10 => Status_ReceivingBranch_Reject,
+                8 => Status_MovingBranch_Approved,
+                10 => Status_MovingBranch_Reject,
                 _ => null
             };
         }
@@ -208,8 +208,8 @@ namespace VBSPOSS.Constants
                 Status_Branch_Rejected,
                 Status_HeadOffice_Approved,
                 Status_HeadOffice_Rejected,
-                Status_ReceivingBranch_Approved,
-                Status_ReceivingBranch_Reject
+                Status_MovingBranch_Approved,
+                Status_MovingBranch_Reject
            };
         }
 
