@@ -154,12 +154,15 @@ namespace VBSPOSS.Controllers
                 if (pEventCode == EventFlag.EventFlag_Approval.Value.ToString())
                 {
                     var listUserManagementIDCTmp01 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, false);
-                    listUserManagementIDCTmp = listUserManagementIDCTmp01.Where(w => w.Status == StatusBusinessFlow.Status_Created.Value
-                                    || w.Status == StatusBusinessFlow.Status_Modified.Value).ToList();
+                    if (UserGrade == PosGrade.MAIN_POS && (UserPosCode != "000100" && UserPosCode != "000196" && UserPosCode != "000199"))
+                        listUserManagementIDCTmp = listUserManagementIDCTmp01.Where(w => w.StartDate >= dSystemDateTemp.Date && (w.Status == StatusBusinessFlow.Status_Created.Value
+                                    || w.Status == StatusBusinessFlow.Status_Modified.Value) && w.PosCode == sMainPosCode).ToList();
+                    else listUserManagementIDCTmp = listUserManagementIDCTmp01.Where(w => w.StartDate >= dSystemDateTemp.Date && (w.Status == StatusBusinessFlow.Status_Created.Value
+                                    || w.Status == StatusBusinessFlow.Status_Modified.Value)).ToList();
                     if (listUserManagementIDCTmp != null && listUserManagementIDCTmp.Count != 0)
                     {
                         int iCountTemp = 0;
-                        foreach(var itemUMIDC in listUserManagementIDCTmp)
+                        foreach (var itemUMIDC in listUserManagementIDCTmp)
                         {
                             sValueTmp = "";
                             iCountTemp++;
@@ -172,7 +175,7 @@ namespace VBSPOSS.Controllers
                             itemUMIDC.ApprovalUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
                             sValueTmp = GetPermitApprovalOrAuthorizeForUserName(EventFlag.EventFlag_Authorize.Value.ToString(), UserGrade, itemUMIDC.FunctionType, itemUMIDC.MainPosCode, itemUMIDC.MainPosCodeOld, pAuthorizePermission, pReportPermission);
                             itemUMIDC.AuthorizeUserIDC = string.IsNullOrEmpty(sValueTmp) ? 0 : int.Parse(sValueTmp);
-                            
+
                             itemUMIDC.DescriptionUserRequest = "";
                             if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
                             {
@@ -192,7 +195,7 @@ namespace VBSPOSS.Controllers
                                     sValueTmp = $"{sValueTmp}Điện thoại {itemUMIDC.MobileNumberOld} thành {itemUMIDC.MobileNumber}; ";
                                 if (itemUMIDC.EmailAddressOld != itemUMIDC.EmailAddress)
                                     sValueTmp = $"{sValueTmp}Email {itemUMIDC.EmailAddressOld} thành {itemUMIDC.EmailAddress}; ";
-                                sValueTmp = sValueTmp.Replace("  "," ");
+                                sValueTmp = sValueTmp.Replace("  ", " ");
                                 itemUMIDC.DescriptionUserRequest = Utilities.DeleteChar_FirstAndLast(sValueTmp, ";");
                             }
                             else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_RESTORE_USER.Code)
@@ -205,7 +208,7 @@ namespace VBSPOSS.Controllers
                 else if (pEventCode == EventFlag.EventFlag_Authorize.Value.ToString())
                 {
                     var listUserManagementIDCTmp02 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, false);
-                    listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.Status == StatusBusinessFlow.Status_Submitted.Value).ToList();
+                    listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.Status == StatusBusinessFlow.Status_Submitted.Value && w.StartDate >= dSystemDateTemp.Date).ToList();
                     if (listUserManagementIDCTmp != null && listUserManagementIDCTmp.Count != 0)
                     {
                         int iCountTemp = 0;
@@ -267,7 +270,6 @@ namespace VBSPOSS.Controllers
                 return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
             }
         }
-
 
         /// <summary>
         /// Hàm show màn hình nghiệp vụ Thêm mới hoặc Thay đổi thông tin bản ghi yêu cầu nghiệp vụ tài khoản người dùng Intellect iDC
@@ -1218,7 +1220,10 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Reject"] = EventFlag.EventFlag_Reject.Value.ToString();
             TempData["UserGrade"] = UserGrade;
 
-            ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
+            if (sNameView == "CreateChangeInforUserManagementIDC" && !string.IsNullOrEmpty(objUserManagementIDCUpd.UserStatus))
+                ViewBag.FunctionTypes = FunctionTypeFlag.GetOption(objUserManagementIDCUpd.UserStatus);
+            else
+                ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
             ViewBag.MailIdFlags = MailIdFlag.GetAll();
             ViewBag.AuthSecTypes = AuthSecType.GetAll();
             TempData["FlagEventCall"] = pFlagCall;
@@ -1656,6 +1661,7 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Approval"] = EventFlag.EventFlag_Approval.Value.ToString();
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
             TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
+            TempData["EventFlag_Reject"] = EventFlag.EventFlag_Reject.Value.ToString();
 
             TempData["FunctionTypeFlag_ADDNEW_USER"] = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code;
             TempData["FunctionTypeFlag_ResetPassword"] = FunctionTypeFlag.FunctionTypeFlag_ResetPassword.Code;

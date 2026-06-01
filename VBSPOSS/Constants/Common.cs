@@ -753,6 +753,7 @@ namespace VBSPOSS.Constants
         /// Trạng thái người dùng. Giá trị: '1'- Đóng/Khóa: UserIDC_UserStatus_Closed = "1";
         /// </summary>
         public const string UserIDC_UserStatus_Closed = "1";
+
         /// <summary>
         /// Trạng thái người dùng. Giá trị: '2' - Mở/Active: UserIDC_UserStatus_Open = "2";
         /// </summary>
@@ -980,6 +981,38 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_DELETE_USER,
                 FunctionTypeFlag_RESTORE_USER
             };
+        }
+
+        public static List<ValueConstModel> GetOption(string pUserStatus)
+        {
+            if (pUserStatus == DefaultValue.UserIDC_UserStatus_Open)
+            {
+                return new List<ValueConstModel>
+                {
+                    FunctionTypeFlag_ResetPassword,
+                    //FunctionTypeFlag_ENABLE_USER,
+                    FunctionTypeFlag_DISABLE_USER,
+                    FunctionTypeFlag_MODIFY_USER,
+                    FunctionTypeFlag_CHANGE_POS,
+                    FunctionTypeFlag_CHANGE_ROLE,
+                    FunctionTypeFlag_DELETE_USER
+                    //FunctionTypeFlag_RESTORE_USER
+                };
+            }
+            else
+            {
+                return new List<ValueConstModel>
+                {
+                    FunctionTypeFlag_ResetPassword,
+                    FunctionTypeFlag_ENABLE_USER,
+                    FunctionTypeFlag_DISABLE_USER,
+                    FunctionTypeFlag_MODIFY_USER,
+                    FunctionTypeFlag_CHANGE_POS,
+                    FunctionTypeFlag_CHANGE_ROLE,
+                    FunctionTypeFlag_DELETE_USER,
+                    FunctionTypeFlag_RESTORE_USER
+                };
+            }
         }
 
         public static List<ValueConstModel> GetAll(bool pIsNone)

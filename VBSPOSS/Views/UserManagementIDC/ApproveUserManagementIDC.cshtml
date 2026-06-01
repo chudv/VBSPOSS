@@ -833,7 +833,7 @@
                         });
                     }).Width(42).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(130).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.UserId).Title("Tài khoản").Width(62).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: left;" });
@@ -841,7 +841,8 @@
                     columns.Bound(c => c.GroupName).Hidden();
                     columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.StartDateText).Hidden();
-                    columns.Bound(c => c.DescriptionUserRequest).Title("Mô tả").Width(160).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.CreatedDate).Title("Ngày đề nghị").Format("{0:dd/MM/yyyy}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.DescriptionUserRequest).Title("Mô tả").Width(130).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.StatusText).Title("Trạng thái").Width(60).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Id).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
@@ -864,7 +865,7 @@
                     columns.Bound(c => c.CreatedBy).Hidden();
                     columns.Bound(c => c.CreatedDate).Hidden();
                     columns.Bound(c => c.ModifiedBy).Hidden();
-                    columns.Bound(c => c.ModifiedDate).Hidden();
+                    //columns.Bound(c => c.ModifiedDate).Hidden();
                     columns.Bound(c => c.ApproverBy).Hidden();
                     columns.Bound(c => c.ApprovalDate).Hidden();
                     columns.Bound(c => c.DateOfBirth).Hidden();
@@ -1036,7 +1037,8 @@
         $("#btnChooseFile").hide();
         $("#fileList").hide();
         
-
+        var lcFlagCallRejectView = $("#EventFlag_RejectView").val();
+        alert("lcFlagCallRejectView="+lcFlagCallRejectView);
     });
 
     //Hàm thực hiện gọi In tờ trình
@@ -1304,7 +1306,9 @@
                 else if (resultSaveUpdate == "26")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin đã tồn tại. Vui lòng kiểm tra lại!");
                 else {
-                    alert("Có lỗi xảy ra!");
+                    if (lcFlagCallView == $("#EventFlag_ApprovalView").val())
+                        alert("Trình duyệt yêu cầu [" + lcFunctionTypeNameChoice + "] của [" + lcUserInfo + "] có lỗi xẩy ra. Vui lòng kiểm tra lại!");
+                    else alert("Phê duyệt yêu cầu [" + lcFunctionTypeNameChoice + "] của [" + lcUserInfo + "] có lỗi xẩy ra. Vui lòng kiểm tra lại!");
                 }
             },
             error: function (xhr) {

@@ -425,11 +425,11 @@
                             @class = "btn-auth-main"
                         });
                        
-                    }).Width(130).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+                    }).Width(100).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
-                    columns.Bound(c => c.OrderNoText).Title("STT").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.OrderNoText).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.StartDatePeriodText).Title("Khoảng thời gian").Width(170).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.StartDatePeriodText).Title("Khoảng thời gian").Width(100).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Group(groupCountRequest => groupCountRequest.Title("Số lượng yêu cầu hàng chờ")
                     .Columns(infoCountRequest =>
                     {

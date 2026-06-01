@@ -1468,7 +1468,7 @@ namespace VBSPOSS.Services.Implements
                                     string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pFlagCall)
         {
             List<long> listIdAuthorize = new List<long>();
-            int iCountUpdate = 0, iSaveChangeAuthTmp = 0, iStatusUpdateCoreTmp = 0;
+            int iCountUpdate = 0, iSaveChangeAuthTmp = 0, iStatusUpdateCoreTmp = 0, iCountSuccess = 0;
             DateTime dCurrentDateTmp = DateTime.Now;
             DateTime dBusinessDateOfIDC = CustConverter.StringToDate(pBusinessDateText, FormatParameters.FORMAT_DATE).Date;
             DateTime dSystemDateOfIDC = CustConverter.StringToDate(pSystemDateText, FormatParameters.FORMAT_DATE).Date;
@@ -1528,6 +1528,7 @@ namespace VBSPOSS.Services.Implements
                                 objUserAuth.CallApiReqRecordSl = objUserAuth.CallApiReqRecordSl + 1;
                                 objUserAuth.CallApiResponseCode = objCreateUserIDCByApi.ResponseCode;
                                 objUserAuth.CallApiResponseMsg = objCreateUserIDCByApi.ResponseMsg;
+                                iCountSuccess = 0;
                                 if (objCreateUserIDCByApi != null && objCreateUserIDCByApi.Status
                                     && (objCreateUserIDCByApi.ResponseCode == "0" || objCreateUserIDCByApi.ResponseCode == "00000"))
                                 {
@@ -1587,6 +1588,7 @@ namespace VBSPOSS.Services.Implements
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     objUserAuth.ApproverBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                    iCountSuccess++;
                                 }
                                 else
                                 {
@@ -1607,7 +1609,8 @@ namespace VBSPOSS.Services.Implements
                                 if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
-                                    listIdAuthorize.Add(objUserAuth.Id);
+                                    if (iCountSuccess > 0)
+                                        listIdAuthorize.Add(objUserAuth.Id);
                                 }
                                 #endregion
                             }
