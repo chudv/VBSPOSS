@@ -206,8 +206,7 @@ namespace VBSPOSS.Services.Implements
                     var listOfTransPointtWorkTmp = _dbContext.ListOfTransPointWorks.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
                             && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
                             && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
-                            && (pStatus == -1 || w.Status == pStatus)
-                        )
+                            && (pStatus == -1 || w.Status == pStatus))
                         .Where(delegate (ListOfTransPointWork c)
                         {
                             if (string.IsNullOrEmpty(pTxnPointName)
@@ -621,6 +620,14 @@ namespace VBSPOSS.Services.Implements
                     objTranspointAddNew.ModifiedDate = dCurrentDateVal;
                     objTranspointAddNew.ApproverBy = pUserNameUpd;
                     objTranspointAddNew.ApprovalDate = dCurrentDateVal;
+                    objTranspointAddNew.AddressFull = pTransPointWorkUpd.AddressDetail + "," + pTransPointWorkUpd.TxnLocation + "," + pTransPointWorkUpd.CommuneName + "," + pTransPointWorkUpd.ProvinceName;
+                    objTranspointAddNew.TimeBegin = pTransPointWorkUpd.TimeBeginDate.ToString();
+                    objTranspointAddNew.TimeEnd = pTransPointWorkUpd.TimeEndDate.ToString();
+                    objTranspointAddNew.CallApiResponseCode = "";
+                    objTranspointAddNew.CallApiResponseMsg = "";
+                    objTranspointAddNew.CallApiResRecords = 0;
+                    objTranspointAddNew.StatusUpdateCore = 0;
+                    objTranspointAddNew.CallApiTxnStatus = "";
                     _dbContext.ListOfTransPointWorks.Add(objTranspointAddNew);
                     iSaveChanges = _dbContext.SaveChanges();
                     if (iSaveChanges > 0)

@@ -114,7 +114,7 @@ namespace VBSPOSS.Data
             modelBuilder.Entity<Role>().HasKey(x => new { x.Id });
             
             modelBuilder.Entity<ListOfCommune>().ToTable("ListOfCommune");
-            modelBuilder.Entity<ListOfCommune>().HasKey(x => new { x.ProvinceCode, x.DistrictCode, x.CommuneCode, x.SubCommuneCode });
+            modelBuilder.Entity<ListOfCommune>().HasKey(x => new { x.ProvinceCode, x.DistrictCode, x.CommuneCode, x.SubCommuneCode, x.PosCode });
 
             modelBuilder.Entity<ListOfCommuneHist>().ToTable("ListOfCommuneHist");
             modelBuilder.Entity<ListOfCommuneHist>().HasKey(x => new { x.EventCode, x.Id, x.DateSync, x.PosCode, x.ProvinceCode, x.DistrictCode, x.CommuneCode, x.RecordStatus , x.EffectDate });

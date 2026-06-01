@@ -647,7 +647,7 @@ namespace VBSPOSS.Services.Implements
                     return answer;
                 }
 
-                var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => string.IsNullOrEmpty(pProvinceCode) || (w.ProvinceCode == pProvinceCode)
+                var profileBranchTMPs = _dbContext.ListOfCommunes.Where(w => (string.IsNullOrEmpty(pProvinceCode) || (w.ProvinceCode == pProvinceCode))
                                         && (string.IsNullOrEmpty(pDistrictCode) || w.DistrictCode == pDistrictCode)
                                         && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
                                         && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode == pCommuneCode)

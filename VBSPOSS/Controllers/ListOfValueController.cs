@@ -712,15 +712,15 @@ namespace VBSPOSS.Controllers
         ///                      3 - Hiển thị [Vùng -> Mã - Tên] trên danh sách ComBoBox
         /// </param>
         /// <returns>Danh sách Tỉnh/Thành phố trên Combobox</returns>
-        public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
+        public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1", string pPosCode = "")
         {
             string sTitleChoice = "";
             sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
             ArrayList data = new ArrayList();
-            var listProvinces = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", "", "");
+            var listProvinces = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", pPosCode, "");
             if (sTitleChoice != "")
                 data.Add(new { id = "", value = sTitleChoice });
-            foreach (ListOfCommuneViewModel item in listProvinces)
+            foreach (ListOfCommuneViewModel item in listProvinces.GroupBy(g => new { g.ProvinceCode, g.ProvinceName }).Select(s => s.First()))
             {
                 if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
                 {
@@ -800,7 +800,7 @@ namespace VBSPOSS.Controllers
             var listCommunes = _serviceLOV.GetLovCommuneList(pProvinceCode, pDistrictCode, pCommuneCode, pPosCode, "");
             if (sTitleChoice != "" && string.IsNullOrEmpty(pCommuneCode))
                 data.Add(new { id = "", value = sTitleChoice });
-            foreach (ListOfCommuneViewModel item in listCommunes)
+            foreach (ListOfCommuneViewModel item in listCommunes.GroupBy(g => new { g.CommuneCode, g.CommuneName }).Select(s => s.First()))
             {
                 if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
                 {
