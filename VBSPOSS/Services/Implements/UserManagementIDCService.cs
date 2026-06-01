@@ -1622,6 +1622,7 @@ namespace VBSPOSS.Services.Implements
                                 objResetUserPw.Ticket = objUserAuth.Ticket;
                                 objResetUserPw.UserId = objUserAuth.UserId;
                                 var objResetPWUserIDCByApi = await ResetUserPasswordByApiResetUserPw(objResetUserPw, pUserNameUpd);
+                                iCountSuccess = 0;
                                 if (objResetPWUserIDCByApi?.ResponseCode != "0" && objResetPWUserIDCByApi?.ResponseCode != "00000")
                                 {
                                     objUserAuth.StatusUpdateCore = 0;
@@ -1648,7 +1649,7 @@ namespace VBSPOSS.Services.Implements
                                     objUserAuth.EffectiveDate = dCurrentDateTmp;
                                     //Gọi Noti để thông báo đến Email người dùng
                                     var objNotiData = await InsertNotiData(objUserAuth, pUserNameUpd);
-
+                                    iCountSuccess++;
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
@@ -1661,7 +1662,8 @@ namespace VBSPOSS.Services.Implements
                                 if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
-                                    listIdAuthorize.Add(objUserAuth.Id);
+                                    if (iCountSuccess > 0)
+                                        listIdAuthorize.Add(objUserAuth.Id);
                                 }
                                 #endregion
                             }
@@ -1674,6 +1676,7 @@ namespace VBSPOSS.Services.Implements
                                 objRsUser.Ticket = objUserAuth.Ticket;
                                 objRsUser.UserId = objUserAuth.UserId;
                                 var objEnableUserIDCByApiResult = await ChangeUserStatusByApiEnableUser(objRsUser, pUserNameUpd);
+                                iCountSuccess = 0;
                                 if (objEnableUserIDCByApiResult != null && (objEnableUserIDCByApiResult.ResponseCode == "0" || objEnableUserIDCByApiResult.ResponseCode == "00000"))
                                 {
                                     objUserAuth.StatusUpdateCore = objUserAuth.StatusUpdateCore + 1;
@@ -1724,7 +1727,7 @@ namespace VBSPOSS.Services.Implements
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var iRowIdUserIDCMasterUpdate = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
-                                    
+                                    iCountSuccess++;
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     objUserAuth.ApproverBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
@@ -1745,7 +1748,8 @@ namespace VBSPOSS.Services.Implements
                                 if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
-                                    listIdAuthorize.Add(objUserAuth.Id);
+                                    if (iCountSuccess > 0)
+                                        listIdAuthorize.Add(objUserAuth.Id);
                                 }
                                 #endregion
                             }
@@ -1756,6 +1760,7 @@ namespace VBSPOSS.Services.Implements
                                 #region --- 4. Khóa tài khoản người dùng ---
                                 //Kiểm tra thêm tại đây xem trước khi thực thi Khóa tài khoản Intellect iDC người dùng có mở sổ tiền mặt đầu ngày không
                                 int iCheckOpenCash = CheckOpenCashByUserId(objUserAuth.UserId, dBusinessDateOfIDC.ToString(FormatParameters.FORMAT_DATE_ORA));
+                                iCountSuccess = 0;
                                 if (iCheckOpenCash != 0 && iCheckOpenCash != 3)
                                 {
                                     //0 - Chưa mở sổ tiền mặt đầu ngày;     3 - Đã mở và đóng không còn tồn quỹ tiền mặt
@@ -1828,6 +1833,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                        iCountSuccess++;
                                     }
                                     else
                                     {
@@ -1846,7 +1852,8 @@ namespace VBSPOSS.Services.Implements
                                 if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
-                                    listIdAuthorize.Add(objUserAuth.Id);
+                                    if (iCountSuccess > 0)
+                                        listIdAuthorize.Add(objUserAuth.Id);
                                 }
                                 #endregion
                             }
@@ -1971,7 +1978,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
-
+                                        iCountSuccess++;
                                         //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
                                         var objUserInforByApiCall04 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
                                         if (objUserInforByApiCall04 != null && !string.IsNullOrEmpty(objUserInforByApiCall04.UserId)
@@ -2022,7 +2029,8 @@ namespace VBSPOSS.Services.Implements
                                     if (iSaveChangeAuthTmp > 0)
                                     {
                                         iCountUpdate++;
-                                        listIdAuthorize.Add(objUserAuth.Id);
+                                        if (iCountSuccess > 0)
+                                            listIdAuthorize.Add(objUserAuth.Id);
                                     }
                                 }
                                 #endregion
@@ -2037,6 +2045,7 @@ namespace VBSPOSS.Services.Implements
                                     bValidAuth = true;
                                 if (sMainPosNew != sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS))
                                     bValidAuth = true;
+                                iCountSuccess = 0;
                                 if (bValidAuth)
                                 {
                                     //Kiểm tra còn giao dịch Pending hay không?
@@ -2158,6 +2167,7 @@ namespace VBSPOSS.Services.Implements
                                                 objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                                 objUserAuth.ApproverBy = pUserNameUpd;
                                                 objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                                iCountSuccess++;
                                                 //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
                                                 var objUserInforByApiCall05 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
                                                 if (objUserInforByApiCall05 != null && !string.IsNullOrEmpty(objUserInforByApiCall05.UserId)
@@ -2213,7 +2223,8 @@ namespace VBSPOSS.Services.Implements
                                             if (iSaveChangeAuthTmp > 0)
                                             {
                                                 iCountUpdate++;
-                                                listIdAuthorize.Add(objUserAuth.Id);
+                                                if (iCountSuccess > 0)
+                                                    listIdAuthorize.Add(objUserAuth.Id);
                                             }
                                             //=============================================================================================================
                                         } 
@@ -2265,6 +2276,7 @@ namespace VBSPOSS.Services.Implements
                                     objModifyUserDelete.SubType = objUserAuth.SubType;
                                     objModifyUserDelete.StartDate = objUserAuth.StartDate?.ToString(FormatParameters.FORMAT_DATE_INT);
                                     var objResultModifyUserIDCByApi = await ModifyUserByApiModifyUser(objModifyUserDelete, pUserNameUpd);
+                                    iCountSuccess = 0;
                                     if (objResultModifyUserIDCByApi != null && (objResultModifyUserIDCByApi.ResponseCode == "0" || objResultModifyUserIDCByApi.ResponseCode == "00000"))
                                     {
                                         //Gọi tiếp API khóa UserId
@@ -2288,7 +2300,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
-
+                                        iCountSuccess++;
                                         //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
                                         var objUserInforByApiCall06 = await GetUserIDCInfoByApiViewUser(objUserAuth.UserId);
                                         if (objUserInforByApiCall06 != null && !string.IsNullOrEmpty(objUserInforByApiCall06.UserId)
@@ -2339,7 +2351,8 @@ namespace VBSPOSS.Services.Implements
                                     if (iSaveChangeAuthTmp > 0)
                                     {
                                         iCountUpdate++;
-                                        listIdAuthorize.Add(objUserAuth.Id);
+                                        if (iCountSuccess > 0)
+                                            listIdAuthorize.Add(objUserAuth.Id);
                                     }
                                 }
                                 #endregion
@@ -2356,7 +2369,7 @@ namespace VBSPOSS.Services.Implements
                                 ViewUserRequestViewModel objEnableUserStep01 = new ViewUserRequestViewModel();
                                 objEnableUserStep01.Ticket = objUserAuth.Ticket;
                                 objEnableUserStep01.UserId = objUserAuth.UserId;
-
+                                iCountSuccess = 0;
                                 var objEnableUserIDCByApiResultStep01 = await ChangeUserStatusByApiEnableUser(objEnableUserStep01, pUserNameUpd);
                                 if (objEnableUserIDCByApiResultStep01 != null && (objEnableUserIDCByApiResultStep01.ResponseCode == "0" || objEnableUserIDCByApiResultStep01.ResponseCode == "00000"))
                                 {
@@ -2425,6 +2438,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserAuth.ApproverBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
+                                        iCountSuccess++;
                                         bIsContinueTmpRestoreUserId = true;
                                     }
                                     else
@@ -2500,9 +2514,9 @@ namespace VBSPOSS.Services.Implements
                                 if (iSaveChangeAuthTmp > 0)
                                 {
                                     iCountUpdate++;
-                                    listIdAuthorize.Add(objUserAuth.Id);
+                                    if (iCountSuccess > 0)
+                                        listIdAuthorize.Add(objUserAuth.Id);
                                 }
-
                                 #endregion
                             }
                         }
