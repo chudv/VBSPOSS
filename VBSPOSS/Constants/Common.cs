@@ -1335,6 +1335,53 @@ namespace VBSPOSS.Constants
 
     }
 
+    public static class TransferDataPosStatus
+    {
+        /// <summary>
+        /// Xóa tờ trình
+        /// </summary>
+        public const string Deleted = "0";
+
+        /// <summary>
+        /// CN tạo tờ trình
+        /// </summary>
+        public const string BranchCreated = "1";
+
+        /// <summary>
+        /// CN trình duyệt tờ trình
+        /// </summary>
+        public const string BranchSubmitted = "3";
+
+        /// <summary>
+        /// TW phê duyệt
+        /// </summary>
+        public const string HeadOfficeApproved = "5";
+
+        /// <summary>
+        /// TW từ chối
+        /// </summary>
+        public const string HeadOfficeRejected = "6";
+
+        /// <summary>
+        /// POS nguồn tạo số liệu
+        /// </summary>
+        public const string SourcePosGeneratedData = "7";
+
+        /// <summary>
+        /// POS đích xác nhận
+        /// </summary>
+        //public const string DestinationPosConfirmed = "8";
+
+        /// <summary>
+        /// POS nguồn xác nhận số liệu
+        /// </summary>
+        public const string SourcePosConfirmedData = "9";
+
+        /// <summary>
+        /// TW xử lý script
+        /// </summary>
+        public const string HeadOfficeProcessedScript = "11";
+    }
 
 
 }

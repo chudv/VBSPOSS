@@ -207,7 +207,7 @@
                 .BindTo((List<SelectListItem>)ViewData["FromVillages"])
                 .Filter(FilterType.Contains)
                 .Placeholder("--- Chọn thôn nguồn ---")
-                .ClearButton(false)
+                .ClearButton(true)
                 .Suggest(true)
                 .AutoBind(true)
                 .HtmlAttributes(new
@@ -229,7 +229,7 @@
                 .BindTo((List<SelectListItem>)ViewData["ToVillages"])
                 .Filter(FilterType.Contains)
                 .Placeholder("--- Chọn thôn đích ---")
-                .ClearButton(false)
+                .ClearButton(true)
                 .Suggest(true)
                 .AutoBind(true)
                 .HtmlAttributes(new
@@ -263,11 +263,13 @@
                 .Name("gridMainTranferTarget")
                 .Columns(columns =>
                 {
-                if (ViewBag.PSourceTarget?.ToString() == "T" && ViewBag.PStatus?.ToString() != "9")
+                if (//ViewBag.PSourceTarget?.ToString() == "T" && 
+                    ViewBag.PStatus?.ToString() != "9")
                     {
                         columns.Bound(c => c.ACCEPT_MOV)
                         .Title("Xác nhận")
                         .Width(80)
+                        .Filterable(false)
                         .ClientTemplate(
                         "<input type='checkbox' class='chkAcceptMov' #= ACCEPT_MOV ? 'checked=checked' : '' # />")
                         .HtmlAttributes(new { style = "text-align:center;" });
@@ -277,25 +279,36 @@
                     columns.Bound(c => c.ACCEPT_MOV)
                     .Title("Xác nhận")
                     .Width(80)
+                    .Filterable(false)
                     .ClientTemplate(
                     "<input type='checkbox' class='chkAcceptMov' #= ACCEPT_MOV ? 'checked=checked' : '' # readonly='readonly' disabled='disabled' />")
                     .HtmlAttributes(new { style = "text-align:center;" });
                 }
 
-                columns.Bound(c => c.TYPE_CD).Title("Loại dữ liệu").Width(100);
-                columns.Bound(c => c.CUST_ID).Title("Mã KH").Width(120);
-                columns.Bound(c => c.CUST_NAME).Title("Tên khách hàng").Width(250);
-                columns.Bound(c => c.AC_NO).Title("Số tài khoản").Width(150);
-                columns.Bound(c => c.PROD_CD).Title("Sản phẩm").Width(100);
+                columns.Bound(c => c.TYPE_CD).Title("Loại dữ liệu").Width(100)
+                .Filterable(ftb => ftb.Multi(true));
+                columns.Bound(c => c.CUST_ID).Title("Mã KH").Width(120).Filterable(false);
+                columns.Bound(c => c.CUST_NAME).Title("Tên khách hàng").Width(250).Filterable(false);
+                columns.Bound(c => c.AC_NO).Title("Số tài khoản").Width(150).Filterable(false);
+                columns.Bound(c => c.PROD_CD).Title("Sản phẩm").Width(100).Filterable(false);
                 columns.Bound(c => c.PRIN_AMOUNT)
                 .Title("Dư nợ")
                 .Width(120)
                 .Format("{0:n0}")
-                .HtmlAttributes(new { style = "text-align:right;" });
-                columns.Bound(c => c.POS_CD).Title("POS cũ").Width(100);
-                columns.Bound(c => c.NEW_POS_CD).Title("POS mới").Width(100);
-                columns.Bound(c => c.SCOM_CD).Title("Thôn cũ").Width(110);
-                columns.Bound(c => c.NEW_SCOM_CD).Title("Thôn mới").Width(110);
+                .Filterable(false)
+                .HtmlAttributes(new
+                {
+                    style = "text-align:right;"
+                })
+                .FooterHtmlAttributes(new
+                {
+                    style = "text-align:right;font-weight:bold;width:120px; font-size:10px;white-space:normal;overflow:visible;"
+                })
+                .ClientFooterTemplate("<span style='font-size:10px;white-space:normal;'>#= kendo.toString(sum, 'n0') #</span>");
+                columns.Bound(c => c.POS_CD).Title("POS cũ").Width(100).Filterable(false);
+                columns.Bound(c => c.NEW_POS_CD).Title("POS mới").Width(100).Filterable(false);
+                columns.Bound(c => c.SCOM_CD).Title("Thôn cũ").Width(110).Filterable(false);
+                columns.Bound(c => c.NEW_SCOM_CD).Title("Thôn mới").Width(110).Filterable(false);
             })
             .ToolBar(toolbar => { toolbar.Excel().Text("Xuất Excel"); })
             .Excel(excel => excel
@@ -307,23 +320,30 @@
             .ButtonCount(5))
             .Sortable()
             .Scrollable()
-            @* .Filterable() *@
+            .Filterable()
             .Resizable(resize => resize.Columns(true))
             .HtmlAttributes(new { style = "height:480px;" })
             .DataSource(dataSource => dataSource
             .Ajax()
-            .PageSize(15)
-            .ServerOperation(false)
-            .Model(model => { model.Id(p => p.CUST_ID); })
+            .Aggregates(a =>
+            {
+                a.Add(p => p.PRIN_AMOUNT).Sum();
+            })
+            .Model(model =>
+            {
+                model.Id(p => p.CUST_ID);
+            })
             .Read(read => read
             .Action("LoadGridData_TransPointTarget1", "TransferDataPos")
-            .Data("paramLoadGridData")))
+            .Data("paramLoadGridData"))
+            )
             )
     </div>
 </div>
 
 
-@if (ViewBag.PSourceTarget?.ToString() == "T" && ViewBag.PStatus?.ToString() != "9")
+@if (//ViewBag.PSourceTarget?.ToString() == "T" && 
+    ViewBag.PStatus?.ToString() != "9")
 {
     <label class="control-label" id="lblMessageInfor1" style="width: 1190px; text-align: right; color: red;"></label>
     <div class="row" style="padding-top:10px;">

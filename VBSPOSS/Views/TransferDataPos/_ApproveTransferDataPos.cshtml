@@ -140,6 +140,9 @@
 
 <script>
 
+    // const HeadOfficeApproved = "5" //TW phê duyệt
+    // const HeadOfficeRejected = "6" //Tw từ chối
+
     function onCloseTransferVillage() {
         mainWindow.data("kendoWindow").close();
         refreshGridIDC();
@@ -191,7 +194,6 @@
                         grid.dataSource.read();
                     }
                     else {
-
                         alert(res.message);
                     }
                 },
@@ -204,13 +206,13 @@
         });
 
         // CLOSE
-        $(document).ready(function () {
-            $("#btnCloseVillage").click(function () {
-                $("#mainWindow")
-                    .data("kendoWindow")
-                    .close();
-            });
+
+        $("#btnCloseVillage").click(function () {
+            $("#mainWindow")
+                .data("kendoWindow")
+                .close();
         });
+
     });
 
     function onApproveTransferDataPos() {
@@ -222,7 +224,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: '5'
+                pAction: "5"
             },
             success: function (res) {
                 if (res == "1") {
@@ -255,7 +257,7 @@
             data: {
                 pId: '@Model.Id',
                 pRemark: remark,
-                pAction: '6' //Trung ương từ chối
+                pAction: "6" //Trung ương từ chối
             },
             success: function (res) {
                 if (res == "1") {
