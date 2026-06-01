@@ -64,7 +64,8 @@ namespace VBSPOSS.Services.Interfaces
 
         Task<int> BulkInsertCommuneTransferAsync(List<CommuneMaintenanceOracleView> data);
 
-        List<ChangePosDataCheckingViewModel> GetListChangePosDataChecking(string pPosCode, string pTotrinh);
+        List<ChangePosDataCheckingViewModel> GetListChangePosDataChecking(long pId, string pFromPos, string pToPos, string pSourceTarget,
+            string pFromVillages, string pToVillages, string pTextDetil);
 
         int SaveAcceptMove(List<ChangePosDataCheckingViewModel> data);
 

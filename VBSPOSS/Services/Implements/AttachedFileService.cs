@@ -34,7 +34,7 @@ namespace VBSPOSS.Services.Implements
             try
             {
                 // ===== TYPE 6 : đọc folder =====
-                if (pFileType == "6")
+                if (pFileType == FileTypeAttached.OfflineBeginDayData)
                 {
                     var list = new List<AttachedFileInfoView>();
 
@@ -247,11 +247,11 @@ namespace VBSPOSS.Services.Implements
 
                 switch (valueFileType)
                 {
-                    case "5":
+                    case FileTypeAttached.OfflineSoftwareUpdate:
                         subFolder = "ExeFile";
                         break;
 
-                    case "7":
+                    case FileTypeAttached.OtherDocument:
                         subFolder = "OtherFile";
                         break;
                 }

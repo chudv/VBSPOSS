@@ -139,7 +139,7 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        //Lấy tên pos (lưu ý chuyển về listOfValues
         public string GetPosName(string posCode)
         {
             try
@@ -157,7 +157,11 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lấy danh sách pos theo chi nhánh
+        /// </summary>
+        /// <param name="mainPos"></param>
+        /// <returns></returns>
         public List<ValueConstModel> GetListPosOfBranch(string mainPos)
         {
             try
@@ -265,7 +269,11 @@ namespace VBSPOSS.Services.Implements
             return iRetIdUpd;
         }
 
-
+        /// <summary>
+        /// Lấy danh sách thôn theo pos
+        /// </summary>
+        /// <param name="posCd"></param>
+        /// <returns></returns>
         public List<ValueConstModel> GetListSubCommuneOfPos(string posCd)
         {
             try
@@ -308,7 +316,14 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lưu thông tin file tờ trình được upload
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <param name="file"></param>
+        /// <param name="documentNumber"></param>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public async Task<long> SaveAttachedFile(long documentId, IFormFile file, string documentNumber, string userName)
         {
             long fileId = 0;
@@ -393,7 +408,11 @@ namespace VBSPOSS.Services.Implements
             return fileId > 0 ? 0 : 1;
         }
 
-
+        /// <summary>
+        /// Xem tờ trình đã upload
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
         public async Task<AttachedFileInfo> DownloadTransferAttachFile(long documentId)
         {
             try
@@ -409,7 +428,12 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Xóa tờ trình
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public async Task<bool> DeleteTransferDataPos(long pId, string userName)
         {
             try
@@ -417,7 +441,7 @@ namespace VBSPOSS.Services.Implements
                 var entity = await _dbContext.TransferDataPosMasters.FirstOrDefaultAsync(x => x.Id == pId);
                 if (entity == null) return false;
 
-                entity.Status = 0;
+                entity.Status = int.Parse(TransferDataPosStatus.Deleted);
                 entity.ModifiedBy = userName;
                 entity.ModifiedDate = DateTime.Now;
 
@@ -430,7 +454,11 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Gọi lại tờ trình master để sửa
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <returns></returns>
         public TransferDataPosMaster GetTransferDataPosMasterById(long pId)
         {
             try
@@ -444,7 +472,14 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lưu thông tin chí nhánh trình duyệt lên tw
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <param name="pRemark"></param>
+        /// <param name="pAction"></param>
+        /// <param name="pUserName"></param>
+        /// <returns></returns>
         public async Task<int> ApproveTransferDataPos(long pId, string pRemark, string pAction, string pUserName)
         {
             try
@@ -467,7 +502,11 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Gọi lại chi tiết thôn điều chuyển để sửa
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <returns></returns>
         public List<TransferDataPosDetailViewModel> GetTransferDataPosDetailByMasterId(long pId)
         {
             try
@@ -496,7 +535,14 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lưu thông tin tờ trình master vào bảng TransferDataPosMaster
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="userName"></param>
+        /// <param name="totalVillage"></param>
+        /// <param name="mainPos"></param>
+        /// <returns></returns>
         public async Task<long> SaveTransferDataPosMaster(TransferDataPosMasterViewModel model, string userName, int totalVillage, string mainPos)
         {
             try
@@ -547,7 +593,14 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lưu thông tin chi tiết các thôn điều chuyển vào bảng TransferDataPosDetail
+        /// Xóa dữ liệu cũ trước khi lưu
+        /// </summary>
+        /// <param name="masterId"></param>
+        /// <param name="details"></param>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public async Task<int> SaveTransferDataPosDetail(long masterId, List<TransferDataPosDetailViewModel> details, string userName)
         {
             try
@@ -588,7 +641,11 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Lấy tên thôn theo code
+        /// </summary>
+        /// <param name="villageCode"></param>
+        /// <returns></returns>
         public string GetVillageNameByCode(string villageCode)
         {
             try
@@ -685,14 +742,44 @@ namespace VBSPOSS.Services.Implements
         }
 
 
-        public List<ChangePosDataCheckingViewModel> GetListChangePosDataChecking(string pPosCode, string pTotrinh)
+        public List<ChangePosDataCheckingViewModel> GetListChangePosDataChecking(
+            long pId, string pFromPos, string pToPos,
+            string pSourceTarget, string pFromVillages,
+            string pToVillages, string pTextDetil)
         {
             try
             {
                 var query = _dbContextIDC.ChangePosDataCheckings.AsQueryable();
 
-                if (!string.IsNullOrWhiteSpace(pPosCode))
-                    query = query.Where(x => x.POS_CD == pPosCode);
+                // Nguồn / Đích
+                if (pSourceTarget == "S")
+                {
+                    if (!string.IsNullOrWhiteSpace(pFromPos))
+                        query = query.Where(x => x.POS_CD == pFromPos);
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(pToPos))
+                        query = query.Where(x => x.NEW_POS_CD == pToPos);
+                }
+
+                // Địa bàn nguồn
+                if (!string.IsNullOrWhiteSpace(pFromVillages))
+                    query = query.Where(x => x.SCOM_CD == pFromVillages);
+
+                // Địa bàn đích
+                if (!string.IsNullOrWhiteSpace(pToVillages))
+                    query = query.Where(x => x.NEW_SCOM_CD == pToVillages);
+
+                // Tìm kiếm theo tài khoản hoặc tên khách hàng
+                if (!string.IsNullOrWhiteSpace(pTextDetil))
+                {
+                    string keyword = pTextDetil.Trim().ToUpper();
+                    query = query.Where(x =>
+                        (!string.IsNullOrEmpty(x.AC_NO) && x.AC_NO.ToUpper().Contains(keyword)) ||
+                        (!string.IsNullOrEmpty(x.CUST_NAME) && x.CUST_NAME.ToUpper().Contains(keyword))
+                    );
+                }
 
                 return query.Select(x => new ChangePosDataCheckingViewModel
                 {
@@ -719,6 +806,7 @@ namespace VBSPOSS.Services.Implements
                 throw;
             }
         }
+
 
 
         public int SaveAcceptMove(List<ChangePosDataCheckingViewModel> data)
@@ -784,7 +872,11 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
-
+        /// <summary>
+        /// Kiểm tra xem đã upload file chưa trước khi chi nhánh trình duyệt tw
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
         public async Task<bool> CheckExistsTransferFile(long documentId)
         {
             return await _dbContext.AttachedFileInfos
