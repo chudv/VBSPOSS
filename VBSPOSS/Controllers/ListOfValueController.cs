@@ -843,7 +843,7 @@ namespace VBSPOSS.Controllers
             var listCommunes = _serviceLOV.GetLovCommuneList(pProvinceCode, pDistrictCode, pCommuneCode, pPosCode, "");
             if (sTitleChoice != "" && string.IsNullOrEmpty(pCommuneCode))
                 data.Add(new { id = "", value = sTitleChoice });
-            foreach (ListOfCommuneViewModel item in listCommunes)
+            foreach (ListOfCommuneViewModel item in listCommunes.GroupBy(g => new { g.CommuneCode, g.CommuneName }).Select(s => s.First()))
             {
                 if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
                 {

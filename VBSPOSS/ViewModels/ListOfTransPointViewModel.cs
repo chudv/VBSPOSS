@@ -297,6 +297,10 @@ namespace VBSPOSS.ViewModels
 
         public string TimeEnd { get; set; }
 
+        public DateTime TimeBeginDate { get; set; }
+
+        public DateTime TimeEndDate { get; set; }
+
         public decimal TimeBeginNum { get; set; }
 
         public decimal TimeEndNum { get; set; }
@@ -473,6 +477,8 @@ namespace VBSPOSS.ViewModels
         public string BusinessDateTextOldInfo { get; set; }          //Thêm
 
         public long DocumentIdOldInfo { get; set; }
+
+        public List<String> MaApDungList { get; set; } 
     }
     #endregion
 }
