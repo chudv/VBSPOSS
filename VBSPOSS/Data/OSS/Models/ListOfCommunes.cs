@@ -55,7 +55,7 @@ namespace VBSPOSS.Data.OSS.Models
         [Column("TxnPointName")]
         public string TxnPointName { get; set; }
         [Column("VisitDate")]
-        public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
         [Column("Times")]
         public string Times { get; set; }
         [Column("TimeBegin")]
@@ -194,7 +194,7 @@ namespace VBSPOSS.Data.OSS.Models
         public string TxnPointName { get; set; }
 
         [Column("VisitDate")]
-        public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
 
         [Column("Times")]
         public string Times { get; set; }
@@ -358,7 +358,7 @@ namespace VBSPOSS.Data.OSS.Models
         public string TxnPointName { get; set; }
 
         [Column("VisitDate")]
-        public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
 
         [Column("Times")]
         public string Times { get; set; }

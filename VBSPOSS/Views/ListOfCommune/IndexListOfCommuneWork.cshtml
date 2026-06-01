@@ -427,6 +427,24 @@
     }
 </script>
 
+<script>
+    // Đảm bảo notification luôn tồn tại
+    if (typeof notification === "undefined") {
+        window.notification = {
+            show: function (options, type) {
+                var msg = (options && options.message) ? options.message : "Thông báo";
+                if (type === "error") {
+                    alert("❌ " + msg);
+                } else if (type === "success") {
+                    alert("✅ " + msg);
+                } else {
+                    alert(msg);
+                }
+            }
+        };
+    }
+</script>
+
 @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
 @Html.Hidden("UserNameView", TempData["UserName"])
 

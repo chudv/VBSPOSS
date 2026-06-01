@@ -729,6 +729,14 @@ namespace VBSPOSS.Services.Implements
                         .OrderBy(x => x.ProductCode)
                         .ToList();
 
+                    // === LỌC SẢN PHẨM TIDE Ở ĐÂY ===
+                    if (productGroupCode == "TIDE")
+                    {
+                        latestData = latestData
+                            .Where(x => !IsExcludedTideProduct(x.ProductCode))
+                            .ToList();
+                    }
+
                     result = CreateDetailFromViewWithDefault(latestData, displayGroup, defaultMinSpread, defaultMaxSpread);
                 }
 
@@ -740,6 +748,25 @@ namespace VBSPOSS.Services.Implements
                 _logger.LogError(ex, $"Lỗi LoadProductsForCreateAsync - {productGroupCode}");
                 throw;
             }
+        }
+
+        private bool IsExcludedTideProduct(string productCode)
+        {
+            if (string.IsNullOrEmpty(productCode))
+                return false;
+
+            var excludedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "491",
+        "492",
+        "493",
+         "494",
+          "495",
+           "496",
+
+    };
+
+            return excludedCodes.Contains(productCode);
         }
 
         // Hàm mới - Dùng cho DEPOSITPENAL

@@ -58,7 +58,8 @@ namespace VBSPOSS.Data
         public DbSet<ProductParametersView> ProductParametersViews { get; set; }
 
         public virtual DbSet<UserManagementIDC> UserManagementIDCs { get; set; }
-
+        public virtual DbSet<vUserManagementIDC> vUserManagementIDCs { get; set; }
+        //
         public virtual DbSet<UserIDCMaster> UserIDCMasters { get; set; }
 
         public virtual DbSet<UserIDCRestrictionAllowedDays> UserIDCRestrictionAllowedDayss { get; set; }
@@ -88,6 +89,7 @@ namespace VBSPOSS.Data
 
             modelBuilder.Entity<UserManagementIDC>().ToTable("UserManagementIDC");
             modelBuilder.Entity<UserManagementIDC>().HasKey(x => new { x.Id });
+            modelBuilder.Entity<vUserManagementIDC>().HasNoKey().ToView("vUserManagementIDC");
 
             modelBuilder.Entity<UserIDCMaster>().ToTable("UserIDCMaster");
             modelBuilder.Entity<UserIDCMaster>().HasKey(x => new { x.Id, x.UserId, x.NickName });

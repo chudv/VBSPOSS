@@ -32,6 +32,9 @@ namespace VBSPOSS.Mappings
             CreateMap<UserManagementIDC, UserManagementIDCViewModel>();
             CreateMap<UserManagementIDCViewModel, UserManagementIDC>();
 
+            CreateMap<vUserManagementIDC, UserManagementIDCViewModel>();
+            CreateMap<UserManagementIDCViewModel, vUserManagementIDC>();
+
             CreateMap<UserIDCMaster, UserManagementIDCViewModel>();
             CreateMap<UserManagementIDC, UserIDCMasterViewModel>();
 

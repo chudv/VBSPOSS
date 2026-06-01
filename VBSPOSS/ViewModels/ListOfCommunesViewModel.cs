@@ -36,7 +36,8 @@ namespace VBSPOSS.ViewModels
         public string IsNewCountryside { get; set; }
         public string TxnPointCode { get; set; }
         public string TxnPointName { get; set; }
-        public int VisitDate { get; set; }
+        // public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
         public string VisitDateText { get; set; }  //Thêm
         public string Times { get; set; }
         public string TimeBegin { get; set; }
@@ -103,7 +104,8 @@ namespace VBSPOSS.ViewModels
         public string IsNewCountryside { get; set; }
         public string TxnPointCode { get; set; }
         public string TxnPointName { get; set; }
-        public int VisitDate { get; set; }
+       // public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
         public string VisitDateText { get; set; }              //Thêm
         public string Times { get; set; }
         public string TimeBegin { get; set; }
@@ -175,7 +177,8 @@ namespace VBSPOSS.ViewModels
         public string IsNewCountryside { get; set; }
         public string TxnPointCode { get; set; }
         public string TxnPointName { get; set; }
-        public int VisitDate { get; set; }
+       // public int VisitDate { get; set; }
+        public string VisitDate { get; set; }
         public string VisitDateText { get; set; }               //Thêm
         public string Times { get; set; }
         public string TimeBegin { get; set; }
@@ -234,7 +237,8 @@ namespace VBSPOSS.ViewModels
         public string IsNewCountrysideOldInfo { get; set; }
         public string TxnPointCodeOldInfo { get; set; }
         public string TxnPointNameOldInfo { get; set; }
-        public int VisitDateOldInfo { get; set; }
+        //   public int VisitDateOldInfo { get; set; }
+        public string VisitDateOldInfo { get; set; }
         public string VisitDateTextOldInfo { get; set; }               //Thêm
         public string TimesOldInfo { get; set; }
         public string TimeBeginOldInfo { get; set; }
