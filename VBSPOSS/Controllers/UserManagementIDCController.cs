@@ -348,7 +348,7 @@ namespace VBSPOSS.Controllers
                 objUserManagementIDCUpd.CreatedDate = DateTime.Now;
                 objUserManagementIDCUpd.ModifiedBy = UserName;
                 objUserManagementIDCUpd.ModifiedDate = DateTime.Now;
-                objUserManagementIDCUpd.ApproverBy = UserName;
+                objUserManagementIDCUpd.ApprovelBy = UserName;
                 objUserManagementIDCUpd.ApprovalDate = DateTime.Now;
                 objUserManagementIDCUpd.FunctionTypeName = FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Description;
                 objUserManagementIDCUpd.RoleToTransferCashDescription = "";
@@ -448,7 +448,7 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.CreatedDate = objUserManagementIDCFind01.CreatedDate;
                     objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCFind01.ModifiedBy;
                     objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCFind01.ModifiedDate;
-                    objUserManagementIDCUpd.ApproverBy = objUserManagementIDCFind01.ApproverBy;
+                    objUserManagementIDCUpd.ApprovelBy = objUserManagementIDCFind01.ApprovelBy;
                     objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCFind01.ApprovalDate;
                     objUserManagementIDCUpd.FunctionTypeName = FunctionTypeFlag.GetByCode(objUserManagementIDCFind01.FunctionType).Description;//GetDescriptionByCode
                     if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -560,7 +560,7 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.CreatedDate = objUserManagementIDCViewTmp.CreatedDate;
                         objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCViewTmp.ModifiedBy;
                         objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCViewTmp.ModifiedDate;
-                        objUserManagementIDCUpd.ApproverBy = objUserManagementIDCViewTmp.ApproverBy;
+                        objUserManagementIDCUpd.ApprovelBy = objUserManagementIDCViewTmp.ApprovelBy;
                         objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCViewTmp.ApprovalDate;
                         objUserManagementIDCUpd.FunctionTypeName = string.IsNullOrEmpty(objUserManagementIDCViewTmp.FunctionType) ? "" : FunctionTypeFlag.GetByCode(objUserManagementIDCViewTmp.FunctionType).Description;
                         if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -683,7 +683,7 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.CreatedDate = objUserManagementIDCTemp01.CreatedDate;
                         objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCTemp01.ModifiedBy;
                         objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCTemp01.ModifiedDate;
-                        objUserManagementIDCUpd.ApproverBy = objUserManagementIDCTemp01.ApproverBy;
+                        objUserManagementIDCUpd.ApprovelBy = objUserManagementIDCTemp01.ApprovelBy;
                         objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCTemp01.ApprovalDate;
 
                         if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -824,7 +824,7 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.CreatedDate = objUserManagementMTFind.CreatedDate;
                     objUserManagementIDCUpd.ModifiedBy = objUserManagementMTFind.ModifiedBy;
                     objUserManagementIDCUpd.ModifiedDate = objUserManagementMTFind.ModifiedDate;
-                    objUserManagementIDCUpd.ApproverBy = objUserManagementMTFind.ApproverBy;
+                    objUserManagementIDCUpd.ApprovelBy = objUserManagementMTFind.ApprovelBy;
                     objUserManagementIDCUpd.ApprovalDate = objUserManagementMTFind.ApprovalDate;
                     objUserManagementIDCUpd.FunctionTypeName = "";
                     if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -955,7 +955,7 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
                     objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
                     objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
-                    objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+                    objUserManagementIDCUpd.ApprovelBy = objUserManagementChangeTemp.ApprovelBy;
                     objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
 
                     if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -1100,7 +1100,7 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
                     objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
                     objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
-                    objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+                    objUserManagementIDCUpd.ApprovelBy = objUserManagementChangeTemp.ApprovelBy;
                     objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
 
                     if (listRoleUsers != null && listRoleUsers.Count != 0)
@@ -1856,7 +1856,7 @@ namespace VBSPOSS.Controllers
                         objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
                         objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
                         objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
-                        objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+                        objUserManagementIDCUpd.ApprovelBy = objUserManagementChangeTemp.ApprovelBy;
                         objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
 
                         if (listRoleUsers != null && listRoleUsers.Count != 0)

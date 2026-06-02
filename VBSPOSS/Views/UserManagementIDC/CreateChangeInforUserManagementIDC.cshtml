@@ -394,7 +394,7 @@
     @Html.HiddenFor(m => m.CreatedDate, new { @Value = Model == null ? DateTime.Today : Model.CreatedDate })
     @Html.HiddenFor(m => m.ModifiedBy, new { @Value = Model == null ? "" : Model.ModifiedBy })
     @Html.HiddenFor(m => m.ModifiedDate, new { @Value = Model == null ? DateTime.Today : Model.ModifiedDate })
-    @Html.HiddenFor(m => m.ApproverBy, new { @Value = Model == null ? "" : Model.ApproverBy })
+    @Html.HiddenFor(m => m.ApprovelBy, new { @Value = Model == null ? "" : Model.ApprovelBy })
     @Html.HiddenFor(m => m.ApprovalDate, new { @Value = Model == null ? DateTime.Today : Model.ApprovalDate })
 
     @Html.HiddenFor(m => m.RoleToTransferCashDescription, new { @Value = Model == null ? "" : Model.RoleToTransferCashDescription })

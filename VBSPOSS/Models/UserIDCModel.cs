@@ -46,7 +46,7 @@ namespace VBSPOSS.Models
         public DateTime? CreatedDate { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public string? ApproverBy { get; set; }
+        public string? ApprovelBy { get; set; }
         public DateTime? ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
         public DateTime? StartDate { get; set; }
@@ -68,6 +68,8 @@ namespace VBSPOSS.Models
         public DateTime? BusinessDate { get; set; }
         public string? ListFileId { get; set; }
         public string? ReasonReject { get; set; }
+        public string? MovingUnitApprovelBy { get; set; }
+        public DateTime? MovingUnitApprovelDate { get; set; }
     }
 
 
@@ -104,7 +106,7 @@ namespace VBSPOSS.Models
         public DateTime CreatedDate { get; set; }
         public string ModifiedBy { get; set; }
         public DateTime ModifiedDate { get; set; }
-        public string ApproverBy { get; set; }
+        public string ApprovelBy { get; set; }
         public DateTime ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
         public DateTime? StartDate { get; set; }
@@ -198,7 +200,7 @@ namespace VBSPOSS.Models
     
         public DateTime ModifiedDate { get; set; }
     
-        public string ApproverBy { get; set; }
+        public string ApprovelBy { get; set; }
     
         public DateTime ApprovalDate { get; set; }
     }
@@ -253,7 +255,7 @@ namespace VBSPOSS.Models
         public DateTime? CreatedDate { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public string? ApproverBy { get; set; }
+        public string? ApprovelBy { get; set; }
         public DateTime? ApprovalDate { get; set; }
         public DateTime? EffectiveDate { get; set; }
         public DateTime? StartDate { get; set; }

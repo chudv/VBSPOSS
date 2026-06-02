@@ -252,7 +252,7 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.Status = pUserIDCMasterUpd.Status;
                             objUserIDCMasterUpdNew.ModifiedBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ModifiedDate = dCurrentDateTmp;
-                            objUserIDCMasterUpdNew.ApproverBy = pUserNameUpd;
+                            objUserIDCMasterUpdNew.ApprovelBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ApprovalDate = dCurrentDateTmp;
                             _dbContext.UserIDCMasters.Update(objUserIDCMasterUpdNew);
                             int iSaveChanges = await _dbContext.SaveChangesAsync();
@@ -308,7 +308,7 @@ namespace VBSPOSS.Services.Implements
                             objUserIDCMasterUpdNew.CreatedDate = dCurrentDateTmp;
                             objUserIDCMasterUpdNew.ModifiedBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ModifiedDate = dCurrentDateTmp;
-                            objUserIDCMasterUpdNew.ApproverBy = pUserNameUpd;
+                            objUserIDCMasterUpdNew.ApprovelBy = pUserNameUpd;
                             objUserIDCMasterUpdNew.ApprovalDate = dCurrentDateTmp;
                             objUserIDCMasterUpdNew.StartDate = pUserIDCMasterUpd.StartDate;
                             objUserIDCMasterUpdNew.IpSetCode = pUserIDCMasterUpd.IpSetCode; //Xử lý khi gọi API
@@ -1047,7 +1047,7 @@ namespace VBSPOSS.Services.Implements
                     objUserManagementUpdNew.CreatedDate = dCurrentDateTmp;
                     objUserManagementUpdNew.ModifiedBy = pUserNameUpd;
                     objUserManagementUpdNew.ModifiedDate = dCurrentDateTmp;
-                    objUserManagementUpdNew.ApproverBy = pUserNameUpd;
+                    objUserManagementUpdNew.ApprovelBy = pUserNameUpd;
                     objUserManagementUpdNew.ApprovalDate = dCurrentDateTmp;
 
                     if (pUserManagementUpd.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
@@ -1109,7 +1109,7 @@ namespace VBSPOSS.Services.Implements
                                     objNewRow.CreatedDate = dCurrentDateTmp;
                                     objNewRow.ModifiedBy = pUserNameUpd;
                                     objNewRow.ModifiedDate = dCurrentDateTmp;
-                                    objNewRow.ApproverBy = pUserNameUpd;
+                                    objNewRow.ApprovelBy = pUserNameUpd;
                                     objNewRow.ApprovalDate = dCurrentDateTmp;
                                     _dbContext.UserManagementIDCs.Add(objNewRow);
                                     iSaveChanges = _dbContext.SaveChanges();
@@ -1447,7 +1447,7 @@ namespace VBSPOSS.Services.Implements
                             int statusOld = 0;
                             statusOld = objUserRejectUpdateStatus.Status;
                             objUserRejectUpdateStatus.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Rejected.Value : StatusBusinessFlow.Status_Branch_Rejected.Value;
-                            objUserRejectUpdateStatus.ApproverBy = pUserNameUpd;
+                            objUserRejectUpdateStatus.ApprovelBy = pUserNameUpd;
                             objUserRejectUpdateStatus.ApprovalDate = dCurrentDateTmp;
                             objUserRejectUpdateStatus.ReasonReject = string.IsNullOrEmpty(pReasonReject) ? $"Từ chối yêu cầu {objUserRejectUpdateStatus.FunctionType}|{objUserRejectUpdateStatus.UserId}|{statusOld.ToString()}" : pReasonReject;
                             _dbContext.UserManagementIDCs.Update(objUserRejectUpdateStatus);
@@ -1597,7 +1597,7 @@ namespace VBSPOSS.Services.Implements
                                     objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                    objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var objCreateUserIDCMaster = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Add.Value.ToString());
@@ -1611,7 +1611,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.EffectiveDate = dEffectiveDateTmp;
                                     }
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                    objUserAuth.ApproverBy = pUserNameUpd;
+                                    objUserAuth.ApprovelBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
                                     iCountSuccess++;
                                 }
@@ -1678,7 +1678,7 @@ namespace VBSPOSS.Services.Implements
                                     //Kết thúc gọi Noti thiết lập lại ngày hiệu lực
                                     objUserAuth.EffectiveDate = dEffectiveDateTmp;
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                    objUserAuth.ApproverBy = pUserNameUpd;
+                                    objUserAuth.ApprovelBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
                                 }
                                 //Cập nhật trạng thái và các thông tin gọi API vào bảng UserManagementIDC
@@ -1748,13 +1748,13 @@ namespace VBSPOSS.Services.Implements
                                     objUserIDCMaster.Id = 0;
                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                    objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var iRowIdUserIDCMasterUpdate = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
                                     iCountSuccess++;
                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                    objUserAuth.ApproverBy = pUserNameUpd;
+                                    objUserAuth.ApprovelBy = pUserNameUpd;
                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
                                 }
                                 else
@@ -1850,13 +1850,13 @@ namespace VBSPOSS.Services.Implements
                                         objUserIDCMaster.Id = 0;
                                         objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                         objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                        objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                        objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                         objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                         objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         var iRowIdUserIDCMaster03 = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
                                         
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                        objUserAuth.ApproverBy = pUserNameUpd;
+                                        objUserAuth.ApprovelBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
                                         iCountSuccess++;
                                     }
@@ -2001,7 +2001,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
 
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                        objUserAuth.ApproverBy = pUserNameUpd;
+                                        objUserAuth.ApprovelBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
                                         iCountSuccess++;
                                         //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
@@ -2032,7 +2032,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                         objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                        objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                        objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                         objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                         var iRowIdUserIDCUpdate04 = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
                                     }
@@ -2075,8 +2075,8 @@ namespace VBSPOSS.Services.Implements
                                     if (objUserMovingUpdateStatus != null && !string.IsNullOrEmpty(objUserMovingUpdateStatus.UserId))
                                     {
                                         objUserMovingUpdateStatus.Status = StatusBusinessFlow.Status_MovingBranch_Approved.Value;
-                                        objUserMovingUpdateStatus.ApproverBy = pUserNameUpd;
-                                        objUserMovingUpdateStatus.ApprovalDate = dCurrentDateTmp;
+                                        objUserMovingUpdateStatus.MovingUnitApprovelBy = pUserNameUpd;
+                                        objUserMovingUpdateStatus.MovingUnitApprovelDate = dCurrentDateTmp;
                                         _dbContext.UserManagementIDCs.Update(objUserMovingUpdateStatus);
                                         iSaveChangeAuthTmp = await _dbContext.SaveChangesAsync();
                                         if (iSaveChangeAuthTmp > 0)
@@ -2214,7 +2214,7 @@ namespace VBSPOSS.Services.Implements
                                                     objUserAuth.CallApiResponseMsg = objResultModifyUserIDCByApi.ResponseMsg;
 
                                                     objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                                    objUserAuth.ApproverBy = pUserNameUpd;
+                                                    objUserAuth.ApprovelBy = pUserNameUpd;
                                                     objUserAuth.ApprovalDate = dCurrentDateTmp;
                                                     iCountSuccess++;
                                                     //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
@@ -2244,7 +2244,7 @@ namespace VBSPOSS.Services.Implements
                                                     objUserIDCMaster.PosCode = objUserAuth.PosCode;
                                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                                    objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                                     var iResultRowUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
@@ -2349,7 +2349,7 @@ namespace VBSPOSS.Services.Implements
 
                                         objUserAuth.ExpiryDate = dSystemDateOfIDC.Date;
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                        objUserAuth.ApproverBy = pUserNameUpd;
+                                        objUserAuth.ApprovelBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
                                         iCountSuccess++;
                                         //Lấy một số thông tin từ Intellect IDC để cập nhật vào Master và UserManagementIDC
@@ -2381,7 +2381,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                         objUserIDCMaster.ExpiryDate = dSystemDateOfIDC.Date;
                                         objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
-                                        objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                        objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                         objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                         objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                         var iResultIdUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
@@ -2487,7 +2487,7 @@ namespace VBSPOSS.Services.Implements
                                         sMessageInfo = $"{sMessageInfo} Gọi API ModifyUser {objResultModifyUserIDCByApiStep02.ResponseCode}-{objResultModifyUserIDCByApiStep02.ResponseMsg} | ";
                                         objUserAuth.ExpiryDate = dMaxDateTemp.Date;
                                         objUserAuth.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
-                                        objUserAuth.ApproverBy = pUserNameUpd;
+                                        objUserAuth.ApprovelBy = pUserNameUpd;
                                         objUserAuth.ApprovalDate = dCurrentDateTmp;
                                         iCountSuccess++;
                                         bIsContinueTmpRestoreUserId = true;
@@ -2541,7 +2541,7 @@ namespace VBSPOSS.Services.Implements
                                     objUserIDCMaster.ExpiryDate = objUserAuth.ExpiryDate;
                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
                                     objUserIDCMaster.UserStatus = objUserAuth.UserStatus;
-                                    objUserIDCMaster.ApproverBy = pUserNameUpd;
+                                    objUserIDCMaster.ApprovelBy = pUserNameUpd;
                                     objUserIDCMaster.ApprovalDate = dCurrentDateTmp;
                                     objUserIDCMaster.Status = (pUserGradeUpd == PosGrade.HEAD_POS) ? StatusBusinessFlow.Status_HeadOffice_Approved.Value : StatusBusinessFlow.Status_Branch_Approved.Value;
                                     var iResultIdUpdateTmp = await SaveUserIDCMaster(objUserIDCMaster, pUserNameUpd, EventFlag.EventFlag_Edit.Value.ToString());
@@ -2888,7 +2888,7 @@ namespace VBSPOSS.Services.Implements
                                             objUserManagementIDCsUpdChange.PosName = objUserManagementIDCsUpdNew.PosName;
                                             objUserManagementIDCsUpdChange.ModifiedBy = pUserNameUpd;
                                             objUserManagementIDCsUpdChange.ModifiedDate = dCurrentDateTmp;
-                                            objUserManagementIDCsUpdChange.ApproverBy = pUserNameUpd;
+                                            objUserManagementIDCsUpdChange.ApprovelBy = pUserNameUpd;
                                             objUserManagementIDCsUpdChange.ApprovalDate = dCurrentDateTmp;
                                             objUserManagementIDCsUpdChange.EffectiveDate = dCurrentDateTmp;
                                             _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdChange);
@@ -3062,7 +3062,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserManagementIDCPosNew.PosName = objUserManagementIDCsUpdNew.PosName;
                                         objUserManagementIDCPosNew.ModifiedBy = pUserNameUpd;
                                         objUserManagementIDCPosNew.ModifiedDate = dCurrentDateTmp;
-                                        objUserManagementIDCPosNew.ApproverBy = pUserNameUpd;
+                                        objUserManagementIDCPosNew.ApprovelBy = pUserNameUpd;
                                         objUserManagementIDCPosNew.ApprovalDate = dCurrentDateTmp;
                                         objUserManagementIDCPosNew.EffectiveDate = dCurrentDateTmp;
                                         _dbContext.UserManagementIDCs.Add(objUserManagementIDCPosNew);
@@ -3071,7 +3071,7 @@ namespace VBSPOSS.Services.Implements
                                         objUserManagementIDCsUpdChange.ExpiryDate = dCurrentDateTmp;
                                         objUserManagementIDCsUpdChange.ModifiedBy = pUserNameUpd;
                                         objUserManagementIDCsUpdChange.ModifiedDate = dCurrentDateTmp;
-                                        objUserManagementIDCsUpdChange.ApproverBy = pUserNameUpd;
+                                        objUserManagementIDCsUpdChange.ApprovelBy = pUserNameUpd;
                                         objUserManagementIDCsUpdChange.ApprovalDate = dCurrentDateTmp;
                                         _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdChange);
                                     }
@@ -3209,7 +3209,7 @@ namespace VBSPOSS.Services.Implements
 
                         if (isRejectBranch || isRejectMain)
                         {
-                            objUserManagementIDCsUpdNew.ApproverBy = pUserNameUpd;
+                            objUserManagementIDCsUpdNew.ApprovelBy = pUserNameUpd;
                             objUserManagementIDCsUpdNew.ApprovalDate = dCurrentDateTmp;
                             if (isRejectBranch)
                             {
@@ -3234,7 +3234,7 @@ namespace VBSPOSS.Services.Implements
                     }
                     objUserManagementIDCsUpdNew.ModifiedBy = pUserNameUpd;
                     objUserManagementIDCsUpdNew.ModifiedDate = dCurrentDateTmp;
-                    objUserManagementIDCsUpdNew.ApproverBy = pUserNameUpd;
+                    objUserManagementIDCsUpdNew.ApprovelBy = pUserNameUpd;
                     objUserManagementIDCsUpdNew.ApprovalDate = dCurrentDateTmp;
                     _dbContext.UserManagementIDCs.Update(objUserManagementIDCsUpdNew);
                     iSaveChanges = _dbContext.SaveChanges();
