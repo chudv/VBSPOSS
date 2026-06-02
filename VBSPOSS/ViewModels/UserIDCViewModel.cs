@@ -58,8 +58,10 @@ namespace VBSPOSS.ViewModels
         public DateTime CreatedDate { get; set; }
         public string ModifiedBy { get; set; }
         public DateTime ModifiedDate { get; set; }
-        public string ApproverBy { get; set; }
+        public string ApprovelBy { get; set; }
         public DateTime ApprovalDate { get; set; }
+        public string MovingUnitApprovelBy { get; set; }
+        public DateTime MovingUnitApprovelDate { get; set; }
         public string FunctionTypeName { get; set; }
         /// <summary>
         /// "Có quyền tiền mặt" hoặc "Không có quyền tiền mặt";
@@ -117,11 +119,9 @@ namespace VBSPOSS.ViewModels
         public string RoleToTransferCashDescriptionDetailOld { get; set; }
         public DateTime StartDateOld { get; set; }
         public string StartDateOldText { get; set; }         //Thêm
-
         public DateTime BusinessDate { get; set; }
         public string BusinessDateText { get; set; }          //Thêm
         public string FlagCall { get; set; }                //Thêm
-
         public string? GenderCode { get; set; }
         public string? GenderText { get; set; }
         public string? StaffPosCode { get; set; }
@@ -132,7 +132,6 @@ namespace VBSPOSS.ViewModels
         public string? StaffPositionName { get; set; }
         public string? StaffEmail { get; set; }
         public string? StaffMobileNo { get; set; }
-
         public DateTime EndDateChangeRole { get; set; }                 //Thêm
         public int ChoiceEndDateChangeRole { get; set; }                 //Thêm
         /// <summary>
@@ -193,7 +192,6 @@ namespace VBSPOSS.ViewModels
         public int NumberOfCloseUserValid { get; set; }
         public int NumberOfRestoreUserValid { get; set; }
         public int NumberOfOtherUserValid { get; set; }
-
         public string StartDatePeriodText { get; set; }
         public string SumaryStatus { get; set; }
     }
@@ -238,9 +236,10 @@ namespace VBSPOSS.ViewModels
         public DateTime CreatedDate { get; set; }
         public string ModifiedBy { get; set; }
         public DateTime ModifiedDate { get; set; }
-        public string ApproverBy { get; set; }
+        public string ApprovelBy { get; set; }
         public DateTime ApprovalDate { get; set; }
-        
+        public string MovingUnitApprovelBy { get; set; }
+        public DateTime MovingUnitApprovelDate { get; set; }
         public string RoleToTransferCashDescription { get; set; }
         public string RoleToTransferCashValue { get; set; }
         public string GroupNameDetail { get; set; }

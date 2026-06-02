@@ -394,7 +394,7 @@
     @Html.HiddenFor(m => m.CreatedDate, new { @Value = Model == null ? DateTime.Today : Model.CreatedDate })
     @Html.HiddenFor(m => m.ModifiedBy, new { @Value = Model == null ? "" : Model.ModifiedBy })
     @Html.HiddenFor(m => m.ModifiedDate, new { @Value = Model == null ? DateTime.Today : Model.ModifiedDate })
-    @Html.HiddenFor(m => m.ApproverBy, new { @Value = Model == null ? "" : Model.ApproverBy })
+    @Html.HiddenFor(m => m.ApprovelBy, new { @Value = Model == null ? "" : Model.ApprovelBy })
     @Html.HiddenFor(m => m.ApprovalDate, new { @Value = Model == null ? DateTime.Today : Model.ApprovalDate })
 
     @Html.HiddenFor(m => m.RoleToTransferCashDescription, new { @Value = Model == null ? "" : Model.RoleToTransferCashDescription })
@@ -700,8 +700,8 @@
 
                 if (result == "0") {
                     if (lcRowId <= 0)
-                        alert("Bạn đã cập nhật thành công Thêm mới Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] của tài khoản [" + lcUserId + "] người dùng Intellect iDC!");
-                    else alert("Bạn đã cập nhật thành công chỉnh sửa Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản [" + lcUserId + "] người dùng Intellect iDC!");
+                        alert("Bạn đã cập nhật thành công Thêm mới Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản [" + lcUserId + " - " + lcFullName + "] người dùng Intellect iDC!");
+                    else alert("Bạn đã cập nhật thành công chỉnh sửa Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản [" + lcUserId + " - " + lcFullName + "] người dùng Intellect iDC!");
                     dataChange = true;
                     onCloseCreateChange();
                 }
@@ -840,6 +840,9 @@
         //Nếul à xem thì readonly các control và Hide nút lệnh Lưu
         if (lcFlagCall == $("#EventFlag_ViewView").val())
         {
+            var cboPosCode = $("#PosCode").data("kendoComboBox");
+            cboPosCode.readonly(true);
+
             var cboFunctionType = $("#FunctionType").data("kendoComboBox");
             cboFunctionType.readonly(true);
 

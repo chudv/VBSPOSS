@@ -49,9 +49,10 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <param name="pIsCallInfoFromHuman">True: Gọi lấy thông tin từ QLNS; False: Không gọi</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
         Task<List<UserManagementIDCViewModel>> GetListvUserManagementIDCSearch(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName,
-                                string pStaffCode, int pStatus, string pFunctionType);
+                                string pStaffCode, int pStatus, string pFunctionType, bool pIsCallInfoFromHuman);
 
         /// <summary>
         /// Hàm thực hiện Xóa (Đóng) bản ghi nghiệp vụ thêm mới hoặc thay đổi thông tin tài khoản người dùng Intellect iDC (Bảng UserManagementIDC)
@@ -144,6 +145,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pSystemDateText">Ngày hiện thời của máy chủ hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pBusinessDateText">Ngày mở sổ của hệ thống Intellect iDC. Định dạng dd/MM/yyyy</param>
         /// <param name="pUserNameUpd">Người thực hiện Phê duyệt</param>
+        /// <param name="pUserPosCodeUpd">Mã POS của người thực hiện Phê duyệt</param>
         /// <param name="pUserGradeUpd">Cấp thực hiện: Phê duyệt. Giá trị: 
         ///                 1 - PGD (PosGrade.SUB_POS);
         ///                 2 - Chi nhánh (PosGrade.MAIN_POS);
@@ -153,7 +155,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Danh sách Id bản ghi được Update thành công</returns>
         /// <exception cref="Exception"></exception>
         Task<List<long>> SaveAuthorizeUserManagementIDC(List<UserManagementIDCViewModel> pListUserIdAuthorize, string pFunctionType, string pSystemDateText,
-                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pFlagCall);
+                                    string pBusinessDateText, string pUserNameUpd, int pUserGradeUpd, string pUserPosCodeUpd, string pFlagCall);
 
 
         /// <summary>

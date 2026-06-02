@@ -162,14 +162,14 @@ namespace VBSPOSS.Constants
         public static ValueConstModel Status_ITC_Applied = new ValueConstModel { Value = 9, Code = "HeadOfficeApplied", Description = "Thực thi vào hệ thống Intellect iDC" };
 
         /// <summary>
-        /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        /// Status_MovingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị chuyển đi" };
         /// </summary>
-        public static ValueConstModel Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        public static ValueConstModel Status_MovingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị chuyển đi" };
 
         /// <summary>
-        /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        /// Status_MovingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị chuyển đi" };
         /// </summary>
-        public static ValueConstModel Status_ReceivingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị tiếp nhận" };
+        public static ValueConstModel Status_MovingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị chuyển đi" };
 
 
         public static ValueConstModel GetByValue(int value)
@@ -185,8 +185,8 @@ namespace VBSPOSS.Constants
                 3 => Status_HeadOffice_Approved,
                 4 => Status_HeadOffice_Rejected,
                 9 => Status_ITC_Applied,
-                8 => Status_ReceivingBranch_Approved,
-                10 => Status_ReceivingBranch_Reject,
+                8 => Status_MovingBranch_Approved,
+                10 => Status_MovingBranch_Reject,
                 _ => null
             };
         }
@@ -208,8 +208,8 @@ namespace VBSPOSS.Constants
                 Status_Branch_Rejected,
                 Status_HeadOffice_Approved,
                 Status_HeadOffice_Rejected,
-                Status_ReceivingBranch_Approved,
-                Status_ReceivingBranch_Reject
+                Status_MovingBranch_Approved,
+                Status_MovingBranch_Reject
            };
         }
 
@@ -753,6 +753,7 @@ namespace VBSPOSS.Constants
         /// Trạng thái người dùng. Giá trị: '1'- Đóng/Khóa: UserIDC_UserStatus_Closed = "1";
         /// </summary>
         public const string UserIDC_UserStatus_Closed = "1";
+
         /// <summary>
         /// Trạng thái người dùng. Giá trị: '2' - Mở/Active: UserIDC_UserStatus_Open = "2";
         /// </summary>
@@ -980,6 +981,38 @@ namespace VBSPOSS.Constants
                 FunctionTypeFlag_DELETE_USER,
                 FunctionTypeFlag_RESTORE_USER
             };
+        }
+
+        public static List<ValueConstModel> GetOption(string pUserStatus)
+        {
+            if (pUserStatus == DefaultValue.UserIDC_UserStatus_Open)
+            {
+                return new List<ValueConstModel>
+                {
+                    FunctionTypeFlag_ResetPassword,
+                    //FunctionTypeFlag_ENABLE_USER,
+                    FunctionTypeFlag_DISABLE_USER,
+                    FunctionTypeFlag_MODIFY_USER,
+                    FunctionTypeFlag_CHANGE_POS,
+                    FunctionTypeFlag_CHANGE_ROLE,
+                    FunctionTypeFlag_DELETE_USER
+                    //FunctionTypeFlag_RESTORE_USER
+                };
+            }
+            else
+            {
+                return new List<ValueConstModel>
+                {
+                    FunctionTypeFlag_ResetPassword,
+                    FunctionTypeFlag_ENABLE_USER,
+                    FunctionTypeFlag_DISABLE_USER,
+                    FunctionTypeFlag_MODIFY_USER,
+                    FunctionTypeFlag_CHANGE_POS,
+                    FunctionTypeFlag_CHANGE_ROLE,
+                    FunctionTypeFlag_DELETE_USER,
+                    FunctionTypeFlag_RESTORE_USER
+                };
+            }
         }
 
         public static List<ValueConstModel> GetAll(bool pIsNone)
@@ -1302,6 +1335,53 @@ namespace VBSPOSS.Constants
 
     }
 
+    public static class TransferDataPosStatus
+    {
+        /// <summary>
+        /// Xóa tờ trình
+        /// </summary>
+        public const string Deleted = "0";
+
+        /// <summary>
+        /// CN tạo tờ trình
+        /// </summary>
+        public const string BranchCreated = "1";
+
+        /// <summary>
+        /// CN trình duyệt tờ trình
+        /// </summary>
+        public const string BranchSubmitted = "3";
+
+        /// <summary>
+        /// TW phê duyệt
+        /// </summary>
+        public const string HeadOfficeApproved = "5";
+
+        /// <summary>
+        /// TW từ chối
+        /// </summary>
+        public const string HeadOfficeRejected = "6";
+
+        /// <summary>
+        /// POS nguồn tạo số liệu
+        /// </summary>
+        public const string SourcePosGeneratedData = "7";
+
+        /// <summary>
+        /// POS đích xác nhận
+        /// </summary>
+        //public const string DestinationPosConfirmed = "8";
+
+        /// <summary>
+        /// POS nguồn xác nhận số liệu
+        /// </summary>
+        public const string SourcePosConfirmedData = "9";
+
+        /// <summary>
+        /// TW xử lý script
+        /// </summary>
+        public const string HeadOfficeProcessedScript = "11";
+    }
 
 
 }

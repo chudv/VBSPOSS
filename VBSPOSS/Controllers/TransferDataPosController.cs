@@ -237,7 +237,7 @@ namespace VBSPOSS.Controllers
 
 
         /// <summary>
-        /// Hàm thực hiện lưu yêu cầu điều chuyển dữ liệu khác pos
+        /// Hàm thực hiện lưu yêu cầu điều chuyển dữ liệu khác pos--------------Bỏ
         /// <param name="pButtonType">Cờ phân biệt thêm mới/Chỉnh sửa/Phê duyệt</param>
         ///             1 - Thêm mới
         ///             2 - Chỉnh sửa
@@ -304,7 +304,7 @@ namespace VBSPOSS.Controllers
         /// Màn hình popup trung ương phê duyệt
         /// </summary>
         /// <param name="pId"></param>
-        /// <param name="pTypeAction"></param>
+        /// <param name="pTypeAction">Chưa dùng</param>
         /// <returns></returns>
         public IActionResult ApproveTransferDataPosDetail(long pId, string pTypeAction)
         {
@@ -572,7 +572,11 @@ namespace VBSPOSS.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Lấy Danh sách thôn theo pos
+        /// </summary>
+        /// <param name="pPosCode"></param>
+        /// <returns></returns>
         public JsonResult GetVillageByPos(string pPosCode)
         {
             var data = _serviceTranferDataPos.GetListSubCommuneOfPos(pPosCode)
@@ -822,36 +826,36 @@ namespace VBSPOSS.Controllers
             return View("IndexTransferDataPosSoureTarget");
         }
 
-        public ActionResult LoadGridData_TransPointTarget([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus, string pTotrinh)
-        {
-            try
-            {
-                string sTxnPointCode = "", sTxnPointName = "";
-                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
-                {
-                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
-                }
-                if (string.IsNullOrEmpty(pEventCode))
-                    pEventCode = "";
-                if (string.IsNullOrEmpty(pTxnPointCode))
-                    pTxnPointCode = "";
-                if (string.IsNullOrEmpty(pTxnPointName))
-                    pTxnPointName = "";
-                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
-                {
-                    if (!string.IsNullOrEmpty(pPosCode))
-                        pPosCode = pPosCode.Substring(0, 4);
-                }
-                var listTransPointWorks = _serviceTranferDataPos.GetListChangePosDataChecking(pPosCode, pTotrinh);
-                return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, $"LoadGridData_TransPointTarget('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
-                ModelState.AddModelError("ERROR", $"{ex.Message}");
-                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
-            }
-        }
+        //public ActionResult LoadGridData_TransPointTarget([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus, string pTotrinh)
+        //{
+        //    try
+        //    {
+        //        string sTxnPointCode = "", sTxnPointName = "";
+        //        if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+        //        {
+        //            pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+        //        }
+        //        if (string.IsNullOrEmpty(pEventCode))
+        //            pEventCode = "";
+        //        if (string.IsNullOrEmpty(pTxnPointCode))
+        //            pTxnPointCode = "";
+        //        if (string.IsNullOrEmpty(pTxnPointName))
+        //            pTxnPointName = "";
+        //        if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
+        //        {
+        //            if (!string.IsNullOrEmpty(pPosCode))
+        //                pPosCode = pPosCode.Substring(0, 4);
+        //        }
+        //        var listTransPointWorks = _serviceTranferDataPos.GetListChangePosDataChecking(long.Parse(pTotrinh), pPosCode ,"","","","","");
+        //        return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger?.LogError(ex, $"LoadGridData_TransPointTarget('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+        //        ModelState.AddModelError("ERROR", $"{ex.Message}");
+        //        return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+        //    }
+        //}
 
         /// <summary>
         /// Lưu dữ liệu xác nhận chi tiết tài khoản (loan, casa, tide,...)
@@ -889,12 +893,23 @@ namespace VBSPOSS.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Tìm kiếm dữ liệu chi tiết để xác nhận
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pId"></param>
+        /// <param name="pFromPos"></param>
+        /// <param name="pToPos"></param>
+        /// <param name="pSourceTarget"></param>
+        /// <param name="pFromVillages"></param>
+        /// <param name="pToVillages"></param>
+        /// <param name="pTextDetil"></param>
+        /// <returns></returns>
         public ActionResult LoadGridData_TransPointTarget1([DataSourceRequest] DataSourceRequest request, long pId, string pFromPos, string pToPos, string pSourceTarget,
             string pFromVillages, string pToVillages, string pTextDetil)
         {
             TempData["SourceTarget"] = pSourceTarget;
-            var data = _serviceTranferDataPos.GetListChangePosDataChecking(pFromPos, pId.ToString());
+            var data = _serviceTranferDataPos.GetListChangePosDataChecking(pId, pFromPos, pToPos, pSourceTarget, pFromVillages, pToVillages, pTextDetil);
             return Json(data.ToDataSourceResult(request));
         }
 

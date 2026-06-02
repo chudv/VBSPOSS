@@ -185,6 +185,8 @@
 </script>
 
 <script>
+    // const BranchSubmitted = "3"; //Trạng thái chi nhánh (tay 2) trình duyệt lên tw
+
     var userPermission = @Html.Raw(Json.Serialize(userPermission ?? new RolePermissionModel()));
     function paramLoadListBranchFind() {
         return {
@@ -338,7 +340,7 @@
                 url: '@Url.Action("ApproveTransferDataPosDetail", "TransferDataPos")',
                 data: {
                     pId: id,
-                    pTypeAction: "5"
+                    pTypeAction: "5" //Thừa
                 }
             },
             resizable: false,
@@ -492,6 +494,8 @@
         }
     }
 
+
+    //Chi nhánh (tay 2) trình duyệt lên tw
     function approveItem(e) {
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var sMessInfor = "Tờ trình [" + dataItem.Id + "]";
