@@ -22,7 +22,7 @@
         color: navy !important;
     }
 
-    #StartDate, #ExpiryDate, #EffectiveDate, #TimeBeginDate, #TimeEndDate {
+    #StartDate, #ExpiryDate, #EffectiveDate, #TimeBeginDate, #TimeEndDate, #BusinessDate {
         width: 50px !important;
         max-width: 100% !important;
         font-family: Tahoma;
@@ -135,10 +135,14 @@
         var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
         var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
         var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
-
+        objCommuneCode.text("");
+        objSubCommuneCode.text("");
         objProvinceCode.dataSource.read().then(function () {
             objProvinceCode.select(1);
+            Change_Province();
+            Change_Commune();
         });
+        $("#PosName").val(objPosCode.text());
 
         // objCommuneCode.dataSource.read().then(function () {
         //     objCommuneCode.select(0);
@@ -148,6 +152,22 @@
         //     objSubCommuneCode.select(0);
         // });
     }
+
+    function Change_Province() {
+        var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
+        objCommuneCode.dataSource.read().then(function () {
+            objProvinceCode.select(0);
+        });
+        $("#ProvinceName").val(objProvinceCode.text());
+    }
+
+    function Change_Commune() {
+        var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
+        objSubCommuneCode.dataSource.read().then(function () {
+            objProvinceCode.select(0);
+        });
+    }
+
 
     var roleLists;
     function Change_RoleOfUserIDC() {
@@ -272,62 +292,62 @@
         var lcStaffCode = $("#StaffCode").val();
         var lcFullName = $("#FullName").val();
         
-        if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
-            alert("Bạn chưa chọn đơn vị của người dùng cần tạo mới tài khoản người dùng Intellect iDC. Bạn vui lòng kiểm tra lại!");
-            $('#PosCode').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcStaffId == null || lcStaffId == "") {
-            alert('Bạn chưa chọn cán bộ cần tạo mới càn tài khoản người Intellect iDC. Bạn vui lòng kiểm tra lại!');
-            $('#StaffId').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (lcStaffCode == null || lcStaffCode == "") {
-            alert("Cán bộ [" + lcFullName + "] có mã cán bộ trống. Bạn vui lòng kiểm tra lại!");
-            $('#StaffCode').focus();
-            e.preventDefault();
-            return false;
-        }
+        // if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+        //     alert("Bạn chưa chọn đơn vị của người dùng cần tạo mới tài khoản người dùng Intellect iDC. Bạn vui lòng kiểm tra lại!");
+        //     $('#PosCode').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (lcStaffId == null || lcStaffId == "") {
+        //     alert('Bạn chưa chọn cán bộ cần tạo mới càn tài khoản người Intellect iDC. Bạn vui lòng kiểm tra lại!');
+        //     $('#StaffId').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (lcStaffCode == null || lcStaffCode == "") {
+        //     alert("Cán bộ [" + lcFullName + "] có mã cán bộ trống. Bạn vui lòng kiểm tra lại!");
+        //     $('#StaffCode').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
 
-        var lcEffectiveDate = $("#EffectiveDate").val();
-        var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
-        var lcExpiryDate = $("#ExpiryDate").val();
-        var dExpiryDate = stringToDate(lcExpiryDate, "dd/MM/yyyy", "/");
-        var lcStartDate = $("#StartDate").val();
-        var dStartDate = stringToDate(lcStartDate, "dd/MM/yyyy", "/");
-        var lcBusinessDate = $("#BusinessDate").val();
-        var dBusinessDate = stringToDate(lcBusinessDate, "dd/MM/yyyy", "/");
-        if (dExpiryDate < dEffectiveDate) {
-            alert("Tài khoản Intellect iDC của người dùng [" + lcFullName + "] cập nhật có ngày hết hiệu lực [" + lcExpiryDate + "] nhỏ hơn ngày hiệu lực [" + lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
-            $('#EffectiveDate').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (dEffectiveDate < dBusinessDate) {
-            alert("Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + lcEffectiveDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
-            $('#EffectiveDate').focus();
-            e.preventDefault();
-            return false;
-        }
-        if (dStartDate < dBusinessDate) {
-            alert("Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + lcStartDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
-            $('#EffectiveDate').focus();
-            e.preventDefault();
-            return false;
-        }
+        // var lcEffectiveDate = $("#EffectiveDate").val();
+        // var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
+        // var lcExpiryDate = $("#ExpiryDate").val();
+        // var dExpiryDate = stringToDate(lcExpiryDate, "dd/MM/yyyy", "/");
+        // var lcStartDate = $("#StartDate").val();
+        // var dStartDate = stringToDate(lcStartDate, "dd/MM/yyyy", "/");
+        // var lcBusinessDate = $("#BusinessDate").val();
+        // var dBusinessDate = stringToDate(lcBusinessDate, "dd/MM/yyyy", "/");
+        // if (dExpiryDate < dEffectiveDate) {
+        //     alert("Tài khoản Intellect iDC của người dùng [" + lcFullName + "] cập nhật có ngày hết hiệu lực [" + lcExpiryDate + "] nhỏ hơn ngày hiệu lực [" + lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (dEffectiveDate < dBusinessDate) {
+        //     alert("Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + lcEffectiveDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (dStartDate < dBusinessDate) {
+        //     alert("Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + lcStartDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
 
-         var lcFlagCallView = $("#FlagEventCallView").val();
-         if (lcFlagCallView == $("#EventFlag_AddView").val())
-         {
-             if (dEffectiveDate < dStartDate) {
-                alert("Tài khoản người dùng Intellect iDC tạo mới ngày bắt đầu [" + lcStartDate + "] lơn hơn ngày hiệu lực [" +  lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
-                $('#EffectiveDate').focus();
-                e.preventDefault();
-                return false;
-             }
-         }
+        //  var lcFlagCallView = $("#FlagEventCallView").val();
+        //  if (lcFlagCallView == $("#EventFlag_AddView").val())
+        //  {
+        //      if (dEffectiveDate < dStartDate) {
+        //         alert("Tài khoản người dùng Intellect iDC tạo mới ngày bắt đầu [" + lcStartDate + "] lơn hơn ngày hiệu lực [" +  lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+        //         $('#EffectiveDate').focus();
+        //         e.preventDefault();
+        //         return false;
+        //      }
+        //  }
     }
 
     function setEditMode() {
@@ -410,60 +430,98 @@
     <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
     @Html.Hidden("FlagEventCallView", TempData["FlagEventCall"])
     @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
-    
     @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
     @Html.Hidden("EventFlag_EditIDCView", TempData["EventFlag_EditIDC"])
     @Html.Hidden("EventFlag_EditView", TempData["EventFlag_Edit"])
     @Html.Hidden("EventFlag_ViewView", TempData["EventFlag_View"])
     @Html.Hidden("EventFlag_AddView", TempData["EventFlag_Add"])
-@*     
-    @Html.HiddenFor(m => m.FlagCall, new { @Value = Model == null ? "" : Model.FlagCall })
-    
+        
     @Html.HiddenFor(m => m.OrderNo, new { @Value = Model == null ? 0 : Model.OrderNo })
-    @Html.HiddenFor(m => m.Id, new { @Value = Model == null ? 0 : Model.Id })
-    @Html.HiddenFor(m => m.FunctionType, new { @Value = Model == null ? "" : Model.FunctionType })
-    @Html.HiddenFor(m => m.NickName, new { @Value = Model == null ? "" : Model.NickName })
-    @Html.HiddenFor(m => m.GroupNameText, new { @Value = Model == null ? "" : Model.GroupNameText })
-    @Html.HiddenFor(m => m.EntityList, new { @Value = Model == null ? "" : Model.EntityList })
-    @Html.HiddenFor(m => m.AuthType, new { @Value = Model == null ? "" : Model.AuthType })
-    @Html.HiddenFor(m => m.UserType, new { @Value = Model == null ? "" : Model.UserType })
-    @Html.HiddenFor(m => m.ExtraAttributeUserRole, new { @Value = Model == null ? "" : Model.ExtraAttributeUserRole })
-    @Html.HiddenFor(m => m.ExtraAttributeBranchCode, new { @Value = Model == null ? "" : Model.ExtraAttributeBranchCode })
+    @Html.HiddenFor(m => m.OrderNoText, new { @Value = Model == null ? "" : Model.OrderNoText })
+    @Html.HiddenFor(m => m.EventCode, new { @Value = Model == null ? "" : Model.EventCode })
+    @Html.HiddenFor(m => m.EventName, new { @Value = Model == null ? "" : Model.EventName })
+    @Html.HiddenFor(m => m.ParentId, new { @Value = Model == null ? 0 : Model.ParentId })
+    @Html.HiddenFor(m => m.ProvinceName, new { @Value = Model == null ? "" : Model.ProvinceName })
+    @Html.HiddenFor(m => m.PosName, new { @Value = Model == null ? "" : Model.PosName })
+    @Html.HiddenFor(m => m.DistrictCode, new { @Value = Model == null ? "" : Model.DistrictCode })
+    @Html.HiddenFor(m => m.DistrictName, new { @Value = Model == null ? "" : Model.DistrictName })
+    @Html.HiddenFor(m => m.CommuneName, new { @Value = Model == null ? "" : Model.CommuneName })
 
-    @Html.HiddenFor(m => m.Ticket, new { @Value = Model == null ? "" : Model.Ticket })
-    @Html.HiddenFor(m => m.UserStatus, new { @Value = Model == null ? "" : Model.UserStatus })
-    @Html.HiddenFor(m => m.UserStatusText, new { @Value = Model == null ? "" : Model.UserStatusText })
-    @Html.HiddenFor(m => m.FunctionTypeName, new { @Value = Model == null ? "" : Model.FunctionTypeName })
+    @Html.HiddenFor(m => m.VisitDateText, new { @Value = Model == null ? "" : Model.VisitDateText })
+    @Html.HiddenFor(m => m.Times, new { @Value = Model == null ? "" : Model.Times })
+    @Html.HiddenFor(m => m.TimeBegin, new { @Value = Model == null ? "" : Model.TimeBegin })
+    @Html.HiddenFor(m => m.TimeEnd, new { @Value = Model == null ? "" : Model.TimeEnd })
     
-    @Html.HiddenFor(m => m.RoleToTransferCashValue, new { @Value = Model == null ? "" : Model.RoleToTransferCashValue })
-    @Html.HiddenFor(m => m.OrtherNotes, new { @Value = Model == null ? "" : Model.OrtherNotes })
+    @Html.HiddenFor(m => m.TimeBeginNum, new { @Value = Model == null ? 0 : Model.TimeBeginNum })
+    @Html.HiddenFor(m => m.TimeEndNum, new { @Value = Model == null ? 0 : Model.TimeEndNum  })
+    @Html.HiddenFor(m => m.Hours, new { @Value = Model == null ? 0 : Model.Hours })
+    @Html.HiddenFor(m => m.Minutes, new { @Value = Model == null ? 0 : Model.Minutes })
+    @Html.HiddenFor(m => m.IsInCommune, new { @Value = Model == null ? "" : Model.IsInCommune })
+    @Html.HiddenFor(m => m.IsInPos, new { @Value = Model == null ? "" : Model.IsInPos })
+    @Html.HiddenFor(m => m.IsInterWard, new { @Value = Model == null ? "" : Model.IsInterWard })
+    @Html.HiddenFor(m => m.EffectiveDateText, new { @Value = Model == null ? "" : Model.EffectiveDateText })
+    @Html.HiddenFor(m => m.TxnLocation, new { @Value = Model == null ? "" : Model.TxnLocation })
+    @Html.HiddenFor(m => m.AddressFull, new { @Value = Model == null ? "" : Model.AddressFull })
+    @Html.HiddenFor(m => m.TxnStatusText, new { @Value = Model == null ? "" : Model.TxnStatusText })
+    
+    @Html.HiddenFor(m => m.Status, new { @Value = Model == null ? 0 : Model.Status })
     @Html.HiddenFor(m => m.StatusText, new { @Value = Model == null ? "" : Model.StatusText })
+    @Html.HiddenFor(m => m.DocumentId, new { @Value = Model == null ? 0 : Model.DocumentId })
     @Html.HiddenFor(m => m.StatusUpdateCore, new { @Value = Model == null ? 0 : Model.StatusUpdateCore })
-    @Html.HiddenFor(m => m.SessionValReq, new { @Value = Model == null ? true : Model.SessionValReq })
-    @Html.HiddenFor(m => m.PrevStatus, new { @Value = Model == null ? 0 : Model.PrevStatus })
-    @Html.HiddenFor(m => m.ResponseAttributes, new { @Value = Model == null ? "" : Model.ResponseAttributes })
-    @Html.HiddenFor(m => m.CallApiStatus, new { @Value = Model == null ? "" : Model.CallApiStatus })
-    @Html.HiddenFor(m => m.CallApiReqRecordSl, new { @Value = Model == null ? 0 : Model.CallApiReqRecordSl })
+    
+    @Html.HiddenFor(m => m.CallApiTxnStatus, new { @Value = Model == null ? "" : Model.CallApiTxnStatus })
+    @Html.HiddenFor(m => m.CallApiResRecords, new { @Value = Model == null ? 0 : Model.CallApiResRecords })
     @Html.HiddenFor(m => m.CallApiResponseCode, new { @Value = Model == null ? "" : Model.CallApiResponseCode })
     @Html.HiddenFor(m => m.CallApiResponseMsg, new { @Value = Model == null ? "" : Model.CallApiResponseMsg })
-    
-    @Html.HiddenFor(m => m.SubType, new { @Value = Model == null ? "" : Model.SubType })
-    @Html.HiddenFor(m => m.IpSetCode, new { @Value = Model == null ? "" : Model.IpSetCode })
-    @Html.HiddenFor(m => m.RestrictionFlag, new { @Value = Model == null ? 0 : Model.RestrictionFlag })
-    @Html.HiddenFor(m => m.GroupNameDetail, new { @Value = Model == null ? "" : Model.GroupNameDetail })
-    
-    @Html.HiddenFor(m => m.PosCodeOld, new { @Value = Model == null ? "" : Model.PosCodeOld })
-    @Html.HiddenFor(m => m.PosNameOld, new { @Value = Model == null ? "" : Model.PosNameOld })
-    @Html.HiddenFor(m => m.GroupNameOld, new { @Value = Model == null ? "" : Model.GroupNameOld })
-    @Html.HiddenFor(m => m.GroupNameOldText, new { @Value = Model == null ? "" : Model.GroupNameOldText })
 
-    @Html.HiddenFor(m => m.FirstNameOld, new { @Value = Model == null ? "" : Model.FirstNameOld })
-    @Html.HiddenFor(m => m.LastNameOld, new { @Value = Model == null ? "" : Model.LastNameOld })
-    @Html.HiddenFor(m => m.FullNameOld, new { @Value = Model == null ? "" : Model.FullNameOld })
-    @Html.HiddenFor(m => m.EmailAddressOld, new { @Value = Model == null ? "" : Model.EmailAddressOld })
-    @Html.HiddenFor(m => m.MobileNumberOld, new { @Value = Model == null ? "" : Model.MobileNumberOld })
-    @Html.HiddenFor(m => m.DateOfBirthOld, new { @Value = Model == null ? Model.DateOfBirth : Model.DateOfBirthOld })
-    @Html.HiddenFor(m => m.BusinessDate, new { @Value = Model == null ? Model.EffectiveDate : Model.BusinessDate }) *@
+    @Html.HiddenFor(m => m.ProvinceCodeOldInfo, new { @Value = Model == null ? "" : Model.ProvinceCodeOldInfo })
+    @Html.HiddenFor(m => m.ProvinceNameOldInfo, new { @Value = Model == null ? "" : Model.ProvinceNameOldInfo })
+    @Html.HiddenFor(m => m.PosCodeOldInfo, new { @Value = Model == null ? "" : Model.PosCodeOldInfo })
+    @Html.HiddenFor(m => m.PosNameOldInfo, new { @Value = Model == null ? "" : Model.PosNameOldInfo })
+    @Html.HiddenFor(m => m.DistrictCodeOldInfo, new { @Value = Model == null ? "" : Model.DistrictCodeOldInfo })
+    @Html.HiddenFor(m => m.DistrictNameOldInfo, new { @Value = Model == null ? "" : Model.DistrictNameOldInfo })
+    @Html.HiddenFor(m => m.CommuneCodeOldInfo, new { @Value = Model == null ? "" : Model.CommuneCodeOldInfo })
+    @Html.HiddenFor(m => m.CommuneNameOldInfo, new { @Value = Model == null ? "" : Model.CommuneNameOldInfo })
+    @Html.HiddenFor(m => m.TxnPointCodeOldInfo, new { @Value = Model == null ? "" : Model.TxnPointCodeOldInfo })
+    @Html.HiddenFor(m => m.TxnPointNameOldInfo, new { @Value = Model == null ? "" : Model.TxnPointNameOldInfo })
+    @Html.HiddenFor(m => m.VisitDateOldInfo, new { @Value = Model == null ? 0 : Model.VisitDateOldInfo })
+    @Html.HiddenFor(m => m.VisitDateTextOldInfo, new { @Value = Model == null ? "" : Model.VisitDateTextOldInfo })
+    @Html.HiddenFor(m => m.TimesOldInfo, new { @Value = Model == null ? "" : Model.TimesOldInfo })
+    @Html.HiddenFor(m => m.TimeBeginOldInfo, new { @Value = Model == null ? "" : Model.TimeBeginOldInfo })
+    @Html.HiddenFor(m => m.TimeEndOldInfo, new { @Value = Model == null ? "" : Model.TimeEndOldInfo })
+    @Html.HiddenFor(m => m.TimeBeginNumOldInfo, new { @Value = Model == null ? 0 : Model.TimeBeginNumOldInfo })
+    @Html.HiddenFor(m => m.TimeEndNumOldInfo, new { @Value = Model == null ? 0 : Model.TimeEndNumOldInfo })
+    @Html.HiddenFor(m => m.HoursOldInfo, new { @Value = Model == null ? 0 : Model.HoursOldInfo })
+    @Html.HiddenFor(m => m.MinutesOldInfo, new { @Value = Model == null ? 0 : Model.MinutesOldInfo })
+    @Html.HiddenFor(m => m.LongitudeOldInfo, new { @Value = Model == null ? 0 : Model.LongitudeOldInfo })
+    @Html.HiddenFor(m => m.LatitudeOldInfo, new { @Value = Model == null ? 0 : Model.LatitudeOldInfo })
+    @Html.HiddenFor(m => m.IsInCommuneOldInfo, new { @Value = Model == null ? "" : Model.IsInCommuneOldInfo })
+    @Html.HiddenFor(m => m.IsInPosOldInfo, new { @Value = Model == null ? "" : Model.IsInPosOldInfo })
+    @Html.HiddenFor(m => m.IsInterWardOldInfo, new { @Value = Model == null ? "" : Model.IsInterWardOldInfo })
+    @Html.HiddenFor(m => m.InterWardNameOldInfo, new { @Value = Model == null ? "" : Model.InterWardNameOldInfo })
+    @Html.HiddenFor(m => m.EffectiveDateOldInfo, new { @Value = Model == null ? Model.EffectiveDateOldInfo : Model.EffectiveDateOldInfo })
+    @Html.HiddenFor(m => m.TxnLocationOldInfo, new { @Value = Model == null ? "" : Model.TxnLocationOldInfo })
+    @Html.HiddenFor(m => m.AddressDetailOldInfo, new { @Value = Model == null ? "" : Model.AddressDetailOldInfo })
+    @Html.HiddenFor(m => m.AddressCodeOldInfo, new { @Value = Model == null ? "" : Model.AddressCodeOldInfo })
+    @Html.HiddenFor(m => m.AddressFullOldInfo, new { @Value = Model == null ? "" : Model.AddressFullOldInfo })
+    @Html.HiddenFor(m => m.PhoneSupportOldInfo, new { @Value = Model == null ? "" : Model.PhoneSupportOldInfo })
+    @Html.HiddenFor(m => m.PhoneSupport01OldInfo, new { @Value = Model == null ? "" : Model.PhoneSupport01OldInfo })
+    @Html.HiddenFor(m => m.PhoneSupport02OldInfo, new { @Value = Model == null ? "" : Model.PhoneSupport02OldInfo })
+    @Html.HiddenFor(m => m.TxnStatusOldInfo, new { @Value = Model == null ? "" : Model.TxnStatusOldInfo })
+    @Html.HiddenFor(m => m.TxnStatusTextOldInfo, new { @Value = Model == null ? "" : Model.TxnStatusTextOldInfo })
+    @Html.HiddenFor(m => m.StatusOldInfo, new { @Value = Model == null ? 0 : Model.StatusOldInfo })
+    @Html.HiddenFor(m => m.StatusTextOldInfo, new { @Value = Model == null ? "" : Model.StatusTextOldInfo })
+    @Html.HiddenFor(m => m.RemarkOldInfo, new { @Value = Model == null ? "" : Model.RemarkOldInfo })
+    @Html.HiddenFor(m => m.CreatedByOldInfo, new { @Value = Model == null ? "" : Model.CreatedByOldInfo })
+    @Html.HiddenFor(m => m.CreatedDateOldInfo, new { @Value = Model == null ? Model.CreatedDateOldInfo : Model.CreatedDateOldInfo })
+    @Html.HiddenFor(m => m.ModifiedByOldInfo, new { @Value = Model == null ? "" : Model.ModifiedByOldInfo })
+    @Html.HiddenFor(m => m.ModifiedDateOldInfo, new { @Value = Model == null ? Model.ModifiedDateOldInfo : Model.ModifiedDateOldInfo })
+    @Html.HiddenFor(m => m.ApproverByOldInfo, new { @Value = Model == null ? "" : Model.ApproverByOldInfo })
+    @Html.HiddenFor(m => m.ApprovalDateOldInfo, new { @Value = Model == null ? Model.ApprovalDateOldInfo : Model.ApprovalDateOldInfo })
+    @Html.HiddenFor(m => m.BusinessDateOldInfo, new { @Value = Model == null ? Model.BusinessDateOldInfo : Model.BusinessDateOldInfo })
+    @Html.HiddenFor(m => m.BusinessDateTextOldInfo, new { @Value = Model == null ? "" : Model.BusinessDateTextOldInfo })
+    @Html.HiddenFor(m => m.DocumentIdOldInfo, new { @Value = Model == null ? 0 : Model.DocumentIdOldInfo })
+
     <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
         @{
             string title = "THÊM MỚI THÔNG TIN YÊU CẦU NGHIỆP VỤ TẠO MỚI ĐIỂM GIAO DỊCH";
@@ -511,7 +569,7 @@
                                 .DataValueField("id")
                                 .DataSource(source => { source.Read(read => { read.Action("GetListProvinces", "ListOfValue").Data("paramLoadListProvince"); }).ServerFiltering(false); })
                                 .HtmlAttributes(new { style = "width: 230px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                                //.Events(e => e.Change("Change_Province"))
+                                .Events(e => e.Change("Change_Province"))
                                 .Suggest(true)
                                 .AutoBind(false))
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px!important;">Xã/Phường</label>
@@ -523,7 +581,7 @@
                                 .ClearButton(false)
                                 .DataSource(source => { source.Read(read => { read.Action("GetListCommunes", "ListOfValue").Data("paramLoadListCommune"); }).ServerFiltering(false); })
                                 .HtmlAttributes(new { style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                                //.Events(e => e.Change("Change_Commune"))
+                                .Events(e => e.Change("Change_Commune"))
                                 .Suggest(true)
                                 .AutoBind(false))
                 <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px!important;">Thôn/Bản</label>
@@ -611,7 +669,7 @@
         <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Trạng thái </label>
-                @(Html.Kendo().ComboBoxFor(m => m.Status)
+@*                 @(Html.Kendo().ComboBoxFor(m => m.Status)
                     .Filter(FilterType.Contains)
                     .Placeholder("--- Trạng thái bản ghi ---")
                     .DataTextField("Text")
@@ -630,14 +688,31 @@
                         })
                     .Suggest(true)
                     .AutoBind(true)
-                    .HtmlAttributes(new { style = "padding-left: 3px;width: 350px; color: blue;", })
+                    .HtmlAttributes(new { style = "padding-left: 3px;width: 300px; color: blue;", })
                     .Events(e => e.Change("Change_Status"))
                     .SelectedIndex(0)
                     )
+ *@                
+                @(Html.Kendo().ComboBoxFor(m => m.TxnStatus)
+                    .Filter(FilterType.Contains)
+                    .Placeholder("--- Trạng thái điểm giao dịch ---")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .BindTo(new List<SelectListItem>() {
+                        new SelectListItem() { Text = "Mở (Hoạt động)", Value = "A" },
+                        new SelectListItem() { Text = "Đóng (Đánh dấu xóa)", Value = "C" }
+                        })
+                    .Suggest(true)
+                    .AutoBind(true)
+                    .HtmlAttributes(new { style = "padding-left: 3px;width: 300px; color: blue;", })
+                    .Events(e => e.Change("Change_Status"))
+                    .SelectedIndex(0)
+                    )
+
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày thành lập</label>
+                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
-                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày hiệu lực</label>
-                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                @Html.Kendo().DatePickerFor(m => m.BusinessDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
 
             </div>
         </div>
@@ -715,6 +790,13 @@
         var dataString;
         var contentType;
         var processData;
+        var objPosCode = $("#PosCode").data("kendoComboBox");
+        var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+        var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
+        var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
+        $("#PosName").val(objPosCode.text());
+        $("#ProvinceName").val(objProvinceCode.text());
+        $("#CommuneName").val(objCommuneCode.text());
         if (form.enctype === "multipart/form-data") {
             dataString = new FormData($(form).get(0));
             contentType = false;
@@ -735,7 +817,7 @@
                         lcFlagCallText = "Thêm mới";
                     else if ($("#FlagCall").val() == "2")
                         lcFlagCallText = "Chỉnh sửa";
-                    alert("Bạn đã cập nhật " + lcFlagCallText + " bản ghi yêu cầu nghiệp vụ tạo mới tài khoản người dùng [" + $("#UserId").val() + " - " + $("#FullName").val() + "] đăng nhập Intellect iDC thành công!");
+                    alert("Bạn đã cập nhật " + lcFlagCallText + " bản ghi yêu cầu nghiệp vụ tạo mới điểm giao dịch [" + $("#TxnPointCode").val() + " - " + $("#TxnPointName").val() + "] thành công!");
                     dataChange = true;
                     onCloseUpdate();
                 } 
@@ -798,7 +880,7 @@
 
         }, 300); // delay nhẹ để đảm bảo Kendo init xong
         var lcFlagCall = $("#FlagCall").val();
-
+        $("#pFlagCall").val($("#FlagEventCallView").val());
         //Nếul à xem thì readonly các control và Hide nút lệnh Lưu
         var cboStatus = $("#Status").data("kendoComboBox");
         cboStatus.readonly(true);

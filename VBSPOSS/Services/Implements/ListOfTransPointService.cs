@@ -621,8 +621,9 @@ namespace VBSPOSS.Services.Implements
                     objTranspointAddNew.ApproverBy = pUserNameUpd;
                     objTranspointAddNew.ApprovalDate = dCurrentDateVal;
                     objTranspointAddNew.AddressFull = pTransPointWorkUpd.AddressDetail + "," + pTransPointWorkUpd.TxnLocation + "," + pTransPointWorkUpd.CommuneName + "," + pTransPointWorkUpd.ProvinceName;
-                    objTranspointAddNew.TimeBegin = pTransPointWorkUpd.TimeBeginDate.ToString();
-                    objTranspointAddNew.TimeEnd = pTransPointWorkUpd.TimeEndDate.ToString();
+                    objTranspointAddNew.TimeBegin = pTransPointWorkUpd.TimeBeginDate.ToString("HH:mm");
+                    objTranspointAddNew.TimeEnd = pTransPointWorkUpd.TimeEndDate.ToString("HH:mm");
+                    objTranspointAddNew.Times = objTranspointAddNew.TimeBegin + "-" + objTranspointAddNew.TimeEnd;
                     objTranspointAddNew.CallApiResponseCode = "";
                     objTranspointAddNew.CallApiResponseMsg = "";
                     objTranspointAddNew.CallApiResRecords = 0;

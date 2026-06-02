@@ -740,13 +740,13 @@ namespace VBSPOSS.Controllers
         // tạm
 
         public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0",
-                                    string pTitleChoice = "", string pFlagTextShow = "1")
+                                    string pTitleChoice = "", string pFlagTextShow = "1", string pPosCode = "")
         {
             string sTitleChoice = (string.IsNullOrEmpty(pTitleChoice))
                                 ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
 
             ArrayList data = new ArrayList();
-            var listAll = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", "", "");
+            var listAll = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", pPosCode, "");
 
             if (!string.IsNullOrEmpty(sTitleChoice))
                 data.Add(new { id = "", value = sTitleChoice });

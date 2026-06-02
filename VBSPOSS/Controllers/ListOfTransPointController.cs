@@ -1110,16 +1110,29 @@ namespace VBSPOSS.Controllers
                     objTranspointUpd.PosName = string.IsNullOrEmpty(objTranspointUpd.PosName) ? "" : objTranspointUpd.PosName.Replace(" - ","").Replace("PGD NHCSXH ","PGD ");
                     objTranspointUpd.ProvinceCode = string.IsNullOrEmpty(objTranspointUpd.ProvinceCode) ? "" : objTranspointUpd.ProvinceCode;
                     objTranspointUpd.ProvinceName = string.IsNullOrEmpty(objTranspointUpd.ProvinceName) ? "" : objTranspointUpd.ProvinceName;
+                    objTranspointUpd.DistrictCode = string.IsNullOrEmpty(objTranspointUpd.DistrictCode) ? "" : objTranspointUpd.DistrictCode;
+                    objTranspointUpd.DistrictName = string.IsNullOrEmpty(objTranspointUpd.DistrictName) ? "" : objTranspointUpd.DistrictName;
                     objTranspointUpd.CommuneCode = string.IsNullOrEmpty(objTranspointUpd.CommuneCode) ? "" : objTranspointUpd.CommuneCode;
                     objTranspointUpd.CommuneName = string.IsNullOrEmpty(objTranspointUpd.CommuneName) ? "" : objTranspointUpd.CommuneName;
                     objTranspointUpd.TxnPointCode = string.IsNullOrEmpty(objTranspointUpd.TxnPointCode) ? "" : objTranspointUpd.TxnPointCode;
                     objTranspointUpd.TxnPointName = string.IsNullOrEmpty(objTranspointUpd.TxnPointName) ? "" : objTranspointUpd.TxnPointName;
                     objTranspointUpd.AddressCode = string.IsNullOrEmpty(objTranspointUpd.AddressCode) ?"" : objTranspointUpd.AddressCode;
+                    objTranspointUpd.TxnLocation = string.IsNullOrEmpty(objTranspointUpd.TxnLocation) ?"" : objTranspointUpd.TxnLocation;
+                    objTranspointUpd.EventCode = string.IsNullOrEmpty(objTranspointUpd.EventCode) ?"" : objTranspointUpd.EventCode;
+                    objTranspointUpd.CallApiTxnStatus = string.IsNullOrEmpty(objTranspointUpd.CallApiTxnStatus) ?"" : objTranspointUpd.CallApiTxnStatus;
+                    objTranspointUpd.CallApiResponseCode = string.IsNullOrEmpty(objTranspointUpd.CallApiResponseCode) ?"" : objTranspointUpd.CallApiResponseCode;
+                    objTranspointUpd.CallApiResponseMsg = string.IsNullOrEmpty(objTranspointUpd.CallApiResponseMsg) ?"" : objTranspointUpd.CallApiResponseMsg;
+                    objTranspointUpd.TxnStatus = string.IsNullOrEmpty(objTranspointUpd.TxnStatus) ?"" : objTranspointUpd.TxnStatus;
 
                     objTranspointUpd.AddressDetail = string.IsNullOrEmpty(objTranspointUpd.AddressDetail) ? "" :objTranspointUpd.AddressDetail;
+                    objTranspointUpd.AddressFull = string.IsNullOrEmpty(objTranspointUpd.AddressFull) ? "" :objTranspointUpd.AddressFull;
+
                     objTranspointUpd.PhoneSupport = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport) ? "" : objTranspointUpd.PhoneSupport;
                     objTranspointUpd.PhoneSupport01 = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport01) ? "" : objTranspointUpd.PhoneSupport01;
                     objTranspointUpd.PhoneSupport02 = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport02) ? "" : objTranspointUpd.PhoneSupport02;
+                    objTranspointUpd.IsInCommune = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("1") ? "X" : "";
+                    objTranspointUpd.IsInPos = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("2") ? "X" : "";
+                    objTranspointUpd.IsInterWard = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("3") ? "X" : "";
                     int iResultUpdate = _serviceTransPoint.UpdateListOfTransPointWork(objTranspointUpd, UserName, pFlagCall);
 
                     result = (iResultUpdate > 0) ? "0" : "99";
