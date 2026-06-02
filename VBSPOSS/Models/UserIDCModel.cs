@@ -204,11 +204,15 @@ namespace VBSPOSS.Models
     }
 
 
-    public class vUserManagementIDC
+    public class vUserManagementIDCJoinMasterNoDuplication
     {
         public int OrderNo { get; set; }
         public int OrderNoByUserId { get; set; }
         public int StatusOrderNo { get; set; }
+        public string MainPosCode { get; set; }
+        public string MainPosName { get; set; }
+        public string MainPosCodeOld { get; set; }
+        public string MainPosNameOld { get; set; }
         public long Id { get; set; }
         public string FunctionType { get; set; }
         public string PosCode { get; set; }

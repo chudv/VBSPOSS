@@ -49,9 +49,10 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <param name="pIsCallInfoFromHuman">True: Gọi lấy thông tin từ QLNS; False: Không gọi</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
         Task<List<UserManagementIDCViewModel>> GetListvUserManagementIDCSearch(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName,
-                                string pStaffCode, int pStatus, string pFunctionType);
+                                string pStaffCode, int pStatus, string pFunctionType, bool pIsCallInfoFromHuman);
 
         /// <summary>
         /// Hàm thực hiện Xóa (Đóng) bản ghi nghiệp vụ thêm mới hoặc thay đổi thông tin tài khoản người dùng Intellect iDC (Bảng UserManagementIDC)

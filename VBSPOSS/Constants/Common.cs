@@ -162,12 +162,12 @@ namespace VBSPOSS.Constants
         public static ValueConstModel Status_ITC_Applied = new ValueConstModel { Value = 9, Code = "HeadOfficeApplied", Description = "Thực thi vào hệ thống Intellect iDC" };
 
         /// <summary>
-        /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        /// Status_MovingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị chuyển đi" };
         /// </summary>
         public static ValueConstModel Status_MovingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị chuyển đi" };
 
         /// <summary>
-        /// Status_ReceivingBranch_Approved = new ValueConstModel { Value = 8, Code = "ReceivingBranchApproved", Description = "Phê duyệt của đơn vị tiếp nhận" };
+        /// Status_MovingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị chuyển đi" };
         /// </summary>
         public static ValueConstModel Status_MovingBranch_Reject = new ValueConstModel { Value = 10, Code = "ReceivingBranchReject", Description = "Từ chối của đơn vị chuyển đi" };
 

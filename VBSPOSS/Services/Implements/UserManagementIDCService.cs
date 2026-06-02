@@ -788,9 +788,10 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pStaffCode">Mã cán bộ của người dùng (Không bắt buộc)</param>
         /// <param name="pStatus">Trạng thái bản ghi. Lấy tất cả truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pFunctionType">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với người dùng Intellect iDC (Không bắt buộc)</param>
+        /// <param name="pIsCallInfoFromHuman">True: Gọi lấy thông tin từ QLNS; False: Không gọi</param>
         /// <returns>Danh sách bản ghi trong bảng UserIDCMaster Thông tin tài khoản người dùng Intellect iDC</returns>
         public async Task<List<UserManagementIDCViewModel>> GetListvUserManagementIDCSearch(long pId, string pMainPosCode, string pPosCode, string pUserId, string pFullName, 
-                                string pStaffCode, int pStatus, string pFunctionType)
+                                string pStaffCode, int pStatus, string pFunctionType, bool pIsCallInfoFromHuman)
         {
             try
             {
@@ -800,14 +801,15 @@ namespace VBSPOSS.Services.Implements
                                                             && (string.IsNullOrEmpty(pMainPosCode) || w.MainPosCode.StartsWith(pMainPosCode))
                                                             ).OrderBy(o => o.Code).Select(s => s.Code).ToList();
                 List<UserManagementIDCViewModel> listUserIDCManagement = new List<UserManagementIDCViewModel>();
-
-                var listvUserIDCManagementTemp = _dbContext.vUserManagementIDCs.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
+                List<vUserManagementIDCJoinMasterNoDuplication> listvUserIDCManagementTemp = new List<vUserManagementIDCJoinMasterNoDuplication>();
+                var listvUserIDCManagementTemp01 = _dbContext.vUserManagementIDCJoinMasterNoDuplications.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
+                                                && !(w.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && w.MainPosCode != w.MainPosCodeOld)
                                                 && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
                                                 && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
                                                 && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
                                                 && (pStatus == -1 || w.Status == pStatus)
                                                 && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode))
-                        .Where(delegate (vUserManagementIDC c)
+                        .Where(delegate (vUserManagementIDCJoinMasterNoDuplication c)
                         {
                             if (string.IsNullOrEmpty(pFullName)
                                 || (c.FullName != null && c.FullName.ToLower().Contains(pFullName.ToLower()))
@@ -818,6 +820,28 @@ namespace VBSPOSS.Services.Implements
                                 return false;
                         }).OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
 
+                var listvUserIDCManagementTemp02 = _dbContext.vUserManagementIDCJoinMasterNoDuplications.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
+                                               && (w.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code && w.MainPosCode != w.MainPosCodeOld)
+                                               && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCodeOld))
+                                               && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
+                                               && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
+                                               && (pStatus == -1 || w.Status == pStatus)
+                                               && (string.IsNullOrEmpty(pStaffCode) || w.StaffCode == pStaffCode))
+                       .Where(delegate (vUserManagementIDCJoinMasterNoDuplication c)
+                       {
+                           if (string.IsNullOrEmpty(pFullName)
+                               || (c.FullName != null && c.FullName.ToLower().Contains(pFullName.ToLower()))
+                               || (c.FullName != null && Utilities.ConvertToUnSign(c.FullName.ToLower()).IndexOf(pFullName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                               )
+                               return true;
+                           else
+                               return false;
+                       }).OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id).ToList();
+                if (listvUserIDCManagementTemp01 != null && listvUserIDCManagementTemp01.Count != 0)
+                    listvUserIDCManagementTemp.AddRange(listvUserIDCManagementTemp01);
+                if (listvUserIDCManagementTemp02 != null && listvUserIDCManagementTemp02.Count != 0)
+                    listvUserIDCManagementTemp.AddRange(listvUserIDCManagementTemp02);
+
                 var listOfPosALL = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS).OrderBy(o => o.Code).ToList();
 
                 if (listvUserIDCManagementTemp != null && listvUserIDCManagementTemp.Count != 0)
@@ -826,7 +850,7 @@ namespace VBSPOSS.Services.Implements
                     var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
                     if (listvUserIDCManagementTemp != null && listvUserIDCManagementTemp.Count != 0)
                     {
-                        foreach (var item in listvUserIDCManagementTemp)
+                        foreach (var item in listvUserIDCManagementTemp.OrderBy(o => o.PosCode).ThenByDescending(o => o.StartDate).ThenByDescending(o => o.EffectiveDate).ThenByDescending(o => o.Status).ThenBy(o => o.UserId).ThenByDescending(o => o.Id))
                         {
                             iCountTemp++;
                             UserManagementIDCViewModel objItem = new UserManagementIDCViewModel();
@@ -871,7 +895,7 @@ namespace VBSPOSS.Services.Implements
                             objItem.StaffDepartmentName = "";
                             objItem.StaffPositionCode = "";
                             objItem.StaffPositionName = "";
-                            if (!string.IsNullOrEmpty(pUserId) || !string.IsNullOrEmpty(pPosCode))
+                            if ((!string.IsNullOrEmpty(pUserId) || !string.IsNullOrEmpty(pPosCode)) && !string.IsNullOrEmpty(objItem.StaffId) && pIsCallInfoFromHuman)
                             {
                                 var objStaffInfoTemp = await _internalServiceAPI.GetListStaffByStaffId(objItem.StaffId);
                                 if (objStaffInfoTemp != null && objStaffInfoTemp.Success && objStaffInfoTemp.Result != null && objStaffInfoTemp.Result.Count > 0)
@@ -893,13 +917,13 @@ namespace VBSPOSS.Services.Implements
                                 }
                             }
                             objItem.ExistsInCore = string.IsNullOrEmpty(item.FunctionType) ? 1 : 0;
-                            if (listOfPosALL != null && listOfPosALL.Count != 0)
-                            {
-                                objItem.MainPosCode = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosCode).FirstOrDefault()}";
-                                objItem.MainPosName = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosName).FirstOrDefault()}";
-                                objItem.MainPosCodeOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosCode).FirstOrDefault()}";
-                                objItem.MainPosNameOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosName).FirstOrDefault()}";
-                            }
+                            //if (listOfPosALL != null && listOfPosALL.Count != 0)
+                            //{
+                            //    objItem.MainPosCode = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosCode).FirstOrDefault()}";
+                            //    objItem.MainPosName = $"{listOfPosALL.Where(w => w.Code == item.PosCode).Select(s => s.MainPosName).FirstOrDefault()}";
+                            //    objItem.MainPosCodeOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosCode).FirstOrDefault()}";
+                            //    objItem.MainPosNameOld = $"{listOfPosALL.Where(w => w.Code == item.PosCodeOld).Select(s => s.MainPosName).FirstOrDefault()}";
+                            //}
                             listUserIDCManagement.Add(objItem);
                         }
                     }

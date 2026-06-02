@@ -257,7 +257,7 @@ namespace VBSPOSS.Controllers
                 }
                 else
                 {
-                    listUserManagementIDCTmp = await _userManagementIDCService.GetListvUserManagementIDCSearch(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType);
+                    listUserManagementIDCTmp = await _userManagementIDCService.GetListvUserManagementIDCSearch(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, false);
                     //listUserManagementIDCTmp = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, true);
                 }
 
@@ -1588,7 +1588,7 @@ namespace VBSPOSS.Controllers
         {
             try
             {
-                string sListStatus = $"{StatusBusinessFlow.Status_Created.Value},{StatusBusinessFlow.Status_Modified.Value},{StatusBusinessFlow.Status_Submitted.Value}";
+                string sListStatus = $"{StatusBusinessFlow.Status_Created.Value},{StatusBusinessFlow.Status_Modified.Value},{StatusBusinessFlow.Status_Submitted.Value},{StatusBusinessFlow.Status_MovingBranch_Approved.Value}";
 
                 if (string.IsNullOrEmpty(pFunctionType))
                     pFunctionType = "";
