@@ -174,6 +174,9 @@ namespace VBSPOSS.ViewModels
         public string Region_03 { get; set; }
         public string Region_04 { get; set; }
         public string DiffAreaCode { get; set; }
+
+        
+        public string SubCommuneFeeLenArea { get; set; }
         public string IsNewCountryside { get; set; }
         public string TxnPointCode { get; set; }
         public string TxnPointName { get; set; }

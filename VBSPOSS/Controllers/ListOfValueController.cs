@@ -22,6 +22,8 @@ using VBSPOSS.Utils;
 using VBSPOSS.ViewModels;
 using static System.Formats.Asn1.AsnWriter;
 
+
+
 namespace VBSPOSS.Controllers
 {
     public class ListOfValueController : BaseController
@@ -836,7 +838,7 @@ namespace VBSPOSS.Controllers
         /// </param>
         /// <returns>Danh sách  Xã/Phường/Thị trấn trên Combobox</returns>
         public JsonResult GetListCommunes(string pProvinceCode = "", string pDistrictCode = "", string pCommuneCode = "", string pPosCode = "", string pStatus = "0", string pTitleChoice = "", string pFlagTextShow = "1")
-        {
+        {   
             string sTitleChoice = "";
             sTitleChoice = (pTitleChoice == "" || pTitleChoice == null) ? "---Chọn Xã/Phường/Thị trấn---" : pTitleChoice;
             ArrayList data = new ArrayList();
@@ -1822,6 +1824,35 @@ namespace VBSPOSS.Controllers
             return Json(data);
         }
 
+
+
+        // GET: ListOfValue/GetTxnPointCodeByCommune
+        public JsonResult GetTxnPointCodeByCommune(string communeCode)
+        {
+            if (string.IsNullOrEmpty(communeCode))
+                return Json(new { code = "", name = "" });
+
+            try
+            {
+                var listTransPoint = _serviceLOV.GetLovTransPointList(communeCode);
+
+                var txnPoint = listTransPoint
+                                .Where(t => !string.IsNullOrEmpty(t.TxnPointCode))
+                                .FirstOrDefault();
+
+                var result = new
+                {
+                    code = txnPoint?.TxnPointCode ?? "",
+                    name = txnPoint?.TxnPointName ?? ""
+                };
+
+                return Json(result);
+            }
+            catch
+            {
+                return Json(new { code = "", name = "" });
+            }
+        }
 
 
     }

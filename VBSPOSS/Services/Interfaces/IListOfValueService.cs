@@ -125,5 +125,13 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Danh sách trong bảng ListOfProducts</returns>
         List<ListOfProducts> GetListOfProductsSearch(string pProductGroupCode, string pProductCode, string pAccountTypeCode, string pCode, string pName,
                                     int pStatus, int pIsApplyPosFlag, int pUserGrade, string pProductGroupCodeParams);
+
+
+        /// <summary>
+        /// Lấy danh sách Điểm Giao Dịch theo Mã Xã/Phường
+        /// </summary>
+        /// <param name="pCommuneCode">Mã Xã/Phường</param>
+        /// <returns></returns>
+        List<ListOfTransPointViewModel> GetLovTransPointList(string pCommuneCode = "");
     }
 }

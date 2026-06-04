@@ -42,6 +42,7 @@
 </style>
 
 <script>
+<<<<<<< Updated upstream
 
      window.notification = window.notification || {
          success: function (msg) { alert("✅ " + (msg || "Thành công!")); },
@@ -54,10 +55,23 @@
         return {
             pProvinceCode: $("#ProvinceCode").val(),
             pDistrictCode: $("#DistrictCode").val(),
+=======
+    window.notification = window.notification || {
+        success: function (msg) { alert("✅ " + (msg || "Thành công!")); },
+        error: function (msg) { alert("❌ " + (msg || "Có lỗi xảy ra!")); }
+    };
+
+    function paramLoadProvinces() { return { pFlagTextShow: "2", pStatus: "0" }; }
+    function paramLoadCommunes() {
+        return {
+            pProvinceCode: $("#ProvinceCode").val(),
+            pDistrictCode: "", // Bỏ Quận/Huyện
+>>>>>>> Stashed changes
             pFlagTextShow: "2"
         };
     }
 
+<<<<<<< Updated upstream
 
         function paramLoadSubCommunes() {
         return {
@@ -71,8 +85,24 @@
         $("#DistrictCode").data("kendoComboBox")?.dataSource.read();
         $("#DistrictCode").data("kendoComboBox")?.value("");
         $("#CommuneCodeThon").data("kendoComboBox")?.value("");
-    }
+=======
+       function Change_Province() {
+        // Load lại Xã cho bên Thêm Xã
+        $("#CommuneCode").data("kendoComboBox")?.dataSource.read();
 
+        // Đồng bộ Tỉnh sang bên Thêm Thôn (Readonly)
+        var provinceCode = $("#ProvinceCode").val();
+        $("#ProvinceCodeThon").val(provinceCode);
+
+        // Load lại Xã cho bên Thêm Thôn
+        $("#CommuneCodeThon").data("kendoComboBox")?.dataSource.read();
+>>>>>>> Stashed changes
+    }
+    function Change_CommuneThon() {
+        var communeCode = $("#CommuneCodeThon").val();
+        $("#TxnPointCode").val("");
+
+<<<<<<< Updated upstream
     function Change_District() {
         $("#CommuneCodeThon").data("kendoComboBox")?.dataSource.read();
     }
@@ -81,6 +111,8 @@
         var communeCode = $("#CommuneCodeThon").val();
         $("#TxnPointCode").val(""); // Reset trước khi load
 
+=======
+>>>>>>> Stashed changes
         if (communeCode) {
             $.ajax({
                 url: "/ListOfValue/GetTxnPointCodeByCommune",
@@ -93,14 +125,21 @@
                         $("#TxnPointCode").val(result.code);
                     }
                 },
+<<<<<<< Updated upstream
                 error: function () {
                     $("#TxnPointCode").val("");
                 }
+=======
+                error: function () { $("#TxnPointCode").val(""); }
+>>>>>>> Stashed changes
             });
         }
     }
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     function onCloseUpdate() {
         if (typeof mainWindow !== "undefined" && mainWindow.data("kendoWindow")) {
             mainWindow.data("kendoWindow").close();
@@ -111,19 +150,54 @@
 
     function onClick(e) {
         var addType = $('input[name="AddType"]:checked').val();
-        if (!$("#ProvinceCode").val()) { alert("Vui lòng chọn Tỉnh/Thành phố!"); $("#ProvinceCode").focus(); e.preventDefault(); return false; }
-        if (!$("#DistrictCode").val()) { alert("Vui lòng chọn Quận/Huyện!"); $("#DistrictCode").focus(); e.preventDefault(); return false; }
+
+        if (!$("#ProvinceCode").val()) {
+            alert("Vui lòng chọn Tỉnh/Thành phố!");
+            $("#ProvinceCode").focus();
+            e.preventDefault();
+            return false;
+        }
 
         if (addType === "Xa") {
+<<<<<<< Updated upstream
             if (!$("#CommuneCode").val()) { alert("Vui lòng chọn Mã Phường/Xã!"); $("#CommuneCode").focus(); e.preventDefault(); return false; }
         } else if (addType === "Thon") {
             if (!$("#CommuneCodeThon").val()) { alert("Vui lòng chọn Xã/Phường!"); $("#CommuneCodeThon").focus(); e.preventDefault(); return false; }
             if (!$("#SubCommuneName").val().trim()) { alert("Vui lòng nhập Tên Thôn/Bản/Làng!"); $("#SubCommuneName").focus(); e.preventDefault(); return false; }
             if (!$("#SubCommuneCode").val().trim()) { alert("Vui lòng chọn Mã Tổ/Thôn!"); $("#SubCommuneCode").focus(); e.preventDefault(); return false; }
+=======
+            if (!$("#CommuneCode").val()) {
+                alert("Vui lòng chọn Mã Phường/Xã!");
+                $("#CommuneCode").focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+        else if (addType === "Thon") {
+            if (!$("#CommuneCodeThon").val()) {
+                alert("Vui lòng chọn Xã/Phường!");
+                $("#CommuneCodeThon").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (!$("#SubCommuneName").val().trim()) {
+                alert("Vui lòng nhập Tên Thôn/Bản/Làng!");
+                $("#SubCommuneName").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (!$("#SubCommuneCode").val().trim()) {
+                alert("Vui lòng nhập Mã Tổ/Thôn!");
+                $("#SubCommuneCode").focus();
+                e.preventDefault();
+                return false;
+            }
+>>>>>>> Stashed changes
         }
         return true;
     }
 
+<<<<<<< Updated upstream
        $(document).ready(function () {
         $('#radioThon').prop('checked', true);
 
@@ -179,6 +253,14 @@
             }
         });
     }
+=======
+    $(document).ready(function () {
+        $('#radioThon').prop('checked', true);
+
+        // Xóa nút Load vì giờ tự nhập
+        $("#btnLoadSubCommune").hide();
+    });
+>>>>>>> Stashed changes
 </script>
 
 <form asp-controller="ListOfCommune" asp-action="SaveAddOrUpdateListOfCommuneWork"
@@ -193,7 +275,10 @@
     @Html.HiddenFor(m => m.CallApiResRecords)
     @Html.HiddenFor(m => m.CallApiResponseCode)
     @Html.HiddenFor(m => m.CallApiResponseMsg)
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     @Html.HiddenFor(m => m.PosCodeOldInfo)
     @Html.HiddenFor(m => m.ProvinceCodeOldInfo)
     @Html.HiddenFor(m => m.DistrictCodeOldInfo)
@@ -201,8 +286,11 @@
     @Html.HiddenFor(m => m.SubCommuneCodeOldInfo)
     @Html.HiddenFor(m => m.StatusOldInfo)
     @Html.HiddenFor(m => m.SubCommuneFeeLenArea)
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 
     <div class="lbtitle" style="color: blue; text-align:center; padding: 12px 0; font-weight: bold; font-size: 16px;">
         TẠO YÊU CẦU THÊM MỚI DANH MỤC ĐỊA PHƯƠNG
@@ -216,6 +304,7 @@
         </div>
     </div>
 
+<<<<<<< Updated upstream
     <div class="row">
         <!-- ==================== BÊN TRÁI: THÊM MỚI XÃ (GIỮ NGUYÊN) ==================== -->
         <div class="col-md-6 left-column">
@@ -240,14 +329,68 @@
                         .Filter(FilterType.Contains)
                         .Placeholder("--- Chọn Quận/Huyện ---")
                         .DataTextField("value").DataValueField("id")
+=======
+   <div class="row">
+    <!-- ==================== BÊN TRÁI: THÊM MỚI XÃ ==================== -->
+    <div class="col-md-6 left-column">
+        <h5>Thêm mới Xã</h5>
+        <div class="row" style="margin-top: 12px;">
+            <div class="col-md-12">
+                <label class="lbcontrol" style="color: navy;width:170px">Tỉnh/Thành phố <span style="color:red">*</span></label>
+                @(Html.Kendo().ComboBoxFor(m => m.ProvinceCode)
+                    .Filter(FilterType.Contains)
+                    .Placeholder("--- Chọn Tỉnh/Thành phố ---")
+                    .DataTextField("value").DataValueField("id")
+                    .HtmlAttributes(new { style = "width: 100%;" })
+                    .Events(e => e.Change("Change_Province"))
+                    .DataSource(ds => ds.Read(read => read.Action("GetListProvinces", "ListOfValue").Data("paramLoadProvinces")))
+                    .Suggest(true).AutoBind(true))
+            </div>
+        </div>
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;width:170px">Mã Phường/Xã <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.CommuneCode).HtmlAttributes(new { style = "width: 100%;", id = "CommuneCode" })
+                </div>
+            </div>
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;width:170px">Tên Phường/Xã <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.CommuneName).HtmlAttributes(new { style = "width: 100%;" })
+                </div>
+            </div>
+    </div>
+
+        <!-- ==================== BÊN PHẢI: THÊM MỚI THÔN ==================== -->
+        <div class="col-md-6 right-column">
+            <h5>Thêm mới Thôn</h5>
+
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Tỉnh/Thành phố <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.ProvinceCode).HtmlAttributes(new { style = "width: 100%;", @readonly = "readonly", id = "ProvinceCodeThon" })
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Mã Phường/Xã <span style="color:red">*</span></label>
+                    @(Html.Kendo().ComboBox()
+                        .Name("CommuneCodeThon")
+                        .Filter(FilterType.Contains)
+                        .Placeholder("--- Chọn Xã/Phường ---")
+                        .DataTextField("value")
+                        .DataValueField("id")
+>>>>>>> Stashed changes
                         .HtmlAttributes(new { style = "width: 100%;" })
-                        .Events(e => e.Change("Change_District"))
-                        .DataSource(ds => ds.Read(read => read.Action("GetListDistricts", "ListOfValue").Data("paramLoadDistricts")))
+                        .DataSource(ds => ds.Read(read => read.Action("GetListCommunes", "ListOfValue").Data("paramLoadCommunes")))
+                        .Events(e => e.Change("Change_CommuneThon"))
                         .Suggest(true).AutoBind(false))
                 </div>
             </div>
             <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
+<<<<<<< Updated upstream
                     <label class="lbcontrol" style="color: navy;;width:170px">Phường/Xã <span style="color:red">*</span></label>
                     @(Html.Kendo().ComboBox()
                         .Name("CommuneCode")
@@ -361,6 +504,60 @@
             </div>
 
 
+=======
+                    <label class="lbcontrol" style="color: navy;">Mã Điểm GDX</label>
+                    @Html.Kendo().TextBoxFor(m => m.TxnPointCode).HtmlAttributes(new { style = "width: 100%;", @readonly = "readonly", id = "TxnPointCode" })
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Tên Thôn/Bản/Làng <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.SubCommuneName).HtmlAttributes(new { style = "width: 100%;" })
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Mã Tổ/Thôn <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.SubCommuneCode).HtmlAttributes(new { style = "width: 100%;", id = "SubCommuneCode" })
+                </div>
+            </div>
+
+            <!-- Các trường bổ sung -->
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Vùng khó khăn <span style="color:red">*</span></label>
+                    @(Html.Kendo().DropDownListFor(m => m.DiffAreaCode)
+                        .HtmlAttributes(new { style = "width: 100%;" })
+                        .DataTextField("Text")
+                        .DataValueField("Value")
+                        .BindTo(new[] {
+                    new { Text = "-- Chọn --", Value = "" },
+                    new { Text = "0 - Không phải vùng khó khăn", Value = "0" },
+                    new { Text = "1 - Vùng khó khăn", Value = "1" }
+                    })
+                        .Value("0"))
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;">Thuộc nông thôn mới <span style="color:red">*</span></label>
+                    @(Html.Kendo().DropDownListFor(m => m.IsNewCountryside)
+                        .HtmlAttributes(new { style = "width: 100%;" })
+                        .DataTextField("Text")
+                        .DataValueField("Value")
+                        .BindTo(new[] {
+                    new { Text = "-- Chọn --", Value = "" },
+                    new { Text = "Y - Có", Value = "Y" },
+                    new { Text = "N - Không", Value = "N" }
+                    })
+                        .Value("N"))
+                </div>
+            </div>
+
+>>>>>>> Stashed changes
             <div class="section-title">Vùng cho vay</div>
             <div class="row">
                 <div class="col-md-12">
@@ -396,6 +593,7 @@
     $(document).ready(function () {
         $("#DiffAreaCode").change(function () {
             var value = $(this).val();
+<<<<<<< Updated upstream
 
             if (value === "1") {
                 $("#SubCommuneFeeLenArea").val("VKK");
@@ -408,5 +606,13 @@
         if ($("#DiffAreaCode").val() === "1") {
             $("#SubCommuneFeeLenArea").val("VKK");
         }
+=======
+            if (value === "1") {
+                $("#SubCommuneFeeLenArea").val("VKK");
+            } else {
+                $("#SubCommuneFeeLenArea").val("");
+            }
+        });
+>>>>>>> Stashed changes
     });
 </script>
