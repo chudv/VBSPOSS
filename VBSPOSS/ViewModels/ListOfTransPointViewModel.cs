@@ -478,7 +478,7 @@ namespace VBSPOSS.ViewModels
 
         public long DocumentIdOldInfo { get; set; }
 
-        public List<String> MaApDungList { get; set; } 
+        public string MaApDungList { get; set; } 
     }
     #endregion
 }

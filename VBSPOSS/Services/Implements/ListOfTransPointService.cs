@@ -13,6 +13,7 @@ using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Data.IntellectIDC.Models;
 using VBSPOSS.Data.OSS.Models;
+using VBSPOSS.Models;
 using VBSPOSS.Services.Interfaces;
 using VBSPOSS.Utils;
 using VBSPOSS.ViewModels;
@@ -161,7 +162,26 @@ namespace VBSPOSS.Services.Implements
                 int iCountTMP = 0;
 
                 List<ListOfTransPoint> listOfTransPointTmp = new List<ListOfTransPoint>();
-                var listOfTransPointTmp01 = _dbContext.ListOfTransPoints.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+                var listOfTransPointtWorkTmp = _dbContext.ListOfTransPointWorks.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+                            && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
+                            && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
+                            && (pStatus == -1 || w.Status == pStatus))
+                        .Where(delegate (ListOfTransPointWork c)
+                        {
+                            if (string.IsNullOrEmpty(pTxnPointName)
+                                || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
+                                || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
+                                )
+                                return true;
+                            else
+                                return false;
+                        }).ToList();
+
+                //Khi tìm theo trạng thái phê duyệt thì sẽ tìm trong bảng ListOfTransPoint
+                if(pStatus == StatusTrans.Status_Authorized.Value)
+                {
+                    var listOfTransPointTmp01 = _dbContext.ListOfTransPoints.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
                                             && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
                                             && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
                                             && (pStatus == -1 || w.Status == pStatus)
@@ -176,75 +196,59 @@ namespace VBSPOSS.Services.Implements
                                                 return true;
                                             else
                                                 return false;
-                                        }
-                                        ).ToList();
-                if (string.IsNullOrEmpty(pTxnLocation))
-                {
-                    listOfTransPointTmp = listOfTransPointTmp01.OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
-                }
-                else
-                {
-                    if (listOfTransPointTmp01 != null && listOfTransPointTmp01.Count != 0)
-                    {
-                        listOfTransPointTmp = listOfTransPointTmp01.Where(w => w.TxnPointCode != "")
-                                            .Where(delegate (ListOfTransPoint c)
-                                            {
-                                                if (string.IsNullOrEmpty(pTxnLocation)
-                                                    || (c.TxnLocation != null && c.TxnLocation.ToLower().Contains(pTxnLocation.ToLower()))
-                                                    || (c.TxnLocation != null && Utilities.ConvertToUnSign(c.TxnLocation.ToLower()).IndexOf(pTxnLocation.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                                                    || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnLocation.ToLower()))
-                                                    )
-                                                    return true;
-                                                else
-                                                    return false;
-                                            }
-                                        ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
-                    }
-                }
-                if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
-                {
-                    var listOfTransPointtWorkTmp = _dbContext.ListOfTransPointWorks.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
-                            && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
-                            && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
-                            && (pStatus == -1 || w.Status == pStatus))
-                        .Where(delegate (ListOfTransPointWork c)
-                        {
-                            if (string.IsNullOrEmpty(pTxnPointName)
-                                || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
-                                || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                                || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
-                                )
-                                return true;
-                            else
-                                return false;
-                        }
-                        ).ToList();
+                                        }).ToList();
 
-                    foreach (var item in listOfTransPointTmp)
+                    if (string.IsNullOrEmpty(pTxnLocation))
+                    {
+                        listOfTransPointTmp = listOfTransPointTmp01.OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
+                    }
+                    else
+                    {
+                        if (listOfTransPointTmp01 != null && listOfTransPointTmp01.Count != 0)
+                        {
+                            listOfTransPointTmp = listOfTransPointTmp01.Where(w => w.TxnPointCode != "")
+                                                .Where(delegate (ListOfTransPoint c)
+                                                {
+                                                    if (string.IsNullOrEmpty(pTxnLocation)
+                                                        || (c.TxnLocation != null && c.TxnLocation.ToLower().Contains(pTxnLocation.ToLower()))
+                                                        || (c.TxnLocation != null && Utilities.ConvertToUnSign(c.TxnLocation.ToLower()).IndexOf(pTxnLocation.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                                        || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnLocation.ToLower()))
+                                                        )
+                                                        return true;
+                                                    else
+                                                        return false;
+                                                }
+                                            ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
+                        }
+                    }
+                }    
+                if (listOfTransPointtWorkTmp != null && listOfTransPointtWorkTmp.Count != 0)
+                {                   
+                    foreach (var item in listOfTransPointtWorkTmp)
                     {
                         iCountTMP++;
                         ListOfTransPointWorkViewModel objItem = new ListOfTransPointWorkViewModel();
                         objItem = _mapper.Map<ListOfTransPointWorkViewModel>(item);
-                        objItem.EventCode = "";
-                        objItem.EventName = "";
-                        objItem.ParentId = 0;
                         objItem.OrderNo = iCountTMP;
+                        objItem.EventName = EventBusinessCode.GetByCode(objItem.EventCode).Description;;
                         objItem.VisitDateText = item.VisitDate.ToString("D2");
                         objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
                         objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
                         objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
 
-                        if (listOfTransPointtWorkTmp != null && listOfTransPointtWorkTmp.Count != 0)
+                        if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
                         {
-                            var objTransPointtWorkTmp = listOfTransPointtWorkTmp.Where(w => w.TxnPointCode == item.TxnPointCode).OrderByDescending(o => o.ModifiedDate).ThenByDescending(o => o.ApprovalDate).FirstOrDefault();
-                            if (objTransPointtWorkTmp != null && !string.IsNullOrEmpty(objTransPointtWorkTmp.TxnPointCode))
+                            var objTransPointTmp = listOfTransPointTmp.Where(w => w.TxnPointCode == item.TxnPointCode).OrderByDescending(o => o.ModifiedDate).ThenByDescending(o => o.ApprovalDate).FirstOrDefault();
+                            if (objTransPointTmp != null && !string.IsNullOrEmpty(objTransPointTmp.TxnPointCode))
                             {
-                                objItem = _mapper.Map<ListOfTransPointWorkViewModel>(objTransPointtWorkTmp);
+                                objItem = _mapper.Map<ListOfTransPointWorkViewModel>(objTransPointTmp);
                                 objItem.OrderNo = iCountTMP;
-                                objItem.VisitDateText = objTransPointtWorkTmp.VisitDate.ToString("D2");
-                                objItem.EffectiveDateText = objTransPointtWorkTmp.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
-                                objItem.TxnStatusText = (objTransPointtWorkTmp.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
-                                objItem.StatusText = StatusTrans.GetByValue(objTransPointtWorkTmp.Status).Description;
+                                objItem.EventCode = "";
+                                objItem.EventName = "";
+                                objItem.VisitDateText = objTransPointTmp.VisitDate.ToString("D2");
+                                objItem.EffectiveDateText = objTransPointTmp.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
+                                objItem.TxnStatusText = (objTransPointTmp.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                                objItem.StatusText = StatusTrans.GetByValue(objTransPointTmp.Status).Description;
                             }
                         }
                         if (!string.IsNullOrEmpty(pEventCode))
@@ -255,6 +259,26 @@ namespace VBSPOSS.Services.Implements
                         else listTransPointWorks.Add(objItem);
                     }
                 }
+                else
+                {
+                    if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
+                    {
+                        foreach (var item in listOfTransPointTmp)
+                        {
+                            iCountTMP++;
+                            ListOfTransPointWorkViewModel objItem = new ListOfTransPointWorkViewModel();
+                            objItem = _mapper.Map<ListOfTransPointWorkViewModel>(item);
+                            objItem.OrderNo = iCountTMP;
+                            objItem.EventCode = "";
+                            objItem.EventName = "";
+                            objItem.VisitDateText = item.VisitDate.ToString("D2");
+                            objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
+                            objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                            objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+                            listTransPointWorks.Add(objItem);
+                        }
+                    }    
+                }
                 return listTransPointWorks;
             }
             catch (Exception ex)
@@ -262,7 +286,6 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
-
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch (Bảng ListOfTransPoint)
@@ -345,6 +368,7 @@ namespace VBSPOSS.Services.Implements
             }
             return iResultId;
         }
+
 
         /// <summary>
         /// Hàm Xóa/Đánh dấu xóa bản ghi Điểm giao dịch (Bảng ListOfTransPoint)
@@ -478,6 +502,15 @@ namespace VBSPOSS.Services.Implements
                         objItem.BusinessDateText = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
                         objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
                         objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+                        objItem.TimeBeginDate = DateTime.ParseExact(item.TimeBegin,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
+                        objItem.TimeEndDate = DateTime.ParseExact(item.TimeEnd,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
+
+                        if (!string.IsNullOrEmpty(item.IsInCommune))
+                            objItem.MaApDungList = "1";
+                        else if (!string.IsNullOrEmpty(item.IsInPos))
+                        {
+                            objItem.MaApDungList = "2";
+                        }
                         if (item.ParentId != 0)
                         {
                             var listOfTransPointHistTmp = _dbContext.ListOfTransPointHists.Where(w => w.Id == item.ParentId).FirstOrDefault();

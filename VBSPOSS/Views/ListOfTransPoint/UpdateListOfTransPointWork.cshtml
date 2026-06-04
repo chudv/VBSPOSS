@@ -62,7 +62,7 @@
             pProvinceCode: "",
             pStatus: "0",
             pTitleChoice: "",
-            pFlagTextShow: "2",
+            pFlagTextShow: "1",
             pPosCode: objPosCodeSelect
         };
     }
@@ -74,7 +74,7 @@
             pProvinceCode: objProvince,
             pStatus: "0",
             pTitleChoice: "",
-            pFlagTextShow: "2",
+            pFlagTextShow: "1",
             pPosCode: objPosCodeSelect
         };
     }
@@ -87,7 +87,7 @@
             pProvinceCode: objProvince,
             pStatus: "0",
             pTitleChoice: "",
-            pFlagTextShow: "2",
+            pFlagTextShow: "1",
             pPosCode: objPosCodeSelect,
             pCommuneCode: objCommune
         };
@@ -118,45 +118,26 @@
         };
     }
 
-    // function Change_PosCode() {
-    //     var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
-    //     var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
-    //     var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
-
-    //     if (objProvinceCode != null) {
-    //         objProvinceCode.dataSource.read();
-    //     }
-    //      // Gọi action Read của DataSource
-    //     // objCommuneCode.dataSource.read(); // Gọi action Read của DataSource
-    //     // objSubCommuneCode.dataSource.read(); // Gọi action Read của DataSource
-    // }
-
     function Change_PosCode() {
+        var objPosCode = $("#PosCode").data("kendoComboBox");
         var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
         var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
         var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
         objCommuneCode.text("");
         objSubCommuneCode.text("");
         objProvinceCode.dataSource.read().then(function () {
-            objProvinceCode.select(1);
+            objProvinceCode.select(0);
             Change_Province();
             Change_Commune();
         });
-        $("#PosName").val(objPosCode.text());
-
-        // objCommuneCode.dataSource.read().then(function () {
-        //     objCommuneCode.select(0);
-        // });
-
-        // objSubCommuneCode.dataSource.read().then(function () {
-        //     objSubCommuneCode.select(0);
-        // });
+        $("#PosName").val(getNameOnly(objPosCode.text()));
     }
 
     function Change_Province() {
+        var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
         var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
         objCommuneCode.dataSource.read().then(function () {
-            objProvinceCode.select(0);
+            objCommuneCode.select(0);
         });
         $("#ProvinceName").val(objProvinceCode.text());
     }
@@ -164,94 +145,12 @@
     function Change_Commune() {
         var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
         objSubCommuneCode.dataSource.read().then(function () {
-            objProvinceCode.select(0);
+            objSubCommuneCode.select(0);
         });
     }
 
 
     var roleLists;
-    function Change_RoleOfUserIDC() {
-        var objGroupId = $("#GroupName").data("kendoComboBox");
-        if (objGroupId != null) {
-            var lcGroupNameText = objGroupId.text();
-            $("#GroupNameText").val(lcGroupNameText);
-
-            $.ajax({
-                type: "GET",
-                data: {
-                    pUserRole: objGroupId.value()
-                },
-                url: "../ListOfValue/GetRoleToTransferCashByUserRole",
-                success: function (data) {
-                    roleLists = data;
-                    if (roleLists != null && roleLists.length != 0) {
-                        $("#RoleToTransferCashDescription").val(roleLists[0].RoleToTransferCashDescription);
-                        $("#RoleToTransferCashValue").val(roleLists[0].RoleToTransferCashValue);
-                        //Set AuthsecType
-                        var comboAuth = $("#AuthsecType").data("kendoComboBox");
-                        if (comboAuth) {
-                            if (roleLists[0].RoleToTransferCashValue === "Y") {
-                                comboAuth.value("17");
-                            } else {
-                                comboAuth.value("0");
-                            }
-                            comboAuth.readonly(true);
-                        }
-
-                        var comboMailFlag = $("#MailIdFlag").data("kendoComboBox");
-                        if (comboMailFlag) {
-                            comboMailFlag.readonly(true);
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    var staffLists;
-    function LoadStaffInfoDetail(e) {
-        var objStaffId = $("#StaffId").data("kendoComboBox");
-        var lcUserId = $("#UserId").val();
-        var lcFirstName = $("#FirstName").val();
-        var lcLastName = $("#LastName").val();
-        if (objStaffId != null) {
-            var lcStaffId = $("#StaffId").val(); // Lấy ID của thành viên =>Load thông tin ra theo ID này
-            if (lcStaffId != null && lcStaffId != "" && lcStaffId != "0") {
-                $.ajax({
-                    type: "GET",
-                    data: {
-                        pStaffId: lcStaffId
-                    },
-                    url: "../ListOfValue/GetListStaffVBSPByStaffId",
-                    success: function (data) {
-                        staffLists = data;
-                        if (staffLists != null && staffLists.length != 0) {
-                            $("#UserId").val(staffLists[0].StaffCode);
-                            var lcFullName = staffLists[0].StaffName.trim();
-                            var nameParts = lcFullName.split(/\s+/);
-                            var lcLastName = nameParts.pop();
-                            var lcFirstName = nameParts.join(" ");
-                            $("#FirstName").val(lcFirstName);
-                            $("#LastName").val(lcLastName);
-                            $("#StaffCode").val(staffLists[0].StaffCode);
-                            $("#Genders").val(staffLists[0].GenderText);
-                            $("#DateOfBirth").val(staffLists[0].DateOfBirthText);
-                            $("#PosName").val(staffLists[0].StaffPosName);
-                            $("#StaffDepartmentName").val(staffLists[0].StaffDepartmentName);
-                            $("#StaffPositionName").val(staffLists[0].StaffPositionName);
-                            $("#MobileNumber").val(staffLists[0].StaffMobileNo);
-                            $("#EmailAddress").val(staffLists[0].StaffEmail);
-                            $("#StaffPosCode").val(staffLists[0].StaffPosCode);
-                            $("#StaffDepartmentCode").val(staffLists[0].StaffDepartmentCode);
-                            $("#StaffPositionCode").val(staffLists[0].StaffPositionCode);
-                            $("#FullName").val(staffLists[0].StaffName);
-                        }
-                    }
-                });
-            }
-        }
-    }
-
     function onCloseUpdate(ev) {
         mainWindow.data("kendoWindow").close();
     }
@@ -411,17 +310,48 @@
         }, 5000);
     }
 
-    function onMaApDungChange(e) {
-        var values = this.value();
-
+    function onInterWardCheck() {
         var txt = $("#InterWardName").data("kendoTextBox");
-
-        if (values.includes("3") || values.includes(3)) {
+        if ($("#chkInterWard").is(":checked")) {
             txt.enable(true);
         } else {
             txt.value("");
             txt.enable(false);
         }
+    }
+
+    function Change_SubCommune() {
+        var objProvince = $("#ProvinceCode").data("kendoComboBox");
+        var objCommune = $("#CommuneCode").data("kendoComboBox");
+        var objSubCommune = $("#AddressCode").data("kendoComboBox");
+        var txnLocation = $("#TxnLocation").val();
+        var provinceText = getNameOnly(objProvince.text());
+        var communeText = getNameOnly(objCommune.text());
+        var subCommuneText = getNameOnly(objSubCommune.text());
+        var addressDetail = "";
+        if (txnLocation) {
+            addressDetail += txnLocation;
+        }
+        if (subCommuneText) {
+            addressDetail += ", " + subCommuneText;
+        }
+        if (communeText) {
+            addressDetail += ", " + communeText;
+        }
+        if (provinceText) {
+            addressDetail += ", " + provinceText;
+        }
+        //$("#AddressDetail").val(addressDetail);
+        $("#AddressDetail").data("kendoTextBox").value(addressDetail);
+    }
+
+    function getNameOnly(text) {
+        if (!text) return "";
+        var arr = text.split('-');
+        if (arr.length > 1) {
+            return arr.slice(1).join('-').trim();
+        }
+        return text.trim();
     }
     var lcButton = "";
 </script>
@@ -460,7 +390,6 @@
     @Html.HiddenFor(m => m.IsInPos, new { @Value = Model == null ? "" : Model.IsInPos })
     @Html.HiddenFor(m => m.IsInterWard, new { @Value = Model == null ? "" : Model.IsInterWard })
     @Html.HiddenFor(m => m.EffectiveDateText, new { @Value = Model == null ? "" : Model.EffectiveDateText })
-    @Html.HiddenFor(m => m.TxnLocation, new { @Value = Model == null ? "" : Model.TxnLocation })
     @Html.HiddenFor(m => m.AddressFull, new { @Value = Model == null ? "" : Model.AddressFull })
     @Html.HiddenFor(m => m.TxnStatusText, new { @Value = Model == null ? "" : Model.TxnStatusText })
     
@@ -531,11 +460,11 @@
             }
             else if (TempData["FlagEventCall"]?.ToString() == "2")
             {
-                title = "CHỈNH SỬA THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+                title = "CHỈNH SỬA THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO MỚI ĐIỂM GIAO DỊCH";
             }
             else if (TempData["FlagEventCall"]?.ToString() == "6")
             {
-                title = "XEM CHI TIẾT THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO TÀI KHOẢN NGƯỜI DÙNG INTELLECT IDC";
+                title = "XEM CHI TIẾT THÔNG TIN BẢN GHI YÊU CẦU NGHIỆP VỤ TẠO MỚI ĐIỂM GIAO DỊCH";
             }
             @title
         }
@@ -557,45 +486,6 @@
                     .Suggest(true)
                     .AutoBind(true)
                     .SelectedIndex(0))
-            </div>
-        </div>
-        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
-            <div class="col-md-12" style="display: inline-flex;">
-                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;">Tỉnh/Thành phố</label>
-                @(Html.Kendo().ComboBoxFor(m => m.ProvinceCode)
-                                .Filter(FilterType.Contains)
-                                .Placeholder("--- Tỉnh/Thành phố ---")
-                                .DataTextField("value")
-                                .DataValueField("id")
-                                .DataSource(source => { source.Read(read => { read.Action("GetListProvinces", "ListOfValue").Data("paramLoadListProvince"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 230px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                                .Events(e => e.Change("Change_Province"))
-                                .Suggest(true)
-                                .AutoBind(false))
-                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px!important;">Xã/Phường</label>
-                @(Html.Kendo().ComboBoxFor(m => m.CommuneCode)
-                                .Filter(FilterType.Contains)
-                                .Placeholder("--- Xã/Phường ---")
-                                .DataTextField("value")
-                                .DataValueField("id")
-                                .ClearButton(false)
-                                .DataSource(source => { source.Read(read => { read.Action("GetListCommunes", "ListOfValue").Data("paramLoadListCommune"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 220px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                                .Events(e => e.Change("Change_Commune"))
-                                .Suggest(true)
-                                .AutoBind(false))
-                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px!important;">Thôn/Bản</label>
-                @(Html.Kendo().ComboBoxFor(m => m.AddressCode)
-                                .Filter(FilterType.Contains)
-                                .Placeholder("--- Thôn/Bản ---")
-                                .DataTextField("value")
-                                .DataValueField("id")
-                                .ClearButton(false)
-                                .DataSource(source => { source.Read(read => { read.Action("GetListSubCommunes", "ListOfValue").Data("paramLoadListSubCommune"); }).ServerFiltering(false); })
-                                .HtmlAttributes(new { style = "width: 210px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
-                                //.Events(e => e.Change("Change_SubCommune"))
-                                .Suggest(true)
-                                .AutoBind(false))
             </div>
         </div>
 
@@ -623,76 +513,93 @@
         <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:7px; ">Địa điểm GD</label>
-                 @(Html.Kendo().MultiSelectFor(model => model.MaApDungList)
+                 @(Html.Kendo().ComboBoxFor(model => model.MaApDungList)
                                 .Placeholder("--- Chọn nơi giao dịch ---")
                                 .Filter(FilterType.Contains)
-                                .Events(e => e.Change("onMaApDungChange"))
                                 .HtmlAttributes(new
                                 {
-                                    style = "width: 450px; max-width: 100%; color: navy; font-family:Tahoma;"
+                                    style = "width: 400px; max-width: 100%; color: navy; font-family:Tahoma;"
                                 })
                                 .DataTextField("Text")
                                 .DataValueField("Value")
                                 .BindTo(new List<SelectListItem>
                                 {
                                 new SelectListItem { Text = "Giao dịch tại xã", Value = "1" },
-                                new SelectListItem { Text = "Giao dịch tại Ngân hàng", Value = "2" },
-                                new SelectListItem { Text = "Giao dịch liên phường", Value = "3" }
+                                new SelectListItem { Text = "Giao dịch tại Ngân hàng", Value = "2" }
                                 }))
-
-                <label class="lbcontrol" style="color: navy;text-align:right;width:140px;padding-top: 7px;padding-right: 7px;">Tên liên phường </label>
-                @Html.Kendo().TextBoxFor(m => m.InterWardName).Placeholder("--- Điểm liên phường ---").HtmlAttributes(new { style = " width: 270px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", disabled = "disabled" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:140px;padding-top: 7px;padding-right: 7px;">Điểm liên phường</label>
+                <input type="checkbox" id="chkInterWard" onchange="onInterWardCheck()" />
+                <label class="lbcontrol" style="color: navy;text-align:right;width:10px;padding-top: 7px;padding-right: 7px;"></label>
+                @Html.Kendo().TextBoxFor(m => m.InterWardName).Placeholder("--- Nhập tên điểm liên phường ---").HtmlAttributes(new { style = " width: 300px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", disabled = "disabled" })
             </div>
         </div>
         
         <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Địa chỉ điểm GD </label>
-                @Html.Kendo().TextBoxFor(m => m.AddressDetail).HtmlAttributes(new { style = " width: 500px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập địa chỉ" })
-                <label class="lbcontrol" style="color: navy;text-align:center;width:140px;padding-top: 7px;padding-right: 7px;">Tọa độ điểm GD </label>
-                @Html.Kendo().TextBoxFor(m => m.Longitude).HtmlAttributes(new { style = " width: 110px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập kinh độ" })
-                @Html.Kendo().TextBoxFor(m => m.Latitude).HtmlAttributes(new { style = " width: 110px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập vĩ độ" })
+                @(Html.Kendo().ComboBoxFor(m => m.ProvinceCode)
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Tỉnh/Thành phố ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .DataSource(source => { source.Read(read => { read.Action("GetListProvinces", "ListOfValue").Data("paramLoadListProvince"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 190px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .Events(e => e.Change("Change_Province"))
+                                .Suggest(true)
+                                .AutoBind(true))
+                <label class="lbcontrol" style="color: navy;text-align:right;width:10px;padding-top: 7px;padding-right: 7px!important;"></label>
+                @(Html.Kendo().ComboBoxFor(m => m.CommuneCode)
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Xã/Phường ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .ClearButton(false)
+                                .DataSource(source => { source.Read(read => { read.Action("GetListCommunes", "ListOfValue").Data("paramLoadListCommune"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 180px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                .Events(e => e.Change("Change_Commune"))
+                                .Suggest(true)
+                                .AutoBind(true))
+                @(Html.Kendo().ComboBoxFor(m => m.AddressCode)
+                                .Filter(FilterType.Contains)
+                                .Placeholder("--- Thôn/Bản ---")
+                                .DataTextField("value")
+                                .DataValueField("id")
+                                .ClearButton(false)
+                                .DataSource(source => { source.Read(read => { read.Action("GetListSubCommunes", "ListOfValue").Data("paramLoadListSubCommune"); }).ServerFiltering(false); })
+                                .HtmlAttributes(new { style = "width: 180px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                //.Events(e => e.Change("Change_SubCommune"))
+                                .Suggest(true)
+                                .AutoBind(true))
+                <label class="lbcontrol" style="color: navy;text-align:left;width:10px;padding-top: 7px;padding-right: 7px;"> </label>
+                @Html.Kendo().TextBoxFor(m => m.TxnLocation).HtmlAttributes(new { style = " width: 290px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập nơi đặt điểm giao dịch", onchange = "Change_SubCommune()" })
+
+            </div>
+        </div>
+        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Địa chỉ chi tiết </label>
+                @Html.Kendo().TextBoxFor(m => m.AddressDetail).HtmlAttributes(new { style = " width: 860px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Địa chỉ chi tiết điểm giao dịch" })
             </div>
         </div>
 
         <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Số điện thoại </label>
-                @Html.Kendo().TextBoxFor(m => m.PhoneSupport).HtmlAttributes(new { style = " width: 160px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập số điện thoại" })
-                <label class="lbcontrol" style="color: navy;text-align:center;width:190px;padding-top: 7px;padding-right: 7px;">Số điện thoại dự phòng 1 </label>
-                @Html.Kendo().TextBoxFor(m => m.PhoneSupport01).HtmlAttributes(new { style = " width: 160px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập số điện thoại" })
-                <label class="lbcontrol" style="color: navy;text-align:center;width:190px;padding-top: 7px;padding-right: 7px;">Số điện thoại dự phòng 2 </label>
-                @Html.Kendo().TextBoxFor(m => m.PhoneSupport02).HtmlAttributes(new { style = " width: 160px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Nhập số điện thoại" })
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Tọa độ điểm GD </label>
+                @(Html.Kendo().NumericTextBoxFor(m => m.Longitude).Decimals(8).Format("n8").Min(-180).Max(180).HtmlAttributes(new { style = "width:120px;max-width:100%;color:blueviolet;font-family:Tahoma;padding-left:2px;padding-right:2px;", placeholder = "Nhập kinh độ" }))
+                @(Html.Kendo().NumericTextBoxFor(m => m.Latitude).Decimals(8).Format("n8").Min(-180).Max(180).HtmlAttributes(new { style = "width:120px;max-width:100%;color:blueviolet;font-family:Tahoma;padding-left:2px;padding-right:2px;", placeholder = "Nhập kinh độ" }))
+
+                <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top: 7px;padding-right: 7px;">Số điện thoại liên hệ</label>
+                @(Html.Kendo().MaskedTextBoxFor(m => m.PhoneSupport).Mask("0000 000 000").HtmlAttributes(new{data_validmask_msg = "Giá trị không hợp lệ",placeholder = "Số điện thoại 1",style = "width:150px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;"}))
+                <label class="lbcontrol" style="color: navy;text-align:center;width:10px;padding-top: 7px;padding-right: 7px;"> </label>
+                @(Html.Kendo().MaskedTextBoxFor(m => m.PhoneSupport01).Mask("0000 000 000").HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", placeholder = "Số điện thoại 2", style = "width:150px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;" }))
+                <label class="lbcontrol" style="color: navy;text-align:center;width:10px;padding-top: 7px;padding-right: 7px;"></label>
+                @(Html.Kendo().MaskedTextBoxFor(m => m.PhoneSupport02).Mask("0000 000 000").HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", placeholder = "Số điện thoại 3", style = "width:150px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;" }))
             </div>
         </div>
 
         <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
-                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Trạng thái </label>
-@*                 @(Html.Kendo().ComboBoxFor(m => m.Status)
-                    .Filter(FilterType.Contains)
-                    .Placeholder("--- Trạng thái bản ghi ---")
-                    .DataTextField("Text")
-                    .DataValueField("Value")
-                    .BindTo(new List<SelectListItem>() {
-                        new SelectListItem() { Text = "Mở (Hoạt động)", Value = "1" },
-                        new SelectListItem() { Text = "Chỉnh sửa", Value = "5" },
-                        new SelectListItem() { Text = "Trình duyệt", Value = "2" },
-                        new SelectListItem() { Text = "Phê duyệt cấp Chi nhánh", Value = "6" },
-                        new SelectListItem() { Text = "Từ chối cấp Chi nhánh", Value = "7" },
-                        new SelectListItem() { Text = "Phê duyệt cấp TTCNTT", Value = "3" },
-                        new SelectListItem() { Text = "Từ chối cấp TTCNTT", Value = "4" },
-                        new SelectListItem() { Text = "Phê duyệt của đơn vị nhận", Value = "8" },
-                        new SelectListItem() { Text = "Từ chối của đơn vị nhận", Value = "10" },
-                        new SelectListItem() { Text = "Đóng (Đánh dấu xóa)", Value = "0" }
-                        })
-                    .Suggest(true)
-                    .AutoBind(true)
-                    .HtmlAttributes(new { style = "padding-left: 3px;width: 300px; color: blue;", })
-                    .Events(e => e.Change("Change_Status"))
-                    .SelectedIndex(0)
-                    )
- *@                
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Trạng thái </label>      
                 @(Html.Kendo().ComboBoxFor(m => m.TxnStatus)
                     .Filter(FilterType.Contains)
                     .Placeholder("--- Trạng thái điểm giao dịch ---")
@@ -710,7 +617,7 @@
                     )
 
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày thành lập</label>
-                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                @Html.Kendo().DatePickerFor(m => m.EffectiveDate).Format("dd/MM/yyyy").HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
                 <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày hiệu lực</label>
                 @Html.Kendo().DatePickerFor(m => m.BusinessDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 130px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
 
@@ -753,7 +660,7 @@
             // if (expirePicker && expirePicker.value()) {
             //     $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
             // }
-            // $("#pFlagCall").val($("#FlagEventCallView").val());
+            $("#pFlagCall").val($("#FlagEventCallView").val());
             // $("#pButtonType").val($("#ButtonTypeView").val());
             // $("#UserId").val($("#StaffCode").val());
             // $("#NickName").val($("#StaffCode").val());
@@ -794,7 +701,7 @@
         var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
         var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
         var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
-        $("#PosName").val(objPosCode.text());
+        $("#PosName").val(getNameOnly(objPosCode.text()));
         $("#ProvinceName").val(objProvinceCode.text());
         $("#CommuneName").val(objCommuneCode.text());
         if (form.enctype === "multipart/form-data") {
@@ -818,11 +725,11 @@
                     else if ($("#FlagCall").val() == "2")
                         lcFlagCallText = "Chỉnh sửa";
                     alert("Bạn đã cập nhật " + lcFlagCallText + " bản ghi yêu cầu nghiệp vụ tạo mới điểm giao dịch [" + $("#TxnPointCode").val() + " - " + $("#TxnPointName").val() + "] thành công!");
-                    dataChange = true;
+                    dataChangeTransPointWork = true;
                     onCloseUpdate();
                 } 
                 else {
-                    dataChange = false;
+                    dataChangeTransPointWork = false;
                     if (result == "15")
                         alert("Yêu cầu tạo mới tài khoản người dùng nhưng trạng thái bản ghi là đóng. Vui lòng kiểm tra lại!");
                     else if (result == "1")
@@ -870,60 +777,91 @@
     }
 
     $(document).ready(function () {
-        setTimeout(function () 
-        {
-            Change_PosCode();
-            Change_RoleOfUserIDC();
-            LoadStaffInfoDetail();
+        if($("#FlagEventCallView").val() == "1"){
+            setTimeout(function ()
+            {
+                Change_PosCode();
+            }, 300); // delay nhẹ để đảm bảo Kendo init xong
+        }
+        var pIsinterward = $("#IsInterWard").val();
+        $("#chkInterWard").prop("checked", pIsinterward != null && pIsinterward != "");
 
-            
-
-        }, 300); // delay nhẹ để đảm bảo Kendo init xong
-        var lcFlagCall = $("#FlagCall").val();
-        $("#pFlagCall").val($("#FlagEventCallView").val());
-        //Nếul à xem thì readonly các control và Hide nút lệnh Lưu
-        var cboStatus = $("#Status").data("kendoComboBox");
-        cboStatus.readonly(true);
-        if (lcFlagCall == $("#EventFlag_AddView").val() || lcFlagCall == $("#EventFlag_ViewView").val())
+        // var objMaApDungList = $("#MaApDungList").data("kendoComboBox");
+        // if (objMaApDungList) {
+        //     objMaApDungList.value(pMaApDungList);
+        // }
+        var lcFlagCall = $("#FlagEventCallView").val();
+        var cboStatus = $("#TxnStatus").data("kendoComboBox");
+        //Nếulà xem thì readonly các control và Hide nút lệnh Lưu
+        if (lcFlagCall == $("#EventFlag_AddView").val())
         {
-            var cboStatus = $("#Status").data("kendoComboBox");
             cboStatus.readonly(true);
         }
         else if (lcFlagCall == $("#EventFlag_ViewView").val())
         {
+            $("#chkInterWard").prop("disabled", true);
+            cboStatus.readonly(true);
             var cboPosCode = $("#PosCode").data("kendoComboBox");
             cboPosCode.readonly(true);
 
-            var cboStaffId = $("#StaffId").data("kendoComboBox");
-            cboStaffId.readonly(true);
+            var cboTxnPointCode = $("#TxnPointCode").data("kendoTextBox");
+            cboTxnPointCode.readonly(true);
 
-            // var cboGroupName = $("#GroupName").data("kendoComboBox");
-            // cboGroupName.readonly(true);
+            var cboTxnPointName = $("#TxnPointName").data("kendoTextBox");
+            cboTxnPointName.readonly(true);
 
-            var cboAuthsecType = $("#AuthsecType").data("kendoComboBox");
-            cboAuthsecType.readonly(true);
+            var cboVisitDate = $("#VisitDate").data("kendoNumericTextBox");
+            cboVisitDate.readonly(true);
 
-            var cboMailIdFlag = $("#MailIdFlag").data("kendoComboBox");
-            cboMailIdFlag.readonly(true);
+            var cboTimeBeginDate = $("#TimeBeginDate").data("kendoTimePicker");
+            cboTimeBeginDate.readonly(true);
 
-            var txtIpSetDetail = $("#IpSetDetail").data("kendoTextBox");
-            txtIpSetDetail.readonly(true);
+            var cboTimeEndDate = $("#TimeEndDate").data("kendoTimePicker");
+            cboTimeEndDate.readonly(true);
 
-            var cboStatus = $("#Status").data("kendoComboBox");
-            cboStatus.readonly(true);
+            var cboMaApDungList = $("#MaApDungList").data("kendoComboBox");
+            cboMaApDungList.readonly(true);
+
+            var cboProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+            cboProvinceCode.readonly(true);
+
+            var cboCommuneCode = $("#CommuneCode").data("kendoComboBox");
+            cboCommuneCode.readonly(true);
+
+            var cboAddressCode = $("#AddressCode").data("kendoComboBox");
+            cboAddressCode.readonly(true);
+
+            var txtTxnLocation = $("#TxnLocation").data("kendoTextBox");  
+            txtTxnLocation.readonly(true);
+
+            var txtAddressDetail = $("#AddressDetail").data("kendoTextBox");  
+            txtAddressDetail.readonly(true);
+
+            var txtLongitude = $("#Longitude").data("kendoNumericTextBox");
+            txtLongitude.readonly(true);
+            
+            var txtLatitude = $("#Latitude").data("kendoNumericTextBox");
+            txtLatitude.readonly(true);
+
+            var txtPhoneSupport = $("#PhoneSupport").data("kendoMaskedTextBox");
+            txtPhoneSupport.readonly(true);
+
+            var txtPhoneSupport01 = $("#PhoneSupport01").data("kendoMaskedTextBox");
+            txtPhoneSupport01.readonly(true);
+
+            var txtPhoneSupport02 = $("#PhoneSupport02").data("kendoMaskedTextBox");
+            txtPhoneSupport02.readonly(true);
 
             var dtpkEffectiveDate = $("#EffectiveDate").data("kendoDatePicker");
             dtpkEffectiveDate.readonly(true);
 
-            var dtpkExpiryDate = $("#ExpiryDate").data("kendoDatePicker");
-            dtpkExpiryDate.readonly(true);
+            var dtpkBusinessDate = $("#BusinessDate").data("kendoDatePicker");
+            dtpkBusinessDate.readonly(true);
 
-            var dtpkStartDate = $("#StartDate").data("kendoDatePicker");
-            dtpkStartDate.readonly(true);
 
             $("#Remark").prop("readonly", true)
 
-            $("#btnSaveCreateTranspoint").hide();                    // Cách đơn giản nhất
+            $("#btnSaveCreateTranspoint").hide();
         }
     });
 
