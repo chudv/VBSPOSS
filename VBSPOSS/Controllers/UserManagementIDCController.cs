@@ -208,7 +208,32 @@ namespace VBSPOSS.Controllers
                 else if (pEventCode == EventFlag.EventFlag_Authorize.Value.ToString())
                 {
                     var listUserManagementIDCTmp02 = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", -1, pFunctionType, false);
-                    listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.Status == StatusBusinessFlow.Status_Submitted.Value && w.StartDate >= dSystemDateTemp.Date).ToList();
+                    if (pFunctionType != FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
+                        listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.Status == StatusBusinessFlow.Status_Submitted.Value && w.StartDate >= dSystemDateTemp.Date).ToList();
+                    else
+                    {
+                        //listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => w.StartDate >= dSystemDateTemp.Date
+                        //            && (string.IsNullOrEmpty(pPosCode) || (w.PosCodeOld.StartsWith(pPosCode) && w.Status == StatusBusinessFlow.Status_Submitted.Value))
+                        //            && (string.IsNullOrEmpty(sMainPosCode) || (w.MainPosCodeOld.StartsWith(sMainPosCode) && w.Status == StatusBusinessFlow.Status_Submitted.Value))
+                        //            ).ToList();
+
+                        var listUserManagementIDCTmpChangePos01 = listUserManagementIDCTmp02.Where(w => w.StartDate >= dSystemDateTemp.Date
+                                    && (string.IsNullOrEmpty(pPosCode) || (w.PosCodeOld.StartsWith(pPosCode) && w.Status == StatusBusinessFlow.Status_Submitted.Value))
+                                    && (string.IsNullOrEmpty(sMainPosCode) || (w.MainPosCodeOld.StartsWith(sMainPosCode) && w.Status == StatusBusinessFlow.Status_Submitted.Value))
+                                    ).ToList();
+                        var listUserManagementIDCTmpChangePos02 = listUserManagementIDCTmp02.Where(w => w.StartDate >= dSystemDateTemp.Date
+                                    && (string.IsNullOrEmpty(pPosCode) || (w.PosCode.StartsWith(pPosCode) && w.Status == StatusBusinessFlow.Status_MovingBranch_Approved.Value))
+                                    && (string.IsNullOrEmpty(sMainPosCode) || (w.MainPosCode.StartsWith(sMainPosCode) && w.Status == StatusBusinessFlow.Status_MovingBranch_Approved.Value))
+                                    ).ToList();
+                        if (listUserManagementIDCTmpChangePos01 != null && listUserManagementIDCTmpChangePos01.Count != 0)
+                            listUserManagementIDCTmp.AddRange(listUserManagementIDCTmpChangePos01);
+                        if (listUserManagementIDCTmpChangePos02 != null && listUserManagementIDCTmpChangePos02.Count != 0)
+                            listUserManagementIDCTmp.AddRange(listUserManagementIDCTmpChangePos02);
+                        //&& (|| w.Status == StatusBusinessFlow.Status_MovingBranch_Approved.Value)
+                        //listUserManagementIDCTmp = listUserManagementIDCTmp02.Where(w => (w.Status == StatusBusinessFlow.Status_Submitted.Value || w.Status == StatusBusinessFlow.Status_MovingBranch_Approved.Value)
+                        //            && w.StartDate >= dSystemDateTemp.Date).ToList();
+                    }
+
                     if (listUserManagementIDCTmp != null && listUserManagementIDCTmp.Count != 0)
                     {
                         int iCountTemp = 0;
@@ -1165,6 +1190,7 @@ namespace VBSPOSS.Controllers
                     objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
                     objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
                     objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
+                    objUserManagementIDCUpd.DescriptionUserRequest = string.IsNullOrEmpty(objUserManagementChangeTemp.DescriptionUserRequest) ? "" : objUserManagementChangeTemp.DescriptionUserRequest;
                 }
 
                 #endregion
