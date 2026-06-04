@@ -276,7 +276,15 @@
         else if (dataItem.Status.toString() == "2") {
             alert(sMessInfor + " có nghiệp vụ [" + dataItem.FunctionTypeName + "] đã được trình duyệt nên không thể đánh dấu xóa. Vui lòng kiểm tra lại!");
         }
-       
+        else if (dataItem.Status.toString() == "8") {
+            alert(sMessInfor + " có nghiệp vụ [" + dataItem.FunctionTypeName + "] đã được phê duyệt tại Chi nhánh chuyển đi nên không thể đánh dấu xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "10") {
+            alert(sMessInfor + " có nghiệp vụ [" + dataItem.FunctionTypeName + "] đã được từ chối tại Chi nhánh chuyển đến nên không thể đánh dấu xóa. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "9") {
+            alert(sMessInfor + " có nghiệp vụ [" + dataItem.FunctionTypeName + "] đã được thực thi ghi nhận vào Intellect iDC nên không thể đánh dấu xóa. Vui lòng kiểm tra lại!");
+        }
         else {
             var isConfirm = confirm("Bạn có chắc chắn muốn đánh dấu xóa bản ghi Yêu cầu nghiệp vụ [" + dataItem.FunctionTypeName + "] của người dùng [" + dataItem.UserId + "] - [" + dataItem.FullName + "] không?");
             if (isConfirm == true) {
@@ -327,6 +335,15 @@
         }
         else if (dataItem.Status.toString() == "7") {
             alert(sMessInfor + " đã được từ chối tại cấp Chi nhánh nên không thể chỉnh sửa thông tin bản ghi. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "8") {
+            alert(sMessInfor + " đã được phê duyệt tại Chi nhánh chuyển đi nên không thể chỉnh sửa thông tin bản ghi. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "10") {
+            alert(sMessInfor + " đã được từ chối tại Chi nhánh chuyển đến nên không thể chỉnh sửa thông tin bản ghi. Vui lòng kiểm tra lại!");
+        }
+        else if (dataItem.Status.toString() == "9") {
+            alert(sMessInfor + " đã được thực thi ghi nhận vào Intellect iDC nên không thể chỉnh sửa thông tin bản ghi. Vui lòng kiểm tra lại!");
         }
         else if (dataItem.Id <= 0) {
             alert(sMessInfor + " chưa có yêu cầu nghiệp vụ nào nên không thể chỉnh sửa thông tin bản ghi. Vui lòng kiểm tra lại!");
@@ -456,7 +473,7 @@
         
         var sMessInfor = "Tài khoản của người dùng [" + dataItem.FullName + "]";
         // Kiểm tra trạng thái trước khi trình duyệt
-        var deletedStatuses = [0, 1, 2, 4, 7, 5];
+        var deletedStatuses = [0, 1, 2, 4, 7, 5, 10];
 
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
