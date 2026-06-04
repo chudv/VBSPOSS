@@ -289,7 +289,7 @@
     @Html.HiddenFor(m => m.RoleToTransferCashDescriptionDetail, new { @Value = Model == null ? "" : Model.RoleToTransferCashDescriptionDetail })
     @Html.HiddenFor(m => m.RoleToTransferCashName, new { @Value = Model == null ? "" : Model.RoleToTransferCashName })
     @Html.HiddenFor(m => m.StartDate, new { @Value = Model == null ? DateTime.Today : Model.StartDate })
-    @Html.HiddenFor(m => m.StartDateText, new { @Value = Model == null ? "" : Model.StartDateText })
+    
     @Html.HiddenFor(m => m.IpSetCode, new { @Value = Model == null ? "" : Model.IpSetCode })
     @Html.HiddenFor(m => m.RestrictionFlag, new { @Value = Model == null ? 0 : Model.RestrictionFlag })
     @Html.HiddenFor(m => m.RestrictionFlagCheck, new { @Value = Model == null ? false : Model.RestrictionFlagCheck })
@@ -303,6 +303,7 @@
     @Html.HiddenFor(m => m.RoleToTransferCashNameOld, new { @Value = Model == null ? "" : Model.RoleToTransferCashNameOld })
     @Html.HiddenFor(m => m.RoleToTransferCashDescriptionDetailOld, new { @Value = Model == null ? "" : Model.RoleToTransferCashDescriptionDetailOld })
     @Html.HiddenFor(m => m.StartDateOld, new { @Value = Model == null ? Model.StartDate : Model.StartDateOld })
+    @Html.HiddenFor(m => m.StartDateOldText, new { @Value = Model == null ? "" : Model.StartDateOldText })
     @Html.HiddenFor(m => m.BusinessDateText, new { @Value = Model == null ? "" : Model.BusinessDateText })
     @Html.HiddenFor(m => m.FlagCall, new { @Value = Model == null ? "" : Model.FlagCall })
     @Html.HiddenFor(m => m.GenderCode, new { @Value = Model == null ? "" : Model.GenderCode })
@@ -414,11 +415,11 @@
         
         <div class="row" style="padding-top: 5px;color: navy;padding-left: 0px; padding-bottom: 0px;">
             <div class="col-md-12" style="display: inline-flex;">
-                <label class="lbcontrol" style="color: navy;text-align:left;width:100px;padding-top: 7px;">Ngày bắt đầu</label>
-                @Html.Kendo().TextBoxFor(m => m.StartDateOldText).HtmlAttributes(new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma; font-size:12px;padding-left: 2px;padding-right: 2px;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:300px;padding-top: 7px;padding-right: 10px!important;">Ngày hiện tại của hệ thống iDC</label>
+                <label class="lbcontrol" style="color: navy;text-align:left;width:200px;padding-top: 7px;">Ngày hiệu lực của tài khoản</label>
+                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:250px;padding-top: 7px;padding-right: 10px!important;">Ngày hiện tại của hệ thống iDC</label>
                 @Html.TextBoxFor(m => m.SystemDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:300px;padding-top: 7px;padding-right: 10px!important;">Ngày mở sổ của hệ thống iDC</label>
+                <label class="lbcontrol" style="color: navy;text-align:right;width:250px;padding-top: 7px;padding-right: 10px!important;">Ngày mở sổ của hệ thống iDC</label>
                 @Html.TextBoxFor(m => m.BusinessDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blueviolet;font-family:Tahoma;" })
             </div>
         </div>
@@ -434,8 +435,9 @@
             <div class="col-md-12" style="display: inline-flex;">
                 <label class="lbcontrol" style="color: navy;text-align:left;width:140px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
                 @Html.Kendo().TextBoxFor(m=>m.FunctionTypeName).HtmlAttributes(new { @readonly = "readonly", style = " width: 350px; !important;max-width:100% !important;color: blue;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
-                <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hiệu lực</label>
-                @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blue;font-family:Tahoma;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày bắt đầu</label>
+                @* @Html.TextBoxFor(m => m.EffectiveDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blue;font-family:Tahoma;" }) *@
+                @Html.Kendo().TextBoxFor(m => m.StartDateText).HtmlAttributes(new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blue;font-family:Tahoma; font-size:12px;padding-left: 2px;padding-right: 2px;" })
                 <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Ngày hết hiệu lực</label>
                 @Html.TextBoxFor(m => m.ExpiryDate, "{0:dd/MM/yyyy}", new { @readonly = "readonly", style = "width: 90px !important;max-width: 100% !important;border:0; border-bottom: 1px dotted;color: blue;font-family:Tahoma;" })
             </div>
@@ -491,7 +493,8 @@
             <div class="col-md-12" style="vertical-align: bottom; color: navy;">
 
                 <div class="col-md-8 d-flex align-items-center">
-                    <span class="lbcontrol" style="text-align: right; color: navy;width:120px;padding-right:5px;font-weight:bold;padding-top:7px;">Tờ trình đính kèm</span>
+                    @* <span class="lbcontrol" style="text-align: right; color: navy;width:120px;padding-right:5px;font-weight:bold;padding-top:7px;">Tờ trình đính kèm</span> *@
+                    <label class="lbcontrol" style="width: 770px; vertical-align: middle;color: navy;text-align:left;padding-top:7px;"></label>
                     <div class="control-label" style="font-weight: bold; text-align: left; padding-top: 4px;padding-left: 8px;color:navy;" id="_attachFileIdUserIdChild"><span style="color:red;"></span><span id="_no_file_attachIdUserIdChild"></span> </div>
                 </div>
                 <div class="col-md-4 text-right">
@@ -515,7 +518,7 @@
                         .ImageUrl(Url.Content("~/images/note_delete.png"))
                         .Content("Chọn từ chối&nbsp;"))
                     &nbsp;
-                    @(Html.Kendo().Button().Name("btnCloseAuthorizeChild").Events(ev => ev.Click("onCloseUpdateApprovalChild")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+                    @(Html.Kendo().Button().Name("btnCloseAuthorizeChild").Events(ev => ev.Click("onCloseUpdateApprovalChild")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình chi tiết thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
                 </div>
             </div>
 

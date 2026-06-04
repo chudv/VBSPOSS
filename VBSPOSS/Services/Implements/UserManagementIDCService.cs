@@ -547,6 +547,11 @@ namespace VBSPOSS.Services.Implements
             try
             {
                 List<string> listOfPosFind = new List<string>();
+                var listStatusPending = new List<int>(4) { 
+                                StatusBusinessFlow.Status_Created.Value, StatusBusinessFlow.Status_Modified.Value, 
+                                StatusBusinessFlow.Status_Submitted.Value, StatusBusinessFlow.Status_MovingBranch_Approved.Value 
+                        };
+                
                 listOfPosFind = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && w.Status == StatusLov.StatusOpenPOS
                                                             && (string.IsNullOrEmpty(pPosCode) ||  w.Code.StartsWith(pPosCode))
                                                             && (string.IsNullOrEmpty(pMainPosCode) || w.MainPosCode.StartsWith(pMainPosCode))
@@ -554,7 +559,14 @@ namespace VBSPOSS.Services.Implements
                 List<UserManagementIDCViewModel> listUserIDCManagement = new List<UserManagementIDCViewModel>();
 
                 var listUserIDCManagementTemp = _dbContext.UserManagementIDCs.Where(w => w.Id != 0 && (pId == 0 || w.Id == pId)
-                                                && (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
+                                                && (
+                                                    (listOfPosFind == null || listOfPosFind.Count <= 0 || listOfPosFind.Contains(w.PosCode))
+                                                ||
+                                                    (
+                                                    (listOfPosFind == null || listOfPosFind.Count <= 0 || (listOfPosFind.Contains(w.PosCodeOld) 
+                                                            && w.FunctionType== FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code) && listStatusPending.Contains( w.Status))
+                                                    )
+                                                )
                                                 && (string.IsNullOrEmpty(pUserId) || w.UserId == pUserId)
                                                 && (string.IsNullOrEmpty(pFunctionType) || w.FunctionType == pFunctionType)
                                                 && (pStatus == -1 || w.Status == pStatus)
@@ -2092,7 +2104,7 @@ namespace VBSPOSS.Services.Implements
                                     #region --- 6. Thay đổi POS người dùng ---
                                     if (sMainPosNew == sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
                                         bValidAuth = true;
-                                    if (sMainPosNew != sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS))
+                                    if (sMainPosNew != sMainPosOld && (pUserGradeUpd == PosGrade.HEAD_POS || pUserGradeUpd == PosGrade.MAIN_POS))
                                         bValidAuth = true;
                                     iCountSuccess = 0;
                                     if (bValidAuth)
@@ -2138,7 +2150,7 @@ namespace VBSPOSS.Services.Implements
                                             if (bValidAuth)
                                             {
                                                 var objDeleteOTPRegister = await ChangeOTPRegisterByUserId(objUserAuth.UserId, 0);
-                                                if (objDeleteOTPRegister == null || objDeleteOTPRegister.Success != 1)
+                                                if (objDeleteOTPRegister == null || (objDeleteOTPRegister.Success != 1 && objDeleteOTPRegister.Success != 0))
                                                 {
                                                     objUserAuth.StatusUpdateCore = 0;
                                                     objUserAuth.SessionValReq = false;
@@ -4525,22 +4537,39 @@ namespace VBSPOSS.Services.Implements
         {
             try
             {
-                var sUserIdInput = new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId };
-                var iRegisterFlagInput = new OracleParameter("P_REG_FLAG", OracleDbType.Int32) { Direction = ParameterDirection.Input, Value = pRegisterFlag };
-                var iRowsChangeOut = new OracleParameter("P_ROWS_CHANGE", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
-                var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
-                var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
+                var parameters = new[]
+                    {
+                        new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId},
+                        new OracleParameter("P_REG_FLAG", OracleDbType.Int32) {Direction = ParameterDirection.Input,  Value = pRegisterFlag},
+                        new OracleParameter("P_ROWS_CHANGE", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                        new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output },
+                        new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output }
+                    };
 
                 var sSQL = @"BEGIN VBSP_OSS_UPD.PRC_CHANGE_OTP_REGISTER_BY_USERID(:P_USERID, :P_REG_FLAG, :P_ROWS_CHANGE, :P_SUCCESS, :P_MESSAGE); END;";
-                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRegisterFlagInput, iRowsChangeOut, iSuccessOut, sMessageOut);
 
-                // Mapping kết quả
-                var objExecuteResult = new ExecuteResultModelModel
+                await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, parameters);
+
+
+                // Mapping kết quả - XỬ LÝ ORACLEDECIMAL AN TOÀN 
+                int rowsAffected = 0, successValue = -1;
+                string message = "";
+
+                if (parameters[2].Value != DBNull.Value && parameters[2].Value != null)
                 {
-                    RowsAffected = iRowsChangeOut.Value == DBNull.Value ? 0 : Convert.ToInt32(iRowsChangeOut.Value),
-                    Success = iSuccessOut.Value == DBNull.Value ? -1 : Convert.ToInt32(iSuccessOut.Value),
-                    Message = sMessageOut.Value?.ToString()
-                };
+                    var oracleDecRows = (Oracle.ManagedDataAccess.Types.OracleDecimal)parameters[2].Value;
+                    rowsAffected = oracleDecRows.IsNull ? 0 : oracleDecRows.ToInt32();
+                }
+                if (parameters[3].Value != DBNull.Value && parameters[3].Value != null)
+                {
+                    var oracleDecSuccess = (Oracle.ManagedDataAccess.Types.OracleDecimal)parameters[3].Value;
+                    successValue = oracleDecSuccess.IsNull ? -1 : oracleDecSuccess.ToInt32();
+                }
+                if (parameters[4].Value != DBNull.Value && parameters[4].Value != null)
+                {
+                    message = parameters[4].Value.ToString();
+                }
+                var objExecuteResult = new ExecuteResultModelModel { RowsAffected = rowsAffected, Success = successValue, Message = message };
 
                 // Map TxnStatus chuẩn hoá
                 objExecuteResult.TxnStatus = objExecuteResult.Success switch
