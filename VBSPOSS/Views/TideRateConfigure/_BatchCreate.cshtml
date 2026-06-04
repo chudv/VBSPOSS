@@ -1121,26 +1121,26 @@
             return; // ⛔ dừng xử lý để tránh chia cho 0
         }
 
-        if (soThangGui <= 1) {
-            // set vào ô BeforeTermNewInterestRate
-            var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
-            beforeTerm.value(lsTraSau);
+        // if (soThangGui <= 1) {
+        //     // set vào ô BeforeTermNewInterestRate
+        //     var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+        //     beforeTerm.value(lsTraSau);
 
-            // set vào ô PartialNewInterestRate
-            var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");            
-            partial.value(lsTraSau);
-        } else {
+        //     // set vào ô PartialNewInterestRate
+        //     var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");            
+        //     partial.value(lsTraSau);
+        // } else {
             // set vào ô BeforeTermNewInterestRate
-            var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
-            var lsTraSauTyLe = lsTraSau/100;
-            var lsTraTruoc = tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui);
-            beforeTerm.value(lsTraTruoc);
+        var beforeTerm = $("#BeforeTermNewInterestRate").data("kendoNumericTextBox");
+        var lsTraSauTyLe = lsTraSau/100;
+        var lsTraTruoc = tinhLaiSuatTraTruoc(lsTraSauTyLe, soThangGui);
+        beforeTerm.value(lsTraTruoc);
 
-            // set vào ô PartialNewInterestRate
-            var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");
-            var lsDinhKy = tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui);
-            partial.value(lsDinhKy);
-        }
+        // set vào ô PartialNewInterestRate
+        var partial = $("#PartialNewInterestRate").data("kendoNumericTextBox");
+        var lsDinhKy = tinhLaiSuatDinhKy(lsTraSauTyLe, soThangGui);
+        partial.value(lsDinhKy);
+        // }
 
         
     }
@@ -1165,8 +1165,6 @@
 
         return Math.floor(effective * 100) / 100 ; //Number(effective.toFixed(2));
     }
-
-
 
     function resetDepositTermGrid() {
         var grid = $("#grdDepositTermGrid").data("kendoGrid");
@@ -1407,7 +1405,7 @@
                 .SelectedIndex(0)
                 )
         </div>
-        <div class="col-md-1">
+        <div class="col-md-1" style="visibility:hidden;">
             <label for="TermType">Bước nhảy</label>
             @(Html.Kendo().NumericTextBox()
                 .Name("TermBasis")
