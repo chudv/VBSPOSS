@@ -741,11 +741,14 @@ namespace VBSPOSS.Services.Implements
             var answer = new List<ListOfProducts>();
             try
             {
+                string[] listExcludeProducts = Utilities.Splip_Strings(IntRateConfigValue.ExcludeProduct_TidePanel, ";");
+
                 List<ListOfProducts> listProductTemps = new List<ListOfProducts>();
                 listProductTemps = _dbContext.ListOfProducts.Where(w => (string.IsNullOrEmpty(pProductGroupCode) || w.ProductGroupCode == pProductGroupCode)
                                         && (string.IsNullOrEmpty(pProductCode) || w.ProductCode == pProductCode)
                                         && (string.IsNullOrEmpty(pAccountTypeCode) || w.AccountTypeCode == pAccountTypeCode)
                                         && (string.IsNullOrEmpty(pCode) || w.Code == pCode)
+                                        && ((pProductGroupCodeParams != ProductGroupCode.ProductGroupCode_DepositPenal) || !listExcludeProducts.Contains(w.ProductCode))
                                         && ((pStatus == -1) || w.Status == pStatus)
                                         )
                                 .Where(delegate (ListOfProducts c)
