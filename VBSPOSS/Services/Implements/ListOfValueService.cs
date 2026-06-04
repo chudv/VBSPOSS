@@ -741,11 +741,14 @@ namespace VBSPOSS.Services.Implements
             var answer = new List<ListOfProducts>();
             try
             {
+                string[] listExcludeProducts = Utilities.Splip_Strings(IntRateConfigValue.ExcludeProduct_TidePanel, ";");
+
                 List<ListOfProducts> listProductTemps = new List<ListOfProducts>();
                 listProductTemps = _dbContext.ListOfProducts.Where(w => (string.IsNullOrEmpty(pProductGroupCode) || w.ProductGroupCode == pProductGroupCode)
                                         && (string.IsNullOrEmpty(pProductCode) || w.ProductCode == pProductCode)
                                         && (string.IsNullOrEmpty(pAccountTypeCode) || w.AccountTypeCode == pAccountTypeCode)
                                         && (string.IsNullOrEmpty(pCode) || w.Code == pCode)
+                                        && ((pProductGroupCodeParams != ProductGroupCode.ProductGroupCode_DepositPenal) || !listExcludeProducts.Contains(w.ProductCode))
                                         && ((pStatus == -1) || w.Status == pStatus)
                                         )
                                 .Where(delegate (ListOfProducts c)
@@ -784,6 +787,38 @@ namespace VBSPOSS.Services.Implements
             }
         }
 
+
+
+        //add Lấy danh sách điểm giao dịch
+        /// <summary>
+        /// Lấy danh sách Điểm Giao Dịch theo Mã Xã
+        /// </summary>
+        public List<ListOfTransPointViewModel> GetLovTransPointList(string pCommuneCode = "")
+        {
+            var answer = new List<ListOfTransPointViewModel>();
+            try
+            {
+                var query = _dbContext.ListOfTransPoints
+                    .AsNoTracking()
+                    .Where(w => string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode == pCommuneCode)
+                    .OrderBy(o => o.TxnPointCode);
+
+                var result = query.ToList();
+
+                foreach (var item in result)
+                {
+                    var vm = _mapper.Map<ListOfTransPointViewModel>(item);  // Nếu có mapper
+                    answer.Add(vm);
+                }
+
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+        }
 
 
 
