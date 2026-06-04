@@ -129,6 +129,7 @@ namespace VBSPOSS.Services.Implements
                         objItem.OrderNo = iCountTMP;
                         objItem.VisitDateText = item.VisitDate.ToString("D2");
                         objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
+                        objItem.BusinessDate = (DateTime)(item.BusinessDate ?? item.EffectiveDate);
                         objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
                         objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
                         answer.Add(objItem);
@@ -153,7 +154,7 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
-        public List<ListOfTransPointWorkViewModel> GetListOfTransPointSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
+        public List<ListOfTransPointWorkViewModel> GetListOfTransPointWorkSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
                                 int pStatus, string pTxnLocation, string pEventCode)
         {
             var listTransPointWorks = new List<ListOfTransPointWorkViewModel>();
@@ -235,6 +236,10 @@ namespace VBSPOSS.Services.Implements
                         objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
                         objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
                         objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+                        if (!string.IsNullOrEmpty(item.IsInCommune))
+                            objItem.MaApDungList = "1";
+                        else if (!string.IsNullOrEmpty(item.IsInPos))
+                            objItem.MaApDungList = "2";
 
                         if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
                         {
@@ -424,205 +429,205 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfTransPointViewModel</returns>
-        public List<ListOfTransPointWorkViewModel> GetListOfTransPointWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pEffectiveDateBegin, string pEffectiveDateEnd,
-                                            int pStatus, string pTxnLocation)
-        {
-            var listTransPointWorkAnswer = new List<ListOfTransPointWorkViewModel>();
-            if (pVisitDateBegin <= 0 || pVisitDateBegin > 31)
-                pVisitDateBegin = 0;
-            if (pVisitDateEnd <= 0 || pVisitDateEnd > 31)
-                pVisitDateEnd = 31;
-            if (string.IsNullOrEmpty(pEffectiveDateBegin))
-                pEffectiveDateBegin = DefaultValue.MinDate.ToString();
-            if (string.IsNullOrEmpty(pEffectiveDateEnd))
-                pEffectiveDateEnd = DefaultValue.MaxDate.ToString();
-            DateTime dEffectiveDateBegin = CustConverter.StringToDate(pEffectiveDateBegin, FormatParameters.FORMAT_DATE_INT);
-            DateTime dEffectiveDateEnd = CustConverter.StringToDate(pEffectiveDateEnd, FormatParameters.FORMAT_DATE_INT);
-            try
-            {
-                int iCountTMP = 0;
-                List<ListOfTransPointWork> listOfTransPointTmp = new List<ListOfTransPointWork>();
-                var listOfTransPointTmp01 = _dbContext.ListOfTransPointWorks.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
-                                            && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
-                                            && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
-                                            && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
-                                            && (string.IsNullOrEmpty(pTxnStatus) || w.TxnStatus.Contains(pTxnStatus))
-                                            && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
-                                            && (w.EffectiveDate >= dEffectiveDateBegin.Date && w.EffectiveDate <= dEffectiveDateEnd.Date)
-                                            && (pStatus == -1 || w.Status == pStatus)
-                                        )
-                                        .Where(delegate (ListOfTransPointWork c)
-                                        {
-                                            if (string.IsNullOrEmpty(pTxnPointName)
-                                                || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
-                                                || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                                                || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
-                                                )
-                                                return true;
-                                            else
-                                                return false;
-                                        }
-                                    ).ToList();
-                if (string.IsNullOrEmpty(pTxnLocation))
-                {
-                    listOfTransPointTmp = listOfTransPointTmp01.OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
-                }
-                else
-                {
-                    if (listOfTransPointTmp01 != null && listOfTransPointTmp01.Count != 0)
-                    {
-                        listOfTransPointTmp = listOfTransPointTmp01.Where(w => w.TxnPointCode != "")
-                                            .Where(delegate (ListOfTransPointWork c)
-                                            {
-                                                if (string.IsNullOrEmpty(pTxnLocation)
-                                                    || (c.TxnLocation != null && c.TxnLocation.ToLower().Contains(pTxnLocation.ToLower()))
-                                                    || (c.TxnLocation != null && Utilities.ConvertToUnSign(c.TxnLocation.ToLower()).IndexOf(pTxnLocation.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                                                    || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnLocation.ToLower()))
-                                                    )
-                                                    return true;
-                                                else
-                                                    return false;
-                                            }
-                                        ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
-                    }    
-                }
+        //public List<ListOfTransPointWorkViewModel> GetListOfTransPointWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+        //                                    int pVisitDateBegin, int pVisitDateEnd, string pTxnStatus, string pEffectiveDateBegin, string pEffectiveDateEnd,
+        //                                    int pStatus, string pTxnLocation)
+        //{
+        //    var listTransPointWorkAnswer = new List<ListOfTransPointWorkViewModel>();
+        //    if (pVisitDateBegin <= 0 || pVisitDateBegin > 31)
+        //        pVisitDateBegin = 0;
+        //    if (pVisitDateEnd <= 0 || pVisitDateEnd > 31)
+        //        pVisitDateEnd = 31;
+        //    if (string.IsNullOrEmpty(pEffectiveDateBegin))
+        //        pEffectiveDateBegin = DefaultValue.MinDate.ToString();
+        //    if (string.IsNullOrEmpty(pEffectiveDateEnd))
+        //        pEffectiveDateEnd = DefaultValue.MaxDate.ToString();
+        //    DateTime dEffectiveDateBegin = CustConverter.StringToDate(pEffectiveDateBegin, FormatParameters.FORMAT_DATE_INT);
+        //    DateTime dEffectiveDateEnd = CustConverter.StringToDate(pEffectiveDateEnd, FormatParameters.FORMAT_DATE_INT);
+        //    try
+        //    {
+        //        int iCountTMP = 0;
+        //        List<ListOfTransPointWork> listOfTransPointTmp = new List<ListOfTransPointWork>();
+        //        var listOfTransPointTmp01 = _dbContext.ListOfTransPointWorks.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+        //                                    && (string.IsNullOrEmpty(pPosCode) || w.PosCode == pPosCode)
+        //                                    && (string.IsNullOrEmpty(pCommuneCode) || w.CommuneCode.Contains(pCommuneCode))
+        //                                    && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
+        //                                    && (string.IsNullOrEmpty(pTxnStatus) || w.TxnStatus.Contains(pTxnStatus))
+        //                                    && (w.VisitDate >= pVisitDateBegin && w.VisitDate <= pVisitDateEnd)
+        //                                    && (w.EffectiveDate >= dEffectiveDateBegin.Date && w.EffectiveDate <= dEffectiveDateEnd.Date)
+        //                                    && (pStatus == -1 || w.Status == pStatus)
+        //                                )
+        //                                .Where(delegate (ListOfTransPointWork c)
+        //                                {
+        //                                    if (string.IsNullOrEmpty(pTxnPointName)
+        //                                        || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
+        //                                        || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+        //                                        || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
+        //                                        )
+        //                                        return true;
+        //                                    else
+        //                                        return false;
+        //                                }
+        //                            ).ToList();
+        //        if (string.IsNullOrEmpty(pTxnLocation))
+        //        {
+        //            listOfTransPointTmp = listOfTransPointTmp01.OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
+        //        }
+        //        else
+        //        {
+        //            if (listOfTransPointTmp01 != null && listOfTransPointTmp01.Count != 0)
+        //            {
+        //                listOfTransPointTmp = listOfTransPointTmp01.Where(w => w.TxnPointCode != "")
+        //                                    .Where(delegate (ListOfTransPointWork c)
+        //                                    {
+        //                                        if (string.IsNullOrEmpty(pTxnLocation)
+        //                                            || (c.TxnLocation != null && c.TxnLocation.ToLower().Contains(pTxnLocation.ToLower()))
+        //                                            || (c.TxnLocation != null && Utilities.ConvertToUnSign(c.TxnLocation.ToLower()).IndexOf(pTxnLocation.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+        //                                            || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnLocation.ToLower()))
+        //                                            )
+        //                                            return true;
+        //                                        else
+        //                                            return false;
+        //                                    }
+        //                                ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectiveDate).ToList();
+        //            }    
+        //        }
 
-                if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
-                {
-                    foreach (var item in listOfTransPointTmp)
-                    {
-                        iCountTMP++;
-                        ListOfTransPointWorkViewModel objItem = new ListOfTransPointWorkViewModel();
-                        objItem = _mapper.Map<ListOfTransPointWorkViewModel>(item);
-                        objItem.OrderNo = iCountTMP;
-                        objItem.VisitDateText = item.VisitDate.ToString("D2");
-                        objItem.EventName = EventBusinessCode.GetByCode(item.EventCode).Description;
-                        objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
-                        objItem.BusinessDateText = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
-                        objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
-                        objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
-                        objItem.TimeBeginDate = DateTime.ParseExact(item.TimeBegin,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
-                        objItem.TimeEndDate = DateTime.ParseExact(item.TimeEnd,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
+        //        if (listOfTransPointTmp != null && listOfTransPointTmp.Count != 0)
+        //        {
+        //            foreach (var item in listOfTransPointTmp)
+        //            {
+        //                iCountTMP++;
+        //                ListOfTransPointWorkViewModel objItem = new ListOfTransPointWorkViewModel();
+        //                objItem = _mapper.Map<ListOfTransPointWorkViewModel>(item);
+        //                objItem.OrderNo = iCountTMP;
+        //                objItem.VisitDateText = item.VisitDate.ToString("D2");
+        //                objItem.EventName = EventBusinessCode.GetByCode(item.EventCode).Description;
+        //                objItem.EffectiveDateText = item.EffectiveDate.ToString(FormatParameters.FORMAT_DATE);
+        //                objItem.BusinessDateText = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
+        //                objItem.TxnStatusText = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+        //                objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+        //                objItem.TimeBeginDate = DateTime.ParseExact(item.TimeBegin,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
+        //                objItem.TimeEndDate = DateTime.ParseExact(item.TimeEnd,"HH:mm",System.Globalization.CultureInfo.InvariantCulture);
 
-                        if (!string.IsNullOrEmpty(item.IsInCommune))
-                            objItem.MaApDungList = "1";
-                        else if (!string.IsNullOrEmpty(item.IsInPos))
-                        {
-                            objItem.MaApDungList = "2";
-                        }
-                        if (item.ParentId != 0)
-                        {
-                            var listOfTransPointHistTmp = _dbContext.ListOfTransPointHists.Where(w => w.Id == item.ParentId).FirstOrDefault();
-                            if (listOfTransPointHistTmp != null && listOfTransPointHistTmp.Id > 0)
-                            {
-                                objItem.ProvinceCodeOldInfo = listOfTransPointHistTmp.ProvinceCode;
-                                objItem.ProvinceNameOldInfo = listOfTransPointHistTmp.ProvinceName;
-                                objItem.PosCodeOldInfo = listOfTransPointHistTmp.PosCode;
-                                objItem.PosNameOldInfo = listOfTransPointHistTmp.PosName;
-                                objItem.DistrictCodeOldInfo = listOfTransPointHistTmp.DistrictCode;
-                                objItem.DistrictNameOldInfo = listOfTransPointHistTmp.DistrictName;
-                                objItem.CommuneCodeOldInfo = listOfTransPointHistTmp.CommuneCode;
-                                objItem.TxnPointCodeOldInfo = listOfTransPointHistTmp.TxnPointCode;
-                                objItem.TxnPointNameOldInfo = listOfTransPointHistTmp.TxnPointName;
-                                objItem.VisitDateOldInfo = listOfTransPointHistTmp.VisitDate;
-                                objItem.VisitDateTextOldInfo = listOfTransPointHistTmp.VisitDate.ToString(FormatParameters.FORMAT_DATE);
-                                objItem.TimesOldInfo = listOfTransPointHistTmp.Times;
-                                objItem.TimeBeginOldInfo = listOfTransPointHistTmp.TimeBegin;
-                                objItem.TimeEndOldInfo = listOfTransPointHistTmp.TimeEnd;
-                                objItem.TimeBeginNumOldInfo = listOfTransPointHistTmp.TimeBeginNum;
-                                objItem.TimeEndNumOldInfo = listOfTransPointHistTmp.TimeEndNum;
-                                objItem.HoursOldInfo = listOfTransPointHistTmp.Hours;
-                                objItem.MinutesOldInfo = listOfTransPointHistTmp.Minutes;
-                                objItem.LongitudeOldInfo = listOfTransPointHistTmp.Longitude;
-                                objItem.LatitudeOldInfo = listOfTransPointHistTmp.Latitude;
-                                objItem.IsInCommuneOldInfo = listOfTransPointHistTmp.IsInCommune;
-                                objItem.IsInPosOldInfo = listOfTransPointHistTmp.IsInPos;
-                                objItem.IsInterWardOldInfo = listOfTransPointHistTmp.IsInterWard;
-                                objItem.InterWardNameOldInfo = listOfTransPointHistTmp.InterWardName;
-                                objItem.EffectiveDateOldInfo = listOfTransPointHistTmp.EffectiveDate;
-                                objItem.TxnLocationOldInfo = listOfTransPointHistTmp.TxnLocation;
-                                objItem.AddressDetailOldInfo = listOfTransPointHistTmp.AddressDetail;
-                                objItem.AddressCodeOldInfo = listOfTransPointHistTmp.AddressCode;
-                                objItem.AddressFullOldInfo = listOfTransPointHistTmp.AddressFull;
-                                objItem.PhoneSupportOldInfo = listOfTransPointHistTmp.PhoneSupport;
-                                objItem.PhoneSupport01OldInfo = listOfTransPointHistTmp.PhoneSupport01;
-                                objItem.PhoneSupport02OldInfo = listOfTransPointHistTmp.PhoneSupport02;
-                                objItem.TxnStatusOldInfo = listOfTransPointHistTmp.TxnStatus;
-                                objItem.TxnStatusTextOldInfo = (listOfTransPointHistTmp.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
-                                objItem.StatusOldInfo = listOfTransPointHistTmp.Status;
-                                objItem.StatusTextOldInfo = StatusTrans.GetByValue(listOfTransPointHistTmp.Status).Description;
-                                objItem.RemarkOldInfo = listOfTransPointHistTmp.Remark;
-                                objItem.CreatedByOldInfo = listOfTransPointHistTmp.CreatedBy;
-                                objItem.CreatedDateOldInfo = listOfTransPointHistTmp.CreatedDate;
-                                objItem.ModifiedByOldInfo = listOfTransPointHistTmp.ModifiedBy;
-                                objItem.ModifiedDateOldInfo = listOfTransPointHistTmp.ModifiedDate;
-                                objItem.ApproverByOldInfo = listOfTransPointHistTmp.ApproverBy;
-                                objItem.ApprovalDateOldInfo = listOfTransPointHistTmp.ApprovalDate;
-                                objItem.BusinessDateOldInfo = listOfTransPointHistTmp.BusinessDate.Value;
-                                objItem.BusinessDateTextOldInfo = listOfTransPointHistTmp.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
-                                objItem.DocumentIdOldInfo = listOfTransPointHistTmp.DocumentId.Value;
-                            }
-                        }
-                        else
-                        {
-                            objItem.ProvinceCodeOldInfo = item.ProvinceCode;
-                            objItem.ProvinceNameOldInfo = item.ProvinceName;
-                            objItem.PosCodeOldInfo = item.PosCode;
-                            objItem.PosNameOldInfo = item.PosName;
-                            objItem.DistrictCodeOldInfo = item.DistrictCode;
-                            objItem.DistrictNameOldInfo = item.DistrictName;
-                            objItem.CommuneCodeOldInfo = item.CommuneCode;
-                            objItem.TxnPointCodeOldInfo = item.TxnPointCode;
-                            objItem.TxnPointNameOldInfo = item.TxnPointName;
-                            objItem.VisitDateOldInfo = item.VisitDate;
-                            objItem.VisitDateTextOldInfo = item.VisitDate.ToString(FormatParameters.FORMAT_DATE);
-                            objItem.TimesOldInfo = item.Times;
-                            objItem.TimeBeginOldInfo = item.TimeBegin;
-                            objItem.TimeEndOldInfo = item.TimeEnd;
-                            objItem.TimeBeginNumOldInfo = item.TimeBeginNum;
-                            objItem.TimeEndNumOldInfo = item.TimeEndNum;
-                            objItem.HoursOldInfo = item.Hours;
-                            objItem.MinutesOldInfo = item.Minutes;
-                            objItem.LongitudeOldInfo = item.Longitude;
-                            objItem.LatitudeOldInfo = item.Latitude;
-                            objItem.IsInCommuneOldInfo = item.IsInCommune;
-                            objItem.IsInPosOldInfo = item.IsInPos;
-                            objItem.IsInterWardOldInfo = item.IsInterWard;
-                            objItem.InterWardNameOldInfo = item.InterWardName;
-                            objItem.EffectiveDateOldInfo = item.EffectiveDate;
-                            objItem.TxnLocationOldInfo = item.TxnLocation;
-                            objItem.AddressDetailOldInfo = item.AddressDetail;
-                            objItem.AddressCodeOldInfo = item.AddressCode;
-                            objItem.AddressFullOldInfo = item.AddressFull;
-                            objItem.PhoneSupportOldInfo = item.PhoneSupport;
-                            objItem.PhoneSupport01OldInfo = item.PhoneSupport01;
-                            objItem.PhoneSupport02OldInfo = item.PhoneSupport02;
-                            objItem.TxnStatusOldInfo = item.TxnStatus;
-                            objItem.TxnStatusTextOldInfo = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
-                            objItem.StatusOldInfo = item.Status;
-                            objItem.StatusTextOldInfo = StatusTrans.GetByValue(item.Status).Description;
-                            objItem.RemarkOldInfo = item.Remark;
-                            objItem.CreatedByOldInfo = item.CreatedBy;
-                            objItem.CreatedDateOldInfo = item.CreatedDate;
-                            objItem.ModifiedByOldInfo = item.ModifiedBy;
-                            objItem.ModifiedDateOldInfo = item.ModifiedDate;
-                            objItem.ApproverByOldInfo = item.ApproverBy;
-                            objItem.ApprovalDateOldInfo = item.ApprovalDate;
-                            objItem.BusinessDateOldInfo = item.BusinessDate.Value;
-                            objItem.BusinessDateTextOldInfo = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
-                            objItem.DocumentIdOldInfo = item.DocumentId.Value;
-                        }
-                        listTransPointWorkAnswer.Add(objItem);
-                    }
-                }
-                return listTransPointWorkAnswer;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //                if (!string.IsNullOrEmpty(item.IsInCommune))
+        //                    objItem.MaApDungList = "1";
+        //                else if (!string.IsNullOrEmpty(item.IsInPos))
+        //                {
+        //                    objItem.MaApDungList = "2";
+        //                }
+        //                if (item.ParentId != 0)
+        //                {
+        //                    var listOfTransPointHistTmp = _dbContext.ListOfTransPointHists.Where(w => w.Id == item.ParentId).FirstOrDefault();
+        //                    if (listOfTransPointHistTmp != null && listOfTransPointHistTmp.Id > 0)
+        //                    {
+        //                        objItem.ProvinceCodeOldInfo = listOfTransPointHistTmp.ProvinceCode;
+        //                        objItem.ProvinceNameOldInfo = listOfTransPointHistTmp.ProvinceName;
+        //                        objItem.PosCodeOldInfo = listOfTransPointHistTmp.PosCode;
+        //                        objItem.PosNameOldInfo = listOfTransPointHistTmp.PosName;
+        //                        objItem.DistrictCodeOldInfo = listOfTransPointHistTmp.DistrictCode;
+        //                        objItem.DistrictNameOldInfo = listOfTransPointHistTmp.DistrictName;
+        //                        objItem.CommuneCodeOldInfo = listOfTransPointHistTmp.CommuneCode;
+        //                        objItem.TxnPointCodeOldInfo = listOfTransPointHistTmp.TxnPointCode;
+        //                        objItem.TxnPointNameOldInfo = listOfTransPointHistTmp.TxnPointName;
+        //                        objItem.VisitDateOldInfo = listOfTransPointHistTmp.VisitDate;
+        //                        objItem.VisitDateTextOldInfo = listOfTransPointHistTmp.VisitDate.ToString(FormatParameters.FORMAT_DATE);
+        //                        objItem.TimesOldInfo = listOfTransPointHistTmp.Times;
+        //                        objItem.TimeBeginOldInfo = listOfTransPointHistTmp.TimeBegin;
+        //                        objItem.TimeEndOldInfo = listOfTransPointHistTmp.TimeEnd;
+        //                        objItem.TimeBeginNumOldInfo = listOfTransPointHistTmp.TimeBeginNum;
+        //                        objItem.TimeEndNumOldInfo = listOfTransPointHistTmp.TimeEndNum;
+        //                        objItem.HoursOldInfo = listOfTransPointHistTmp.Hours;
+        //                        objItem.MinutesOldInfo = listOfTransPointHistTmp.Minutes;
+        //                        objItem.LongitudeOldInfo = listOfTransPointHistTmp.Longitude;
+        //                        objItem.LatitudeOldInfo = listOfTransPointHistTmp.Latitude;
+        //                        objItem.IsInCommuneOldInfo = listOfTransPointHistTmp.IsInCommune;
+        //                        objItem.IsInPosOldInfo = listOfTransPointHistTmp.IsInPos;
+        //                        objItem.IsInterWardOldInfo = listOfTransPointHistTmp.IsInterWard;
+        //                        objItem.InterWardNameOldInfo = listOfTransPointHistTmp.InterWardName;
+        //                        objItem.EffectiveDateOldInfo = listOfTransPointHistTmp.EffectiveDate;
+        //                        objItem.TxnLocationOldInfo = listOfTransPointHistTmp.TxnLocation;
+        //                        objItem.AddressDetailOldInfo = listOfTransPointHistTmp.AddressDetail;
+        //                        objItem.AddressCodeOldInfo = listOfTransPointHistTmp.AddressCode;
+        //                        objItem.AddressFullOldInfo = listOfTransPointHistTmp.AddressFull;
+        //                        objItem.PhoneSupportOldInfo = listOfTransPointHistTmp.PhoneSupport;
+        //                        objItem.PhoneSupport01OldInfo = listOfTransPointHistTmp.PhoneSupport01;
+        //                        objItem.PhoneSupport02OldInfo = listOfTransPointHistTmp.PhoneSupport02;
+        //                        objItem.TxnStatusOldInfo = listOfTransPointHistTmp.TxnStatus;
+        //                        objItem.TxnStatusTextOldInfo = (listOfTransPointHistTmp.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+        //                        objItem.StatusOldInfo = listOfTransPointHistTmp.Status;
+        //                        objItem.StatusTextOldInfo = StatusTrans.GetByValue(listOfTransPointHistTmp.Status).Description;
+        //                        objItem.RemarkOldInfo = listOfTransPointHistTmp.Remark;
+        //                        objItem.CreatedByOldInfo = listOfTransPointHistTmp.CreatedBy;
+        //                        objItem.CreatedDateOldInfo = listOfTransPointHistTmp.CreatedDate;
+        //                        objItem.ModifiedByOldInfo = listOfTransPointHistTmp.ModifiedBy;
+        //                        objItem.ModifiedDateOldInfo = listOfTransPointHistTmp.ModifiedDate;
+        //                        objItem.ApproverByOldInfo = listOfTransPointHistTmp.ApproverBy;
+        //                        objItem.ApprovalDateOldInfo = listOfTransPointHistTmp.ApprovalDate;
+        //                        objItem.BusinessDateOldInfo = listOfTransPointHistTmp.BusinessDate.Value;
+        //                        objItem.BusinessDateTextOldInfo = listOfTransPointHistTmp.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
+        //                        objItem.DocumentIdOldInfo = listOfTransPointHistTmp.DocumentId.Value;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    objItem.ProvinceCodeOldInfo = item.ProvinceCode;
+        //                    objItem.ProvinceNameOldInfo = item.ProvinceName;
+        //                    objItem.PosCodeOldInfo = item.PosCode;
+        //                    objItem.PosNameOldInfo = item.PosName;
+        //                    objItem.DistrictCodeOldInfo = item.DistrictCode;
+        //                    objItem.DistrictNameOldInfo = item.DistrictName;
+        //                    objItem.CommuneCodeOldInfo = item.CommuneCode;
+        //                    objItem.TxnPointCodeOldInfo = item.TxnPointCode;
+        //                    objItem.TxnPointNameOldInfo = item.TxnPointName;
+        //                    objItem.VisitDateOldInfo = item.VisitDate;
+        //                    objItem.VisitDateTextOldInfo = item.VisitDate.ToString(FormatParameters.FORMAT_DATE);
+        //                    objItem.TimesOldInfo = item.Times;
+        //                    objItem.TimeBeginOldInfo = item.TimeBegin;
+        //                    objItem.TimeEndOldInfo = item.TimeEnd;
+        //                    objItem.TimeBeginNumOldInfo = item.TimeBeginNum;
+        //                    objItem.TimeEndNumOldInfo = item.TimeEndNum;
+        //                    objItem.HoursOldInfo = item.Hours;
+        //                    objItem.MinutesOldInfo = item.Minutes;
+        //                    objItem.LongitudeOldInfo = item.Longitude;
+        //                    objItem.LatitudeOldInfo = item.Latitude;
+        //                    objItem.IsInCommuneOldInfo = item.IsInCommune;
+        //                    objItem.IsInPosOldInfo = item.IsInPos;
+        //                    objItem.IsInterWardOldInfo = item.IsInterWard;
+        //                    objItem.InterWardNameOldInfo = item.InterWardName;
+        //                    objItem.EffectiveDateOldInfo = item.EffectiveDate;
+        //                    objItem.TxnLocationOldInfo = item.TxnLocation;
+        //                    objItem.AddressDetailOldInfo = item.AddressDetail;
+        //                    objItem.AddressCodeOldInfo = item.AddressCode;
+        //                    objItem.AddressFullOldInfo = item.AddressFull;
+        //                    objItem.PhoneSupportOldInfo = item.PhoneSupport;
+        //                    objItem.PhoneSupport01OldInfo = item.PhoneSupport01;
+        //                    objItem.PhoneSupport02OldInfo = item.PhoneSupport02;
+        //                    objItem.TxnStatusOldInfo = item.TxnStatus;
+        //                    objItem.TxnStatusTextOldInfo = (item.TxnStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+        //                    objItem.StatusOldInfo = item.Status;
+        //                    objItem.StatusTextOldInfo = StatusTrans.GetByValue(item.Status).Description;
+        //                    objItem.RemarkOldInfo = item.Remark;
+        //                    objItem.CreatedByOldInfo = item.CreatedBy;
+        //                    objItem.CreatedDateOldInfo = item.CreatedDate;
+        //                    objItem.ModifiedByOldInfo = item.ModifiedBy;
+        //                    objItem.ModifiedDateOldInfo = item.ModifiedDate;
+        //                    objItem.ApproverByOldInfo = item.ApproverBy;
+        //                    objItem.ApprovalDateOldInfo = item.ApprovalDate;
+        //                    objItem.BusinessDateOldInfo = item.BusinessDate.Value;
+        //                    objItem.BusinessDateTextOldInfo = item.BusinessDate.Value.ToString(FormatParameters.FORMAT_DATE);
+        //                    objItem.DocumentIdOldInfo = item.DocumentId.Value;
+        //                }
+        //                listTransPointWorkAnswer.Add(objItem);
+        //            }
+        //        }
+        //        return listTransPointWorkAnswer;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng điểm giao dịch (Bảng ListOfTransPointWork)

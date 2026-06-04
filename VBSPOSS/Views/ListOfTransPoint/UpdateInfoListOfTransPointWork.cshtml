@@ -1,0 +1,858 @@
+﻿@model VBSPOSS.ViewModels.ListOfTransPointWorkViewModel
+@using VBSPOSS.Models
+@using VBSPOSS.Constants
+
+<div id="myInfoListOfTransPoint"></div>
+
+<style>
+    .k-animation-container {
+        z-index: 100000 !important;
+    }
+
+    .readonly-field input,
+    .readonly-field .k-input,
+    .readonly-field textarea {
+        background-color: #f0f0f0 !important;
+        color: #28a745 !important; /* Màu xanh lá */
+        cursor: not-allowed !important;
+    }
+
+    .editable-field input,
+    .editable-field .k-input {
+        color: navy !important;
+    }
+
+    #StartDate, #ExpiryDate, #EffectiveDate, #TimeBeginDate, #TimeEndDate, #BusinessDate {
+        width: 50px !important;
+        max-width: 100% !important;
+        font-family: Tahoma;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+</style>
+
+<script>
+
+    var isEditMode = false;
+
+    (function() {
+        var flagCallView = '@TempData["FlagEventCall"]';
+        if (flagCallView === "2") {
+            isEditMode = true;
+        }
+    })();
+
+    function paramLoadListBranchFind() {
+        return {
+            pFlagCondi: "5",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "",
+            pFlagTextShow: "3",
+            pUserPosCode: "",
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadListProvince() {
+        var objPosCodeSelect = $("#PosCode").data("kendoComboBox").value();
+        return {
+            pProvinceCode: "",
+            pStatus: "0",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pPosCode: objPosCodeSelect
+        };
+    }
+
+    function paramLoadListCommune() {
+        var objPosCodeSelect = $("#PosCode").data("kendoComboBox").value();
+        var objProvince = $("#ProvinceCode").data("kendoComboBox").value();
+        return {
+            pProvinceCode: objProvince,
+            pStatus: "0",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pPosCode: objPosCodeSelect
+        };
+    }
+
+    function paramLoadListSubCommune() {
+        var objPosCodeSelect = $("#PosCode").data("kendoComboBox").value();
+        var objProvince = $("#ProvinceCode").data("kendoComboBox").value();
+        var objCommune = $("#CommuneCode").data("kendoComboBox").value();
+        return {
+            pProvinceCode: objProvince,
+            pStatus: "0",
+            pTitleChoice: "",
+            pFlagTextShow: "1",
+            pPosCode: objPosCodeSelect,
+            pCommuneCode: objCommune
+        };
+    }
+
+    function paramLoadListStaffFind() {
+        return {
+            pPosCode: $("#PosCode").data("kendoComboBox").value(),
+            pTitleChoice: "",
+            pFlagTextShow: "2",
+            pFlagCall: "2"
+        };
+    }
+
+    function paramLoadListRoleOfUserIDC() {
+        return {
+            pPosCode: $("#PosCode").val(),
+            pTitleChoice: "",
+            pFlagShow: "3"
+        };
+    }
+
+    function paramLoadListEntityOfUserIDC() {
+        return {
+            pPosCode: $("#PosCode").val(),
+            pTitleChoice: "",
+            pFlagShow: "2"
+        };
+    }
+
+    function Change_PosCode() {
+        var objPosCode = $("#PosCode").data("kendoComboBox");
+        var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+        var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
+        var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
+        objCommuneCode.text("");
+        objSubCommuneCode.text("");
+        objProvinceCode.dataSource.read().then(function () {
+            objProvinceCode.select(0);
+            Change_Province();
+            Change_Commune();
+        });
+        $("#PosName").val(getNameOnly(objPosCode.text()));
+    }
+
+    function Change_Province() {
+        var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+        var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
+        objCommuneCode.dataSource.read().then(function () {
+            objCommuneCode.select(0);
+        });
+        $("#ProvinceName").val(objProvinceCode.text());
+    }
+
+    function Change_Commune() {
+        var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
+        objSubCommuneCode.dataSource.read().then(function () {
+            objSubCommuneCode.select(0);
+        });
+    }
+
+
+    var roleLists;
+    function onCloseUpdate(ev) {
+        mainWindow.data("kendoWindow").close();
+    }
+
+
+    function Change_Status(e) {
+        if (!isEditMode) return;
+
+        var statusDDL = $("#Status").data("kendoDropDownList");
+        var statusValue = statusDDL.value();
+
+        if (statusValue === "0") {
+            var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+            if (expirePicker) {
+
+                expirePicker.value(new Date());
+                expirePicker.enable(true);
+            }
+        }
+    }
+
+    function stringToDate(_date, _format, _delimiter) {
+        var formatLowerCase = _format.toLowerCase();
+        var formatItems = formatLowerCase.split(_delimiter);
+        var dateItems = _date.split(_delimiter);
+        var monthIndex = formatItems.indexOf("mm");
+        var dayIndex = formatItems.indexOf("dd");
+        var yearIndex = formatItems.indexOf("yyyy");
+        var month = parseInt(dateItems[monthIndex]);
+        month -= 1;
+        var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
+        return formatedDate;
+    }
+
+    function onClick(e) {
+        var lcPosCode = $("#PosCode").val();
+        var lcStaffId = $("#StaffId").val();
+        var lcStaffCode = $("#StaffCode").val();
+        var lcFullName = $("#FullName").val();
+        
+        // if (lcPosCode == null || lcPosCode == "" || lcPosCode == "0" || lcPosCode == "000000") {
+        //     alert("Bạn chưa chọn đơn vị của người dùng cần tạo mới tài khoản người dùng Intellect iDC. Bạn vui lòng kiểm tra lại!");
+        //     $('#PosCode').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (lcStaffId == null || lcStaffId == "") {
+        //     alert('Bạn chưa chọn cán bộ cần tạo mới càn tài khoản người Intellect iDC. Bạn vui lòng kiểm tra lại!');
+        //     $('#StaffId').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (lcStaffCode == null || lcStaffCode == "") {
+        //     alert("Cán bộ [" + lcFullName + "] có mã cán bộ trống. Bạn vui lòng kiểm tra lại!");
+        //     $('#StaffCode').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+
+        // var lcEffectiveDate = $("#EffectiveDate").val();
+        // var dEffectiveDate = stringToDate(lcEffectiveDate, "dd/MM/yyyy", "/");
+        // var lcExpiryDate = $("#ExpiryDate").val();
+        // var dExpiryDate = stringToDate(lcExpiryDate, "dd/MM/yyyy", "/");
+        // var lcStartDate = $("#StartDate").val();
+        // var dStartDate = stringToDate(lcStartDate, "dd/MM/yyyy", "/");
+        // var lcBusinessDate = $("#BusinessDate").val();
+        // var dBusinessDate = stringToDate(lcBusinessDate, "dd/MM/yyyy", "/");
+        // if (dExpiryDate < dEffectiveDate) {
+        //     alert("Tài khoản Intellect iDC của người dùng [" + lcFullName + "] cập nhật có ngày hết hiệu lực [" + lcExpiryDate + "] nhỏ hơn ngày hiệu lực [" + lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (dEffectiveDate < dBusinessDate) {
+        //     alert("Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + lcEffectiveDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+        // if (dStartDate < dBusinessDate) {
+        //     alert("Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + lcStartDate + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" +  lcBusinessDate + "]. Vui lòng kiểm tra lại!");
+        //     $('#EffectiveDate').focus();
+        //     e.preventDefault();
+        //     return false;
+        // }
+
+        //  var lcFlagCallView = $("#FlagEventCallView").val();
+        //  if (lcFlagCallView == $("#EventFlag_AddView").val())
+        //  {
+        //      if (dEffectiveDate < dStartDate) {
+        //         alert("Tài khoản người dùng Intellect iDC tạo mới ngày bắt đầu [" + lcStartDate + "] lơn hơn ngày hiệu lực [" +  lcEffectiveDate + "]. Vui lòng kiểm tra lại!");
+        //         $('#EffectiveDate').focus();
+        //         e.preventDefault();
+        //         return false;
+        //      }
+        //  }
+    }
+
+    function onInterWardCheck() {
+        var txt = $("#InterWardName").data("kendoTextBox");
+        if ($("#chkInterWard").is(":checked")) {
+            txt.enable(true);
+        } else {
+            txt.value("");
+            txt.enable(false);
+        }
+    }
+
+    function Change_SubCommune() {
+        var objProvince = $("#ProvinceCode").data("kendoComboBox");
+        var objCommune = $("#CommuneCode").data("kendoComboBox");
+        var objSubCommune = $("#AddressCode").data("kendoComboBox");
+        var txnLocation = $("#TxnLocation").val();
+        var provinceText = getNameOnly(objProvince.text());
+        var communeText = getNameOnly(objCommune.text());
+        var subCommuneText = getNameOnly(objSubCommune.text());
+        var addressDetail = "";
+        if (txnLocation) {
+            addressDetail += txnLocation;
+        }
+        if (subCommuneText) {
+            addressDetail += ", " + subCommuneText;
+        }
+        if (communeText) {
+            addressDetail += ", " + communeText;
+        }
+        if (provinceText) {
+            addressDetail += ", " + provinceText;
+        }
+        //$("#AddressDetail").val(addressDetail);
+        $("#AddressDetail").data("kendoTextBox").value(addressDetail);
+    }
+
+    function getNameOnly(text) {
+        if (!text) return "";
+        var arr = text.split('-');
+        if (arr.length > 1) {
+            return arr.slice(1).join('-').trim();
+        }
+        return text.trim();
+    }
+    var lcButton = "";
+
+    function LoadTranspointInfoDetail(e) {
+        var lcPosCode = $("#PosCode").val();
+        var lcTxnPointCode = $("#TxnPointCode").val();
+        if (lcPosCode != null && lcTxnPointCode != null) {
+            if (lcTxnPointCode != null && lcTxnPointCode != "" && lcTxnPointCode != "0") {
+                $.ajax({
+                    type: "GET",
+                    data: {
+                        pPosCode: lcPosCode,
+                        pTxnPointCode: lcTxnPointCode
+                    },
+                    url: "../ListOfTranspoint/LoadGridData_TransPoint",
+                    success: function (data) {
+                        transpointLists = data;
+                        if (transpointLists != null && transpointLists.length != 0) {
+                            var item = transpointLists.Data[0];
+                            $("#PosCodeOld").val(item.PosCode + " - " + item.PosName);
+                            $("#TxnPointCodeOld").val(item.TxnPointCode + " - " + item.TxnPointName);
+                            var maApDung = [];
+                            if (item.IsInCommune) {
+                                maApDung.push("Giao dịch tại xã");
+                            }
+                            else if (item.IsInPos) {
+                                maApDung.push("Giao dịch tại Ngân hàng");
+                            }
+                            $("#MaApDungListOld").val(maApDung);
+                            $("#InterWardNameOld").val(item.InterWardName);
+                            $("#VisitDateOld").val(item.VisitDate);
+                            $("#TimesOld").val(item.Times);
+                            $("#AddressDetailOld").val(item.AddressDetail);
+                            $("#LongitudeOld").val(item.Longitude);
+                            $("#LatitudeOld").val(item.Latitude);
+                            $("#PhoneSupportOld").val(item.PhoneSupport);
+                            $("#PhoneSupport01Old").val(item.PhoneSupport01);
+                            $("#PhoneSupport02Old").val(item.PhoneSupport02);
+                            $("#TxnStatusOld").val(
+                                item.TxnStatus === "A" ? "Mở" :
+                                item.TxnStatus === "C" ? "Đóng" : ""
+                            );
+                            if (!item.BusinessDate) {
+                                item.BusinessDate = item.EffectiveDate;
+                            }
+                            var effectiveDate = kendo.toString(new Date(item.EffectiveDate),"dd/MM/yyyy");
+                            var businessDate = kendo.toString(new Date(item.BusinessDate),"dd/MM/yyyy");
+
+                            $("#BusinessDateOld").val(businessDate);
+                            $("#EffectiveDateOld").val(effectiveDate);
+                        }
+                    }
+                });
+            }
+        }
+    }
+</script>
+
+<form asp-controller="ListOfTransPoint" asp-action="SaveUpdateListOfTransPointWork" data-ajax="true" data-ajax-method="POST" id="formCreateNewTranspoint" enctype="multipart/form-data">
+    <input type="hidden" id="pFlagCall" name="pFlagCall" /> <input type="hidden" id="pButtonType" name="pButtonType" />
+    @Html.Hidden("FlagEventCallView", TempData["FlagEventCall"])
+    @Html.Hidden("ButtonTypeView", TempData["ButtonType"])
+    @Html.Hidden("UserPosCodeView", TempData["UserPosCode"])
+    @Html.Hidden("EventFlag_EditIDCView", TempData["EventFlag_EditIDC"])
+    @Html.Hidden("EventFlag_EditView", TempData["EventFlag_Edit"])
+    @Html.Hidden("EventFlag_ViewView", TempData["EventFlag_View"])
+    @Html.Hidden("EventFlag_AddView", TempData["EventFlag_Add"])
+        
+    @Html.HiddenFor(m => m.OrderNo, new { @Value = Model == null ? 0 : Model.OrderNo })
+    @Html.HiddenFor(m => m.OrderNoText, new { @Value = Model == null ? "" : Model.OrderNoText })
+    @Html.HiddenFor(m => m.EventCode, new { @Value = Model == null ? "" : Model.EventCode })
+    @Html.HiddenFor(m => m.EventName, new { @Value = Model == null ? "" : Model.EventName })
+    @Html.HiddenFor(m => m.ParentId, new { @Value = Model == null ? 0 : Model.ParentId })
+    @Html.HiddenFor(m => m.ProvinceName, new { @Value = Model == null ? "" : Model.ProvinceName })
+    @Html.HiddenFor(m => m.PosName, new { @Value = Model == null ? "" : Model.PosName })
+    @Html.HiddenFor(m => m.DistrictCode, new { @Value = Model == null ? "" : Model.DistrictCode })
+    @Html.HiddenFor(m => m.DistrictName, new { @Value = Model == null ? "" : Model.DistrictName })
+    @Html.HiddenFor(m => m.CommuneName, new { @Value = Model == null ? "" : Model.CommuneName })
+
+    @Html.HiddenFor(m => m.VisitDateText, new { @Value = Model == null ? "" : Model.VisitDateText })
+    @Html.HiddenFor(m => m.Times, new { @Value = Model == null ? "" : Model.Times })
+    @Html.HiddenFor(m => m.TimeBegin, new { @Value = Model == null ? "" : Model.TimeBegin })
+    @Html.HiddenFor(m => m.TimeEnd, new { @Value = Model == null ? "" : Model.TimeEnd })
+    
+    @Html.HiddenFor(m => m.TimeBeginNum, new { @Value = Model == null ? 0 : Model.TimeBeginNum })
+    @Html.HiddenFor(m => m.TimeEndNum, new { @Value = Model == null ? 0 : Model.TimeEndNum  })
+    @Html.HiddenFor(m => m.Hours, new { @Value = Model == null ? 0 : Model.Hours })
+    @Html.HiddenFor(m => m.Minutes, new { @Value = Model == null ? 0 : Model.Minutes })
+    @Html.HiddenFor(m => m.IsInCommune, new { @Value = Model == null ? "" : Model.IsInCommune })
+    @Html.HiddenFor(m => m.IsInPos, new { @Value = Model == null ? "" : Model.IsInPos })
+    @Html.HiddenFor(m => m.IsInterWard, new { @Value = Model == null ? "" : Model.IsInterWard })
+    @Html.HiddenFor(m => m.EffectiveDateText, new { @Value = Model == null ? "" : Model.EffectiveDateText })
+    @Html.HiddenFor(m => m.AddressFull, new { @Value = Model == null ? "" : Model.AddressFull })
+    @Html.HiddenFor(m => m.TxnStatusText, new { @Value = Model == null ? "" : Model.TxnStatusText })
+    
+    @Html.HiddenFor(m => m.Status, new { @Value = Model == null ? 0 : Model.Status })
+    @Html.HiddenFor(m => m.StatusText, new { @Value = Model == null ? "" : Model.StatusText })
+    @Html.HiddenFor(m => m.DocumentId, new { @Value = Model == null ? 0 : Model.DocumentId })
+    @Html.HiddenFor(m => m.StatusUpdateCore, new { @Value = Model == null ? 0 : Model.StatusUpdateCore })
+    
+    @Html.HiddenFor(m => m.CallApiTxnStatus, new { @Value = Model == null ? "" : Model.CallApiTxnStatus })
+    @Html.HiddenFor(m => m.CallApiResRecords, new { @Value = Model == null ? 0 : Model.CallApiResRecords })
+    @Html.HiddenFor(m => m.CallApiResponseCode, new { @Value = Model == null ? "" : Model.CallApiResponseCode })
+    @Html.HiddenFor(m => m.CallApiResponseMsg, new { @Value = Model == null ? "" : Model.CallApiResponseMsg })
+
+    @Html.HiddenFor(m => m.ProvinceCodeOldInfo, new { @Value = Model == null ? "" : Model.ProvinceCodeOldInfo })
+    @Html.HiddenFor(m => m.ProvinceNameOldInfo, new { @Value = Model == null ? "" : Model.ProvinceNameOldInfo })
+    @Html.HiddenFor(m => m.PosCodeOldInfo, new { @Value = Model == null ? "" : Model.PosCodeOldInfo })
+    @Html.HiddenFor(m => m.PosNameOldInfo, new { @Value = Model == null ? "" : Model.PosNameOldInfo })
+    @Html.HiddenFor(m => m.DistrictCodeOldInfo, new { @Value = Model == null ? "" : Model.DistrictCodeOldInfo })
+    @Html.HiddenFor(m => m.DistrictNameOldInfo, new { @Value = Model == null ? "" : Model.DistrictNameOldInfo })
+    @Html.HiddenFor(m => m.CommuneCodeOldInfo, new { @Value = Model == null ? "" : Model.CommuneCodeOldInfo })
+    @Html.HiddenFor(m => m.CommuneNameOldInfo, new { @Value = Model == null ? "" : Model.CommuneNameOldInfo })
+    @Html.HiddenFor(m => m.TxnPointCodeOldInfo, new { @Value = Model == null ? "" : Model.TxnPointCodeOldInfo })
+    @Html.HiddenFor(m => m.TxnPointNameOldInfo, new { @Value = Model == null ? "" : Model.TxnPointNameOldInfo })
+    @Html.HiddenFor(m => m.VisitDateOldInfo, new { @Value = Model == null ? 0 : Model.VisitDateOldInfo })
+    @Html.HiddenFor(m => m.VisitDateTextOldInfo, new { @Value = Model == null ? "" : Model.VisitDateTextOldInfo })
+    @Html.HiddenFor(m => m.TimesOldInfo, new { @Value = Model == null ? "" : Model.TimesOldInfo })
+    @Html.HiddenFor(m => m.TimeBeginOldInfo, new { @Value = Model == null ? "" : Model.TimeBeginOldInfo })
+    @Html.HiddenFor(m => m.TimeEndOldInfo, new { @Value = Model == null ? "" : Model.TimeEndOldInfo })
+    @Html.HiddenFor(m => m.TimeBeginNumOldInfo, new { @Value = Model == null ? 0 : Model.TimeBeginNumOldInfo })
+    @Html.HiddenFor(m => m.TimeEndNumOldInfo, new { @Value = Model == null ? 0 : Model.TimeEndNumOldInfo })
+    @Html.HiddenFor(m => m.HoursOldInfo, new { @Value = Model == null ? 0 : Model.HoursOldInfo })
+    @Html.HiddenFor(m => m.MinutesOldInfo, new { @Value = Model == null ? 0 : Model.MinutesOldInfo })
+    @Html.HiddenFor(m => m.LongitudeOldInfo, new { @Value = Model == null ? 0 : Model.LongitudeOldInfo })
+    @Html.HiddenFor(m => m.LatitudeOldInfo, new { @Value = Model == null ? 0 : Model.LatitudeOldInfo })
+    @Html.HiddenFor(m => m.IsInCommuneOldInfo, new { @Value = Model == null ? "" : Model.IsInCommuneOldInfo })
+    @Html.HiddenFor(m => m.IsInPosOldInfo, new { @Value = Model == null ? "" : Model.IsInPosOldInfo })
+    @Html.HiddenFor(m => m.IsInterWardOldInfo, new { @Value = Model == null ? "" : Model.IsInterWardOldInfo })
+    @Html.HiddenFor(m => m.InterWardNameOldInfo, new { @Value = Model == null ? "" : Model.InterWardNameOldInfo })
+    @Html.HiddenFor(m => m.EffectiveDateOldInfo, new { @Value = Model == null ? Model.EffectiveDateOldInfo : Model.EffectiveDateOldInfo })
+    @Html.HiddenFor(m => m.TxnLocationOldInfo, new { @Value = Model == null ? "" : Model.TxnLocationOldInfo })
+    @Html.HiddenFor(m => m.AddressDetailOldInfo, new { @Value = Model == null ? "" : Model.AddressDetailOldInfo })
+    @Html.HiddenFor(m => m.AddressCodeOldInfo, new { @Value = Model == null ? "" : Model.AddressCodeOldInfo })
+    @Html.HiddenFor(m => m.AddressFullOldInfo, new { @Value = Model == null ? "" : Model.AddressFullOldInfo })
+    @Html.HiddenFor(m => m.PhoneSupportOldInfo, new { @Value = Model == null ? "" : Model.PhoneSupportOldInfo })
+    @Html.HiddenFor(m => m.PhoneSupport01OldInfo, new { @Value = Model == null ? "" : Model.PhoneSupport01OldInfo })
+    @Html.HiddenFor(m => m.PhoneSupport02OldInfo, new { @Value = Model == null ? "" : Model.PhoneSupport02OldInfo })
+    @Html.HiddenFor(m => m.TxnStatusOldInfo, new { @Value = Model == null ? "" : Model.TxnStatusOldInfo })
+    @Html.HiddenFor(m => m.TxnStatusTextOldInfo, new { @Value = Model == null ? "" : Model.TxnStatusTextOldInfo })
+    @Html.HiddenFor(m => m.StatusOldInfo, new { @Value = Model == null ? 0 : Model.StatusOldInfo })
+    @Html.HiddenFor(m => m.StatusTextOldInfo, new { @Value = Model == null ? "" : Model.StatusTextOldInfo })
+    @Html.HiddenFor(m => m.RemarkOldInfo, new { @Value = Model == null ? "" : Model.RemarkOldInfo })
+    @Html.HiddenFor(m => m.CreatedByOldInfo, new { @Value = Model == null ? "" : Model.CreatedByOldInfo })
+    @Html.HiddenFor(m => m.CreatedDateOldInfo, new { @Value = Model == null ? Model.CreatedDateOldInfo : Model.CreatedDateOldInfo })
+    @Html.HiddenFor(m => m.ModifiedByOldInfo, new { @Value = Model == null ? "" : Model.ModifiedByOldInfo })
+    @Html.HiddenFor(m => m.ModifiedDateOldInfo, new { @Value = Model == null ? Model.ModifiedDateOldInfo : Model.ModifiedDateOldInfo })
+    @Html.HiddenFor(m => m.ApproverByOldInfo, new { @Value = Model == null ? "" : Model.ApproverByOldInfo })
+    @Html.HiddenFor(m => m.ApprovalDateOldInfo, new { @Value = Model == null ? Model.ApprovalDateOldInfo : Model.ApprovalDateOldInfo })
+    @Html.HiddenFor(m => m.BusinessDateOldInfo, new { @Value = Model == null ? Model.BusinessDateOldInfo : Model.BusinessDateOldInfo })
+    @Html.HiddenFor(m => m.BusinessDateTextOldInfo, new { @Value = Model == null ? "" : Model.BusinessDateTextOldInfo })
+    @Html.HiddenFor(m => m.DocumentIdOldInfo, new { @Value = Model == null ? 0 : Model.DocumentIdOldInfo })
+    @Html.HiddenFor(m => m.PosCode, new { @Value = Model == null ? "" : Model.PosCode })
+    @Html.HiddenFor(m => m.TxnPointCode, new { @Value = Model == null ? "" : Model.TxnPointCode })
+    @Html.HiddenFor(m => m.TxnPointName, new { @Value = Model == null ? "" : Model.TxnPointName })
+    @Html.HiddenFor(m => m.VisitDate, new { @Value = Model == null ? 0 : Model.VisitDate })
+    @Html.HiddenFor(m => m.MaApDungList, new { @Value = Model == null ? "" : Model.MaApDungList })
+    @Html.HiddenFor(m => m.InterWardName, new { @Value = Model == null ? "" : Model.InterWardName })
+    @Html.HiddenFor(m => m.TimeBeginDate, new { @Value = Model == null ? Model.TimeBeginDate : Model.TimeBeginDate })
+    @Html.HiddenFor(m => m.TimeEndDate, new { @Value = Model == null ? Model.TimeEndDate : Model.TimeEndDate })
+
+    <div class="lbtitle" style="color: blue;text-align:center;padding-top: 10px;padding-bottom: 10px;font-weight: bold;">
+        @{
+            string title = "THAY ĐỔI NGHIỆP VỤ TẠI ĐIỂM GIAO DỊCH";
+            @title
+        }
+    </div>
+    <hr style='margin-top: 0em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+    <div class="align-items-center">
+        <div class="row" style="padding-top: 0px; padding-left: 0px; padding-bottom: 0px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="color: maroon;text-align:left;width:500px;padding-top: 7px;">Thông tin hiện tại của điểm giao dịch</label>
+            </div>
+        </div>
+        <div style="color: navy; padding-top: 0px;" class="row">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="width: 120px;color: navy;text-align:left;padding-top: 7px;">Đơn vị điểm GD</label>
+                @Html.Kendo().TextBox().Name("PosCodeOld").HtmlAttributes(new { style = " width: 370px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px;">Tên điểm GD </label>
+                @Html.Kendo().TextBox().Name("TxnPointCodeOld").HtmlAttributes(new { style = " width: 350px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
+            <div class="col-md-12" style="display: inline-flex;">
+                <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:7px; ">Địa điểm GD</label>
+                @Html.Kendo().TextBox().Name("MaApDungListOld").HtmlAttributes(new { style = " width: 250px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                <label class="lbcontrol" style="color: navy;text-align:right;width:100px;padding-top: 7px;padding-right: 7px;">Liên phường </label>
+                @Html.Kendo().TextBox().Name("InterWardNameOld").HtmlAttributes(new { style = " width: 100px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })
+                <label class="lbcontrol" style="color: navy;text-align:center;width:80px;padding-top: 7px;padding-right: 7px;">Ngày GD </label>
+                @Html.Kendo().TextBox().Name("VisitDateOld").HtmlAttributes(new { style = " width: 80px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;" })                
+                <label class="lbcontrol" style="width: 100px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Thời gian GD</label>
+                @Html.Kendo().TextBox().Name("TimesOld").HtmlAttributes(new { style = "width: 110px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Địa chỉ điểm GD </label>
+                @Html.Kendo().TextBox().Name("AddressDetailOld").HtmlAttributes(new { style = " width: 820px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;", placeholder = "Địa chỉ chi tiết điểm giao dịch" })
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Tọa độ điểm GD </label>
+                @(Html.Kendo().TextBox().Name("LongitudeOld").HtmlAttributes(new { style = "width:110px;max-width:100%;color:blueviolet;font-family:Tahoma;padding-left:2px;padding-right:2px;", placeholder = "Nhập kinh độ" }))
+                @(Html.Kendo().TextBox().Name("LatitudeOld").HtmlAttributes(new { style = "width:110px;max-width:100%;color:blueviolet;font-family:Tahoma;padding-left:2px;padding-right:2px;", placeholder = "Nhập kinh độ" }))
+                <label class="lbcontrol" style="color: navy;text-align:center;width:150px;padding-top: 7px;padding-right: 7px;">Số điện thoại liên hệ</label>
+                @(Html.Kendo().TextBox().Name("PhoneSupportOld").HtmlAttributes(new {style = "width:150px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;" }))
+                <label class="lbcontrol" style="color: navy;text-align:center;width:10px;padding-top: 7px;padding-right: 7px;"> </label>
+                @(Html.Kendo().TextBox().Name("PhoneSupport01Old").HtmlAttributes(new { style = "width:140px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;" }))
+                <label class="lbcontrol" style="color: navy;text-align:center;width:10px;padding-top: 7px;padding-right: 7px;"></label>
+                @(Html.Kendo().TextBox().Name("PhoneSupport02Old").HtmlAttributes(new { style = "width:140px;max-width:100%;color:blue;padding-left:2px;padding-right:0px;" }))
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 10px;">
+            <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                <label class="lbcontrol" style="color: navy;text-align:left;width:120px;padding-top: 7px;padding-right: 7px;">Trạng thái </label>      
+                @Html.Kendo().TextBox().Name("TxnStatusOld").HtmlAttributes(new { style = " width: 100px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;"})
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày thành lập</label>
+                @Html.Kendo().TextBox().Name("EffectiveDateOld").HtmlAttributes(new { style = " width: 200px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;text-align:center;" })
+                <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:center;padding-top:7px;">Ngày hiệu lực</label>
+                @Html.Kendo().TextBox().Name("BusinessDateOld").HtmlAttributes(new { style = " width: 200px;max-width:100%;color: blueviolet;font-family:Tahoma;padding-left: 2px;padding-right: 2px;text-align:center;" })
+            </div>
+        </div>
+
+        <hr style='margin-top: 1.1em; margin-bottom: 0.3em; padding-top: 0px; background-color: #333; border-width: 0; color: #000000; height: 1px; line-height: 0; text-align: left; width: 100%; background-image: linear-gradient(to right, #ccc, #333, #ccc); ' />
+        <div id="divChange">
+            <div class="row" style="padding-top: 5px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="display: inline-flex;">
+                    <label class="lbcontrol" style="color: maroon;text-align:left;width:600px;padding-top: 5px;">Thông tin thay đổi điểm giao dịch</label>
+
+                    <label class="lbcontrol" style="color: navy;text-align:right;width:150px;padding-top: 7px;padding-right: 10px!important;">Trạng thái bản ghi</label>
+                    @Html.Kendo().TextBoxFor(m => m.StatusText).HtmlAttributes(new { @readonly = "readonly", style = " width: 230px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                </div>
+            </div>
+            <div class="row" style="padding-top: 7px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="display: inline-flex;">
+                    <label class="lbcontrol" style="color: navy;text-align:left;width:140px;padding-top: 7px;">Nghiệp vụ yêu cầu</label>
+                    @(Html.Kendo().ComboBoxFor(m => m.EventCode)
+                                        .DataTextField("Description")
+                                        .DataValueField("Code")
+                                        .BindTo((List<ValueConstModel>)ViewBag.FunctionTypes)
+                                        .Placeholder("Chọn nghiệp vụ yêu cầu")
+                                        .HtmlAttributes(new { style = "width: 360px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                                        .Filter("contains")
+                                        .Events(e => e.Change("Change_EventCode"))
+                                        .SelectedIndex(0))
+                    <label class="lbcontrol" style="width: 110px; vertical-align: bottom;color: navy;text-align:right;padding-top:7px;padding-right:10px;">Ngày bắt đầu</label>
+                    @Html.Kendo().DatePickerFor(m => m.BusinessDate).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                    <label id="lblEndDateChangeRole" class="lbcontrol" style="width: 110px; vertical-align: bottom;color: navy;text-align:right;padding-top:7px;padding-right:5px;">Ngày kết thúc</label>
+                    @(Html.Kendo().CheckBox().Name("ckb_EndDateChangeRole").Label(" ").HtmlAttributes(new { onchange = "Checked_EndDateChangeRole();", style = "color: red;text-align: center;padding-right: 5px;", title = "Tích chọn nếu muốn đổi quyền từ ngày đến ngày" }))
+                    @Html.Kendo().DatePickerFor(m => m.EndDateChangeRole).Format("dd/MM/yyyy").Min(DateTime.Today).HtmlAttributes(new { style = "width: 120px;max-width:100%;font-family:Tahoma;color: blue;padding-left: 3px;padding-right: 3px;" })
+                </div>
+            </div>
+
+            <div id="divPosCode" class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                    <label class="lbcontrol" style="color: navy;text-align:left;width:140px;padding-top: 7px;">Đơn vị mới</label>
+                    @(Html.Kendo().ComboBoxFor(m => m.PosCode)
+                                        .Filter(FilterType.Contains)
+                                        .Placeholder("--- Đơn vị ---")
+                                        .DataTextField("value")
+                                        .DataValueField("id")
+                                        .ClearButton(false)
+                                        .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListBranchFind"); }).ServerFiltering(false); })
+                                        .HtmlAttributes(new { style = "width: 720px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                        .Events(e => e.Change("Change_PosCode"))
+                                        .Suggest(true)
+                                        .AutoBind(true)
+                                        .SelectedIndex(0))
+                </div>
+            </div>
+
+@*             <div id="divModify" class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                    <label class="lbcontrol" style="width: 140px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-top:7px;">Số điện thoại</label>
+                    @(Html.Kendo().MaskedTextBoxFor(m => m.MobileNumber).Mask("0000 000 000")
+                                        .HtmlAttributes(new { data_validmask_msg = "Giá trị không hợp lệ", })
+                                        .HtmlAttributes(new { placeholder = "Số điện thoại mới", style = "width: 150px; !important;max-width:100% !important;color: blue;padding-left: 2px!important;padding-right: 0px!important;" }))
+                    <label class="lbcontrol" style="width: 120px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:10px;padding-top:7px;">Địa chỉ e-mail</label>
+                    @(Html.Kendo().TextBoxFor(m => m.EmailAddress).HtmlAttributes(new { placeholder = "Địa chỉ email mới", type = "email", data_email_msg = "Địa chỉ E-mail không hợp lệ", style = "width: 520px; !important;max-width:100% !important;color: blue;font-family:Tahoma !important;padding-left: 2px!important;padding-right: 0px!important;text-transform: lowercase;" }))
+                </div>
+            </div>
+
+            <div id="divRole" class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                    <label class="lbcontrol" style="width: 150px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:7px;padding-top:7px; ">Nhóm quyền thay đổi</label>
+                    @(Html.Kendo().ComboBoxFor(m => m.GroupName)
+                                        .Filter(FilterType.Contains)
+                                        .Placeholder("--- Nhóm quyền ---")
+                                        .DataTextField("value")
+                                        .DataValueField("id")
+                                        .ClearButton(false)
+                                        .DataSource(source => { source.Read(read => { read.Action("GetListRoleOfUserIDC", "ListOfValue").Data("paramLoadListRoleOfUserIDC"); }).ServerFiltering(false); })
+                                        .HtmlAttributes(new { style = "width: 470px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                                        .Events(e => e.Change("Change_RoleOfUserIDC"))
+                                        .Suggest(true)
+                                        .AutoBind(true)
+                                        .SelectedIndex(0))
+                    <label class="lbcontrol" style="color: navy;text-align:right;width:130px;padding-top: 7px;padding-right: 10px!important;">Quyền tiền mặt </label>
+                    @Html.Kendo().TextBoxFor(m => m.RoleToTransferCashDescriptionDetail).HtmlAttributes(new { @readonly = "readonly", style = " width: 200px; !important;max-width:100% !important;color: blueviolet;font-family:Tahoma;padding-left: 2px!important;padding-right: 2px!important;" })
+                </div>
+            </div>
+
+            <div class="row" style="padding-top: 10px; padding-left: 0px; padding-bottom: 0px;">
+                <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+                    <label class="lbcontrol" style="width: 140px; vertical-align: top;color: navy;text-align:left;padding-top: 7px;">Ghi chú</label>
+                    @Html.TextAreaFor(m => m.Remark, new { @class = "k-textbox", style = "padding-top: 5px;min-height:30px; width:800px;max-width:100%;color: blue;font-family:Tahoma !important;", rows = "2", placeholder = "Ghi chú nghiệp vụ yêu cầu thay đổi" })
+                </div>
+            </div>
+        </div> *@
+
+        <div class="row" style="padding-top: 15px; padding-left: 10px; padding-bottom: 0px;">
+            <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
+                <label class="control-label" id="lblMessageInfor" style="width: 740px; text-align: left; color: red;"></label>
+                &nbsp;&nbsp;
+                @(Html.Kendo().Button()
+                                .Name("btnSaveCreateChange")
+                                .Events(ev => ev.Click("onClickCreateChange"))
+                                .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật nghiệp vụ yêu cầu thay đổi thông tin tài khoản người dùng Intellect iDC" })
+                                .ImageUrl(Url.Content("~/images/save.png"))
+                                .Content("Lưu lại"))
+                &nbsp;
+                @(Html.Kendo().Button().Name("btnCloseCreateChange").Events(ev => ev.Click("onCloseCreateChange")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+            </div>
+        </div>
+
+
+        <div class="row" style="padding-top: 13px; padding-left: 10px; padding-bottom: 0px;">
+            <div class="col-md-12" style="width:100%; display:flex; justify-content:flex-end;">
+                <label class="control-label" id="lblMessageInfor" style="width: 750px; text-align: left; color: red;"></label>
+                &nbsp;&nbsp;
+                @(Html.Kendo().Button()
+                    .Name("btnSaveCreateTranspoint")
+                    .Events(ev => ev.Click("onClick"))
+                    .HtmlAttributes(new { type = "submit", style = "width: 90px; font-weight:bold; color: blue;height: 25px;", title = "Cập nhật thông tin tài khoản người dùng Intellect iDC" })
+                    .ImageUrl(Url.Content("~/images/save.png"))
+                    .Content("Lưu lại"))
+                &nbsp;
+                @(Html.Kendo().Button().Name("btnThoat").Events(ev => ev.Click("onCloseUpdate")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 100px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+<script>
+    $(function () {
+        $("#formCreateNewTranspoint").submit(function (event) {
+            event.preventDefault();
+
+            //var expirePicker = $("#ExpiryDate").data("kendoDatePicker");
+
+            // if (expirePicker && expirePicker.value()) {
+            //     $("#ExpiryDate").val(kendo.toString(expirePicker.value(), "yyyy-MM-dd"));
+            // }
+            $("#pFlagCall").val($("#FlagEventCallView").val());
+            // $("#pButtonType").val($("#ButtonTypeView").val());
+            // $("#UserId").val($("#StaffCode").val());
+            // $("#NickName").val($("#StaffCode").val());
+            var frmCreateNewUserIDC = this;
+
+            // if (!isEditMode) {
+            //     $.ajax({
+            //         url: '/PosRepresentative/CheckOpenPosRepresentative',
+            //         type: 'POST',
+            //         dataType: 'json',
+            //         data: { pPosCode: posCode },
+            //         success: function (res) {
+            //             if (res && res.resultVal === "1") {
+            //                 if (!confirm("Đã tồn tại người đại diện đang hiệu lực. Bạn có chắc chắn muốn đóng và thêm mới người đại diện không?")) {
+            //                     return;
+            //                 }
+            //             }
+            //             submitFormAjax(form);
+            //         },
+            //         error: function () {
+            //             alert("Không kiểm tra được dữ liệu. Vui lòng thử lại!");
+            //         }
+            //     });
+            // } else {
+
+            submitFormAjax(frmCreateNewUserIDC);
+            // }
+
+            return false;
+        });
+    });
+
+    function submitFormAjax(form) {
+        var dataString;
+        var contentType;
+        var processData;
+        var objPosCode = $("#PosCode").data("kendoComboBox");
+        var objProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+        var objCommuneCode = $("#CommuneCode").data("kendoComboBox");
+        var objSubCommuneCode = $("#AddressCode").data("kendoComboBox");
+        $("#PosName").val(getNameOnly(objPosCode.text()));
+        $("#ProvinceName").val(objProvinceCode.text());
+        $("#CommuneName").val(objCommuneCode.text());
+        if (form.enctype === "multipart/form-data") {
+            dataString = new FormData($(form).get(0));
+            contentType = false;
+            processData = false;
+        }
+        $.ajax({
+            url: form.action,
+            type: form.method,
+            dataType: "json",
+            contentType: contentType,
+            processData: processData,
+            data: dataString,
+            success: function (result) {
+                if (result == "0") {
+                    
+                    var lcFlagCallText = $("#FlagCall").val();
+                    if ($("#FlagCall").val() == "1")
+                        lcFlagCallText = "Thêm mới";
+                    else if ($("#FlagCall").val() == "2")
+                        lcFlagCallText = "Chỉnh sửa";
+                    alert("Bạn đã cập nhật " + lcFlagCallText + " bản ghi yêu cầu nghiệp vụ tạo mới điểm giao dịch [" + $("#TxnPointCode").val() + " - " + $("#TxnPointName").val() + "] thành công!");
+                    dataChangeTransPointWork = true;
+                    onCloseUpdate();
+                } 
+                else {
+                    dataChangeTransPointWork = false;
+                    if (result == "15")
+                        alert("Yêu cầu tạo mới tài khoản người dùng nhưng trạng thái bản ghi là đóng. Vui lòng kiểm tra lại!");
+                    else if (result == "1")
+                        alert("Mã đơn vị của tài khoản người dùng Intellect iDC không được để trống. Vui lòng kiểm tra lại!");
+                    else if (result == "2")
+                        alert("Mã cán bộ của tài khoản người dùng Intellect iDC không được để trống. Vui lòng kiểm tra lại!");
+                    else if (result == "14")
+                        alert("Số điện thoại của người dùng không được để trống. Vui lòng kiểm tra lại!");
+                    else if (result == "3")
+                        alert("Tài khoản người dùng có ngày hiệu lực [" + $("#EffectiveDate").val() + "] bằng ngày hết hiệu lực [" + $("#ExpiryDate").val() + "]!. Vui lòng kiểm tra lại!");
+                    else if (result == "4")
+                        alert("Tài khoản người dùng có ngày hiệu lực [" + $("#EffectiveDate").val() + "] lớn hơn ngày hết hiệu lực [" + $("#ExpiryDate").val() + "]. Vui lòng kiểm tra lại!");
+                    else if (result == "5")
+                        alert("Tài khoản người dùng có phương thức xác thực khi đăng nhập là OTP nên không thể thực hiện tạo yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ". Vui lòng kiểm tra lại!");
+                        //alert("Tài khoản người dùng có phương thức xác thực khi đăng nhập là OTP nên không thể thực hiện tạo yêu cầu cấp lại mật khẩu. Vui lòng kiểm tra lại!");
+                    else if (result == "6")
+                        alert("Tài khoản người dùng đã mở sổ tiền mặt đầu ngày, nên không thể thực hiện tạo yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ". Vui lòng kiểm tra lại!");
+                    else if (result == "7")
+                        alert("Tài khoản người dùng có yêu cầu nghiệp vụ " + $("#FunctionTypeName").val() + ", nhưng thông tin (Quyền/Số điện thoại/Email) vẫn giữ nguyên. Vui lòng kiểm tra lại!");
+                    else if (result == "8")
+                        alert("Ngày bắt đầu nhỏ hơn ngày hiện tại. Vui lòng kiểm tra lại!");
+                    else if (result == "9")
+                        alert("Tài khoản người dùng có trạng thái đóng, không thể thực hiện nghiệp vụ " + $("#FunctionTypeName").val() + ". Vui lòng kiểm tra lại!");
+                    else if (result == "10")
+                        alert("Yêu cầu nghiệp vụ [" + $("#FunctionTypeName").val() + "], nhưng tài khoản người dùng " + $("#UserId").val() + " đã tồn tại trên hệ thống Intellect iDC. Vui lòng kiểm tra lại!");
+                    else if (result == "11")
+                        alert("Địa chỉ email [" + $("#EmailAddress").val() + "] của người dùng bị trống hoặc không phải email nội bộ của NHCSXH. Vui lòng kiểm tra lại!");
+                    else if (result == "12")
+                        alert("Tài khoản người dùng Intellect iDC cập nhật có ngày hiệu lực [" + $("#EffectiveDate").val() + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + $("#BusinessDate").val() + "]. Vui lòng kiểm tra lại!");
+                    else if (result == "13")
+                        alert("Tài khoản người dùng Intellect iDC cập nhật có ngày bắt đầu [" + $("#StartDate").val() + "] nhỏ hơn ngày hiện tại của hệ thống Intelect iDC [" + $("#BusinessDate").val() + "]. Vui lòng kiểm tra lại");
+                    else if (result == "23" || result == "24")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC có thông tin địa chỉ email [" + $("#EmailAddress").val() + "] không hợp lệ. Vui lòng kiểm tra lại!");
+                    else if (result == "25")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC có thông tin số điện thoại [" + $("#MobileNumber").val() + "] không hợp lệ. Vui lòng kiểm tra lại!");
+                    else if (result == "26")
+                        alert("Yêu cầu nghiệp vụ [" + lcFunctionTypeName + "] tài khoản người dùng Intellect iDC [" + $("#UserId").val() + "] đã tồn tại. Vui lòng kiểm tra lại!");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                alert("Lỗi khi cập nhật dữ liệu. Vui lòng liên hệ quản trị hệ thống!");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+       setTimeout(function ()
+       {
+           LoadTranspointInfoDetail();
+       }, 300); // delay nhẹ để đảm bảo Kendo init xong
+
+        var pIsinterward = $("#IsInterWard").val();
+        $("#chkInterWard").prop("checked", pIsinterward != null && pIsinterward != "");
+
+        // var objMaApDungList = $("#MaApDungList").data("kendoComboBox");
+        // if (objMaApDungList) {
+        //     objMaApDungList.value(pMaApDungList);
+        // }
+        var lcFlagCall = $("#FlagEventCallView").val();
+        var cboStatus = $("#TxnStatus").data("kendoComboBox");
+        //Nếulà xem thì readonly các control và Hide nút lệnh Lưu
+        if (lcFlagCall == $("#EventFlag_AddView").val())
+        {
+            cboStatus.readonly(true);
+        }
+        else if (lcFlagCall == $("#EventFlag_ViewView").val())
+        {
+            $("#chkInterWard").prop("disabled", true);
+            cboStatus.readonly(true);
+            var cboPosCode = $("#PosCode").data("kendoComboBox");
+            cboPosCode.readonly(true);
+
+            var cboTxnPointCode = $("#TxnPointCode").data("kendoTextBox");
+            cboTxnPointCode.readonly(true);
+
+            var cboTxnPointName = $("#TxnPointName").data("kendoTextBox");
+            cboTxnPointName.readonly(true);
+
+            var cboVisitDate = $("#VisitDate").data("kendoNumericTextBox");
+            cboVisitDate.readonly(true);
+
+            var cboTimeBeginDate = $("#TimeBeginDate").data("kendoTimePicker");
+            cboTimeBeginDate.readonly(true);
+
+            var cboTimeEndDate = $("#TimeEndDate").data("kendoTimePicker");
+            cboTimeEndDate.readonly(true);
+
+            var cboMaApDungList = $("#MaApDungList").data("kendoComboBox");
+            cboMaApDungList.readonly(true);
+
+            var cboProvinceCode = $("#ProvinceCode").data("kendoComboBox");
+            cboProvinceCode.readonly(true);
+
+            var cboCommuneCode = $("#CommuneCode").data("kendoComboBox");
+            cboCommuneCode.readonly(true);
+
+            var cboAddressCode = $("#AddressCode").data("kendoComboBox");
+            cboAddressCode.readonly(true);
+
+            var txtTxnLocation = $("#TxnLocation").data("kendoTextBox");  
+            txtTxnLocation.readonly(true);
+
+            var txtAddressDetail = $("#AddressDetail").data("kendoTextBox");  
+            txtAddressDetail.readonly(true);
+
+            var txtLongitude = $("#Longitude").data("kendoNumericTextBox");
+            txtLongitude.readonly(true);
+            
+            var txtLatitude = $("#Latitude").data("kendoNumericTextBox");
+            txtLatitude.readonly(true);
+
+            var txtPhoneSupport = $("#PhoneSupport").data("kendoMaskedTextBox");
+            txtPhoneSupport.readonly(true);
+
+            var txtPhoneSupport01 = $("#PhoneSupport01").data("kendoMaskedTextBox");
+            txtPhoneSupport01.readonly(true);
+
+            var txtPhoneSupport02 = $("#PhoneSupport02").data("kendoMaskedTextBox");
+            txtPhoneSupport02.readonly(true);
+
+            var dtpkEffectiveDate = $("#EffectiveDate").data("kendoDatePicker");
+            dtpkEffectiveDate.readonly(true);
+
+            var dtpkBusinessDate = $("#BusinessDate").data("kendoDatePicker");
+            dtpkBusinessDate.readonly(true);
+
+
+            $("#Remark").prop("readonly", true)
+
+            $("#btnSaveCreateTranspoint").hide();
+        }
+    });
+
+</script>

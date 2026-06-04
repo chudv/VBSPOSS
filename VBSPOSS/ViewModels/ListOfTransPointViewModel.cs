@@ -365,7 +365,9 @@ namespace VBSPOSS.ViewModels
         public DateTime ApprovalDate { get; set; }
 
         public DateTime BusinessDate { get; set; }
-        
+
+        public DateTime EndDateChangeRole { get; set; }
+
         public string BusinessDateText { get; set; }          //Thêm
 
         public long DocumentId { get; set; }

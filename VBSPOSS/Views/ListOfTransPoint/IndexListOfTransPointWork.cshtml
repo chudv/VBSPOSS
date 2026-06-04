@@ -299,7 +299,7 @@
                 actions: ["Refresh", "Close"]
             });
             mainWindow.data("kendoWindow").wrapper.css({ height: 650, width: 1024 });
-            mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa thông tin người dùng IDC");
+            mainWindow.data("kendoWindow").center().open().title("Chỉnh sửa thông tin điểm giao dịch");
         }
     }
 
@@ -347,7 +347,7 @@
     function showDetailTranspoint(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var grid = $("#gridMainIDC").data("kendoGrid");
+        var grid = $("#gridMainTransPointWork").data("kendoGrid");
         if (mainWindow.data("kendoWindow")) {
             mainWindow.data("kendoWindow").destroy();
         }
@@ -380,7 +380,7 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var sMessInfor = "[" + dataItem.TxnPointName + "]";
-        var grid = $("#gridMainIDC").data("kendoGrid");
+        var grid = $("#gridMainTransPointWork").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
         var deletedStatuses = [0, 1, 2, 4, 5];
         if (deletedStatuses.includes(dataItem.Status)) {
@@ -405,10 +405,10 @@
         mainWindow.kendoWindow({
             width: "1000px",
             height: "700px",
-            title: "Yêu cầu chỉnh sửa thông tin điểm giao dịch",
+            title: "Thêm mới nghiệp vụ thay đổi thông tin điểm giao dịch",
             content: {
-                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10", pId: dataItem.Id }
+                url: '@Url.Action("ShowUpdateListOfTransPointWork", "ListOfTransPoint")',
+                data: { pPosCode: dataItem.PosCode, pEventCode: dataItem.EventCode, pFlagCall: "7", pTxnPointCode: dataItem.TxnPointCode }
             },
             resizable: false,
             visible: false,
