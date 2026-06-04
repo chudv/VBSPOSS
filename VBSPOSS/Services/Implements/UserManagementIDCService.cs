@@ -2253,6 +2253,8 @@ namespace VBSPOSS.Services.Implements
                                                     UserIDCMasterViewModel objUserIDCMaster = new UserIDCMasterViewModel();
                                                     objUserIDCMaster = _mapper.Map<UserIDCMasterViewModel>(objUserAuth);
                                                     objUserIDCMaster.Id = 0;
+                                                    if (string.IsNullOrEmpty(objUserIDCMaster.UserStatus))
+                                                        objUserIDCMaster.UserStatus = objUserAuth.UserStatus;
                                                     objUserIDCMaster.PosCode = objUserAuth.PosCode;
                                                     objUserIDCMaster.ModifiedBy = pUserNameUpd;
                                                     objUserIDCMaster.ModifiedDate = dCurrentDateTmp;
@@ -2293,7 +2295,6 @@ namespace VBSPOSS.Services.Implements
                                     }
                                     #endregion
                                 }
-
                             }
                             if (objUserAuth.FunctionType == FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code 
                                 && (pUserGradeUpd == PosGrade.MAIN_POS|| pUserGradeUpd == PosGrade.HEAD_POS))
@@ -2594,13 +2595,6 @@ namespace VBSPOSS.Services.Implements
             }
             return listIdAuthorize;
         }
-
-
-
-
-
-
-
 
 
 
@@ -3269,10 +3263,6 @@ namespace VBSPOSS.Services.Implements
             }
             return iRetIdUpd;
         }
-
-
-
-
 
 
 
@@ -4549,7 +4539,6 @@ namespace VBSPOSS.Services.Implements
                 var sSQL = @"BEGIN VBSP_OSS_UPD.PRC_CHANGE_OTP_REGISTER_BY_USERID(:P_USERID, :P_REG_FLAG, :P_ROWS_CHANGE, :P_SUCCESS, :P_MESSAGE); END;";
 
                 await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, parameters);
-
 
                 // Mapping kết quả - XỬ LÝ ORACLEDECIMAL AN TOÀN 
                 int rowsAffected = 0, successValue = -1;
