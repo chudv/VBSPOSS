@@ -4537,15 +4537,6 @@ namespace VBSPOSS.Services.Implements
         {
             try
             {
-                //var sUserIdInput = new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId };
-                //var iRegisterFlagInput = new OracleParameter("P_REG_FLAG", OracleDbType.Int32) { Direction = ParameterDirection.Input, Value = pRegisterFlag };
-                //var iRowsChangeOut = new OracleParameter("P_ROWS_CHANGE", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
-                //var iSuccessOut = new OracleParameter("P_SUCCESS", OracleDbType.Decimal) { Direction = ParameterDirection.Output };
-                //var sMessageOut = new OracleParameter("P_MESSAGE", OracleDbType.Varchar2, 4000) { Direction = ParameterDirection.Output };
-
-                //var sSQL = @"BEGIN VBSP_OSS_UPD.PRC_CHANGE_OTP_REGISTER_BY_USERID(:P_USERID, :P_REG_FLAG, :P_ROWS_CHANGE, :P_SUCCESS, :P_MESSAGE); END;";
-                //await _dbContextIDC.Database.ExecuteSqlRawAsync(sSQL, pUserId, iRegisterFlagInput, iRowsChangeOut, iSuccessOut, sMessageOut);
-
                 var parameters = new[]
                     {
                         new OracleParameter("P_USERID", OracleDbType.Varchar2) { Direction = ParameterDirection.Input, Value = pUserId},
@@ -4561,8 +4552,7 @@ namespace VBSPOSS.Services.Implements
 
 
                 // Mapping kết quả - XỬ LÝ ORACLEDECIMAL AN TOÀN 
-                int rowsAffected = 0;
-                int success = -1;
+                int rowsAffected = 0, successValue = -1;
                 string message = "";
 
                 if (parameters[2].Value != DBNull.Value && parameters[2].Value != null)
@@ -4570,24 +4560,16 @@ namespace VBSPOSS.Services.Implements
                     var oracleDecRows = (Oracle.ManagedDataAccess.Types.OracleDecimal)parameters[2].Value;
                     rowsAffected = oracleDecRows.IsNull ? 0 : oracleDecRows.ToInt32();
                 }
-
                 if (parameters[3].Value != DBNull.Value && parameters[3].Value != null)
                 {
                     var oracleDecSuccess = (Oracle.ManagedDataAccess.Types.OracleDecimal)parameters[3].Value;
-                    success = oracleDecSuccess.IsNull ? -1 : oracleDecSuccess.ToInt32();
+                    successValue = oracleDecSuccess.IsNull ? -1 : oracleDecSuccess.ToInt32();
                 }
-
                 if (parameters[4].Value != DBNull.Value && parameters[4].Value != null)
                 {
                     message = parameters[4].Value.ToString();
                 }
-
-                var objExecuteResult = new ExecuteResultModelModel
-                {
-                    RowsAffected = rowsAffected,
-                    Success = success,
-                    Message = message
-                };
+                var objExecuteResult = new ExecuteResultModelModel { RowsAffected = rowsAffected, Success = successValue, Message = message };
 
                 // Map TxnStatus chuẩn hoá
                 objExecuteResult.TxnStatus = objExecuteResult.Success switch
