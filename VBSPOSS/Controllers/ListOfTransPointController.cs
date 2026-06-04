@@ -69,10 +69,44 @@ namespace VBSPOSS.Controllers
             return View("IndexListOfTransPointWork");
         }
 
-
+        /// <summary>
+        /// Danh sách bản ghi điểm giao dịch  => Tải dừ bảng dữ liệu ListOfTranspoint
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="pPosCode">Mã đơn vị</param>
+        /// <param name="pStatus">Trạng thái</param>
+        /// <returns>Danh sách người đại diện các đơn vị</returns>
+        public ActionResult LoadGridData_TransPoint([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, string pStatus)
+        {
+            try
+            {
+                string sTxnPointCode = "", sTxnPointName = "";
+                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+                if (string.IsNullOrEmpty(pEventCode))
+                    pEventCode = "";
+                if (string.IsNullOrEmpty(pTxnPointCode))
+                    pTxnPointCode = "";
+                if (string.IsNullOrEmpty(pTxnPointName))
+                    pTxnPointName = "";
+                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
+                {
+                    if (!string.IsNullOrEmpty(pPosCode))
+                        pPosCode = pPosCode.Substring(0, 4);
+                }
+                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointSearch("", pPosCode, "",pTxnPointCode, pTxnPointName, 0,0,pStatus, "");
+                return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_TransPointWorks('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+            }
+        }
 
         /// <summary>
-        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... người dùng iDC => Tải dừ bảng dữ liệu UserIDCManagement
+        /// Danh sách bản ghi Tạo mới/Thay đổi thông tin,... điểm giao dịch => Tải dừ bảng dữ liệu ListOfTranspointWork
         /// </summary>
         /// <param name="request"></param>
         /// <param name="pPosCode">Mã đơn vị</param>
@@ -99,7 +133,7 @@ namespace VBSPOSS.Controllers
                     if (!string.IsNullOrEmpty(pPosCode))
                         pPosCode = pPosCode.Substring(0, 4);
                 }
-                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointSearch("", pPosCode, pTxnPointCode, pTxnPointName, pStatus, "", pEventCode);
+                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointWorkSearch("", pPosCode, pTxnPointCode, pTxnPointName, pStatus, "", pEventCode);
                 return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -249,7 +283,7 @@ namespace VBSPOSS.Controllers
             else if (pFlagCall == EventFlag.EventFlag_Edit.Value.ToString() || pFlagCall == EventFlag.EventFlag_View.Value.ToString())        //Trường hợp chỉnh sửa bản ghi yêu cầu nghiệp vụ: Bản ghi có trong bảng ListOfTransPointWork
             {
                 #region ---2. Sự kiện chỉnh sửa bản ghi Yêu cầu tạo mới điểm giao dịch --- 
-                var objTranspointFind01 = (_serviceTransPoint.GetListOfTransPointWorkSearch("", pPosCode, "", pTxnPointCode, "", 0, 0, "", "","",1,"")).FirstOrDefault();
+                var objTranspointFind01 = (_serviceTransPoint.GetListOfTransPointWorkSearch("", pPosCode, pTxnPointCode, "", -1, "","")).FirstOrDefault();
                 if (objTranspointFind01 != null  && !string.IsNullOrEmpty(objTranspointFind01.EventCode))
                 {
                     var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
@@ -318,6 +352,79 @@ namespace VBSPOSS.Controllers
                     objListOfTransPointWorkUpd.CallApiResponseCode = objTranspointFind01.CallApiResponseCode;
                     objListOfTransPointWorkUpd.CallApiResponseMsg = objTranspointFind01.CallApiResponseMsg;
                     sNameView = "UpdateListOfTransPointWork";
+                }
+                #endregion
+            }
+
+            else if (pFlagCall == EventFlag.EventFlag_EditIDC.Value.ToString())        //Trường hợp thêm mới nghiệp vụ thay đổi thông tin điểm giao dịch
+            {
+                #region ---3. Sự kiện thêm mới nghiệp vụ thay đổi thông tin điểm giao dịch --- 
+                var objTranspointFind01 = (_serviceTransPoint.GetListOfTransPointSearch("", pPosCode, "", pTxnPointCode, "", 0, 0, "", "")).FirstOrDefault();
+                if (objTranspointFind01 != null)
+                {
+                    var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+                    objListOfTransPointWorkUpd.OrderNo = objTranspointFind01.OrderNo;
+                    objListOfTransPointWorkUpd.OrderNoText = objTranspointFind01.OrderNoText;
+                    objListOfTransPointWorkUpd.EventCode = "";
+                    objListOfTransPointWorkUpd.EventName = "";
+                    objListOfTransPointWorkUpd.ParentId = 0;
+                    objListOfTransPointWorkUpd.ProvinceCode = objTranspointFind01.ProvinceCode;
+                    objListOfTransPointWorkUpd.ProvinceName = objTranspointFind01.ProvinceName;
+                    objListOfTransPointWorkUpd.PosCode = objTranspointFind01.PosCode;
+                    objListOfTransPointWorkUpd.PosName = objTranspointFind01.PosName;
+                    objListOfTransPointWorkUpd.DistrictCode = objTranspointFind01.DistrictCode;
+                    objListOfTransPointWorkUpd.DistrictName = objTranspointFind01.DistrictName;
+                    objListOfTransPointWorkUpd.CommuneCode = objTranspointFind01.CommuneCode;
+                    objListOfTransPointWorkUpd.CommuneName = objTranspointFind01.CommuneName;
+                    objListOfTransPointWorkUpd.TxnPointCode = objTranspointFind01.TxnPointCode;
+                    objListOfTransPointWorkUpd.TxnPointName = objTranspointFind01.TxnPointName;
+                    objListOfTransPointWorkUpd.VisitDate = objTranspointFind01.VisitDate;
+                    objListOfTransPointWorkUpd.VisitDateText = objTranspointFind01.VisitDateText;
+                    objListOfTransPointWorkUpd.Times = objTranspointFind01.Times;
+
+                    objListOfTransPointWorkUpd.TimeBegin = objTranspointFind01.TimeBegin;
+                    objListOfTransPointWorkUpd.TimeEnd = objTranspointFind01.TimeEnd;
+                    objListOfTransPointWorkUpd.TimeBeginNum = objTranspointFind01.TimeBeginNum;
+                    objListOfTransPointWorkUpd.TimeEndNum = objTranspointFind01.TimeEndNum;
+                    objListOfTransPointWorkUpd.Hours = objTranspointFind01.Hours;
+                    objListOfTransPointWorkUpd.Minutes = objTranspointFind01.Minutes;
+                    objListOfTransPointWorkUpd.Longitude = objTranspointFind01.Longitude;
+                    objListOfTransPointWorkUpd.Latitude = objTranspointFind01.Latitude;
+                    objListOfTransPointWorkUpd.IsInCommune = objTranspointFind01.IsInCommune;
+                    objListOfTransPointWorkUpd.IsInPos = objTranspointFind01.IsInPos;
+                    objListOfTransPointWorkUpd.IsInterWard = objTranspointFind01.IsInterWard;
+                    objListOfTransPointWorkUpd.InterWardName = objTranspointFind01.InterWardName;
+                    objListOfTransPointWorkUpd.EffectiveDate = objTranspointFind01.EffectiveDate;
+                    objListOfTransPointWorkUpd.EffectiveDateText = objTranspointFind01.EffectiveDateText;
+                    objListOfTransPointWorkUpd.TxnLocation = objTranspointFind01.TxnLocation;
+                    objListOfTransPointWorkUpd.AddressDetail = objTranspointFind01.AddressDetail;
+                    objListOfTransPointWorkUpd.AddressCode = objTranspointFind01.AddressCode;
+
+                    objListOfTransPointWorkUpd.AddressFull = objTranspointFind01.AddressFull;
+                    objListOfTransPointWorkUpd.PhoneSupport = objTranspointFind01.PhoneSupport;
+                    objListOfTransPointWorkUpd.PhoneSupport01 = objTranspointFind01.PhoneSupport01;
+                    objListOfTransPointWorkUpd.PhoneSupport02 = objTranspointFind01.PhoneSupport02;
+                    objListOfTransPointWorkUpd.TxnStatus = objTranspointFind01.TxnStatus;
+                    objListOfTransPointWorkUpd.TxnStatusText = objTranspointFind01.TxnStatusText;
+                    objListOfTransPointWorkUpd.Status = objTranspointFind01.Status;
+                    objListOfTransPointWorkUpd.StatusText = objTranspointFind01.StatusText;
+                    objListOfTransPointWorkUpd.Remark = objTranspointFind01.Remark;
+
+                    objListOfTransPointWorkUpd.CreatedBy = objTranspointFind01.CreatedBy;
+                    objListOfTransPointWorkUpd.CreatedDate = objTranspointFind01.CreatedDate;
+                    objListOfTransPointWorkUpd.ModifiedBy = objTranspointFind01.ModifiedBy;
+                    objListOfTransPointWorkUpd.ModifiedDate = objTranspointFind01.ModifiedDate;
+                    objListOfTransPointWorkUpd.ApproverBy = objTranspointFind01.ApproverBy;
+                    objListOfTransPointWorkUpd.ApprovalDate = objTranspointFind01.ApprovalDate;
+                    objListOfTransPointWorkUpd.BusinessDate = objTranspointFind01.BusinessDate;
+                    objListOfTransPointWorkUpd.BusinessDateText = "";
+                    objListOfTransPointWorkUpd.DocumentId = objTranspointFind01.DocumentId;
+                    objListOfTransPointWorkUpd.StatusUpdateCore = objTranspointFind01.StatusUpdateCore;
+                    objListOfTransPointWorkUpd.CallApiTxnStatus = objTranspointFind01.CallApiTxnStatus;
+                    objListOfTransPointWorkUpd.CallApiResRecords = objTranspointFind01.CallApiResRecords;
+                    objListOfTransPointWorkUpd.CallApiResponseCode = objTranspointFind01.CallApiResponseCode;
+                    objListOfTransPointWorkUpd.CallApiResponseMsg = objTranspointFind01.CallApiResponseMsg;
+                    sNameView = "UpdateInfoListOfTransPointWork";
                 }
                 #endregion
             }
