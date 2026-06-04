@@ -1332,6 +1332,17 @@ namespace VBSPOSS.Constants
             };
         }
 
+        public static List<ValueConstModel> GetListOfTransPointNoAdd()
+        {
+            return new List<ValueConstModel>
+            {
+                EventCode_None,
+                EventCode_TransPoint_Change_VisitDate,
+                EventCode_TransPoint_Change_Name,
+                EventCode_TransPoint_Change_OtherInfor
+            };
+        }
+
 
     }
 
