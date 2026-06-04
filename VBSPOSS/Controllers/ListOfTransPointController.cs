@@ -99,7 +99,7 @@ namespace VBSPOSS.Controllers
                     if (!string.IsNullOrEmpty(pPosCode))
                         pPosCode = pPosCode.Substring(0, 4);
                 }
-                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
+                var listTransPointWorks = _serviceTransPoint.GetListOfTransPointSearch("", pPosCode, pTxnPointCode, pTxnPointName, pStatus, "", pEventCode);
                 return Json(listTransPointWorks.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -114,21 +114,18 @@ namespace VBSPOSS.Controllers
         /// Hàm show màn hình nghiệp vụ Thêm mới hoặc Thay đổi thông tin bản ghi yêu cầu nghiệp vụ điểm giao dịch
         /// </summary>
         /// <param name="pButtonType">Giá trị yêu cầu. Ex: EventFlag.EventFlag_Add.Code/</param>
-        /// <param name="pId">Chỉ số bản ghi của bảng ListOfTransPointWork</param>
         /// <param name="pPosCode">Mã Pos bản ghi của bảng ListOfTransPointWork</param>
-        /// <param name="pUserId">Tài khoản người dùng</param>
-        /// <param name="pEffectiveDate">Ngày hiệu lực của yêu cầu nghiệp vụ của bản ghi. Định dạng: dd/MM/yyyy</param>
-        /// <param name="pFlagCall">Cờ xác định: 1 - Thêm mới; 2 - Chỉnh sửa bản ghi; 9 - Thay đổi nghiệp vụ người dùng</param>
+        /// <param name="pBusinessDate">Ngày hiệu lực của yêu cầu nghiệp vụ của bản ghi. Định dạng: dd/MM/yyyy</param>
+        /// <param name="pFlagCall">Cờ xác định: 1 - Thêm mới; 2 - Chỉnh sửa bản ghi; 9 - Thay đổi nghiệp vụ điểm giao dịch</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch</param>
         /// <returns>Giá trị đối tượng ListOfTransPointWork</returns>
-        public async Task<ActionResult> ShowUpdateListOfTransPointWork(string pButtonType, long pId, string pPosCode, string pUserId, string pEffectiveDate, string pFlagCall)
+        public async Task<ActionResult> ShowUpdateListOfTransPointWork(string pButtonType, string pPosCode, string pBusinessDate, string pFlagCall, string pTxnPointCode, string pEventCode)
         {
             ListOfTransPointWorkViewModel objListOfTransPointWorkUpd = new ListOfTransPointWorkViewModel();
             if (string.IsNullOrEmpty(pPosCode))
                 pPosCode = "";
-            if (string.IsNullOrEmpty(pUserId))
-                pUserId = "";
-            if (string.IsNullOrEmpty(pEffectiveDate))
-                pEffectiveDate = CustConverter.StringToDate(DefaultValue.MinDate.ToString(), FormatParameters.FORMAT_DATE_INT).ToString(FormatParameters.FORMAT_DATE);
+            if (string.IsNullOrEmpty(pBusinessDate))
+                pBusinessDate = CustConverter.StringToDate(DefaultValue.MinDate.ToString(), FormatParameters.FORMAT_DATE_INT).ToString(FormatParameters.FORMAT_DATE);
             DateTime dSystemDateIDCTmp = _serviceTransPoint.GetDateInCoreIDC("0").Date;
             DateTime dBusinessDateIDCTmp = _serviceTransPoint.GetDateInCoreIDC("1").Date;
             string sNameView = "";
@@ -249,108 +246,81 @@ namespace VBSPOSS.Controllers
                 sNameView = "UpdateListOfTransPointWork";
                 #endregion
             }
-            //else if (pFlagCall == EventFlag.EventFlag_Edit.Value.ToString() && pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)        //Trường hợp chỉnh sửa bản ghi yêu cầu nghiệp vụ: Bản ghi có trong bảng UserIDCManagement
-            //{
-            //    #region ---2. Sự kiện chỉnh sửa bản ghi Yêu cầu tạo mới tài khoản người dùng ---
-            //    var objUserManagementIDCFind01 = (await _userManagementIDCService.GetListUserIDCManagement(pId, "", pPosCode, pUserId, "", "", -1, "", false)).FirstOrDefault();
-            //    if (objUserManagementIDCFind01 != null && objUserManagementIDCFind01.Id > 0 && !string.IsNullOrEmpty(objUserManagementIDCFind01.FunctionType))
-            //    {
-            //        var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+            else if (pFlagCall == EventFlag.EventFlag_Edit.Value.ToString() || pFlagCall == EventFlag.EventFlag_View.Value.ToString())        //Trường hợp chỉnh sửa bản ghi yêu cầu nghiệp vụ: Bản ghi có trong bảng ListOfTransPointWork
+            {
+                #region ---2. Sự kiện chỉnh sửa bản ghi Yêu cầu tạo mới điểm giao dịch --- 
+                var objTranspointFind01 = (_serviceTransPoint.GetListOfTransPointWorkSearch("", pPosCode, "", pTxnPointCode, "", 0, 0, "", "","",1,"")).FirstOrDefault();
+                if (objTranspointFind01 != null  && !string.IsNullOrEmpty(objTranspointFind01.EventCode))
+                {
+                    var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
+                    objListOfTransPointWorkUpd.OrderNo = objTranspointFind01.OrderNo;
+                    objListOfTransPointWorkUpd.OrderNoText = objTranspointFind01.OrderNoText;
+                    objListOfTransPointWorkUpd.EventCode = objTranspointFind01.EventCode;
+                    objListOfTransPointWorkUpd.EventName = objTranspointFind01.EventName;
+                    objListOfTransPointWorkUpd.ParentId = objTranspointFind01.ParentId;
+                    objListOfTransPointWorkUpd.ProvinceCode = objTranspointFind01.ProvinceCode;
+                    objListOfTransPointWorkUpd.ProvinceName = objTranspointFind01.ProvinceName;
+                    objListOfTransPointWorkUpd.PosCode = objTranspointFind01.PosCode;
+                    objListOfTransPointWorkUpd.PosName = objTranspointFind01.PosName;
+                    objListOfTransPointWorkUpd.DistrictCode = objTranspointFind01.DistrictCode;
+                    objListOfTransPointWorkUpd.DistrictName = objTranspointFind01.DistrictName;
+                    objListOfTransPointWorkUpd.CommuneCode = objTranspointFind01.CommuneCode;
+                    objListOfTransPointWorkUpd.CommuneName = objTranspointFind01.CommuneName;
+                    objListOfTransPointWorkUpd.TxnPointCode = objTranspointFind01.TxnPointCode;
+                    objListOfTransPointWorkUpd.TxnPointName = objTranspointFind01.TxnPointName;
+                    objListOfTransPointWorkUpd.VisitDate = objTranspointFind01.VisitDate;
+                    objListOfTransPointWorkUpd.VisitDateText = objTranspointFind01.VisitDateText;
+                    objListOfTransPointWorkUpd.Times = objTranspointFind01.Times;
 
-            //        objUserManagementIDCUpd.Id = objUserManagementIDCFind01.Id;
-            //        objUserManagementIDCUpd.OrderNo = objUserManagementIDCFind01.OrderNo;
-            //        objUserManagementIDCUpd.FunctionType = objUserManagementIDCFind01.FunctionType;
+                    objListOfTransPointWorkUpd.TimeBegin = objTranspointFind01.TimeBegin;
+                    objListOfTransPointWorkUpd.TimeEnd = objTranspointFind01.TimeEnd;
+                    objListOfTransPointWorkUpd.TimeBeginNum = objTranspointFind01.TimeBeginNum;
+                    objListOfTransPointWorkUpd.TimeEndNum = objTranspointFind01.TimeEndNum;
+                    objListOfTransPointWorkUpd.TimeBeginDate = objTranspointFind01.TimeBeginDate;
+                    objListOfTransPointWorkUpd.TimeEndDate = objTranspointFind01.TimeEndDate;
+                    objListOfTransPointWorkUpd.Hours = objTranspointFind01.Hours;
+                    objListOfTransPointWorkUpd.Minutes = objTranspointFind01.Minutes;
+                    objListOfTransPointWorkUpd.Longitude = objTranspointFind01.Longitude;
+                    objListOfTransPointWorkUpd.Latitude = objTranspointFind01.Latitude;
+                    objListOfTransPointWorkUpd.IsInCommune = objTranspointFind01.IsInCommune;
+                    objListOfTransPointWorkUpd.IsInPos = objTranspointFind01.IsInPos;
+                    objListOfTransPointWorkUpd.IsInterWard = objTranspointFind01.IsInterWard;
+                    objListOfTransPointWorkUpd.InterWardName = objTranspointFind01.InterWardName;
+                    objListOfTransPointWorkUpd.EffectiveDate = objTranspointFind01.EffectiveDate;
+                    objListOfTransPointWorkUpd.EffectiveDateText = objTranspointFind01.EffectiveDateText;
+                    objListOfTransPointWorkUpd.TxnLocation = objTranspointFind01.TxnLocation;
+                    objListOfTransPointWorkUpd.AddressDetail = objTranspointFind01.AddressDetail;
+                    objListOfTransPointWorkUpd.AddressCode = objTranspointFind01.AddressCode;
 
-            //        objUserManagementIDCUpd.PosCode = objUserManagementIDCFind01.PosCode;
-            //        objUserManagementIDCUpd.PosName = objUserManagementIDCFind01.PosName;
-            //        objUserManagementIDCUpd.StaffId = objUserManagementIDCFind01.StaffId;
-            //        objUserManagementIDCUpd.StaffCode = objUserManagementIDCFind01.StaffCode;
-            //        objUserManagementIDCUpd.UserId = objUserManagementIDCFind01.UserId;
-            //        objUserManagementIDCUpd.NickName = objUserManagementIDCFind01.NickName;
-            //        objUserManagementIDCUpd.FirstName = objUserManagementIDCFind01.FirstName;
-            //        objUserManagementIDCUpd.LastName = objUserManagementIDCFind01.LastName;
-            //        objUserManagementIDCUpd.FullName = objUserManagementIDCFind01.FullName;
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementIDCFind01.EmailAddress;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementIDCFind01.MobileNumber;
-            //        objUserManagementIDCUpd.DateOfBirth = objUserManagementIDCFind01.DateOfBirth;
-            //        objUserManagementIDCUpd.GroupName = objUserManagementIDCFind01.GroupName;
-            //        objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+                    objListOfTransPointWorkUpd.AddressFull = objTranspointFind01.AddressFull;
+                    objListOfTransPointWorkUpd.PhoneSupport = objTranspointFind01.PhoneSupport;
+                    objListOfTransPointWorkUpd.PhoneSupport01 = objTranspointFind01.PhoneSupport01;
+                    objListOfTransPointWorkUpd.PhoneSupport02 = objTranspointFind01.PhoneSupport02;
+                    objListOfTransPointWorkUpd.TxnStatus = objTranspointFind01.TxnStatus;
+                    objListOfTransPointWorkUpd.TxnStatusText = objTranspointFind01.TxnStatusText;
+                    objListOfTransPointWorkUpd.Status = objTranspointFind01.Status;
+                    objListOfTransPointWorkUpd.StatusText = objTranspointFind01.StatusText;
+                    objListOfTransPointWorkUpd.Remark = objTranspointFind01.Remark;
 
-            //        objUserManagementIDCUpd.AuthType = objUserManagementIDCFind01.AuthType;
-            //        objUserManagementIDCUpd.UserType = objUserManagementIDCFind01.UserType;
-            //        objUserManagementIDCUpd.MailIdFlag = objUserManagementIDCFind01.MailIdFlag;
-            //        objUserManagementIDCUpd.AuthsecType = objUserManagementIDCFind01.AuthsecType;
-            //        objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCFind01.GroupName;
-            //        objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCFind01.PosCode;
-            //        objUserManagementIDCUpd.EffectiveDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCFind01.ExpiryDate;
-            //        objUserManagementIDCUpd.Ticket = objUserManagementIDCFind01.Ticket;
-            //        objUserManagementIDCUpd.Remark = objUserManagementIDCFind01.Remark;
-            //        objUserManagementIDCUpd.OrtherNotes = objUserManagementIDCFind01.OrtherNotes;
-            //        objUserManagementIDCUpd.Status = StatusBusinessFlow.Status_Modified.Value; //objUserManagementIDCFind01.Status;
-            //        objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
-
-            //        objUserManagementIDCUpd.UserStatus = objUserManagementIDCFind01.UserStatus;
-            //        if (objUserManagementIDCFind01.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
-            //        else if (objUserManagementIDCFind01.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
-            //        else if (objUserManagementIDCFind01.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-            //        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
-
-            //        objUserManagementIDCUpd.StatusUpdateCore = objUserManagementIDCFind01.StatusUpdateCore;
-            //        objUserManagementIDCUpd.SessionValReq = objUserManagementIDCFind01.SessionValReq;
-            //        objUserManagementIDCUpd.PrevStatus = objUserManagementIDCFind01.PrevStatus;
-            //        objUserManagementIDCUpd.ResponseAttributes = objUserManagementIDCFind01.ResponseAttributes;
-            //        objUserManagementIDCUpd.CallApiStatus = objUserManagementIDCFind01.CallApiStatus;
-            //        objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementIDCFind01.CallApiReqRecordSl;
-            //        objUserManagementIDCUpd.CallApiResponseCode = objUserManagementIDCFind01.CallApiResponseCode;
-            //        objUserManagementIDCUpd.CallApiResponseMsg = objUserManagementIDCFind01.CallApiResponseMsg;
-
-            //        objUserManagementIDCUpd.CreatedBy = objUserManagementIDCFind01.CreatedBy;
-            //        objUserManagementIDCUpd.CreatedDate = objUserManagementIDCFind01.CreatedDate;
-            //        objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCFind01.ModifiedBy;
-            //        objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCFind01.ModifiedDate;
-            //        objUserManagementIDCUpd.ApproverBy = objUserManagementIDCFind01.ApproverBy;
-            //        objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCFind01.ApprovalDate;
-            //        objUserManagementIDCUpd.FunctionTypeName = FunctionTypeFlag.GetByCode(objUserManagementIDCFind01.FunctionType).Description;//GetDescriptionByCode
-            //        if (listRoleUsers != null && listRoleUsers.Count != 0)
-            //        {
-            //            objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementIDCFind01.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //            objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementIDCFind01.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //            objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //            objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
-            //        }
-            //        objUserManagementIDCUpd.StartDate = objUserManagementIDCFind01.StartDate;
-            //        objUserManagementIDCUpd.IpSetCode = objUserManagementIDCFind01.IpSetCode;
-            //        objUserManagementIDCUpd.IpSetDetail = objUserManagementIDCFind01.IpSetDetail;
-            //        objUserManagementIDCUpd.RestrictionFlag = objUserManagementIDCFind01.RestrictionFlag;
-            //        objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
-
-            //        objUserManagementIDCUpd.SubType = objUserManagementIDCFind01.SubType;
-            //        objUserManagementIDCUpd.AuthsecTypeName = objUserManagementIDCFind01.AuthsecTypeName;
-            //        objUserManagementIDCUpd.MailIdFlagName = objUserManagementIDCFind01.MailIdFlagName;
-            //        objUserManagementIDCUpd.CallApiAutoGeneratedPassword = objUserManagementIDCFind01.CallApiAutoGeneratedPassword;
-            //        objUserManagementIDCUpd.StaffDepartmentName = objUserManagementIDCFind01.StaffDepartmentName;
-            //        objUserManagementIDCUpd.PosCodeOld = objUserManagementIDCFind01.PosCodeOld;
-            //        objUserManagementIDCUpd.PosNameOld = objUserManagementIDCFind01.PosNameOld;
-            //        objUserManagementIDCUpd.GroupNameOld = objUserManagementIDCFind01.GroupNameOld;
-            //        objUserManagementIDCUpd.FirstNameOld = objUserManagementIDCFind01.FirstNameOld;
-            //        objUserManagementIDCUpd.LastNameOld = objUserManagementIDCFind01.LastNameOld;
-            //        objUserManagementIDCUpd.FullNameOld = objUserManagementIDCFind01.FullNameOld;
-            //        objUserManagementIDCUpd.EmailAddressOld = objUserManagementIDCFind01.EmailAddressOld;
-            //        objUserManagementIDCUpd.MobileNumberOld = objUserManagementIDCFind01.MobileNumberOld;
-            //        objUserManagementIDCUpd.DateOfBirthOld = objUserManagementIDCFind01.DateOfBirthOld;
-            //        objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementIDCFind01.ListFileId) ? "" : objUserManagementIDCFind01.ListFileId;
-            //        objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementIDCFind01.ReasonReject) ? "" : objUserManagementIDCFind01.ReasonReject;
-            //    }
-            //    #endregion
-            //}
+                    objListOfTransPointWorkUpd.CreatedBy = objTranspointFind01.CreatedBy;
+                    objListOfTransPointWorkUpd.CreatedDate = objTranspointFind01.CreatedDate;
+                    objListOfTransPointWorkUpd.ModifiedBy = objTranspointFind01.ModifiedBy;
+                    objListOfTransPointWorkUpd.ModifiedDate = objTranspointFind01.ModifiedDate;
+                    objListOfTransPointWorkUpd.ApproverBy = objTranspointFind01.ApproverBy;
+                    objListOfTransPointWorkUpd.ApprovalDate = objTranspointFind01.ApprovalDate;
+                    objListOfTransPointWorkUpd.BusinessDate = objTranspointFind01.BusinessDate;
+                    objListOfTransPointWorkUpd.BusinessDateText = objTranspointFind01.BusinessDateText;
+                    objListOfTransPointWorkUpd.DocumentId = objTranspointFind01.DocumentId;
+                    objListOfTransPointWorkUpd.StatusUpdateCore = objTranspointFind01.StatusUpdateCore;
+                    objListOfTransPointWorkUpd.CallApiTxnStatus = objTranspointFind01.CallApiTxnStatus;
+                    objListOfTransPointWorkUpd.CallApiResRecords = objTranspointFind01.CallApiResRecords;
+                    objListOfTransPointWorkUpd.MaApDungList = objTranspointFind01.MaApDungList;
+                    objListOfTransPointWorkUpd.CallApiResponseCode = objTranspointFind01.CallApiResponseCode;
+                    objListOfTransPointWorkUpd.CallApiResponseMsg = objTranspointFind01.CallApiResponseMsg;
+                    sNameView = "UpdateListOfTransPointWork";
+                }
+                #endregion
+            }
             //else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType)|| pButtonType.Length > 2))
             //{
             //    #region ---3. Sự kiện xem chi tiết bản ghi Yêu cầu nghiệp vụ tài khoản người dùng ---
@@ -368,116 +338,116 @@ namespace VBSPOSS.Controllers
             //        if (objUserManagementIDCViewTmp != null && !string.IsNullOrEmpty(objUserManagementIDCViewTmp.UserId))
             //        {
             //            var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
-            //            objUserManagementIDCUpd.Id = objUserManagementIDCViewTmp.Id;
-            //            objUserManagementIDCUpd.OrderNo = objUserManagementIDCViewTmp.OrderNo;
-            //            objUserManagementIDCUpd.FunctionType = objUserManagementIDCViewTmp.FunctionType;
-            //            objUserManagementIDCUpd.PosCode = objUserManagementIDCViewTmp.PosCode;
-            //            objUserManagementIDCUpd.PosName = objUserManagementIDCViewTmp.PosName;
-            //            objUserManagementIDCUpd.StaffId = objUserManagementIDCViewTmp.StaffId;
-            //            objUserManagementIDCUpd.StaffCode = objUserManagementIDCViewTmp.StaffCode;
-            //            objUserManagementIDCUpd.UserId = objUserManagementIDCViewTmp.UserId;
-            //            objUserManagementIDCUpd.NickName = objUserManagementIDCViewTmp.NickName;
-            //            objUserManagementIDCUpd.FirstName = objUserManagementIDCViewTmp.FirstName;
-            //            objUserManagementIDCUpd.LastName = objUserManagementIDCViewTmp.LastName;
-            //            objUserManagementIDCUpd.FullName = objUserManagementIDCViewTmp.FullName;
-            //            objUserManagementIDCUpd.EmailAddress = objUserManagementIDCViewTmp.EmailAddress;
-            //            objUserManagementIDCUpd.MobileNumber = objUserManagementIDCViewTmp.MobileNumber;
-            //            objUserManagementIDCUpd.DateOfBirth = objUserManagementIDCViewTmp.DateOfBirth;
-            //            objUserManagementIDCUpd.GroupName = objUserManagementIDCViewTmp.GroupName;
-            //            objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+            //            objTranspointWorkUpd.Id = objUserManagementIDCViewTmp.Id;
+            //            objTranspointWorkUpd.OrderNo = objUserManagementIDCViewTmp.OrderNo;
+            //            objTranspointWorkUpd.FunctionType = objUserManagementIDCViewTmp.FunctionType;
+            //            objTranspointWorkUpd.PosCode = objUserManagementIDCViewTmp.PosCode;
+            //            objTranspointWorkUpd.PosName = objUserManagementIDCViewTmp.PosName;
+            //            objTranspointWorkUpd.StaffId = objUserManagementIDCViewTmp.StaffId;
+            //            objTranspointWorkUpd.StaffCode = objUserManagementIDCViewTmp.StaffCode;
+            //            objTranspointWorkUpd.UserId = objUserManagementIDCViewTmp.UserId;
+            //            objTranspointWorkUpd.NickName = objUserManagementIDCViewTmp.NickName;
+            //            objTranspointWorkUpd.FirstName = objUserManagementIDCViewTmp.FirstName;
+            //            objTranspointWorkUpd.LastName = objUserManagementIDCViewTmp.LastName;
+            //            objTranspointWorkUpd.FullName = objUserManagementIDCViewTmp.FullName;
+            //            objTranspointWorkUpd.EmailAddress = objUserManagementIDCViewTmp.EmailAddress;
+            //            objTranspointWorkUpd.MobileNumber = objUserManagementIDCViewTmp.MobileNumber;
+            //            objTranspointWorkUpd.DateOfBirth = objUserManagementIDCViewTmp.DateOfBirth;
+            //            objTranspointWorkUpd.GroupName = objUserManagementIDCViewTmp.GroupName;
+            //            objTranspointWorkUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
 
-            //            objUserManagementIDCUpd.AuthType = objUserManagementIDCViewTmp.AuthType;
-            //            objUserManagementIDCUpd.UserType = objUserManagementIDCViewTmp.UserType;
-            //            objUserManagementIDCUpd.MailIdFlag = objUserManagementIDCViewTmp.MailIdFlag;
-            //            objUserManagementIDCUpd.AuthsecType = objUserManagementIDCViewTmp.AuthsecType;
-            //            objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCViewTmp.GroupName;
-            //            objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCViewTmp.PosCode;
-            //            objUserManagementIDCUpd.EffectiveDate = objUserManagementIDCViewTmp.EffectiveDate;
-            //            objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
-            //            objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //            objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
-            //            objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
-            //            objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCViewTmp.ExpiryDate;
-            //            objUserManagementIDCUpd.Ticket = string.IsNullOrEmpty(objUserManagementIDCViewTmp.Ticket) ? "" : objUserManagementIDCViewTmp.Ticket;
-            //            objUserManagementIDCUpd.Remark = objUserManagementIDCViewTmp.Remark;
-            //            objUserManagementIDCUpd.OrtherNotes = objUserManagementIDCViewTmp.OrtherNotes;
-            //            objUserManagementIDCUpd.Status = objUserManagementIDCViewTmp.Status;
-            //            objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
+            //            objTranspointWorkUpd.AuthType = objUserManagementIDCViewTmp.AuthType;
+            //            objTranspointWorkUpd.UserType = objUserManagementIDCViewTmp.UserType;
+            //            objTranspointWorkUpd.MailIdFlag = objUserManagementIDCViewTmp.MailIdFlag;
+            //            objTranspointWorkUpd.AuthsecType = objUserManagementIDCViewTmp.AuthsecType;
+            //            objTranspointWorkUpd.ExtraAttributeUserRole = objUserManagementIDCViewTmp.GroupName;
+            //            objTranspointWorkUpd.ExtraAttributeBranchCode = objUserManagementIDCViewTmp.PosCode;
+            //            objTranspointWorkUpd.EffectiveDate = objUserManagementIDCViewTmp.EffectiveDate;
+            //            objTranspointWorkUpd.BusinessDate = dBusinessDateIDCTmp.Date;
+            //            objTranspointWorkUpd.BusinessDateText = objTranspointWorkUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.SystemDate = dSystemDateIDCTmp.Date;
+            //            objTranspointWorkUpd.SystemDateText = objTranspointWorkUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.ExpiryDate = objUserManagementIDCViewTmp.ExpiryDate;
+            //            objTranspointWorkUpd.Ticket = string.IsNullOrEmpty(objUserManagementIDCViewTmp.Ticket) ? "" : objUserManagementIDCViewTmp.Ticket;
+            //            objTranspointWorkUpd.Remark = objUserManagementIDCViewTmp.Remark;
+            //            objTranspointWorkUpd.OrtherNotes = objUserManagementIDCViewTmp.OrtherNotes;
+            //            objTranspointWorkUpd.Status = objUserManagementIDCViewTmp.Status;
+            //            objTranspointWorkUpd.StatusText = StatusBusinessFlow.GetByValue(objTranspointWorkUpd.Status).Description;
 
-            //            objUserManagementIDCUpd.UserStatus = objUserManagementIDCViewTmp.UserStatus;
+            //            objTranspointWorkUpd.UserStatus = objUserManagementIDCViewTmp.UserStatus;
             //            if (objUserManagementIDCViewTmp.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //                objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+            //                objTranspointWorkUpd.UserStatusText = "Khóa (Đóng)";
             //            else if (objUserManagementIDCViewTmp.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //                objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+            //                objTranspointWorkUpd.UserStatusText = "Mở (Bình thường)";
             //            else if (objUserManagementIDCViewTmp.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //                objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-            //            else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+            //                objTranspointWorkUpd.UserStatusText = "Tạm khóa (Lock)";
+            //            else objTranspointWorkUpd.UserStatusText = "Không xác định";
 
-            //            objUserManagementIDCUpd.StatusUpdateCore = objUserManagementIDCViewTmp.StatusUpdateCore;
-            //            objUserManagementIDCUpd.SessionValReq = objUserManagementIDCViewTmp.SessionValReq;
-            //            objUserManagementIDCUpd.PrevStatus = objUserManagementIDCViewTmp.PrevStatus;
-            //            objUserManagementIDCUpd.ResponseAttributes = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ResponseAttributes) ? "" : objUserManagementIDCViewTmp.ResponseAttributes;
-            //            objUserManagementIDCUpd.CallApiStatus = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiStatus) ? "" : objUserManagementIDCViewTmp.CallApiStatus;
-            //            objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementIDCViewTmp.CallApiReqRecordSl;
-            //            objUserManagementIDCUpd.CallApiResponseCode = objUserManagementIDCViewTmp.CallApiResponseCode;
-            //            objUserManagementIDCUpd.CallApiResponseMsg = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiResponseMsg) ? "" : objUserManagementIDCViewTmp.CallApiResponseMsg;
+            //            objTranspointWorkUpd.StatusUpdateCore = objUserManagementIDCViewTmp.StatusUpdateCore;
+            //            objTranspointWorkUpd.SessionValReq = objUserManagementIDCViewTmp.SessionValReq;
+            //            objTranspointWorkUpd.PrevStatus = objUserManagementIDCViewTmp.PrevStatus;
+            //            objTranspointWorkUpd.ResponseAttributes = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ResponseAttributes) ? "" : objUserManagementIDCViewTmp.ResponseAttributes;
+            //            objTranspointWorkUpd.CallApiStatus = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiStatus) ? "" : objUserManagementIDCViewTmp.CallApiStatus;
+            //            objTranspointWorkUpd.CallApiReqRecordSl = objUserManagementIDCViewTmp.CallApiReqRecordSl;
+            //            objTranspointWorkUpd.CallApiResponseCode = objUserManagementIDCViewTmp.CallApiResponseCode;
+            //            objTranspointWorkUpd.CallApiResponseMsg = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiResponseMsg) ? "" : objUserManagementIDCViewTmp.CallApiResponseMsg;
 
-            //            objUserManagementIDCUpd.CreatedBy = objUserManagementIDCViewTmp.CreatedBy;
-            //            objUserManagementIDCUpd.CreatedDate = objUserManagementIDCViewTmp.CreatedDate;
-            //            objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCViewTmp.ModifiedBy;
-            //            objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCViewTmp.ModifiedDate;
-            //            objUserManagementIDCUpd.ApproverBy = objUserManagementIDCViewTmp.ApproverBy;
-            //            objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCViewTmp.ApprovalDate;
-            //            objUserManagementIDCUpd.FunctionTypeName = string.IsNullOrEmpty(objUserManagementIDCViewTmp.FunctionType) ? "" : FunctionTypeFlag.GetByCode(objUserManagementIDCViewTmp.FunctionType).Description;
+            //            objTranspointWorkUpd.CreatedBy = objUserManagementIDCViewTmp.CreatedBy;
+            //            objTranspointWorkUpd.CreatedDate = objUserManagementIDCViewTmp.CreatedDate;
+            //            objTranspointWorkUpd.ModifiedBy = objUserManagementIDCViewTmp.ModifiedBy;
+            //            objTranspointWorkUpd.ModifiedDate = objUserManagementIDCViewTmp.ModifiedDate;
+            //            objTranspointWorkUpd.ApproverBy = objUserManagementIDCViewTmp.ApproverBy;
+            //            objTranspointWorkUpd.ApprovalDate = objUserManagementIDCViewTmp.ApprovalDate;
+            //            objTranspointWorkUpd.FunctionTypeName = string.IsNullOrEmpty(objUserManagementIDCViewTmp.FunctionType) ? "" : FunctionTypeFlag.GetByCode(objUserManagementIDCViewTmp.FunctionType).Description;
             //            if (listRoleUsers != null && listRoleUsers.Count != 0)
             //            {
-            //                objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementIDCViewTmp.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //                objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementIDCViewTmp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //                objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCViewTmp.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //                objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCViewTmp.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //                objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCViewTmp.RoleToTransferCashDescription;
-            //                objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCViewTmp.GroupName} - {objUserManagementIDCViewTmp.GroupNameText}";
+            //                objTranspointWorkUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementIDCViewTmp.GroupName).Select(s => s.ShortName).FirstOrDefault();
+            //                objTranspointWorkUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementIDCViewTmp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+            //                objTranspointWorkUpd.RoleToTransferCashName = (objUserManagementIDCViewTmp.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+            //                objTranspointWorkUpd.RoleToTransferCashDescription = (objUserManagementIDCViewTmp.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+            //                objTranspointWorkUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCViewTmp.RoleToTransferCashDescription;
+            //                objTranspointWorkUpd.GroupNameDetail = $"{objUserManagementIDCViewTmp.GroupName} - {objUserManagementIDCViewTmp.GroupNameText}";
             //            }
-            //            objUserManagementIDCUpd.StartDate = objUserManagementIDCViewTmp.StartDate;
-            //            objUserManagementIDCUpd.StartDateOld = (objUserManagementIDCViewTmp.StartDateOld.Year <= 1900) ? objUserManagementIDCViewTmp.StartDate : objUserManagementIDCViewTmp.StartDateOld;
-            //            objUserManagementIDCUpd.StartDateText = objUserManagementIDCViewTmp.StartDate.ToString(FormatParameters.FORMAT_DATE);
-            //            objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
-            //            objUserManagementIDCUpd.IpSetCode = objUserManagementIDCViewTmp.IpSetCode;
-            //            objUserManagementIDCUpd.IpSetDetail = objUserManagementIDCViewTmp.IpSetDetail;
-            //            objUserManagementIDCUpd.RestrictionFlag = objUserManagementIDCViewTmp.RestrictionFlag;
-            //            objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
-            //            objUserManagementIDCUpd.SubType = string.IsNullOrEmpty(objUserManagementIDCViewTmp.SubType) ? DefaultValue.UserIDC_SubType : objUserManagementIDCViewTmp.SubType;
-            //            objUserManagementIDCUpd.AuthsecTypeName = objUserManagementIDCViewTmp.AuthsecTypeName;
-            //            objUserManagementIDCUpd.MailIdFlagName = objUserManagementIDCViewTmp.MailIdFlagName;
-            //            objUserManagementIDCUpd.CallApiAutoGeneratedPassword = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiAutoGeneratedPassword) ? "" : objUserManagementIDCViewTmp.CallApiAutoGeneratedPassword;
-            //            objUserManagementIDCUpd.GroupNameOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.GroupNameOld) ? objUserManagementIDCViewTmp.GroupName : objUserManagementIDCViewTmp.GroupNameOld;
-            //            objUserManagementIDCUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCViewTmp.GroupNameOldText) ? objUserManagementIDCViewTmp.GroupNameText : objUserManagementIDCViewTmp.GroupNameOldText;
-                        
-            //            objUserManagementIDCUpd.PosCodeOld = string.IsNullOrEmpty(objUserManagementIDCUpd.PosCodeOld) ? objUserManagementIDCUpd.PosCode : objUserManagementIDCUpd.PosCodeOld;
-            //            objUserManagementIDCUpd.PosNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.PosNameOld) ? objUserManagementIDCUpd.PosName : objUserManagementIDCUpd.PosNameOld;
-            //            objUserManagementIDCUpd.FirstNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.FirstNameOld) ? objUserManagementIDCUpd.FirstName : objUserManagementIDCUpd.FirstNameOld;
-            //            objUserManagementIDCUpd.LastNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.LastNameOld) ? objUserManagementIDCUpd.LastName : objUserManagementIDCUpd.LastNameOld;
-            //            objUserManagementIDCUpd.FullNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.FullNameOld) ? objUserManagementIDCUpd.FullName : objUserManagementIDCUpd.FullNameOld;
-            //            objUserManagementIDCUpd.EmailAddressOld = string.IsNullOrEmpty(objUserManagementIDCUpd.EmailAddressOld) ? objUserManagementIDCUpd.EmailAddress : objUserManagementIDCUpd.EmailAddressOld;
-            //            objUserManagementIDCUpd.MobileNumberOld = string.IsNullOrEmpty(objUserManagementIDCUpd.MobileNumberOld) ? objUserManagementIDCUpd.MobileNumber : objUserManagementIDCUpd.MobileNumberOld;
-            //            objUserManagementIDCUpd.DateOfBirthOld = (objUserManagementIDCUpd.DateOfBirthOld.Year <= 1900) ? objUserManagementIDCUpd.DateOfBirth : objUserManagementIDCUpd.DateOfBirthOld;
+            //            objTranspointWorkUpd.StartDate = objUserManagementIDCViewTmp.StartDate;
+            //            objTranspointWorkUpd.StartDateOld = (objUserManagementIDCViewTmp.StartDateOld.Year <= 1900) ? objUserManagementIDCViewTmp.StartDate : objUserManagementIDCViewTmp.StartDateOld;
+            //            objTranspointWorkUpd.StartDateText = objUserManagementIDCViewTmp.StartDate.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.StartDateOldText = objTranspointWorkUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.IpSetCode = objUserManagementIDCViewTmp.IpSetCode;
+            //            objTranspointWorkUpd.IpSetDetail = objUserManagementIDCViewTmp.IpSetDetail;
+            //            objTranspointWorkUpd.RestrictionFlag = objUserManagementIDCViewTmp.RestrictionFlag;
+            //            objTranspointWorkUpd.RestrictionFlagCheck = (objTranspointWorkUpd.RestrictionFlag == 1) ? true : false;
+            //            objTranspointWorkUpd.SubType = string.IsNullOrEmpty(objUserManagementIDCViewTmp.SubType) ? DefaultValue.UserIDC_SubType : objUserManagementIDCViewTmp.SubType;
+            //            objTranspointWorkUpd.AuthsecTypeName = objUserManagementIDCViewTmp.AuthsecTypeName;
+            //            objTranspointWorkUpd.MailIdFlagName = objUserManagementIDCViewTmp.MailIdFlagName;
+            //            objTranspointWorkUpd.CallApiAutoGeneratedPassword = string.IsNullOrEmpty(objUserManagementIDCViewTmp.CallApiAutoGeneratedPassword) ? "" : objUserManagementIDCViewTmp.CallApiAutoGeneratedPassword;
+            //            objTranspointWorkUpd.GroupNameOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.GroupNameOld) ? objUserManagementIDCViewTmp.GroupName : objUserManagementIDCViewTmp.GroupNameOld;
+            //            objTranspointWorkUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCViewTmp.GroupNameOldText) ? objUserManagementIDCViewTmp.GroupNameText : objUserManagementIDCViewTmp.GroupNameOldText;
 
-            //            objUserManagementIDCUpd.GenderCode = objUserManagementIDCViewTmp.GenderCode;
-            //            objUserManagementIDCUpd.GenderText = objUserManagementIDCViewTmp.GenderText;
-            //            objUserManagementIDCUpd.StaffPosCode = objUserManagementIDCViewTmp.StaffPosCode;
-            //            objUserManagementIDCUpd.StaffPosName = objUserManagementIDCViewTmp.StaffPosName;
-            //            objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementIDCViewTmp.StaffDepartmentCode;
-            //            objUserManagementIDCUpd.StaffDepartmentName = objUserManagementIDCViewTmp.StaffDepartmentName;
-            //            objUserManagementIDCUpd.StaffPositionCode = objUserManagementIDCViewTmp.StaffPositionCode;
-            //            objUserManagementIDCUpd.StaffPositionName = objUserManagementIDCViewTmp.StaffPositionName;
-            //            objUserManagementIDCUpd.StaffEmail = objUserManagementIDCViewTmp.StaffEmail;
-            //            objUserManagementIDCUpd.StaffMobileNo = objUserManagementIDCViewTmp.StaffMobileNo;
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCViewTmp.RoleToTransferCashDescriptionDetailOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashDescriptionOld) ? objUserManagementIDCViewTmp.RoleToTransferCashDescription : objUserManagementIDCViewTmp.RoleToTransferCashDescriptionOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashNameOld= string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashNameOld) ? objUserManagementIDCViewTmp.RoleToTransferCashName : objUserManagementIDCViewTmp.RoleToTransferCashNameOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashValueOld= string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashValueOld) ? objUserManagementIDCViewTmp.RoleToTransferCashValue : objUserManagementIDCViewTmp.RoleToTransferCashValueOld;
-            //            objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ListFileId) ? "" : objUserManagementIDCViewTmp.ListFileId;
-            //            objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ReasonReject) ? "" : objUserManagementIDCViewTmp.ReasonReject;
+            //            objTranspointWorkUpd.PosCodeOld = string.IsNullOrEmpty(objTranspointWorkUpd.PosCodeOld) ? objTranspointWorkUpd.PosCode : objTranspointWorkUpd.PosCodeOld;
+            //            objTranspointWorkUpd.PosNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.PosNameOld) ? objTranspointWorkUpd.PosName : objTranspointWorkUpd.PosNameOld;
+            //            objTranspointWorkUpd.FirstNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.FirstNameOld) ? objTranspointWorkUpd.FirstName : objTranspointWorkUpd.FirstNameOld;
+            //            objTranspointWorkUpd.LastNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.LastNameOld) ? objTranspointWorkUpd.LastName : objTranspointWorkUpd.LastNameOld;
+            //            objTranspointWorkUpd.FullNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.FullNameOld) ? objTranspointWorkUpd.FullName : objTranspointWorkUpd.FullNameOld;
+            //            objTranspointWorkUpd.EmailAddressOld = string.IsNullOrEmpty(objTranspointWorkUpd.EmailAddressOld) ? objTranspointWorkUpd.EmailAddress : objTranspointWorkUpd.EmailAddressOld;
+            //            objTranspointWorkUpd.MobileNumberOld = string.IsNullOrEmpty(objTranspointWorkUpd.MobileNumberOld) ? objTranspointWorkUpd.MobileNumber : objTranspointWorkUpd.MobileNumberOld;
+            //            objTranspointWorkUpd.DateOfBirthOld = (objTranspointWorkUpd.DateOfBirthOld.Year <= 1900) ? objTranspointWorkUpd.DateOfBirth : objTranspointWorkUpd.DateOfBirthOld;
+
+            //            objTranspointWorkUpd.GenderCode = objUserManagementIDCViewTmp.GenderCode;
+            //            objTranspointWorkUpd.GenderText = objUserManagementIDCViewTmp.GenderText;
+            //            objTranspointWorkUpd.StaffPosCode = objUserManagementIDCViewTmp.StaffPosCode;
+            //            objTranspointWorkUpd.StaffPosName = objUserManagementIDCViewTmp.StaffPosName;
+            //            objTranspointWorkUpd.StaffDepartmentCode = objUserManagementIDCViewTmp.StaffDepartmentCode;
+            //            objTranspointWorkUpd.StaffDepartmentName = objUserManagementIDCViewTmp.StaffDepartmentName;
+            //            objTranspointWorkUpd.StaffPositionCode = objUserManagementIDCViewTmp.StaffPositionCode;
+            //            objTranspointWorkUpd.StaffPositionName = objUserManagementIDCViewTmp.StaffPositionName;
+            //            objTranspointWorkUpd.StaffEmail = objUserManagementIDCViewTmp.StaffEmail;
+            //            objTranspointWorkUpd.StaffMobileNo = objUserManagementIDCViewTmp.StaffMobileNo;
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashDescriptionDetailOld) ? objTranspointWorkUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCViewTmp.RoleToTransferCashDescriptionDetailOld;
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashDescriptionOld) ? objUserManagementIDCViewTmp.RoleToTransferCashDescription : objUserManagementIDCViewTmp.RoleToTransferCashDescriptionOld;
+            //            objTranspointWorkUpd.RoleToTransferCashNameOld= string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashNameOld) ? objUserManagementIDCViewTmp.RoleToTransferCashName : objUserManagementIDCViewTmp.RoleToTransferCashNameOld;
+            //            objTranspointWorkUpd.RoleToTransferCashValueOld= string.IsNullOrEmpty(objUserManagementIDCViewTmp.RoleToTransferCashValueOld) ? objUserManagementIDCViewTmp.RoleToTransferCashValue : objUserManagementIDCViewTmp.RoleToTransferCashValueOld;
+            //            objTranspointWorkUpd.ListFileId = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ListFileId) ? "" : objUserManagementIDCViewTmp.ListFileId;
+            //            objTranspointWorkUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementIDCViewTmp.ReasonReject) ? "" : objUserManagementIDCViewTmp.ReasonReject;
             //        }
             //        #endregion
             //    }
@@ -490,129 +460,129 @@ namespace VBSPOSS.Controllers
             //        {
             //            var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
 
-            //            objUserManagementIDCUpd.Id = objUserManagementIDCTemp01.Id;
-            //            objUserManagementIDCUpd.OrderNo = 1;
-            //            objUserManagementIDCUpd.FunctionType = objUserManagementIDCTemp01.FunctionType;
-            //            objUserManagementIDCUpd.FunctionTypeName = objUserManagementIDCTemp01.FunctionTypeName;
+            //            objTranspointWorkUpd.Id = objUserManagementIDCTemp01.Id;
+            //            objTranspointWorkUpd.OrderNo = 1;
+            //            objTranspointWorkUpd.FunctionType = objUserManagementIDCTemp01.FunctionType;
+            //            objTranspointWorkUpd.FunctionTypeName = objUserManagementIDCTemp01.FunctionTypeName;
 
-            //            objUserManagementIDCUpd.PosCode = objUserManagementIDCTemp01.PosCode;
-            //            objUserManagementIDCUpd.PosName = objUserManagementIDCTemp01.PosName;
-            //            objUserManagementIDCUpd.StaffId = objUserManagementIDCTemp01.StaffId;
-            //            objUserManagementIDCUpd.StaffCode = objUserManagementIDCTemp01.StaffCode;
-            //            objUserManagementIDCUpd.UserId = objUserManagementIDCTemp01.UserId;
-            //            objUserManagementIDCUpd.NickName = objUserManagementIDCTemp01.NickName;
-            //            objUserManagementIDCUpd.FirstName = objUserManagementIDCTemp01.FirstName;
-            //            objUserManagementIDCUpd.LastName = objUserManagementIDCTemp01.LastName;
-            //            objUserManagementIDCUpd.FullName = objUserManagementIDCTemp01.FullName;
-            //            objUserManagementIDCUpd.EmailAddress = objUserManagementIDCTemp01.EmailAddress;
-            //            objUserManagementIDCUpd.MobileNumber = objUserManagementIDCTemp01.MobileNumber;
-            //            objUserManagementIDCUpd.DateOfBirth = objUserManagementIDCTemp01.DateOfBirth;
-            //            objUserManagementIDCUpd.GroupName = objUserManagementIDCTemp01.GroupName;
-            //            objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+            //            objTranspointWorkUpd.PosCode = objUserManagementIDCTemp01.PosCode;
+            //            objTranspointWorkUpd.PosName = objUserManagementIDCTemp01.PosName;
+            //            objTranspointWorkUpd.StaffId = objUserManagementIDCTemp01.StaffId;
+            //            objTranspointWorkUpd.StaffCode = objUserManagementIDCTemp01.StaffCode;
+            //            objTranspointWorkUpd.UserId = objUserManagementIDCTemp01.UserId;
+            //            objTranspointWorkUpd.NickName = objUserManagementIDCTemp01.NickName;
+            //            objTranspointWorkUpd.FirstName = objUserManagementIDCTemp01.FirstName;
+            //            objTranspointWorkUpd.LastName = objUserManagementIDCTemp01.LastName;
+            //            objTranspointWorkUpd.FullName = objUserManagementIDCTemp01.FullName;
+            //            objTranspointWorkUpd.EmailAddress = objUserManagementIDCTemp01.EmailAddress;
+            //            objTranspointWorkUpd.MobileNumber = objUserManagementIDCTemp01.MobileNumber;
+            //            objTranspointWorkUpd.DateOfBirth = objUserManagementIDCTemp01.DateOfBirth;
+            //            objTranspointWorkUpd.GroupName = objUserManagementIDCTemp01.GroupName;
+            //            objTranspointWorkUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
 
-            //            objUserManagementIDCUpd.AuthType = objUserManagementIDCTemp01.AuthType;
-            //            objUserManagementIDCUpd.UserType = objUserManagementIDCTemp01.UserType;
-            //            objUserManagementIDCUpd.MailIdFlag = objUserManagementIDCTemp01.MailIdFlag;
-            //            objUserManagementIDCUpd.AuthsecType = objUserManagementIDCTemp01.AuthsecType;
-            //            objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementIDCTemp01.GroupName;
-            //            objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementIDCTemp01.PosCode;
-            //            objUserManagementIDCUpd.EffectiveDate = objUserManagementIDCTemp01.EffectiveDate;
-            //            objUserManagementIDCUpd.BusinessDate = objUserManagementIDCTemp01.BusinessDate;
-            //            objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //            objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
-            //            objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE); 
-            //            objUserManagementIDCUpd.ExpiryDate = objUserManagementIDCTemp01.ExpiryDate;
-            //            objUserManagementIDCUpd.Ticket = objUserManagementIDCTemp01.Ticket;
-            //            objUserManagementIDCUpd.Remark = objUserManagementIDCTemp01.Remark;
-            //            objUserManagementIDCUpd.OrtherNotes = objUserManagementIDCTemp01.OrtherNotes;
-            //            objUserManagementIDCUpd.Status = objUserManagementIDCTemp01.Status;
-            //            objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
-            //            objUserManagementIDCUpd.UserStatus = objUserManagementIDCTemp01.UserStatus;
+            //            objTranspointWorkUpd.AuthType = objUserManagementIDCTemp01.AuthType;
+            //            objTranspointWorkUpd.UserType = objUserManagementIDCTemp01.UserType;
+            //            objTranspointWorkUpd.MailIdFlag = objUserManagementIDCTemp01.MailIdFlag;
+            //            objTranspointWorkUpd.AuthsecType = objUserManagementIDCTemp01.AuthsecType;
+            //            objTranspointWorkUpd.ExtraAttributeUserRole = objUserManagementIDCTemp01.GroupName;
+            //            objTranspointWorkUpd.ExtraAttributeBranchCode = objUserManagementIDCTemp01.PosCode;
+            //            objTranspointWorkUpd.EffectiveDate = objUserManagementIDCTemp01.EffectiveDate;
+            //            objTranspointWorkUpd.BusinessDate = objUserManagementIDCTemp01.BusinessDate;
+            //            objTranspointWorkUpd.BusinessDateText = objTranspointWorkUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.SystemDate = dSystemDateIDCTmp.Date;
+            //            objTranspointWorkUpd.SystemDateText = objTranspointWorkUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE); 
+            //            objTranspointWorkUpd.ExpiryDate = objUserManagementIDCTemp01.ExpiryDate;
+            //            objTranspointWorkUpd.Ticket = objUserManagementIDCTemp01.Ticket;
+            //            objTranspointWorkUpd.Remark = objUserManagementIDCTemp01.Remark;
+            //            objTranspointWorkUpd.OrtherNotes = objUserManagementIDCTemp01.OrtherNotes;
+            //            objTranspointWorkUpd.Status = objUserManagementIDCTemp01.Status;
+            //            objTranspointWorkUpd.StatusText = StatusBusinessFlow.GetByValue(objTranspointWorkUpd.Status).Description;
+            //            objTranspointWorkUpd.UserStatus = objUserManagementIDCTemp01.UserStatus;
             //            if (objUserManagementIDCTemp01.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //                objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+            //                objTranspointWorkUpd.UserStatusText = "Khóa (Đóng)";
             //            else if (objUserManagementIDCTemp01.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //                objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+            //                objTranspointWorkUpd.UserStatusText = "Mở (Bình thường)";
             //            else if (objUserManagementIDCTemp01.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //                objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-            //            else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+            //                objTranspointWorkUpd.UserStatusText = "Tạm khóa (Lock)";
+            //            else objTranspointWorkUpd.UserStatusText = "Không xác định";
 
-            //            objUserManagementIDCUpd.StatusUpdateCore = objUserManagementIDCTemp01.StatusUpdateCore;
-            //            objUserManagementIDCUpd.SessionValReq = objUserManagementIDCTemp01.SessionValReq;
-            //            objUserManagementIDCUpd.PrevStatus = objUserManagementIDCTemp01.PrevStatus;
-            //            objUserManagementIDCUpd.ResponseAttributes = objUserManagementIDCTemp01.ResponseAttributes;
-            //            objUserManagementIDCUpd.CallApiStatus = objUserManagementIDCTemp01.CallApiStatus;
-            //            objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementIDCTemp01.CallApiReqRecordSl;
-            //            objUserManagementIDCUpd.CallApiResponseCode = objUserManagementIDCTemp01.CallApiResponseCode;
-            //            objUserManagementIDCUpd.CallApiResponseMsg = objUserManagementIDCTemp01.CallApiResponseMsg;
+            //            objTranspointWorkUpd.StatusUpdateCore = objUserManagementIDCTemp01.StatusUpdateCore;
+            //            objTranspointWorkUpd.SessionValReq = objUserManagementIDCTemp01.SessionValReq;
+            //            objTranspointWorkUpd.PrevStatus = objUserManagementIDCTemp01.PrevStatus;
+            //            objTranspointWorkUpd.ResponseAttributes = objUserManagementIDCTemp01.ResponseAttributes;
+            //            objTranspointWorkUpd.CallApiStatus = objUserManagementIDCTemp01.CallApiStatus;
+            //            objTranspointWorkUpd.CallApiReqRecordSl = objUserManagementIDCTemp01.CallApiReqRecordSl;
+            //            objTranspointWorkUpd.CallApiResponseCode = objUserManagementIDCTemp01.CallApiResponseCode;
+            //            objTranspointWorkUpd.CallApiResponseMsg = objUserManagementIDCTemp01.CallApiResponseMsg;
 
-            //            objUserManagementIDCUpd.CreatedBy = objUserManagementIDCTemp01.CreatedBy;
-            //            objUserManagementIDCUpd.CreatedDate = objUserManagementIDCTemp01.CreatedDate;
-            //            objUserManagementIDCUpd.ModifiedBy = objUserManagementIDCTemp01.ModifiedBy;
-            //            objUserManagementIDCUpd.ModifiedDate = objUserManagementIDCTemp01.ModifiedDate;
-            //            objUserManagementIDCUpd.ApproverBy = objUserManagementIDCTemp01.ApproverBy;
-            //            objUserManagementIDCUpd.ApprovalDate = objUserManagementIDCTemp01.ApprovalDate;
+            //            objTranspointWorkUpd.CreatedBy = objUserManagementIDCTemp01.CreatedBy;
+            //            objTranspointWorkUpd.CreatedDate = objUserManagementIDCTemp01.CreatedDate;
+            //            objTranspointWorkUpd.ModifiedBy = objUserManagementIDCTemp01.ModifiedBy;
+            //            objTranspointWorkUpd.ModifiedDate = objUserManagementIDCTemp01.ModifiedDate;
+            //            objTranspointWorkUpd.ApproverBy = objUserManagementIDCTemp01.ApproverBy;
+            //            objTranspointWorkUpd.ApprovalDate = objUserManagementIDCTemp01.ApprovalDate;
 
             //            if (listRoleUsers != null && listRoleUsers.Count != 0)
             //            {
-            //                objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //                objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //                objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //                objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //                objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //                objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
+            //                objTranspointWorkUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupName).Select(s => s.ShortName).FirstOrDefault();
+            //                objTranspointWorkUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+            //                objTranspointWorkUpd.RoleToTransferCashName = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+            //                objTranspointWorkUpd.RoleToTransferCashDescription = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+            //                objTranspointWorkUpd.RoleToTransferCashDescriptionDetail = objTranspointWorkUpd.RoleToTransferCashDescription;
+            //                objTranspointWorkUpd.GroupNameDetail = $"{objTranspointWorkUpd.GroupName} - {objTranspointWorkUpd.GroupNameText}";
 
-            //                objUserManagementIDCUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
+            //                objTranspointWorkUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementIDCTemp01.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
 
             //            }
-            //            objUserManagementIDCUpd.StartDate = objUserManagementIDCTemp01.StartDate;
-            //            objUserManagementIDCUpd.IpSetCode = objUserManagementIDCTemp01.IpSetCode;
-            //            objUserManagementIDCUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementIDCTemp01.IpSetDetail) ? "" : objUserManagementIDCTemp01.IpSetDetail;
-            //            objUserManagementIDCUpd.RestrictionFlag = 0;
-            //            objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
+            //            objTranspointWorkUpd.StartDate = objUserManagementIDCTemp01.StartDate;
+            //            objTranspointWorkUpd.IpSetCode = objUserManagementIDCTemp01.IpSetCode;
+            //            objTranspointWorkUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementIDCTemp01.IpSetDetail) ? "" : objUserManagementIDCTemp01.IpSetDetail;
+            //            objTranspointWorkUpd.RestrictionFlag = 0;
+            //            objTranspointWorkUpd.RestrictionFlagCheck = (objTranspointWorkUpd.RestrictionFlag == 1) ? true : false;
 
-            //            objUserManagementIDCUpd.SubType = objUserManagementIDCTemp01.SubType;
-            //            objUserManagementIDCUpd.AuthsecTypeName = objUserManagementIDCTemp01.AuthsecTypeName;
-            //            objUserManagementIDCUpd.MailIdFlagName = objUserManagementIDCTemp01.MailIdFlagName;
-            //            objUserManagementIDCUpd.CallApiAutoGeneratedPassword = objUserManagementIDCTemp01.CallApiAutoGeneratedPassword;
+            //            objTranspointWorkUpd.SubType = objUserManagementIDCTemp01.SubType;
+            //            objTranspointWorkUpd.AuthsecTypeName = objUserManagementIDCTemp01.AuthsecTypeName;
+            //            objTranspointWorkUpd.MailIdFlagName = objUserManagementIDCTemp01.MailIdFlagName;
+            //            objTranspointWorkUpd.CallApiAutoGeneratedPassword = objUserManagementIDCTemp01.CallApiAutoGeneratedPassword;
 
-            //            objUserManagementIDCUpd.PosCodeOld = objUserManagementIDCTemp01.PosCodeOld;
-            //            objUserManagementIDCUpd.PosNameOld = objUserManagementIDCTemp01.PosNameOld;
-            //            objUserManagementIDCUpd.GroupNameOld = objUserManagementIDCTemp01.GroupNameOld;
-            //            objUserManagementIDCUpd.FirstNameOld = objUserManagementIDCTemp01.FirstNameOld;
-            //            objUserManagementIDCUpd.LastNameOld = objUserManagementIDCTemp01.LastNameOld;
-            //            objUserManagementIDCUpd.FullNameOld = objUserManagementIDCTemp01.FullNameOld;
-            //            objUserManagementIDCUpd.EmailAddressOld = objUserManagementIDCTemp01.EmailAddressOld;
-            //            objUserManagementIDCUpd.MobileNumberOld = objUserManagementIDCTemp01.MobileNumberOld;
-            //            objUserManagementIDCUpd.DateOfBirthOld = objUserManagementIDCTemp01.DateOfBirthOld;
-            //            objUserManagementIDCUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCUpd.GroupNameOldText) ? objUserManagementIDCUpd.GroupNameOldText : objUserManagementIDCUpd.GroupNameOldText;
-            //            objUserManagementIDCUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashValueOld) ? objUserManagementIDCUpd.RoleToTransferCashValue : objUserManagementIDCUpd.RoleToTransferCashValueOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashNameOld) ? objUserManagementIDCUpd.RoleToTransferCashName : objUserManagementIDCUpd.RoleToTransferCashNameOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionOld) ? objUserManagementIDCUpd.RoleToTransferCashDescription : objUserManagementIDCUpd.RoleToTransferCashDescriptionOld;
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld;
-            //            objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
-            //            objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.PosCodeOld = objUserManagementIDCTemp01.PosCodeOld;
+            //            objTranspointWorkUpd.PosNameOld = objUserManagementIDCTemp01.PosNameOld;
+            //            objTranspointWorkUpd.GroupNameOld = objUserManagementIDCTemp01.GroupNameOld;
+            //            objTranspointWorkUpd.FirstNameOld = objUserManagementIDCTemp01.FirstNameOld;
+            //            objTranspointWorkUpd.LastNameOld = objUserManagementIDCTemp01.LastNameOld;
+            //            objTranspointWorkUpd.FullNameOld = objUserManagementIDCTemp01.FullNameOld;
+            //            objTranspointWorkUpd.EmailAddressOld = objUserManagementIDCTemp01.EmailAddressOld;
+            //            objTranspointWorkUpd.MobileNumberOld = objUserManagementIDCTemp01.MobileNumberOld;
+            //            objTranspointWorkUpd.DateOfBirthOld = objUserManagementIDCTemp01.DateOfBirthOld;
+            //            objTranspointWorkUpd.GroupNameOldText = string.IsNullOrEmpty(objTranspointWorkUpd.GroupNameOldText) ? objTranspointWorkUpd.GroupNameOldText : objTranspointWorkUpd.GroupNameOldText;
+            //            objTranspointWorkUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashValueOld) ? objTranspointWorkUpd.RoleToTransferCashValue : objTranspointWorkUpd.RoleToTransferCashValueOld;
+            //            objTranspointWorkUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashNameOld) ? objTranspointWorkUpd.RoleToTransferCashName : objTranspointWorkUpd.RoleToTransferCashNameOld;
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionOld) ? objTranspointWorkUpd.RoleToTransferCashDescription : objTranspointWorkUpd.RoleToTransferCashDescriptionOld;
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld) ? objTranspointWorkUpd.RoleToTransferCashDescriptionDetail : objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld;
+            //            objTranspointWorkUpd.StartDateOld = objTranspointWorkUpd.StartDate;
+            //            objTranspointWorkUpd.StartDateOldText = objTranspointWorkUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
 
-            //            //objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.BusinessDate;
-            //            objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.ExpiryDate;
-            //            objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
-            //            int numberDays = (objUserManagementIDCUpd.ExpiryDate - objUserManagementIDCUpd.StartDate).Days;
+            //            //objTranspointWorkUpd.StartDate = objTranspointWorkUpd.BusinessDate;
+            //            objTranspointWorkUpd.EndDateChangeRole = objTranspointWorkUpd.ExpiryDate;
+            //            objTranspointWorkUpd.ChoiceEndDateChangeRole = 0;
+            //            int numberDays = (objTranspointWorkUpd.ExpiryDate - objTranspointWorkUpd.StartDate).Days;
             //            if (numberDays <= 90)
-            //                objUserManagementIDCUpd.ChoiceEndDateChangeRole = 1;
+            //                objTranspointWorkUpd.ChoiceEndDateChangeRole = 1;
 
-            //            objUserManagementIDCUpd.GenderCode = objUserManagementIDCTemp01.GenderCode;
-            //            objUserManagementIDCUpd.GenderText = objUserManagementIDCTemp01.GenderText;
-            //            objUserManagementIDCUpd.StaffPosCode = objUserManagementIDCTemp01.StaffPosCode;
-            //            objUserManagementIDCUpd.StaffPosName = objUserManagementIDCTemp01.StaffPosName;
-            //            objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementIDCTemp01.StaffDepartmentCode;
-            //            objUserManagementIDCUpd.StaffDepartmentName = objUserManagementIDCTemp01.StaffDepartmentName;
-            //            objUserManagementIDCUpd.StaffPositionCode = objUserManagementIDCTemp01.StaffPositionCode;
-            //            objUserManagementIDCUpd.StaffPositionName = objUserManagementIDCTemp01.StaffPositionName;
-            //            objUserManagementIDCUpd.StaffEmail = objUserManagementIDCTemp01.StaffEmail;
-            //            objUserManagementIDCUpd.StaffMobileNo = objUserManagementIDCTemp01.StaffMobileNo;
+            //            objTranspointWorkUpd.GenderCode = objUserManagementIDCTemp01.GenderCode;
+            //            objTranspointWorkUpd.GenderText = objUserManagementIDCTemp01.GenderText;
+            //            objTranspointWorkUpd.StaffPosCode = objUserManagementIDCTemp01.StaffPosCode;
+            //            objTranspointWorkUpd.StaffPosName = objUserManagementIDCTemp01.StaffPosName;
+            //            objTranspointWorkUpd.StaffDepartmentCode = objUserManagementIDCTemp01.StaffDepartmentCode;
+            //            objTranspointWorkUpd.StaffDepartmentName = objUserManagementIDCTemp01.StaffDepartmentName;
+            //            objTranspointWorkUpd.StaffPositionCode = objUserManagementIDCTemp01.StaffPositionCode;
+            //            objTranspointWorkUpd.StaffPositionName = objUserManagementIDCTemp01.StaffPositionName;
+            //            objTranspointWorkUpd.StaffEmail = objUserManagementIDCTemp01.StaffEmail;
+            //            objTranspointWorkUpd.StaffMobileNo = objUserManagementIDCTemp01.StaffMobileNo;
             //            //Lấy theo QLNS khi thay đổi thông tin người dùng
-            //            objUserManagementIDCUpd.EmailAddress = objUserManagementIDCTemp01.StaffEmail;
-            //            objUserManagementIDCUpd.MobileNumber = objUserManagementIDCTemp01.StaffMobileNo;
-            //            objUserManagementIDCUpd.ExistsInCore = objUserManagementIDCTemp01.ExistsInCore;
+            //            objTranspointWorkUpd.EmailAddress = objUserManagementIDCTemp01.StaffEmail;
+            //            objTranspointWorkUpd.MobileNumber = objUserManagementIDCTemp01.StaffMobileNo;
+            //            objTranspointWorkUpd.ExistsInCore = objUserManagementIDCTemp01.ExistsInCore;
             //        }
 
             //        #endregion
@@ -629,127 +599,127 @@ namespace VBSPOSS.Controllers
             //    {
             //        var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
 
-            //        objUserManagementIDCUpd.Id = 0;// objUserManagementMTFind.Id;
-            //        objUserManagementIDCUpd.OrderNo = 1;
-            //        objUserManagementIDCUpd.FunctionType = "";
+            //        objTranspointWorkUpd.Id = 0;// objUserManagementMTFind.Id;
+            //        objTranspointWorkUpd.OrderNo = 1;
+            //        objTranspointWorkUpd.FunctionType = "";
 
-            //        objUserManagementIDCUpd.PosCode = objUserManagementMTFind.PosCode;
-            //        objUserManagementIDCUpd.PosName = objUserManagementMTFind.PosName;
-            //        objUserManagementIDCUpd.StaffId = objUserManagementMTFind.StaffId;
-            //        objUserManagementIDCUpd.StaffCode = objUserManagementMTFind.StaffCode;
-            //        objUserManagementIDCUpd.UserId = objUserManagementMTFind.UserId;
-            //        objUserManagementIDCUpd.NickName = objUserManagementMTFind.NickName;
-            //        objUserManagementIDCUpd.FirstName = objUserManagementMTFind.FirstName;
-            //        objUserManagementIDCUpd.LastName = objUserManagementMTFind.LastName;
-            //        objUserManagementIDCUpd.FullName = objUserManagementMTFind.FullName;
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementMTFind.EmailAddress;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementMTFind.MobileNumber;
-            //        objUserManagementIDCUpd.DateOfBirth = objUserManagementMTFind.DateOfBirth;
-            //        objUserManagementIDCUpd.GroupName = objUserManagementMTFind.GroupName;
-            //        objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+            //        objTranspointWorkUpd.PosCode = objUserManagementMTFind.PosCode;
+            //        objTranspointWorkUpd.PosName = objUserManagementMTFind.PosName;
+            //        objTranspointWorkUpd.StaffId = objUserManagementMTFind.StaffId;
+            //        objTranspointWorkUpd.StaffCode = objUserManagementMTFind.StaffCode;
+            //        objTranspointWorkUpd.UserId = objUserManagementMTFind.UserId;
+            //        objTranspointWorkUpd.NickName = objUserManagementMTFind.NickName;
+            //        objTranspointWorkUpd.FirstName = objUserManagementMTFind.FirstName;
+            //        objTranspointWorkUpd.LastName = objUserManagementMTFind.LastName;
+            //        objTranspointWorkUpd.FullName = objUserManagementMTFind.FullName;
+            //        objTranspointWorkUpd.EmailAddress = objUserManagementMTFind.EmailAddress;
+            //        objTranspointWorkUpd.MobileNumber = objUserManagementMTFind.MobileNumber;
+            //        objTranspointWorkUpd.DateOfBirth = objUserManagementMTFind.DateOfBirth;
+            //        objTranspointWorkUpd.GroupName = objUserManagementMTFind.GroupName;
+            //        objTranspointWorkUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
 
-            //        objUserManagementIDCUpd.AuthType = objUserManagementMTFind.AuthType;
-            //        objUserManagementIDCUpd.UserType = objUserManagementMTFind.UserType;
-            //        objUserManagementIDCUpd.MailIdFlag = objUserManagementMTFind.MailIdFlag;
-            //        objUserManagementIDCUpd.AuthsecType = objUserManagementMTFind.AuthsecType;
-            //        objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementMTFind.GroupName;
-            //        objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementMTFind.PosCode;
-            //        objUserManagementIDCUpd.EffectiveDate = objUserManagementMTFind.EffectiveDate;
-            //        objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.ExpiryDate = objUserManagementMTFind.ExpiryDate;
-            //        objUserManagementIDCUpd.ExpiryDateOld = objUserManagementMTFind.ExpiryDate;
-            //        objUserManagementIDCUpd.ExpiryDateOldText = objUserManagementMTFind.ExpiryDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.Ticket = "";
-            //        objUserManagementIDCUpd.Remark = "";
-            //        objUserManagementIDCUpd.OrtherNotes = "";
-            //        objUserManagementIDCUpd.Status = StatusBusinessFlow.Status_Created.Value;
-            //        objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
+            //        objTranspointWorkUpd.AuthType = objUserManagementMTFind.AuthType;
+            //        objTranspointWorkUpd.UserType = objUserManagementMTFind.UserType;
+            //        objTranspointWorkUpd.MailIdFlag = objUserManagementMTFind.MailIdFlag;
+            //        objTranspointWorkUpd.AuthsecType = objUserManagementMTFind.AuthsecType;
+            //        objTranspointWorkUpd.ExtraAttributeUserRole = objUserManagementMTFind.GroupName;
+            //        objTranspointWorkUpd.ExtraAttributeBranchCode = objUserManagementMTFind.PosCode;
+            //        objTranspointWorkUpd.EffectiveDate = objUserManagementMTFind.EffectiveDate;
+            //        objTranspointWorkUpd.BusinessDate = dBusinessDateIDCTmp.Date;
+            //        objTranspointWorkUpd.BusinessDateText = objTranspointWorkUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.SystemDate = dSystemDateIDCTmp.Date;
+            //        objTranspointWorkUpd.SystemDateText = objTranspointWorkUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.ExpiryDate = objUserManagementMTFind.ExpiryDate;
+            //        objTranspointWorkUpd.ExpiryDateOld = objUserManagementMTFind.ExpiryDate;
+            //        objTranspointWorkUpd.ExpiryDateOldText = objUserManagementMTFind.ExpiryDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.Ticket = "";
+            //        objTranspointWorkUpd.Remark = "";
+            //        objTranspointWorkUpd.OrtherNotes = "";
+            //        objTranspointWorkUpd.Status = StatusBusinessFlow.Status_Created.Value;
+            //        objTranspointWorkUpd.StatusText = StatusBusinessFlow.GetByValue(objTranspointWorkUpd.Status).Description;
 
-            //        objUserManagementIDCUpd.UserStatus = objUserManagementMTFind.UserStatus;
+            //        objTranspointWorkUpd.UserStatus = objUserManagementMTFind.UserStatus;
             //        if (objUserManagementMTFind.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+            //            objTranspointWorkUpd.UserStatusText = "Khóa (Đóng)";
             //        else if (objUserManagementMTFind.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+            //            objTranspointWorkUpd.UserStatusText = "Mở (Bình thường)";
             //        else if (objUserManagementMTFind.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //            objUserManagementIDCUpd.UserStatusText = "Tmaj khóa (Lock)";
-            //        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+            //            objTranspointWorkUpd.UserStatusText = "Tmaj khóa (Lock)";
+            //        else objTranspointWorkUpd.UserStatusText = "Không xác định";
 
-            //        objUserManagementIDCUpd.StatusUpdateCore = 0;
-            //        objUserManagementIDCUpd.SessionValReq = true;
-            //        objUserManagementIDCUpd.PrevStatus = 0;
-            //        objUserManagementIDCUpd.ResponseAttributes = "";
-            //        objUserManagementIDCUpd.CallApiStatus = "";
-            //        objUserManagementIDCUpd.CallApiReqRecordSl = 0;
-            //        objUserManagementIDCUpd.CallApiResponseCode = "";
-            //        objUserManagementIDCUpd.CallApiResponseMsg = "";
+            //        objTranspointWorkUpd.StatusUpdateCore = 0;
+            //        objTranspointWorkUpd.SessionValReq = true;
+            //        objTranspointWorkUpd.PrevStatus = 0;
+            //        objTranspointWorkUpd.ResponseAttributes = "";
+            //        objTranspointWorkUpd.CallApiStatus = "";
+            //        objTranspointWorkUpd.CallApiReqRecordSl = 0;
+            //        objTranspointWorkUpd.CallApiResponseCode = "";
+            //        objTranspointWorkUpd.CallApiResponseMsg = "";
 
-            //        objUserManagementIDCUpd.CreatedBy = objUserManagementMTFind.CreatedBy;
-            //        objUserManagementIDCUpd.CreatedDate = objUserManagementMTFind.CreatedDate;
-            //        objUserManagementIDCUpd.ModifiedBy = objUserManagementMTFind.ModifiedBy;
-            //        objUserManagementIDCUpd.ModifiedDate = objUserManagementMTFind.ModifiedDate;
-            //        objUserManagementIDCUpd.ApproverBy = objUserManagementMTFind.ApproverBy;
-            //        objUserManagementIDCUpd.ApprovalDate = objUserManagementMTFind.ApprovalDate;
-            //        objUserManagementIDCUpd.FunctionTypeName = "";
+            //        objTranspointWorkUpd.CreatedBy = objUserManagementMTFind.CreatedBy;
+            //        objTranspointWorkUpd.CreatedDate = objUserManagementMTFind.CreatedDate;
+            //        objTranspointWorkUpd.ModifiedBy = objUserManagementMTFind.ModifiedBy;
+            //        objTranspointWorkUpd.ModifiedDate = objUserManagementMTFind.ModifiedDate;
+            //        objTranspointWorkUpd.ApproverBy = objUserManagementMTFind.ApproverBy;
+            //        objTranspointWorkUpd.ApprovalDate = objUserManagementMTFind.ApprovalDate;
+            //        objTranspointWorkUpd.FunctionTypeName = "";
             //        if (listRoleUsers != null && listRoleUsers.Count != 0)
             //        {
-            //            objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementMTFind.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //            objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementMTFind.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //            objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //            objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
+            //            objTranspointWorkUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementMTFind.GroupName).Select(s => s.ShortName).FirstOrDefault();
+            //            objTranspointWorkUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementMTFind.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+            //            objTranspointWorkUpd.RoleToTransferCashName = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+            //            objTranspointWorkUpd.RoleToTransferCashDescription = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionDetail = objTranspointWorkUpd.RoleToTransferCashDescription;
+            //            objTranspointWorkUpd.GroupNameDetail = $"{objTranspointWorkUpd.GroupName} - {objTranspointWorkUpd.GroupNameText}";
             //        }
-            //        objUserManagementIDCUpd.StartDate = objUserManagementMTFind.StartDate.Value;
-            //        objUserManagementIDCUpd.IpSetCode = objUserManagementMTFind.IpSetCode;
-            //        objUserManagementIDCUpd.IpSetDetail = objUserManagementMTFind.IpSetDetail;
-            //        objUserManagementIDCUpd.RestrictionFlag = 0;
-            //        objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
+            //        objTranspointWorkUpd.StartDate = objUserManagementMTFind.StartDate.Value;
+            //        objTranspointWorkUpd.IpSetCode = objUserManagementMTFind.IpSetCode;
+            //        objTranspointWorkUpd.IpSetDetail = objUserManagementMTFind.IpSetDetail;
+            //        objTranspointWorkUpd.RestrictionFlag = 0;
+            //        objTranspointWorkUpd.RestrictionFlagCheck = (objTranspointWorkUpd.RestrictionFlag == 1) ? true : false;
 
-            //        objUserManagementIDCUpd.SubType = objUserManagementMTFind.SubType;
-            //        objUserManagementIDCUpd.AuthsecTypeName = objUserManagementMTFind.AuthsecTypeName;
-            //        objUserManagementIDCUpd.MailIdFlagName = objUserManagementMTFind.MailIdFlagName;
-            //        objUserManagementIDCUpd.CallApiAutoGeneratedPassword = "";
+            //        objTranspointWorkUpd.SubType = objUserManagementMTFind.SubType;
+            //        objTranspointWorkUpd.AuthsecTypeName = objUserManagementMTFind.AuthsecTypeName;
+            //        objTranspointWorkUpd.MailIdFlagName = objUserManagementMTFind.MailIdFlagName;
+            //        objTranspointWorkUpd.CallApiAutoGeneratedPassword = "";
 
-            //        objUserManagementIDCUpd.PosCodeOld = objUserManagementMTFind.PosCode;
-            //        objUserManagementIDCUpd.PosNameOld = objUserManagementMTFind.PosName;
-            //        objUserManagementIDCUpd.GroupNameOld = objUserManagementMTFind.GroupName;
-            //        objUserManagementIDCUpd.FirstNameOld = objUserManagementMTFind.FirstName;
-            //        objUserManagementIDCUpd.LastNameOld = objUserManagementMTFind.LastName;
-            //        objUserManagementIDCUpd.FullNameOld = objUserManagementMTFind.FullName;
-            //        objUserManagementIDCUpd.EmailAddressOld = objUserManagementMTFind.EmailAddress;
-            //        objUserManagementIDCUpd.MobileNumberOld = objUserManagementMTFind.MobileNumber;
-            //        objUserManagementIDCUpd.DateOfBirthOld = objUserManagementMTFind.DateOfBirth;
-            //        objUserManagementIDCUpd.GroupNameOldText = objUserManagementIDCUpd.GroupNameText;
-            //        objUserManagementIDCUpd.RoleToTransferCashValueOld = objUserManagementIDCUpd.RoleToTransferCashValue;
-            //        objUserManagementIDCUpd.RoleToTransferCashNameOld = objUserManagementIDCUpd.RoleToTransferCashName;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail;
-            //        objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
-            //        objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.StartDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.SystemDate.AddDays(10);// CustConverter.StringToDateTime(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).Date;
-            //        objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
-            //        objUserManagementIDCUpd.GenderCode = objUserManagementMTFind.GenderCode;
-            //        objUserManagementIDCUpd.GenderText = objUserManagementMTFind.GenderText;
-            //        objUserManagementIDCUpd.StaffPosCode = objUserManagementMTFind.StaffPosCode;
-            //        objUserManagementIDCUpd.StaffPosName = objUserManagementMTFind.StaffPosName;
-            //        objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementMTFind.StaffDepartmentCode;
-            //        objUserManagementIDCUpd.StaffDepartmentName = objUserManagementMTFind.StaffDepartmentName;
-            //        objUserManagementIDCUpd.StaffPositionCode = objUserManagementMTFind.StaffPositionCode;
-            //        objUserManagementIDCUpd.StaffPositionName = objUserManagementMTFind.StaffPositionName;
-            //        objUserManagementIDCUpd.StaffEmail = objUserManagementMTFind.StaffEmail;
-            //        objUserManagementIDCUpd.StaffMobileNo = objUserManagementMTFind.StaffMobileNo;
+            //        objTranspointWorkUpd.PosCodeOld = objUserManagementMTFind.PosCode;
+            //        objTranspointWorkUpd.PosNameOld = objUserManagementMTFind.PosName;
+            //        objTranspointWorkUpd.GroupNameOld = objUserManagementMTFind.GroupName;
+            //        objTranspointWorkUpd.FirstNameOld = objUserManagementMTFind.FirstName;
+            //        objTranspointWorkUpd.LastNameOld = objUserManagementMTFind.LastName;
+            //        objTranspointWorkUpd.FullNameOld = objUserManagementMTFind.FullName;
+            //        objTranspointWorkUpd.EmailAddressOld = objUserManagementMTFind.EmailAddress;
+            //        objTranspointWorkUpd.MobileNumberOld = objUserManagementMTFind.MobileNumber;
+            //        objTranspointWorkUpd.DateOfBirthOld = objUserManagementMTFind.DateOfBirth;
+            //        objTranspointWorkUpd.GroupNameOldText = objTranspointWorkUpd.GroupNameText;
+            //        objTranspointWorkUpd.RoleToTransferCashValueOld = objTranspointWorkUpd.RoleToTransferCashValue;
+            //        objTranspointWorkUpd.RoleToTransferCashNameOld = objTranspointWorkUpd.RoleToTransferCashName;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionOld = objTranspointWorkUpd.RoleToTransferCashDescription;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld = objTranspointWorkUpd.RoleToTransferCashDescriptionDetail;
+            //        objTranspointWorkUpd.StartDateOld = objTranspointWorkUpd.StartDate;
+            //        objTranspointWorkUpd.StartDateOldText = objTranspointWorkUpd.StartDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.StartDate = dSystemDateIDCTmp.Date;
+            //        objTranspointWorkUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.EndDateChangeRole = objTranspointWorkUpd.SystemDate.AddDays(10);// CustConverter.StringToDateTime(DefaultValue.MaxDate.ToString(), FormatParameters.FORMAT_DATE_INT).Date;
+            //        objTranspointWorkUpd.ChoiceEndDateChangeRole = 0;
+            //        objTranspointWorkUpd.GenderCode = objUserManagementMTFind.GenderCode;
+            //        objTranspointWorkUpd.GenderText = objUserManagementMTFind.GenderText;
+            //        objTranspointWorkUpd.StaffPosCode = objUserManagementMTFind.StaffPosCode;
+            //        objTranspointWorkUpd.StaffPosName = objUserManagementMTFind.StaffPosName;
+            //        objTranspointWorkUpd.StaffDepartmentCode = objUserManagementMTFind.StaffDepartmentCode;
+            //        objTranspointWorkUpd.StaffDepartmentName = objUserManagementMTFind.StaffDepartmentName;
+            //        objTranspointWorkUpd.StaffPositionCode = objUserManagementMTFind.StaffPositionCode;
+            //        objTranspointWorkUpd.StaffPositionName = objUserManagementMTFind.StaffPositionName;
+            //        objTranspointWorkUpd.StaffEmail = objUserManagementMTFind.StaffEmail;
+            //        objTranspointWorkUpd.StaffMobileNo = objUserManagementMTFind.StaffMobileNo;
             //        //Lấy theo QLNS khi thay đổi thông tin người dùng
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementMTFind.StaffEmail;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementMTFind.StaffMobileNo;
+            //        objTranspointWorkUpd.EmailAddress = objUserManagementMTFind.StaffEmail;
+            //        objTranspointWorkUpd.MobileNumber = objUserManagementMTFind.StaffMobileNo;
 
-            //        objUserManagementIDCUpd.ExistsInCore = objUserManagementMTFind.ExistsInCore;
-            //        objUserManagementIDCUpd.ListFileId = "";
-            //        objUserManagementIDCUpd.ReasonReject = "";
+            //        objTranspointWorkUpd.ExistsInCore = objUserManagementMTFind.ExistsInCore;
+            //        objTranspointWorkUpd.ListFileId = "";
+            //        objTranspointWorkUpd.ReasonReject = "";
             //    }
             //    #endregion
             //}
@@ -762,135 +732,135 @@ namespace VBSPOSS.Controllers
             //    {
             //        var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
 
-            //        objUserManagementIDCUpd.Id = objUserManagementChangeTemp.Id;
-            //        objUserManagementIDCUpd.OrderNo = 1;
-            //        objUserManagementIDCUpd.FunctionType = objUserManagementChangeTemp.FunctionType;
-            //        objUserManagementIDCUpd.FunctionTypeName = objUserManagementChangeTemp.FunctionTypeName;
+            //        objTranspointWorkUpd.Id = objUserManagementChangeTemp.Id;
+            //        objTranspointWorkUpd.OrderNo = 1;
+            //        objTranspointWorkUpd.FunctionType = objUserManagementChangeTemp.FunctionType;
+            //        objTranspointWorkUpd.FunctionTypeName = objUserManagementChangeTemp.FunctionTypeName;
 
-            //        objUserManagementIDCUpd.PosCode = objUserManagementChangeTemp.PosCode;
-            //        objUserManagementIDCUpd.PosName = objUserManagementChangeTemp.PosName;
-            //        objUserManagementIDCUpd.StaffId = objUserManagementChangeTemp.StaffId;
-            //        objUserManagementIDCUpd.StaffCode = objUserManagementChangeTemp.StaffCode;
-            //        objUserManagementIDCUpd.UserId = objUserManagementChangeTemp.UserId;
-            //        objUserManagementIDCUpd.NickName = objUserManagementChangeTemp.NickName;
-            //        objUserManagementIDCUpd.FirstName = objUserManagementChangeTemp.FirstName;
-            //        objUserManagementIDCUpd.LastName = objUserManagementChangeTemp.LastName;
-            //        objUserManagementIDCUpd.FullName = objUserManagementChangeTemp.FullName;
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementChangeTemp.EmailAddress;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementChangeTemp.MobileNumber;
-            //        objUserManagementIDCUpd.DateOfBirth = objUserManagementChangeTemp.DateOfBirth;
-            //        objUserManagementIDCUpd.GroupName = objUserManagementChangeTemp.GroupName;
-            //        objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+            //        objTranspointWorkUpd.PosCode = objUserManagementChangeTemp.PosCode;
+            //        objTranspointWorkUpd.PosName = objUserManagementChangeTemp.PosName;
+            //        objTranspointWorkUpd.StaffId = objUserManagementChangeTemp.StaffId;
+            //        objTranspointWorkUpd.StaffCode = objUserManagementChangeTemp.StaffCode;
+            //        objTranspointWorkUpd.UserId = objUserManagementChangeTemp.UserId;
+            //        objTranspointWorkUpd.NickName = objUserManagementChangeTemp.NickName;
+            //        objTranspointWorkUpd.FirstName = objUserManagementChangeTemp.FirstName;
+            //        objTranspointWorkUpd.LastName = objUserManagementChangeTemp.LastName;
+            //        objTranspointWorkUpd.FullName = objUserManagementChangeTemp.FullName;
+            //        objTranspointWorkUpd.EmailAddress = objUserManagementChangeTemp.EmailAddress;
+            //        objTranspointWorkUpd.MobileNumber = objUserManagementChangeTemp.MobileNumber;
+            //        objTranspointWorkUpd.DateOfBirth = objUserManagementChangeTemp.DateOfBirth;
+            //        objTranspointWorkUpd.GroupName = objUserManagementChangeTemp.GroupName;
+            //        objTranspointWorkUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
 
-            //        objUserManagementIDCUpd.AuthType = objUserManagementChangeTemp.AuthType;
-            //        objUserManagementIDCUpd.UserType = objUserManagementChangeTemp.UserType;
-            //        objUserManagementIDCUpd.MailIdFlag = objUserManagementChangeTemp.MailIdFlag;
-            //        objUserManagementIDCUpd.AuthsecType = objUserManagementChangeTemp.AuthsecType;
-            //        objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
-            //        objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
-            //        objUserManagementIDCUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
-            //        objUserManagementIDCUpd.BusinessDate = objUserManagementChangeTemp.BusinessDate;
-            //        objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.SystemDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
-            //        objUserManagementIDCUpd.Ticket = objUserManagementChangeTemp.Ticket;
-            //        objUserManagementIDCUpd.Remark = objUserManagementChangeTemp.Remark;
-            //        objUserManagementIDCUpd.OrtherNotes = objUserManagementChangeTemp.OrtherNotes;
-            //        objUserManagementIDCUpd.Status = objUserManagementChangeTemp.Status;
-            //        objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
-            //        objUserManagementIDCUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
+            //        objTranspointWorkUpd.AuthType = objUserManagementChangeTemp.AuthType;
+            //        objTranspointWorkUpd.UserType = objUserManagementChangeTemp.UserType;
+            //        objTranspointWorkUpd.MailIdFlag = objUserManagementChangeTemp.MailIdFlag;
+            //        objTranspointWorkUpd.AuthsecType = objUserManagementChangeTemp.AuthsecType;
+            //        objTranspointWorkUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
+            //        objTranspointWorkUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
+            //        objTranspointWorkUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
+            //        objTranspointWorkUpd.BusinessDate = objUserManagementChangeTemp.BusinessDate;
+            //        objTranspointWorkUpd.BusinessDateText = objTranspointWorkUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.SystemDate = dSystemDateIDCTmp.Date;
+            //        objTranspointWorkUpd.SystemDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
+            //        objTranspointWorkUpd.Ticket = objUserManagementChangeTemp.Ticket;
+            //        objTranspointWorkUpd.Remark = objUserManagementChangeTemp.Remark;
+            //        objTranspointWorkUpd.OrtherNotes = objUserManagementChangeTemp.OrtherNotes;
+            //        objTranspointWorkUpd.Status = objUserManagementChangeTemp.Status;
+            //        objTranspointWorkUpd.StatusText = StatusBusinessFlow.GetByValue(objTranspointWorkUpd.Status).Description;
+            //        objTranspointWorkUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
             //        if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+            //            objTranspointWorkUpd.UserStatusText = "Khóa (Đóng)";
             //        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+            //            objTranspointWorkUpd.UserStatusText = "Mở (Bình thường)";
             //        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-            //        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+            //            objTranspointWorkUpd.UserStatusText = "Tạm khóa (Lock)";
+            //        else objTranspointWorkUpd.UserStatusText = "Không xác định";
 
-            //        objUserManagementIDCUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
-            //        objUserManagementIDCUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
-            //        objUserManagementIDCUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
-            //        objUserManagementIDCUpd.ResponseAttributes = objUserManagementChangeTemp.ResponseAttributes;
-            //        objUserManagementIDCUpd.CallApiStatus = objUserManagementChangeTemp.CallApiStatus;
-            //        objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementChangeTemp.CallApiReqRecordSl;
-            //        objUserManagementIDCUpd.CallApiResponseCode = objUserManagementChangeTemp.CallApiResponseCode;
-            //        objUserManagementIDCUpd.CallApiResponseMsg = objUserManagementChangeTemp.CallApiResponseMsg;
+            //        objTranspointWorkUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
+            //        objTranspointWorkUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
+            //        objTranspointWorkUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
+            //        objTranspointWorkUpd.ResponseAttributes = objUserManagementChangeTemp.ResponseAttributes;
+            //        objTranspointWorkUpd.CallApiStatus = objUserManagementChangeTemp.CallApiStatus;
+            //        objTranspointWorkUpd.CallApiReqRecordSl = objUserManagementChangeTemp.CallApiReqRecordSl;
+            //        objTranspointWorkUpd.CallApiResponseCode = objUserManagementChangeTemp.CallApiResponseCode;
+            //        objTranspointWorkUpd.CallApiResponseMsg = objUserManagementChangeTemp.CallApiResponseMsg;
 
-            //        objUserManagementIDCUpd.CreatedBy = objUserManagementChangeTemp.CreatedBy;
-            //        objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
-            //        objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
-            //        objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
-            //        objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
-            //        objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
+            //        objTranspointWorkUpd.CreatedBy = objUserManagementChangeTemp.CreatedBy;
+            //        objTranspointWorkUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
+            //        objTranspointWorkUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
+            //        objTranspointWorkUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
+            //        objTranspointWorkUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+            //        objTranspointWorkUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
 
             //        if (listRoleUsers != null && listRoleUsers.Count != 0)
             //        {
-            //            objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //            objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //            objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //            objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
-            //            objUserManagementIDCUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
+            //            objTranspointWorkUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.ShortName).FirstOrDefault();
+            //            objTranspointWorkUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+            //            objTranspointWorkUpd.RoleToTransferCashName = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+            //            objTranspointWorkUpd.RoleToTransferCashDescription = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionDetail = objTranspointWorkUpd.RoleToTransferCashDescription;
+            //            objTranspointWorkUpd.GroupNameDetail = $"{objTranspointWorkUpd.GroupName} - {objTranspointWorkUpd.GroupNameText}";
+            //            objTranspointWorkUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
             //        }
-            //        objUserManagementIDCUpd.StartDate = objUserManagementChangeTemp.StartDate;
-            //        objUserManagementIDCUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
-            //        objUserManagementIDCUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementChangeTemp.IpSetDetail) ? "" : objUserManagementChangeTemp.IpSetDetail;
-            //        objUserManagementIDCUpd.RestrictionFlag = 0;
-            //        objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
+            //        objTranspointWorkUpd.StartDate = objUserManagementChangeTemp.StartDate;
+            //        objTranspointWorkUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
+            //        objTranspointWorkUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementChangeTemp.IpSetDetail) ? "" : objUserManagementChangeTemp.IpSetDetail;
+            //        objTranspointWorkUpd.RestrictionFlag = 0;
+            //        objTranspointWorkUpd.RestrictionFlagCheck = (objTranspointWorkUpd.RestrictionFlag == 1) ? true : false;
 
-            //        objUserManagementIDCUpd.SubType = objUserManagementChangeTemp.SubType;
-            //        objUserManagementIDCUpd.AuthsecTypeName = objUserManagementChangeTemp.AuthsecTypeName;
-            //        objUserManagementIDCUpd.MailIdFlagName = objUserManagementChangeTemp.MailIdFlagName;
-            //        objUserManagementIDCUpd.CallApiAutoGeneratedPassword = objUserManagementChangeTemp.CallApiAutoGeneratedPassword;
+            //        objTranspointWorkUpd.SubType = objUserManagementChangeTemp.SubType;
+            //        objTranspointWorkUpd.AuthsecTypeName = objUserManagementChangeTemp.AuthsecTypeName;
+            //        objTranspointWorkUpd.MailIdFlagName = objUserManagementChangeTemp.MailIdFlagName;
+            //        objTranspointWorkUpd.CallApiAutoGeneratedPassword = objUserManagementChangeTemp.CallApiAutoGeneratedPassword;
 
-            //        objUserManagementIDCUpd.PosCodeOld = objUserManagementChangeTemp.PosCodeOld;
-            //        objUserManagementIDCUpd.PosNameOld = objUserManagementChangeTemp.PosNameOld;
-            //        objUserManagementIDCUpd.GroupNameOld = objUserManagementChangeTemp.GroupNameOld;
-            //        objUserManagementIDCUpd.FirstNameOld = objUserManagementChangeTemp.FirstNameOld;
-            //        objUserManagementIDCUpd.LastNameOld = objUserManagementChangeTemp.LastNameOld;
-            //        objUserManagementIDCUpd.FullNameOld = objUserManagementChangeTemp.FullNameOld;
-            //        objUserManagementIDCUpd.EmailAddressOld = objUserManagementChangeTemp.EmailAddressOld;
-            //        objUserManagementIDCUpd.MobileNumberOld = objUserManagementChangeTemp.MobileNumberOld;
-            //        objUserManagementIDCUpd.DateOfBirthOld = objUserManagementChangeTemp.DateOfBirthOld;
-            //        objUserManagementIDCUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCUpd.GroupNameOldText) ? objUserManagementIDCUpd.GroupNameOldText : objUserManagementIDCUpd.GroupNameOldText;
-            //        objUserManagementIDCUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashValueOld) ? objUserManagementIDCUpd.RoleToTransferCashValue : objUserManagementIDCUpd.RoleToTransferCashValueOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashNameOld) ? objUserManagementIDCUpd.RoleToTransferCashName : objUserManagementIDCUpd.RoleToTransferCashNameOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionOld) ? objUserManagementIDCUpd.RoleToTransferCashDescription : objUserManagementIDCUpd.RoleToTransferCashDescriptionOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld;
-            //        objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
-            //        objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.StartDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
-            //        //objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.BusinessDate;
-            //        objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.ExpiryDate;
-            //        objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
-            //        int numberDays = (objUserManagementIDCUpd.ExpiryDate - objUserManagementIDCUpd.StartDate).Days;
+            //        objTranspointWorkUpd.PosCodeOld = objUserManagementChangeTemp.PosCodeOld;
+            //        objTranspointWorkUpd.PosNameOld = objUserManagementChangeTemp.PosNameOld;
+            //        objTranspointWorkUpd.GroupNameOld = objUserManagementChangeTemp.GroupNameOld;
+            //        objTranspointWorkUpd.FirstNameOld = objUserManagementChangeTemp.FirstNameOld;
+            //        objTranspointWorkUpd.LastNameOld = objUserManagementChangeTemp.LastNameOld;
+            //        objTranspointWorkUpd.FullNameOld = objUserManagementChangeTemp.FullNameOld;
+            //        objTranspointWorkUpd.EmailAddressOld = objUserManagementChangeTemp.EmailAddressOld;
+            //        objTranspointWorkUpd.MobileNumberOld = objUserManagementChangeTemp.MobileNumberOld;
+            //        objTranspointWorkUpd.DateOfBirthOld = objUserManagementChangeTemp.DateOfBirthOld;
+            //        objTranspointWorkUpd.GroupNameOldText = string.IsNullOrEmpty(objTranspointWorkUpd.GroupNameOldText) ? objTranspointWorkUpd.GroupNameOldText : objTranspointWorkUpd.GroupNameOldText;
+            //        objTranspointWorkUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashValueOld) ? objTranspointWorkUpd.RoleToTransferCashValue : objTranspointWorkUpd.RoleToTransferCashValueOld;
+            //        objTranspointWorkUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashNameOld) ? objTranspointWorkUpd.RoleToTransferCashName : objTranspointWorkUpd.RoleToTransferCashNameOld;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionOld) ? objTranspointWorkUpd.RoleToTransferCashDescription : objTranspointWorkUpd.RoleToTransferCashDescriptionOld;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld) ? objTranspointWorkUpd.RoleToTransferCashDescriptionDetail : objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld;
+            //        objTranspointWorkUpd.StartDateOld = objTranspointWorkUpd.StartDate;
+            //        objTranspointWorkUpd.StartDateOldText = objTranspointWorkUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.StartDate = dSystemDateIDCTmp.Date;
+            //        objTranspointWorkUpd.StartDateText = dSystemDateIDCTmp.ToString(FormatParameters.FORMAT_DATE);
+            //        //objTranspointWorkUpd.StartDate = objTranspointWorkUpd.BusinessDate;
+            //        objTranspointWorkUpd.EndDateChangeRole = objTranspointWorkUpd.ExpiryDate;
+            //        objTranspointWorkUpd.ChoiceEndDateChangeRole = 0;
+            //        int numberDays = (objTranspointWorkUpd.ExpiryDate - objTranspointWorkUpd.StartDate).Days;
             //        if (numberDays > 0 && numberDays <= 90 && objUserManagementChangeTemp.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
-            //            objUserManagementIDCUpd.ChoiceEndDateChangeRole = 1;
+            //            objTranspointWorkUpd.ChoiceEndDateChangeRole = 1;
 
-            //        objUserManagementIDCUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
-            //        objUserManagementIDCUpd.GenderText = objUserManagementChangeTemp.GenderText;
-            //        objUserManagementIDCUpd.StaffPosCode = objUserManagementChangeTemp.StaffPosCode;
-            //        objUserManagementIDCUpd.StaffPosName = objUserManagementChangeTemp.StaffPosName;
-            //        objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementChangeTemp.StaffDepartmentCode;
-            //        objUserManagementIDCUpd.StaffDepartmentName = objUserManagementChangeTemp.StaffDepartmentName;
-            //        objUserManagementIDCUpd.StaffPositionCode = objUserManagementChangeTemp.StaffPositionCode;
-            //        objUserManagementIDCUpd.StaffPositionName = objUserManagementChangeTemp.StaffPositionName;
-            //        objUserManagementIDCUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
-            //        objUserManagementIDCUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
+            //        objTranspointWorkUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
+            //        objTranspointWorkUpd.GenderText = objUserManagementChangeTemp.GenderText;
+            //        objTranspointWorkUpd.StaffPosCode = objUserManagementChangeTemp.StaffPosCode;
+            //        objTranspointWorkUpd.StaffPosName = objUserManagementChangeTemp.StaffPosName;
+            //        objTranspointWorkUpd.StaffDepartmentCode = objUserManagementChangeTemp.StaffDepartmentCode;
+            //        objTranspointWorkUpd.StaffDepartmentName = objUserManagementChangeTemp.StaffDepartmentName;
+            //        objTranspointWorkUpd.StaffPositionCode = objUserManagementChangeTemp.StaffPositionCode;
+            //        objTranspointWorkUpd.StaffPositionName = objUserManagementChangeTemp.StaffPositionName;
+            //        objTranspointWorkUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
+            //        objTranspointWorkUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
             //        //Lấy theo QLNS khi thay đổi thông tin người dùng
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementChangeTemp.StaffEmail;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementChangeTemp.StaffMobileNo;
-            //        objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
-            //        objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
-            //        objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
+            //        objTranspointWorkUpd.EmailAddress = objUserManagementChangeTemp.StaffEmail;
+            //        objTranspointWorkUpd.MobileNumber = objUserManagementChangeTemp.StaffMobileNo;
+            //        objTranspointWorkUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
+            //        objTranspointWorkUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
+            //        objTranspointWorkUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
             //        var objUserInfoIDCTmp = await _userManagementIDCService.GetUserIDCInfoByApiViewUser(objUserManagementChangeTemp.UserId);
             //        if (objUserInfoIDCTmp != null && !string.IsNullOrEmpty(objUserInfoIDCTmp.UserId))
             //        {
-            //            objUserManagementIDCUpd.ExpiryDateOld = CustConverter.StringToDate(objUserInfoIDCTmp.ExpiryDate.Trim().Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT).Date;//yyyy-MM-dd
-            //            objUserManagementIDCUpd.ExpiryDateOldText = objUserManagementIDCUpd.ExpiryDateOld.ToString(FormatParameters.FORMAT_DATE);
+            //            objTranspointWorkUpd.ExpiryDateOld = CustConverter.StringToDate(objUserInfoIDCTmp.ExpiryDate.Trim().Replace("-", "").Replace("/", ""), FormatParameters.FORMAT_DATE_INT).Date;//yyyy-MM-dd
+            //            objTranspointWorkUpd.ExpiryDateOldText = objTranspointWorkUpd.ExpiryDateOld.ToString(FormatParameters.FORMAT_DATE);
             //        }
             //    }
             //    #endregion
@@ -907,139 +877,139 @@ namespace VBSPOSS.Controllers
             //    {
             //        var listRoleUsers = _serviceLOV.GetListOfValueSearch(ListOfValueParentValue.ParentId_UserRoleIDC, "", 0, "", "", -1, 2);
 
-            //        objUserManagementIDCUpd.Id = objUserManagementChangeTemp.Id;
-            //        objUserManagementIDCUpd.OrderNo = 1;
-            //        objUserManagementIDCUpd.FunctionType = objUserManagementChangeTemp.FunctionType;
-            //        objUserManagementIDCUpd.FunctionTypeName = objUserManagementChangeTemp.FunctionTypeName;
+            //        objTranspointWorkUpd.Id = objUserManagementChangeTemp.Id;
+            //        objTranspointWorkUpd.OrderNo = 1;
+            //        objTranspointWorkUpd.FunctionType = objUserManagementChangeTemp.FunctionType;
+            //        objTranspointWorkUpd.FunctionTypeName = objUserManagementChangeTemp.FunctionTypeName;
 
-            //        objUserManagementIDCUpd.PosCode = objUserManagementChangeTemp.PosCode;
-            //        objUserManagementIDCUpd.PosName = objUserManagementChangeTemp.PosName;
-            //        objUserManagementIDCUpd.StaffId = objUserManagementChangeTemp.StaffId;
-            //        objUserManagementIDCUpd.StaffCode = objUserManagementChangeTemp.StaffCode;
-            //        objUserManagementIDCUpd.UserId = objUserManagementChangeTemp.UserId;
-            //        objUserManagementIDCUpd.NickName = objUserManagementChangeTemp.NickName;
-            //        objUserManagementIDCUpd.FirstName = objUserManagementChangeTemp.FirstName;
-            //        objUserManagementIDCUpd.LastName = objUserManagementChangeTemp.LastName;
-            //        objUserManagementIDCUpd.FullName = objUserManagementChangeTemp.FullName;
-            //        objUserManagementIDCUpd.EmailAddress = objUserManagementChangeTemp.EmailAddress;
-            //        objUserManagementIDCUpd.MobileNumber = objUserManagementChangeTemp.MobileNumber;
-            //        objUserManagementIDCUpd.DateOfBirth = objUserManagementChangeTemp.DateOfBirth;
-            //        objUserManagementIDCUpd.GroupName = objUserManagementChangeTemp.GroupName;
-            //        objUserManagementIDCUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
+            //        objTranspointWorkUpd.PosCode = objUserManagementChangeTemp.PosCode;
+            //        objTranspointWorkUpd.PosName = objUserManagementChangeTemp.PosName;
+            //        objTranspointWorkUpd.StaffId = objUserManagementChangeTemp.StaffId;
+            //        objTranspointWorkUpd.StaffCode = objUserManagementChangeTemp.StaffCode;
+            //        objTranspointWorkUpd.UserId = objUserManagementChangeTemp.UserId;
+            //        objTranspointWorkUpd.NickName = objUserManagementChangeTemp.NickName;
+            //        objTranspointWorkUpd.FirstName = objUserManagementChangeTemp.FirstName;
+            //        objTranspointWorkUpd.LastName = objUserManagementChangeTemp.LastName;
+            //        objTranspointWorkUpd.FullName = objUserManagementChangeTemp.FullName;
+            //        objTranspointWorkUpd.EmailAddress = objUserManagementChangeTemp.EmailAddress;
+            //        objTranspointWorkUpd.MobileNumber = objUserManagementChangeTemp.MobileNumber;
+            //        objTranspointWorkUpd.DateOfBirth = objUserManagementChangeTemp.DateOfBirth;
+            //        objTranspointWorkUpd.GroupName = objUserManagementChangeTemp.GroupName;
+            //        objTranspointWorkUpd.EntityList = _serviceLOV.GetCellValueForQuery($"Select IsNull(Notes,'') As Code From ListOfValue Where Code='{ConstValueAPI.EntityList_Code}' And ParentId={ListOfValueParentValue.ParentIdConfigIntellectIDC}");
 
-            //        objUserManagementIDCUpd.AuthType = objUserManagementChangeTemp.AuthType;
-            //        objUserManagementIDCUpd.UserType = objUserManagementChangeTemp.UserType;
-            //        objUserManagementIDCUpd.MailIdFlag = objUserManagementChangeTemp.MailIdFlag;
-            //        objUserManagementIDCUpd.AuthsecType = objUserManagementChangeTemp.AuthsecType;
-            //        objUserManagementIDCUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
-            //        objUserManagementIDCUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
-            //        objUserManagementIDCUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
-            //        objUserManagementIDCUpd.BusinessDate = dBusinessDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.BusinessDateText = objUserManagementIDCUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.SystemDate = dSystemDateIDCTmp.Date;
-            //        objUserManagementIDCUpd.SystemDateText = objUserManagementIDCUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
-            //        objUserManagementIDCUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
-            //        objUserManagementIDCUpd.Ticket = objUserManagementChangeTemp.Ticket;
-            //        objUserManagementIDCUpd.Remark = objUserManagementChangeTemp.Remark;
-            //        objUserManagementIDCUpd.OrtherNotes = objUserManagementChangeTemp.OrtherNotes;
-            //        objUserManagementIDCUpd.Status = objUserManagementChangeTemp.Status;
-            //        objUserManagementIDCUpd.StatusText = StatusBusinessFlow.GetByValue(objUserManagementIDCUpd.Status).Description;
-            //        objUserManagementIDCUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
+            //        objTranspointWorkUpd.AuthType = objUserManagementChangeTemp.AuthType;
+            //        objTranspointWorkUpd.UserType = objUserManagementChangeTemp.UserType;
+            //        objTranspointWorkUpd.MailIdFlag = objUserManagementChangeTemp.MailIdFlag;
+            //        objTranspointWorkUpd.AuthsecType = objUserManagementChangeTemp.AuthsecType;
+            //        objTranspointWorkUpd.ExtraAttributeUserRole = objUserManagementChangeTemp.GroupName;
+            //        objTranspointWorkUpd.ExtraAttributeBranchCode = objUserManagementChangeTemp.PosCode;
+            //        objTranspointWorkUpd.EffectiveDate = objUserManagementChangeTemp.EffectiveDate;
+            //        objTranspointWorkUpd.BusinessDate = dBusinessDateIDCTmp.Date;
+            //        objTranspointWorkUpd.BusinessDateText = objTranspointWorkUpd.BusinessDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.SystemDate = dSystemDateIDCTmp.Date;
+            //        objTranspointWorkUpd.SystemDateText = objTranspointWorkUpd.SystemDate.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.ExpiryDate = objUserManagementChangeTemp.ExpiryDate;
+            //        objTranspointWorkUpd.Ticket = objUserManagementChangeTemp.Ticket;
+            //        objTranspointWorkUpd.Remark = objUserManagementChangeTemp.Remark;
+            //        objTranspointWorkUpd.OrtherNotes = objUserManagementChangeTemp.OrtherNotes;
+            //        objTranspointWorkUpd.Status = objUserManagementChangeTemp.Status;
+            //        objTranspointWorkUpd.StatusText = StatusBusinessFlow.GetByValue(objTranspointWorkUpd.Status).Description;
+            //        objTranspointWorkUpd.UserStatus = objUserManagementChangeTemp.UserStatus;
             //        if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Closed)
-            //            objUserManagementIDCUpd.UserStatusText = "Khóa (Đóng)";
+            //            objTranspointWorkUpd.UserStatusText = "Khóa (Đóng)";
             //        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Open)
-            //            objUserManagementIDCUpd.UserStatusText = "Mở (Bình thường)";
+            //            objTranspointWorkUpd.UserStatusText = "Mở (Bình thường)";
             //        else if (objUserManagementChangeTemp.UserStatus == DefaultValue.UserIDC_UserStatus_Lock)
-            //            objUserManagementIDCUpd.UserStatusText = "Tạm khóa (Lock)";
-            //        else objUserManagementIDCUpd.UserStatusText = "Không xác định";
+            //            objTranspointWorkUpd.UserStatusText = "Tạm khóa (Lock)";
+            //        else objTranspointWorkUpd.UserStatusText = "Không xác định";
 
-            //        objUserManagementIDCUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
-            //        objUserManagementIDCUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
-            //        objUserManagementIDCUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
-            //        objUserManagementIDCUpd.ResponseAttributes = objUserManagementChangeTemp.ResponseAttributes;
-            //        objUserManagementIDCUpd.CallApiStatus = objUserManagementChangeTemp.CallApiStatus;
-            //        objUserManagementIDCUpd.CallApiReqRecordSl = objUserManagementChangeTemp.CallApiReqRecordSl;
-            //        objUserManagementIDCUpd.CallApiResponseCode = objUserManagementChangeTemp.CallApiResponseCode;
-            //        objUserManagementIDCUpd.CallApiResponseMsg = objUserManagementChangeTemp.CallApiResponseMsg;
+            //        objTranspointWorkUpd.StatusUpdateCore = objUserManagementChangeTemp.StatusUpdateCore;
+            //        objTranspointWorkUpd.SessionValReq = objUserManagementChangeTemp.SessionValReq;
+            //        objTranspointWorkUpd.PrevStatus = objUserManagementChangeTemp.PrevStatus;
+            //        objTranspointWorkUpd.ResponseAttributes = objUserManagementChangeTemp.ResponseAttributes;
+            //        objTranspointWorkUpd.CallApiStatus = objUserManagementChangeTemp.CallApiStatus;
+            //        objTranspointWorkUpd.CallApiReqRecordSl = objUserManagementChangeTemp.CallApiReqRecordSl;
+            //        objTranspointWorkUpd.CallApiResponseCode = objUserManagementChangeTemp.CallApiResponseCode;
+            //        objTranspointWorkUpd.CallApiResponseMsg = objUserManagementChangeTemp.CallApiResponseMsg;
 
-            //        objUserManagementIDCUpd.CreatedBy = objUserManagementChangeTemp.CreatedBy;
-            //        objUserManagementIDCUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
-            //        objUserManagementIDCUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
-            //        objUserManagementIDCUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
-            //        objUserManagementIDCUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
-            //        objUserManagementIDCUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
+            //        objTranspointWorkUpd.CreatedBy = objUserManagementChangeTemp.CreatedBy;
+            //        objTranspointWorkUpd.CreatedDate = objUserManagementChangeTemp.CreatedDate;
+            //        objTranspointWorkUpd.ModifiedBy = objUserManagementChangeTemp.ModifiedBy;
+            //        objTranspointWorkUpd.ModifiedDate = objUserManagementChangeTemp.ModifiedDate;
+            //        objTranspointWorkUpd.ApproverBy = objUserManagementChangeTemp.ApproverBy;
+            //        objTranspointWorkUpd.ApprovalDate = objUserManagementChangeTemp.ApprovalDate;
 
             //        if (listRoleUsers != null && listRoleUsers.Count != 0)
             //        {
-            //            objUserManagementIDCUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.ShortName).FirstOrDefault();
-            //            objUserManagementIDCUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
-            //            objUserManagementIDCUpd.RoleToTransferCashName = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescription = (objUserManagementIDCUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
-            //            objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail = objUserManagementIDCUpd.RoleToTransferCashDescription;
-            //            objUserManagementIDCUpd.GroupNameDetail = $"{objUserManagementIDCUpd.GroupName} - {objUserManagementIDCUpd.GroupNameText}";
-            //            objUserManagementIDCUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
+            //            objTranspointWorkUpd.GroupNameText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.ShortName).FirstOrDefault();
+            //            objTranspointWorkUpd.RoleToTransferCashValue = $"{listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupName).Select(s => s.LevelCode).FirstOrDefault()}";
+            //            objTranspointWorkUpd.RoleToTransferCashName = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "X" : "";
+            //            objTranspointWorkUpd.RoleToTransferCashDescription = (objTranspointWorkUpd.RoleToTransferCashValue == StatusLov.StatusYes) ? "Có quyền tiền mặt" : "Không có quyền tiền mặt";
+            //            objTranspointWorkUpd.RoleToTransferCashDescriptionDetail = objTranspointWorkUpd.RoleToTransferCashDescription;
+            //            objTranspointWorkUpd.GroupNameDetail = $"{objTranspointWorkUpd.GroupName} - {objTranspointWorkUpd.GroupNameText}";
+            //            objTranspointWorkUpd.GroupNameOldText = listRoleUsers.Where(w => w.Code == objUserManagementChangeTemp.GroupNameOld).Select(s => s.ShortName).FirstOrDefault();
             //        }
-            //        objUserManagementIDCUpd.StartDate = objUserManagementChangeTemp.StartDate;
-            //        objUserManagementIDCUpd.StartDateText = string.IsNullOrEmpty(objUserManagementChangeTemp.StartDateText) ? objUserManagementChangeTemp.StartDate.ToString(FormatParameters.FORMAT_DATE) : objUserManagementChangeTemp.StartDateText;
-            //        objUserManagementIDCUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
-            //        objUserManagementIDCUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementChangeTemp.IpSetDetail) ? "" : objUserManagementChangeTemp.IpSetDetail;
-            //        objUserManagementIDCUpd.RestrictionFlag = 0;
-            //        objUserManagementIDCUpd.RestrictionFlagCheck = (objUserManagementIDCUpd.RestrictionFlag == 1) ? true : false;
+            //        objTranspointWorkUpd.StartDate = objUserManagementChangeTemp.StartDate;
+            //        objTranspointWorkUpd.StartDateText = string.IsNullOrEmpty(objUserManagementChangeTemp.StartDateText) ? objUserManagementChangeTemp.StartDate.ToString(FormatParameters.FORMAT_DATE) : objUserManagementChangeTemp.StartDateText;
+            //        objTranspointWorkUpd.IpSetCode = objUserManagementChangeTemp.IpSetCode;
+            //        objTranspointWorkUpd.IpSetDetail = string.IsNullOrEmpty(objUserManagementChangeTemp.IpSetDetail) ? "" : objUserManagementChangeTemp.IpSetDetail;
+            //        objTranspointWorkUpd.RestrictionFlag = 0;
+            //        objTranspointWorkUpd.RestrictionFlagCheck = (objTranspointWorkUpd.RestrictionFlag == 1) ? true : false;
 
-            //        objUserManagementIDCUpd.SubType = objUserManagementChangeTemp.SubType;
-            //        objUserManagementIDCUpd.AuthsecTypeName = objUserManagementChangeTemp.AuthsecTypeName;
-            //        objUserManagementIDCUpd.MailIdFlagName = objUserManagementChangeTemp.MailIdFlagName;
-            //        objUserManagementIDCUpd.CallApiAutoGeneratedPassword = objUserManagementChangeTemp.CallApiAutoGeneratedPassword;
+            //        objTranspointWorkUpd.SubType = objUserManagementChangeTemp.SubType;
+            //        objTranspointWorkUpd.AuthsecTypeName = objUserManagementChangeTemp.AuthsecTypeName;
+            //        objTranspointWorkUpd.MailIdFlagName = objUserManagementChangeTemp.MailIdFlagName;
+            //        objTranspointWorkUpd.CallApiAutoGeneratedPassword = objUserManagementChangeTemp.CallApiAutoGeneratedPassword;
 
-            //        objUserManagementIDCUpd.PosCodeOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosCodeOld) ? objUserManagementChangeTemp.PosCode : objUserManagementChangeTemp.PosCodeOld;
-            //        objUserManagementIDCUpd.PosNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosNameOld) ? objUserManagementChangeTemp.PosName : objUserManagementChangeTemp.PosNameOld;
-            //        objUserManagementIDCUpd.GroupNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.GroupNameOld) ? objUserManagementChangeTemp.GroupName : objUserManagementChangeTemp.GroupNameOld;
-            //        objUserManagementIDCUpd.FirstNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FirstNameOld) ? objUserManagementChangeTemp.FirstName : objUserManagementChangeTemp.FirstNameOld;
-            //        objUserManagementIDCUpd.LastNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.LastNameOld) ? objUserManagementChangeTemp.LastName : objUserManagementChangeTemp.LastNameOld;
-            //        objUserManagementIDCUpd.FullNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FullNameOld) ? objUserManagementChangeTemp.FullName : objUserManagementChangeTemp.FullNameOld;
-            //        objUserManagementIDCUpd.EmailAddressOld = string.IsNullOrEmpty(objUserManagementChangeTemp.EmailAddressOld) ? objUserManagementChangeTemp.EmailAddress : objUserManagementChangeTemp.EmailAddressOld;
-            //        objUserManagementIDCUpd.MobileNumberOld = string.IsNullOrEmpty(objUserManagementChangeTemp.MobileNumberOld) ? objUserManagementChangeTemp.MobileNumber : objUserManagementChangeTemp.MobileNumberOld;
-            //        objUserManagementIDCUpd.DateOfBirthOld = objUserManagementChangeTemp.DateOfBirthOld;
-            //        objUserManagementIDCUpd.GroupNameOldText = string.IsNullOrEmpty(objUserManagementIDCUpd.GroupNameOldText) ? objUserManagementIDCUpd.GroupNameText : objUserManagementIDCUpd.GroupNameOldText;
-            //        objUserManagementIDCUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashValueOld) ? objUserManagementIDCUpd.RoleToTransferCashValue : objUserManagementIDCUpd.RoleToTransferCashValueOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashNameOld) ? objUserManagementIDCUpd.RoleToTransferCashName : objUserManagementIDCUpd.RoleToTransferCashNameOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionOld) ? objUserManagementIDCUpd.RoleToTransferCashDescription : objUserManagementIDCUpd.RoleToTransferCashDescriptionOld;
-            //        objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld) ? objUserManagementIDCUpd.RoleToTransferCashDescriptionDetail : objUserManagementIDCUpd.RoleToTransferCashDescriptionDetailOld;
-            //        objUserManagementIDCUpd.StartDateOld = objUserManagementIDCUpd.StartDate;
-            //        objUserManagementIDCUpd.StartDateOldText = objUserManagementIDCUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
+            //        objTranspointWorkUpd.PosCodeOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosCodeOld) ? objUserManagementChangeTemp.PosCode : objUserManagementChangeTemp.PosCodeOld;
+            //        objTranspointWorkUpd.PosNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.PosNameOld) ? objUserManagementChangeTemp.PosName : objUserManagementChangeTemp.PosNameOld;
+            //        objTranspointWorkUpd.GroupNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.GroupNameOld) ? objUserManagementChangeTemp.GroupName : objUserManagementChangeTemp.GroupNameOld;
+            //        objTranspointWorkUpd.FirstNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FirstNameOld) ? objUserManagementChangeTemp.FirstName : objUserManagementChangeTemp.FirstNameOld;
+            //        objTranspointWorkUpd.LastNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.LastNameOld) ? objUserManagementChangeTemp.LastName : objUserManagementChangeTemp.LastNameOld;
+            //        objTranspointWorkUpd.FullNameOld = string.IsNullOrEmpty(objUserManagementChangeTemp.FullNameOld) ? objUserManagementChangeTemp.FullName : objUserManagementChangeTemp.FullNameOld;
+            //        objTranspointWorkUpd.EmailAddressOld = string.IsNullOrEmpty(objUserManagementChangeTemp.EmailAddressOld) ? objUserManagementChangeTemp.EmailAddress : objUserManagementChangeTemp.EmailAddressOld;
+            //        objTranspointWorkUpd.MobileNumberOld = string.IsNullOrEmpty(objUserManagementChangeTemp.MobileNumberOld) ? objUserManagementChangeTemp.MobileNumber : objUserManagementChangeTemp.MobileNumberOld;
+            //        objTranspointWorkUpd.DateOfBirthOld = objUserManagementChangeTemp.DateOfBirthOld;
+            //        objTranspointWorkUpd.GroupNameOldText = string.IsNullOrEmpty(objTranspointWorkUpd.GroupNameOldText) ? objTranspointWorkUpd.GroupNameText : objTranspointWorkUpd.GroupNameOldText;
+            //        objTranspointWorkUpd.RoleToTransferCashValueOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashValueOld) ? objTranspointWorkUpd.RoleToTransferCashValue : objTranspointWorkUpd.RoleToTransferCashValueOld;
+            //        objTranspointWorkUpd.RoleToTransferCashNameOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashNameOld) ? objTranspointWorkUpd.RoleToTransferCashName : objTranspointWorkUpd.RoleToTransferCashNameOld;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionOld) ? objTranspointWorkUpd.RoleToTransferCashDescription : objTranspointWorkUpd.RoleToTransferCashDescriptionOld;
+            //        objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld = string.IsNullOrEmpty(objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld) ? objTranspointWorkUpd.RoleToTransferCashDescriptionDetail : objTranspointWorkUpd.RoleToTransferCashDescriptionDetailOld;
+            //        objTranspointWorkUpd.StartDateOld = objTranspointWorkUpd.StartDate;
+            //        objTranspointWorkUpd.StartDateOldText = objTranspointWorkUpd.StartDateOld.ToString(FormatParameters.FORMAT_DATE);
 
-            //        //objUserManagementIDCUpd.StartDate = objUserManagementIDCUpd.BusinessDate;
-            //        objUserManagementIDCUpd.EndDateChangeRole = objUserManagementIDCUpd.ExpiryDate;
-            //        objUserManagementIDCUpd.ChoiceEndDateChangeRole = 0;
-            //        int numberDays = (objUserManagementIDCUpd.ExpiryDate - objUserManagementIDCUpd.StartDate).Days;
+            //        //objTranspointWorkUpd.StartDate = objTranspointWorkUpd.BusinessDate;
+            //        objTranspointWorkUpd.EndDateChangeRole = objTranspointWorkUpd.ExpiryDate;
+            //        objTranspointWorkUpd.ChoiceEndDateChangeRole = 0;
+            //        int numberDays = (objTranspointWorkUpd.ExpiryDate - objTranspointWorkUpd.StartDate).Days;
             //        if (numberDays <= 90)
-            //            objUserManagementIDCUpd.ChoiceEndDateChangeRole = 1;
+            //            objTranspointWorkUpd.ChoiceEndDateChangeRole = 1;
 
-            //        objUserManagementIDCUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
-            //        objUserManagementIDCUpd.GenderText = objUserManagementChangeTemp.GenderText;
-            //        objUserManagementIDCUpd.StaffPosCode = objUserManagementChangeTemp.StaffPosCode;
-            //        objUserManagementIDCUpd.StaffPosName = objUserManagementChangeTemp.StaffPosName;
-            //        objUserManagementIDCUpd.StaffDepartmentCode = objUserManagementChangeTemp.StaffDepartmentCode;
-            //        objUserManagementIDCUpd.StaffDepartmentName = objUserManagementChangeTemp.StaffDepartmentName;
-            //        objUserManagementIDCUpd.StaffPositionCode = objUserManagementChangeTemp.StaffPositionCode;
-            //        objUserManagementIDCUpd.StaffPositionName = objUserManagementChangeTemp.StaffPositionName;
-            //        objUserManagementIDCUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
-            //        objUserManagementIDCUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
+            //        objTranspointWorkUpd.GenderCode = objUserManagementChangeTemp.GenderCode;
+            //        objTranspointWorkUpd.GenderText = objUserManagementChangeTemp.GenderText;
+            //        objTranspointWorkUpd.StaffPosCode = objUserManagementChangeTemp.StaffPosCode;
+            //        objTranspointWorkUpd.StaffPosName = objUserManagementChangeTemp.StaffPosName;
+            //        objTranspointWorkUpd.StaffDepartmentCode = objUserManagementChangeTemp.StaffDepartmentCode;
+            //        objTranspointWorkUpd.StaffDepartmentName = objUserManagementChangeTemp.StaffDepartmentName;
+            //        objTranspointWorkUpd.StaffPositionCode = objUserManagementChangeTemp.StaffPositionCode;
+            //        objTranspointWorkUpd.StaffPositionName = objUserManagementChangeTemp.StaffPositionName;
+            //        objTranspointWorkUpd.StaffEmail = objUserManagementChangeTemp.StaffEmail;
+            //        objTranspointWorkUpd.StaffMobileNo = objUserManagementChangeTemp.StaffMobileNo;
             //        //Lấy theo QLNS khi thay đổi thông tin người dùng
-            //        //objUserManagementIDCUpd.EmailAddress = objUserManagementChangeTemp.StaffEmail;
-            //        //objUserManagementIDCUpd.MobileNumber = objUserManagementChangeTemp.StaffMobileNo;
-            //        objUserManagementIDCUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
-            //        objUserManagementIDCUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
-            //        objUserManagementIDCUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
+            //        //objTranspointWorkUpd.EmailAddress = objUserManagementChangeTemp.StaffEmail;
+            //        //objTranspointWorkUpd.MobileNumber = objUserManagementChangeTemp.StaffMobileNo;
+            //        objTranspointWorkUpd.ExistsInCore = objUserManagementChangeTemp.ExistsInCore;
+            //        objTranspointWorkUpd.ListFileId = string.IsNullOrEmpty(objUserManagementChangeTemp.ListFileId) ? "" : objUserManagementChangeTemp.ListFileId;
+            //        objTranspointWorkUpd.ReasonReject = string.IsNullOrEmpty(objUserManagementChangeTemp.ReasonReject) ? "" : objUserManagementChangeTemp.ReasonReject;
             //    }
 
             //    #endregion
 
             //    sNameView = "AuthorizeUserManagementIDC";
             //}
-            if (pFlagCall == EventFlag.EventFlag_Add.Value.ToString() && pId == 0
-                    && (pButtonType == EventBusinessCode.EventCode_TransPoint_AddNew.Code || pButtonType == ""))
-                sNameView = "UpdateListOfTransPointWork";
+            //if (pFlagCall == EventFlag.EventFlag_Add.Value.ToString()
+            //        && (pButtonType == EventBusinessCode.EventCode_TransPoint_AddNew.Code || pButtonType == ""))
+            //    sNameView = "UpdateListOfTransPointWork";
             //else if (pFlagCall == EventFlag.EventFlag_Edit.Value.ToString() && pId != 0 && pButtonType == FunctionTypeFlag.FunctionTypeFlag_ADDNEW_USER.Code)
             //    sNameView = "UpdateUserManagementIDC";
             //else if (pFlagCall == EventFlag.EventFlag_View.Value.ToString() && (string.IsNullOrEmpty(pButtonType) || pButtonType.Length > 2))
@@ -1123,16 +1093,17 @@ namespace VBSPOSS.Controllers
                     objTranspointUpd.CallApiResponseCode = string.IsNullOrEmpty(objTranspointUpd.CallApiResponseCode) ?"" : objTranspointUpd.CallApiResponseCode;
                     objTranspointUpd.CallApiResponseMsg = string.IsNullOrEmpty(objTranspointUpd.CallApiResponseMsg) ?"" : objTranspointUpd.CallApiResponseMsg;
                     objTranspointUpd.TxnStatus = string.IsNullOrEmpty(objTranspointUpd.TxnStatus) ?"" : objTranspointUpd.TxnStatus;
-
+                    objTranspointUpd.InterWardName = string.IsNullOrEmpty(objTranspointUpd.InterWardName) ?"" : objTranspointUpd.InterWardName;
+                    objTranspointUpd.IsInterWard = string.IsNullOrEmpty(objTranspointUpd.InterWardName) ? "" : "x";
                     objTranspointUpd.AddressDetail = string.IsNullOrEmpty(objTranspointUpd.AddressDetail) ? "" :objTranspointUpd.AddressDetail;
                     objTranspointUpd.AddressFull = string.IsNullOrEmpty(objTranspointUpd.AddressFull) ? "" :objTranspointUpd.AddressFull;
 
                     objTranspointUpd.PhoneSupport = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport) ? "" : objTranspointUpd.PhoneSupport;
                     objTranspointUpd.PhoneSupport01 = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport01) ? "" : objTranspointUpd.PhoneSupport01;
                     objTranspointUpd.PhoneSupport02 = string.IsNullOrEmpty(objTranspointUpd.PhoneSupport02) ? "" : objTranspointUpd.PhoneSupport02;
-                    objTranspointUpd.IsInCommune = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("1") ? "X" : "";
-                    objTranspointUpd.IsInPos = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("2") ? "X" : "";
-                    objTranspointUpd.IsInterWard = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("3") ? "X" : "";
+                    objTranspointUpd.IsInCommune = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("1") ? "x" : "";
+                    objTranspointUpd.IsInPos = objTranspointUpd.MaApDungList != null && objTranspointUpd.MaApDungList.Contains("2") ? "x" : "";
+                    
                     int iResultUpdate = _serviceTransPoint.UpdateListOfTransPointWork(objTranspointUpd, UserName, pFlagCall);
 
                     result = (iResultUpdate > 0) ? "0" : "99";

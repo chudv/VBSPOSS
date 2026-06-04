@@ -268,7 +268,7 @@
     function showEdit(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "Người dùng [" + dataItem.FullName + "]";
+        var sMessInfor = "Điểm giao dịch [" + dataItem.TxnPointName + "]";
         if (dataItem.Status.toString() == "0") {
             alert(sMessInfor + " đã được đánh dấu xóa nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
@@ -278,7 +278,7 @@
         else if (dataItem.Status.toString() == "4") {
             alert(sMessInfor + " đã được từ chối nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
-        else if (dataItem.FunctionType != "ADDNEW_USER") {
+        else if (dataItem.EventCode != "TRANSPOINT_ADDNEW") {
             alert(sMessInfor + " đã được phê duyệt nên không thể chỉnh sửa. Vui lòng kiểm tra lại!");
         }
         else
@@ -287,10 +287,10 @@
             mainWindow.kendoWindow({
                 width: "1024px",
                 height: "650px",
-                title: "Chỉnh sửa thông tin người dùng IDC",
+                title: "Chỉnh sửa thông tin điểm giao dịch",
                 content: {
-                    url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                    data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pFlagCall: "2", pButtonType: "" }
+                    url: '@Url.Action("ShowUpdateListOfTransPointWork", "ListOfTransPoint")',
+                    data: { pPosCode: dataItem.PosCode, pEventCode: dataItem.EventCode, pFlagCall: "2", pTxnPointCode: dataItem.TxnPointCode }
                 },
                 resizable: false,
                 visible: false,
@@ -344,7 +344,7 @@
         }
     }
 
-    function showDetailUserIDC(e) {
+    function showDetailTranspoint(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var grid = $("#gridMainIDC").data("kendoGrid");
@@ -354,11 +354,11 @@
         var sFlagCall = $("#EventFlag_ApprovalTemp").val();
         mainWindow.kendoWindow({
             width: "1000px",
-            height: "500px",
-            title: "Xem chi tiết thông tin người dùng IDC",
+            height: "650px",
+            title: "Xem chi tiết thông tin điểm giao dịch",
             content: {
-                url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
-                data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "14", pId: dataItem.Id }
+                url: '@Url.Action("ShowUpdateListOfTransPointWork", "ListOfTransPoint")',
+                data: { pPosCode: dataItem.PosCode, pEventCode: dataItem.EventCode, pFlagCall: "6", pTxnPointCode: dataItem.TxnPointCode }
             },
             resizable: false,
             visible: false,
@@ -379,22 +379,22 @@
     function showEditIDC(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var sMessInfor = "[" + dataItem.FullName + "]";
+        var sMessInfor = "[" + dataItem.TxnPointName + "]";
         var grid = $("#gridMainIDC").data("kendoGrid");
         // Kiểm tra trạng thái trước khi trình duyệt
         var deletedStatuses = [0, 1, 2, 4, 5];
         if (deletedStatuses.includes(dataItem.Status)) {
             if (dataItem.Status == 0) {
-                alert("Tạo lập yêu cầu thay đổi người dùng" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
+                alert("Điểm giao dịch" + sMessInfor + " đã được đánh dấu xóa rồi. Không thực hiện thay đổi!");
             }
             else if (dataItem.Status == 1 || dataItem.Status == 5) {
-                alert("Người dùng " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+                alert("Điểm giao dịch " + sMessInfor + " đang tạo lập, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 2) {
-                alert("Người dùng " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+                alert("Điểm giao dịch " + sMessInfor + " đã trình duyệt, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             else if (dataItem.Status == 4) {
-                alert("Người dùng " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
+                alert("Điểm giao dịch " + sMessInfor + " đã được từ chối, không thể thực hiện yêu cầu thay đổi chức năng. Vui lòng kiểm tra lại!");
             }
             return;
         }
@@ -405,7 +405,7 @@
         mainWindow.kendoWindow({
             width: "1000px",
             height: "700px",
-            title: "Yêu cầu chỉnh sửa thông tin người dùng IDC",
+            title: "Yêu cầu chỉnh sửa thông tin điểm giao dịch",
             content: {
                 url: '@Url.Action("ShowUpdateUserManagementIDC", "UserManagementIDC")',
                 data: { pPosCode: dataItem.PosCode, pUserId: dataItem.UserId, pButtonType: "10", pId: dataItem.Id }
@@ -447,29 +447,26 @@
                 .Suggest(true)
                 .AutoBind(true)
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:right;width:140px;padding-top: 7px;padding-right:5px;">Yêu cầu nghiệp vụ</label>
+            <label class="lbcontrol" style="color: navy;text-align:center;width:100px;padding-top: 7px;padding-right:5px;">Nghiệp vụ</label>
             @(Html.Kendo().ComboBox().Name("EventCode_Find")
                 .Filter(FilterType.Contains)
                 .DataTextField("Description")
                 .DataValueField("Code")
                 .BindTo((List<ValueConstModel>)ViewBag.EventBusinessCodes)
                 .Placeholder("Chọn nghiệp vụ yêu cầu")
-                .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
+                .HtmlAttributes(new { style = "width: 270px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .SelectedIndex(0))
             <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
-            @(Html.Kendo().TextBox().Name("TxnPointCode_Find")
-                .Placeholder("Mã điểm GD")
-                .HtmlAttributes(new { style = "width: 90px;padding-left: 3px;padding-right: 2px;color: green;" }))
             @(Html.Kendo().TextBox().Name("TxnPointName_Find")
-                .Placeholder("Tên điểm giao dịch")
-                .HtmlAttributes(new { style = "width: 140px;padding-left: 3px;padding-right: 2px;color: green;" }))
+                .Placeholder("Nhập Mã/Tên điểm giao dịch")
+                .HtmlAttributes(new { style = "width: 170px;padding-left: 3px;padding-right: 2px;color: green;" }))
             <label class="lbcontrol" style="width: 85px; vertical-align: bottom;color: navy;text-align:center; padding-left:0px;padding-right:3px;padding-top:7px; ">Trạng thái</label>
             @(Html.Kendo().DropDownList().Name("Status_Find")
                 .DataTextField("Text")
                 .DataValueField("Value")
-                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Phê duyệt", Value = "3" }, new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" } })
-                .HtmlAttributes(new { style = "color: green;width: 130px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
+                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" }, new SelectListItem() { Text = "Phê duyệt", Value = "3" } })
+                .HtmlAttributes(new { style = "color: green;width: 150px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
                 .SelectedIndex(0)
                 )
 
@@ -492,6 +489,16 @@
                 {
                     columns.Command(command =>
                     {
+                        command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
+                        {
+                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
+                            title = "Yêu cầu thay đổi điểm giao dịch",
+                            @class = "btn-EditIDC"
+                        });
+                    }).Width(80).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
+
+                    columns.Command(command =>
+                    {
                         command.Custom("ViewEdit").Text("<span style='color: blue;'></span>").Click("showEdit").HtmlAttributes(new
                         {
                             @class = "btn-view-edit",
@@ -504,26 +511,16 @@
                             title = "Đóng (đánh dấu xóa) điểm giao dịch",
                             @class = "btn-delete"
                         });
-                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailUserIDC").HtmlAttributes(new
+                        command.Custom("View").Text("<span style='color: blue;'></span>").Click("showDetailTranspoint").HtmlAttributes(new
                         {
                             style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Xem chi tiết iddeemr giao dịch",
+                            title = "Xem chi tiết điểm giao dịch",
                             @class = "btn-view"
                         });
                     }).Width(100).Title("Sửa/Xóa/Xem").HtmlAttributes(new { style = "text-align: center;" });
 
-                    columns.Command(command =>
-                    {
-                        command.Custom("EditIDC").Text("<span style='color: blue;'></span>").Click("showEditIDC").HtmlAttributes(new
-                        {
-                            style = "width: 20px !important; display: inline-block; vertical-align: middle;",
-                            title = "Yêu cầu thay đổi điểm giao dịch",
-                            @class = "btn-EditIDC"
-                        });
-                    }).Width(60).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
-
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.EventName).Title("Yêu cầu nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EventName).Title("Nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.EventCode).Hidden();
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(140).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosCode).Hidden();
@@ -532,12 +529,14 @@
                     columns.Bound(c => c.DistrictCode).Hidden();
                     columns.Bound(c => c.DistrictName).Hidden();
                     columns.Bound(c => c.CommuneCode).Hidden();
-                    columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(130).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    columns.Bound(c => c.TxnPointName).Title("Điểm giao dịch").Width(200).ClientTemplate("#=TxnPointCode# - #=TxnPointName#").HtmlAttributes(new { style = "text-align:left;" });
+                    //columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    //columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(150).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDate).Hidden();
-                    columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(120).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.TxnPointCode).Hidden();
 
                     columns.Bound(c => c.TimeBegin).Hidden();
                     columns.Bound(c => c.TimeEnd).Hidden();
@@ -553,7 +552,7 @@
                     columns.Bound(c => c.IsInterWard).Hidden();
                     columns.Bound(c => c.InterWardName).Hidden();
                     columns.Bound(c => c.EffectiveDate).Hidden();
-                    columns.Bound(c => c.EffectiveDateText).Title("Ngày hiệu lực").Width(80).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EffectiveDateText).Title("Ngày hiệu lực").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.TxnLocation).Title("Địa điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: center;" });
 
                     columns.Bound(c => c.AddressDetail).Hidden();
@@ -582,7 +581,7 @@
                     columns.Bound(c => c.CallApiResponseCode).Hidden();
                     columns.Bound(c => c.CallApiResponseMsg).Hidden();
                 })
-                .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
+                .HtmlAttributes(new { style = "height: 550px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
                 {
                     toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreateTransPointWork").HtmlAttributes(new { id = "btnCreateTransPointWork", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
