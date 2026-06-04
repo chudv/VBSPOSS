@@ -184,7 +184,7 @@ namespace VBSPOSS.ViewModels
 
         //add
      //   SubCommuneFeeLenArea
-            public string SubCommuneFeeLenArea { get; set; }
+        //    public string SubCommuneFeeLenArea { get; set; }
         public string VisitDate { get; set; }
         public string VisitDateText { get; set; }               //Thêm
         public string Times { get; set; }

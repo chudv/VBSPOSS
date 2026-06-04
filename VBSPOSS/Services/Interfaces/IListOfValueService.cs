@@ -133,5 +133,6 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pCommuneCode">Mã Xã/Phường</param>
         /// <returns></returns>
         List<ListOfTransPointViewModel> GetLovTransPointList(string pCommuneCode = "");
+
     }
 }
