@@ -911,6 +911,13 @@ namespace VBSPOSS.Services.Implements
                         .ToListAsync();
                 }
 
+                // === THÊM PHẦN LỌC EXCLUDE Ở ĐÂY ===
+                if (productGroupCode == "TIDE")
+                {
+                    lstOldParameter = lstOldParameter
+                        .Where(x => !IsExcludedTideProduct(x.ProductCode))
+                        .ToList();
+                }
                 var lstNewParameter = new List<ProductParameter>();
 
                 foreach (var old in lstOldParameter)
@@ -965,6 +972,16 @@ namespace VBSPOSS.Services.Implements
                 // Trường hợp lần đầu tiên (chưa có dữ liệu cũ)
                 if (lstOldParameter.Count == 0)
                 {
+                    //add lọc thêm
+                    var itemsToSave = items;
+
+                    if (productGroupCode == "TIDE")
+                    {
+                        itemsToSave = items
+                            .Where(item => !IsExcludedTideProduct(item.ProductCode))
+                            .ToList();
+                    }
+
                     foreach (var item in items)
                     {
                         lstNewParameter.Add(new ProductParameter
