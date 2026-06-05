@@ -534,6 +534,7 @@ namespace VBSPOSS.Services.Implements
         ///          '4' - Lấy danh sách các POS HSC/Chi nhánh: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; => Phải truyền thêm pPosCodeUser
         ///          '5' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD => Phải truyền thêm pPosCodeUser
         ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
+        ///          '8' - Lấy danh sách các POS của chi nhánh theo UserPosCode, với chi nhánh khác thì lấy riêng chi nhánh (KHÔNG lấy đến PGD)
         /// </param>
         ///  <param name="pDefaultValue">Giá trị mặc định (ví dụ: 0 cho logic mặc định, có thể dùng để giới hạn hoặc điều kiện bổ sung)</param>
         /// <param name="pMainPosCode">Mã chi nhánh. Không sử dụng truyền vào là ''</param>
@@ -541,13 +542,15 @@ namespace VBSPOSS.Services.Implements
         /// <param name="pStatus">Trạng thái bản ghi</param>
         /// <param name="pPosCodeUser">Mã pos của người dùng gọi đến</param>
         /// <param name="pUserName">Tên đăng nhập người dùng</param>
+        /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <returns>Danh sách bản ghi Chi nhánh</returns>
-        public List<ListOfPosViewModel> GetBranchSearch(string pFlagCondi, int pDefaultValue, string pMainPosCode, string pPosCode, string pStatus, string pPosCodeUser, string pUserName)
+        public List<ListOfPosViewModel> GetBranchSearch(string pFlagCondi, int pDefaultValue, string pMainPosCode, string pPosCode, 
+                                                string pStatus, string pPosCodeUser, string pUserName, int pUserGrade)
         {
             var answer = new List<ListOfPosViewModel>();
             try
             {
-                int userNameLevel = 1;
+                int userNameLevel = pUserGrade;
                 var profileBranchRoots = _dbContext.ListOfPoss.Where(w => !string.IsNullOrEmpty(w.Code) && (string.IsNullOrEmpty(pMainPosCode) || w.MainPosCode == pMainPosCode)
                                                                                 && (string.IsNullOrEmpty(pPosCode) || w.Code == pPosCode)).OrderBy(o => o.Code).ToList();
 
@@ -556,7 +559,7 @@ namespace VBSPOSS.Services.Implements
                                         ).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ToList();
 
                 List<ListOfPos> profileBranchLists = new List<ListOfPos>();
-                userNameLevel = GetLevelPosCode(pPosCodeUser);
+                //userNameLevel = GetLevelPosCode(pPosCodeUser);
                 if (pFlagCondi == "1")
                     profileBranchLists = profileBranchTMPs.Where(w => w.Code == "000100").OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ToList();
                 else if (pFlagCondi == "2")
@@ -607,6 +610,28 @@ namespace VBSPOSS.Services.Implements
                         profileBranchLists = profileBranchTMPs.Where(w=>w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
                     else if (userNameLevel == PosGrade.MAIN_POS)
                         profileBranchLists = profileBranchTMPs.Where(w => w.MainPosCode == pPosCodeUser && w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+                    else
+                        profileBranchLists = profileBranchTMPs.Where(w => w.Code == pPosCodeUser).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+                }
+                else if (pFlagCondi == "8")
+                {
+                    //'8' - Lấy danh sách các POS của chi nhánh theo UserPosCode, với chi nhánh khác thì lấy riêng chi nhánh(KHÔNG lấy đến PGD)
+                    if (userNameLevel == PosGrade.HEAD_POS)
+                        profileBranchLists = profileBranchTMPs.Where(w => w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+                    else if (userNameLevel == PosGrade.MAIN_POS || userNameLevel == PosGrade.SUB_POS)
+                    {
+                        var listPosOfBranch = profileBranchTMPs.Where(w => w.MainPosCode == pPosCodeUser || w.Code == pPosCodeUser).Select(s => s.MainPosCode).ToList();
+                        var profileBranchList01 = profileBranchTMPs.Where(w => listPosOfBranch.Contains(w.MainPosCode)
+                                        && w.Status == StatusLov.StatusOpenPOS).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+
+                        var profileBranchList02 = profileBranchTMPs.Where(w => w.MainPosCode != pPosCodeUser && w.Status == StatusLov.StatusOpenPOS
+                                        && w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
+
+                        if (profileBranchList01 != null && profileBranchList01.Count != 0)
+                            profileBranchLists.AddRange(profileBranchList01);
+                        if (profileBranchList02 != null && profileBranchList02.Count != 0)
+                            profileBranchLists.AddRange(profileBranchList02);
+                    }    
                     else
                         profileBranchLists = profileBranchTMPs.Where(w => w.Code == pPosCodeUser).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
                 }

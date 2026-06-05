@@ -102,8 +102,9 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStatus">Trạng thái bản ghi</param>
         /// <param name="pPosCodeUser">Mã pos của người dùng gọi đến</param>
         /// <param name="pUserName">Tên đăng nhập người dùng</param>
+        /// <param name="pUserGrade">Cấp User cần thống kê: 1 - PGD; 2 - Chi nhánh; 3 - TQ</param>
         /// <returns>Danh sách bản ghi Chi nhánh</returns>
-        List<ListOfPosViewModel> GetBranchSearch(string pFlagCondi, int pDefaultValue, string pMainPosCode, string pPosCode, string pStatus, string pPosCodeUser, string pUserName);
+        List<ListOfPosViewModel> GetBranchSearch(string pFlagCondi, int pDefaultValue, string pMainPosCode, string pPosCode, string pStatus, string pPosCodeUser, string pUserName, int pUserGrade);
 
 
         //List<ListOfPosViewModel> GetBranchSearch(string pFlagCondi, string pMainPosCode, string pPosCode, string pStatus, string pPosCodeUser, string pUserName);

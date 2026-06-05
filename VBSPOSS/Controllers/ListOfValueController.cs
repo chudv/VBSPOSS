@@ -196,6 +196,7 @@ namespace VBSPOSS.Controllers
         ///          '5' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
         ///          '6' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy 1 bản ghi Toàn hàng; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
         ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
+        ///          '8' - Lấy danh sách các POS của chi nhánh theo UserPosCode, với chi nhánh khác thì lấy riêng chi nhánh (KHÔNG lấy đến PGD)
         /// </param>
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất cả truyền vào là '0'</param>
         /// <param name="pShortName">Chỉ số xác định: 1 - Lấy tên viết tắt hiển thị Combobox; 0 - Lấy tên đầy đủ</param>
@@ -228,7 +229,7 @@ namespace VBSPOSS.Controllers
                 pUserPosCode = UserPosCode;
             pUserPosCode = (pUserPosCode == "ALL") ? "000100" : pUserPosCode;
 
-            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, pUserPosCode, UserName);
+            var listBranchs = _serviceLOV.GetBranchSearch(pFlagCondi, 0, sMainCode, sPosCode, pStatus, pUserPosCode, UserName, UserGrade);
 
             if (sTitleChoice != "")
                 data.Add(new { id = "", value = sTitleChoice });
@@ -262,6 +263,12 @@ namespace VBSPOSS.Controllers
                             sName = item.Name.Trim();
                             sShortName = item.ShortName.Trim();
                         }
+                    }
+                    else if (pFlagCondi == "8")
+                    {
+                        sName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.Name.Trim();
+                        sShortName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.ShortName.Trim();
+                        //000199 - Văn phòng Hội sở chính
                     }
                     else if (item.MainPosCode == item.Code)
                     {

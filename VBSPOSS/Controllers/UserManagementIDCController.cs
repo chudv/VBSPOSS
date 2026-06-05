@@ -132,7 +132,7 @@ namespace VBSPOSS.Controllers
                 if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) 
                     && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
                 {
-                    var listPosTMP = _serviceLOV.GetBranchSearch("99", 0, "", "", "", "", "");
+                    var listPosTMP = _serviceLOV.GetBranchSearch("99", 0, "", "", "", "", "", UserGrade);
                     if (listPosTMP != null && listPosTMP.Count != 0)
                     {
                         var sMainPosTemp = listPosTMP.Where(w => w.Code == pPosCode).Where(w => w.Status == StatusLov.StatusOpenPOS).Select(s => s.MainPosCode).FirstOrDefault();
