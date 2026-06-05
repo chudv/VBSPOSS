@@ -3,6 +3,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Globalization;
 using VBSPOSS.Constants;
 using VBSPOSS.Data;
 using VBSPOSS.Extensions;
@@ -359,6 +360,7 @@ namespace VBSPOSS.Controllers
             else if (pFlagCall == EventFlag.EventFlag_EditIDC.Value.ToString())        //Trường hợp thêm mới nghiệp vụ thay đổi thông tin điểm giao dịch
             {
                 #region ---3. Sự kiện thêm mới nghiệp vụ thay đổi thông tin điểm giao dịch --- 
+                //Lấy thông tin điểm giao dịch ở bảng ListOfTranspoint
                 var objTranspointFind01 = (_serviceTransPoint.GetListOfTransPointSearch("", pPosCode, "", pTxnPointCode, "", 0, 0, "", "")).FirstOrDefault();
                 if (objTranspointFind01 != null)
                 {
@@ -384,6 +386,9 @@ namespace VBSPOSS.Controllers
 
                     objListOfTransPointWorkUpd.TimeBegin = objTranspointFind01.TimeBegin;
                     objListOfTransPointWorkUpd.TimeEnd = objTranspointFind01.TimeEnd;
+                    objListOfTransPointWorkUpd.TimeBeginDate =DateTime.ParseExact(objTranspointFind01.TimeBegin,"H'h'mm",CultureInfo.InvariantCulture);                    
+                    objListOfTransPointWorkUpd.TimeEndDate =DateTime.ParseExact(objTranspointFind01.TimeEnd, "H'h'mm", CultureInfo.InvariantCulture);
+
                     objListOfTransPointWorkUpd.TimeBeginNum = objTranspointFind01.TimeBeginNum;
                     objListOfTransPointWorkUpd.TimeEndNum = objTranspointFind01.TimeEndNum;
                     objListOfTransPointWorkUpd.Hours = objTranspointFind01.Hours;
@@ -406,8 +411,8 @@ namespace VBSPOSS.Controllers
                     objListOfTransPointWorkUpd.PhoneSupport02 = objTranspointFind01.PhoneSupport02;
                     objListOfTransPointWorkUpd.TxnStatus = objTranspointFind01.TxnStatus;
                     objListOfTransPointWorkUpd.TxnStatusText = objTranspointFind01.TxnStatusText;
-                    objListOfTransPointWorkUpd.Status = objTranspointFind01.Status;
-                    objListOfTransPointWorkUpd.StatusText = objTranspointFind01.StatusText;
+                    objListOfTransPointWorkUpd.Status = StatusTrans.StatusCreated;
+                    objListOfTransPointWorkUpd.StatusText = StatusTrans.GetByValue(objListOfTransPointWorkUpd.Status).Description;
                     objListOfTransPointWorkUpd.Remark = objTranspointFind01.Remark;
 
                     objListOfTransPointWorkUpd.CreatedBy = objTranspointFind01.CreatedBy;
@@ -424,6 +429,11 @@ namespace VBSPOSS.Controllers
                     objListOfTransPointWorkUpd.CallApiResRecords = objTranspointFind01.CallApiResRecords;
                     objListOfTransPointWorkUpd.CallApiResponseCode = objTranspointFind01.CallApiResponseCode;
                     objListOfTransPointWorkUpd.CallApiResponseMsg = objTranspointFind01.CallApiResponseMsg;
+                    if(!string.IsNullOrEmpty(objTranspointFind01.IsInCommune))
+                        objListOfTransPointWorkUpd.MaApDungList = "1";
+                    else if(!string.IsNullOrEmpty(objTranspointFind01.IsInPos))
+                        objListOfTransPointWorkUpd.MaApDungList = "2";
+                    pButtonType = EventFlag.EventFlag_Add.Value.ToString();
                     sNameView = "UpdateInfoListOfTransPointWork";
                 }
                 #endregion
@@ -1157,7 +1167,7 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Reject"] = EventFlag.EventFlag_Reject.Value.ToString();
             TempData["UserGrade"] = UserGrade;
 
-            ViewBag.FunctionTypes = FunctionTypeFlag.GetOption();
+            ViewBag.EventCode = EventBusinessCode.GetListOfTransPointNoAdd();
             ViewBag.MailIdFlags = MailIdFlag.GetAll();
             ViewBag.AuthSecTypes = AuthSecType.GetAll();
             TempData["FlagEventCall"] = pFlagCall;
@@ -1187,8 +1197,8 @@ namespace VBSPOSS.Controllers
                     objTranspointUpd.PosName = string.IsNullOrEmpty(objTranspointUpd.PosName) ? "" : objTranspointUpd.PosName.Replace(" - ","").Replace("PGD NHCSXH ","PGD ");
                     objTranspointUpd.ProvinceCode = string.IsNullOrEmpty(objTranspointUpd.ProvinceCode) ? "" : objTranspointUpd.ProvinceCode;
                     objTranspointUpd.ProvinceName = string.IsNullOrEmpty(objTranspointUpd.ProvinceName) ? "" : objTranspointUpd.ProvinceName;
-                    objTranspointUpd.DistrictCode = string.IsNullOrEmpty(objTranspointUpd.DistrictCode) ? "" : objTranspointUpd.DistrictCode;
-                    objTranspointUpd.DistrictName = string.IsNullOrEmpty(objTranspointUpd.DistrictName) ? "" : objTranspointUpd.DistrictName;
+                    objTranspointUpd.DistrictCode = string.IsNullOrEmpty(objTranspointUpd.DistrictCode) ? "00" : objTranspointUpd.DistrictCode;
+                    objTranspointUpd.DistrictName = string.IsNullOrEmpty(objTranspointUpd.DistrictName) ? "-" : objTranspointUpd.DistrictName;
                     objTranspointUpd.CommuneCode = string.IsNullOrEmpty(objTranspointUpd.CommuneCode) ? "" : objTranspointUpd.CommuneCode;
                     objTranspointUpd.CommuneName = string.IsNullOrEmpty(objTranspointUpd.CommuneName) ? "" : objTranspointUpd.CommuneName;
                     objTranspointUpd.TxnPointCode = string.IsNullOrEmpty(objTranspointUpd.TxnPointCode) ? "" : objTranspointUpd.TxnPointCode;
