@@ -423,14 +423,17 @@
         var statusColIndex = gridMainIDCApprovalAuto.columns.findIndex(col => col.field === "StatusText");
     
         if (statusColIndex === -1) return;
-
+        alert("Gọi rồi");
         gridMainIDCApprovalAuto.tbody.find("tr").each(function (index) {
             var data = gridMainIDCApprovalAuto.dataItem(this);
             if (!data) return;
 
             let newWidth = 55; // default
             if(data.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val() && data.Status == 8)
-                newWidth = 80;
+                {
+                    alert("Gọi rồi data.FunctionType="+data.FunctionType);
+                    newWidth = 80;
+                }
             // Áp dụng width cho cột
             gridMainIDCApprovalAuto.columns[statusColIndex].width = newWidth;
         });
@@ -1481,13 +1484,13 @@
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có ngày bắt đầu lớn hơn ngày kết thúc. Vui lòng kiểm tra lại!");
                 else if (resultSaveUpdate == "22")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có đơn vị mới giống đơn vị cũ. Vui lòng kiểm tra lại!");
-                else if (resultSaveUpdate == "23" || result == "24")
+                else if (resultSaveUpdate == "23" || resultSaveUpdate == "24")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin địa chỉ email không hợp lệ. Vui lòng kiểm tra lại!");
                 else if (resultSaveUpdate == "25")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin số điện thoại không hợp lệ. Vui lòng kiểm tra lại!");
                 else if (resultSaveUpdate == "26")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin đã tồn tại. Vui lòng kiểm tra lại!");
-                else if (result == "30")
+                else if (resultSaveUpdate == "30")
                     alert("Tài khoản người dùng [" + lcUserInfo + "] còn giao dịch trong hàng chờ (Pending), không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeNameChoice + "]. Vui lòng kiểm tra lại!");
                 else {
                     if (lcFlagCallView == $("#EventFlag_ApprovalView").val())
