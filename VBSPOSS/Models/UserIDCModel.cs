@@ -148,6 +148,29 @@ namespace VBSPOSS.Models
         public int NumberOfCloseUserValid { get; set; }
         public int NumberOfRestoreUserValid { get; set; }
         public int NumberOfOtherUserValid { get; set; }
+
+        public int NumberOfAddNewUserValidApproval { get; set; }
+        public int NumberOfResetPasswordValidApproval { get; set; }
+        public int NumberOfEnableUserValidApproval { get; set; }
+        public int NumberOfDisableUserValidApproval { get; set; }
+        public int NumberOfModifyUserValidApproval { get; set; }
+        public int NumberOfChangePosValidApproval { get; set; }
+        public int NumberOfChangeRoleValidApproval { get; set; }
+        public int NumberOfCloseUserValidApproval { get; set; }
+        public int NumberOfRestoreUserValidApproval { get; set; }
+        public int NumberOfOtherUserValidApproval { get; set; }
+
+        public int NumberOfAddNewUserValidAuthorize { get; set; }
+        public int NumberOfResetPasswordValidAuthorize { get; set; }
+        public int NumberOfEnableUserValidAuthorize { get; set; }
+        public int NumberOfDisableUserValidAuthorize { get; set; }
+        public int NumberOfModifyUserValidAuthorize { get; set; }
+        public int NumberOfChangePosValidAuthorize { get; set; }
+        public int NumberOfChangePosValidAuthorizeReceive { get; set; }
+        public int NumberOfChangeRoleValidAuthorize { get; set; }
+        public int NumberOfCloseUserValidAuthorize { get; set; }
+        public int NumberOfRestoreUserValidAuthorize { get; set; }
+        public int NumberOfOtherUserValidAuthorize { get; set; }
         public string StartDatePeriodText { get; set; }
         public string SumaryStatus { get; set; }
     }

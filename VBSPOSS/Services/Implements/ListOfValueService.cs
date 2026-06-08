@@ -533,10 +533,11 @@ namespace VBSPOSS.Services.Implements
         ///          '3' - Lấy danh sách các POS Chi nhánh/PGD, trừ POS Hội sở chính (000100)
         ///          '4' - Lấy danh sách các POS HSC/Chi nhánh: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; => Phải truyền thêm pPosCodeUser
         ///          '5' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD => Phải truyền thêm pPosCodeUser
+        ///          '6' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy 1 bản ghi Toàn hàng; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
         ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
         ///          '8' - Lấy danh sách các POS của chi nhánh theo UserPosCode, với chi nhánh khác thì lấy riêng chi nhánh (KHÔNG lấy đến PGD)
         /// </param>
-        ///  <param name="pDefaultValue">Giá trị mặc định (ví dụ: 0 cho logic mặc định, có thể dùng để giới hạn hoặc điều kiện bổ sung)</param>
+        /// <param name="pDefaultValue">Giá trị mặc định (ví dụ: 0 cho logic mặc định, có thể dùng để giới hạn hoặc điều kiện bổ sung)</param>
         /// <param name="pMainPosCode">Mã chi nhánh. Không sử dụng truyền vào là ''</param>
         /// <param name="pPosCode">Mã POS. Không sử dụng truyền vào là ''</param>
         /// <param name="pStatus">Trạng thái bản ghi</param>
@@ -559,7 +560,6 @@ namespace VBSPOSS.Services.Implements
                                         ).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ToList();
 
                 List<ListOfPos> profileBranchLists = new List<ListOfPos>();
-                //userNameLevel = GetLevelPosCode(pPosCodeUser);
                 if (pFlagCondi == "1")
                     profileBranchLists = profileBranchTMPs.Where(w => w.Code == "000100").OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ToList();
                 else if (pFlagCondi == "2")
@@ -595,7 +595,7 @@ namespace VBSPOSS.Services.Implements
                     else
                         profileBranchLists = profileBranchTMPs.Where(w => w.Code.Substring(0, 4) == pPosCodeUser.Substring(0, 4) && w.PosFlag == PosGrade.PosGrade_MainPos).OrderBy(o => o.MainPosCode).ThenBy(o => o.PosFlag).ThenBy(o => o.Code).ThenBy(o => o.Status).ToList();
                 }
-                else if (pFlagCondi == "5" || pFlagCondi == "6")
+                else if (pFlagCondi == "5" || pFlagCondi == "6" || pFlagCondi == "9")
                 {
                     if (userNameLevel == PosGrade.HEAD_POS)
                         profileBranchLists = profileBranchTMPs;

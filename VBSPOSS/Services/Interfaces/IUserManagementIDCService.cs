@@ -370,7 +370,84 @@ namespace VBSPOSS.Services.Interfaces
         ///                 3 - Đã mở và đóng không còn tồn quỹ tiền mặt
         /// </returns>
         int CheckOpenCashByUserId(string pUserId, string pReportDate);
-        
+
+        /// <summary>
+        /// Hàm thực hiện gọi API idcPendingTxn/lmsPendingTxn Lấy danh sách giao dịch Pending theo người dùng
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/idcPendingTxn
+        /// http://10.63.54.51:7003/vbsp/internal/api/v1/lmsPendingTxn
+        /// </summary>
+        /// <param name="requestInput">Thông tin đầu vào. Ex:
+        ///     {
+        ///         "userId": "68510"
+        ///     }
+        ///     Hoặc
+        ///     {
+        ///         "userId": "20047"
+        ///     }
+        /// 
+        /// </param>
+        /// <param name="pApiName">Tên API truyền vào. Nếu trống sẽ lấy cả 2 API vào (EsbApiName.LMSPendingTxn)</param>
+        /// <param name="pUserNameUpd">Người dùng của VBSPOSS thực hiện</param>
+        /// <returns>Kết quả trả về. Ex:
+        /// Nếu là idcPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "6",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:46:38"
+        ///             },
+        ///             {
+        ///                 "txnDt": "20260302",
+        ///                 "txnNarr": "Cash Deposit  ",
+        ///                 "tranAmt": "600000",
+        ///                 "batchNum": "7",
+        ///                 "txnType": "Tạo lập, chỉnh sửa giao dịch Nộp/Rút tiền mặt",
+        ///                 "branchCd": "002505",
+        ///                 "tranEntTime": "20260403 16:47:17"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// Nếu là lmsPendingTxn
+        ///     {
+        ///         "txnStatus": "Success",
+        ///         "record": [
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             },
+        ///             {
+        ///                 "txnRefNum": "6600000733118753",
+        ///                 "mkrDt": "2026-02-26 16:57:51",
+        ///                 "mkrId": "68510",
+        ///                 "branchCd": "004301",
+        ///                 "status": "Pending for Authorize"
+        ///             }
+        ///         ],
+        ///         "responseCode": "00000",
+        ///         "responseMsg": "Api Invocation Success"
+        ///     }
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        Task<PendingTransAPIResponseViewModel> GetPendingTransactionsByApiPendingTxn(PendingTransRequestViewModel requestInput, string pApiName, string pUserNameUpd);
+
         //Task<List<long>> SaveAttachedFiles(long configureId, List<AttachedFileInfo> attachedFiles, string userId);
 
         /// <summary>

@@ -430,37 +430,61 @@
                     columns.Bound(c => c.OrderNoText).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.PosName).Title("Đơn vị").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.StartDatePeriodText).Title("Khoảng thời gian").Width(100).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Group(groupCountRequest => groupCountRequest.Title("Số lượng yêu cầu hàng chờ")
-                    .Columns(infoCountRequest =>
+                    columns.Group(groupCountRequest => groupCountRequest.Title("Số lượng yêu cầu hàng chờ trình duyệt")
+                    .Columns(infoCountRequestApproval =>
                     {
-                        infoCountRequest.Bound(x => x.NumberOfAddNewUser).Title("Tạo mới").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfResetPassword).Title("Đổi mật khẩu").Width(60).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfEnableUser).Title("Mở khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfDisableUser).Title("Khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfModifyUser).Title("Chỉnh sửa").Width(60).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfChangePos).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfChangeRole).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfCloseUser).Title("Đóng User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequest.Bound(x => x.NumberOfRestoreUser).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfAddNewUserValidApproval).Title("Tạo mới").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfResetPasswordValidApproval).Title("Đổi mật khẩu").Width(60).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfEnableUserValidApproval).Title("Mở khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfDisableUserValidApproval).Title("Khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfModifyUserValidApproval).Title("Chỉnh sửa").Width(60).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfChangePosValidApproval).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfChangeRoleValidApproval).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfCloseUserValidApproval).Title("Hủy User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestApproval.Bound(x => x.NumberOfRestoreUserValidApproval).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                     }));
-                    columns.Group(groupCountRequestValid => groupCountRequestValid.Title("Số lượng yêu cầu hợp lệ hàng chờ")
-                    .Columns(infoCountRequestValid =>
+                    columns.Group(groupCountRequestValid => groupCountRequestValid.Title("Số lượng yêu cầu hàng chờ phê duyệt")
+                    .Columns(infoCountRequestAuth =>
                     {
-                        infoCountRequestValid.Bound(x => x.NumberOfAddNewUserValid).Title("Tạo mới").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfResetPasswordValid).Title("Đổi mật khẩu").Width(60).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfEnableUserValid).Title("Mở khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfDisableUserValid).Title("Khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfModifyUserValid).Title("Chỉnh sửa").Width(60).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfChangePosValid).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfChangeRoleValid).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfCloseUserValid).Title("Hủy User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
-                        infoCountRequestValid.Bound(x => x.NumberOfRestoreUserValid).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfAddNewUserValidAuthorize).Title("Tạo mới").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfResetPasswordValidAuthorize).Title("Đổi mật khẩu").Width(60).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfEnableUserValidAuthorize).Title("Mở khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfDisableUserValidAuthorize).Title("Khóa").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfModifyUserValidAuthorize).Title("Chỉnh sửa").Width(60).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfChangePosValidAuthorize).Title("Đổi POS").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfChangePosValidAuthorizeReceive).Title("Đổi POS đơn vị nhận").Width(80).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfChangeRoleValidAuthorize).Title("Đổi quyền").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfCloseUserValidAuthorize).Title("Hủy User").Width(50).HtmlAttributes(new { style = "text-align: right;" });
+                        infoCountRequestAuth.Bound(x => x.NumberOfRestoreUserValidAuthorize).Title("Phục hồi").Width(50).HtmlAttributes(new { style = "text-align: right;" });
                     }));
                     columns.Bound(c => c.StylePrint).Hidden();
                     columns.Bound(c => c.OrderNo).Hidden();
                     columns.Bound(c => c.MainPosCode).Hidden();
                     columns.Bound(c => c.MainPosName).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
+
+                    columns.Bound(c => c.NumberOfAddNewUser).Hidden();
+                    columns.Bound(c => c.NumberOfResetPassword).Hidden();
+                    columns.Bound(c => c.NumberOfEnableUser).Hidden();
+                    columns.Bound(c => c.NumberOfDisableUser).Hidden();
+                    columns.Bound(c => c.NumberOfModifyUser).Hidden();
+                    columns.Bound(c => c.NumberOfChangePos).Hidden();
+                    columns.Bound(c => c.NumberOfChangeRole).Hidden();
+                    columns.Bound(c => c.NumberOfCloseUser).Hidden();
+                    columns.Bound(c => c.NumberOfRestoreUser).Hidden();
+                    columns.Bound(c => c.NumberOfOtherUser).Hidden();
+
+                    columns.Bound(c => c.NumberOfAddNewUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfResetPasswordValid).Hidden();
+                    columns.Bound(c => c.NumberOfEnableUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfDisableUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfModifyUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfChangePosValid).Hidden();
+                    columns.Bound(c => c.NumberOfChangeRoleValid).Hidden();
+                    columns.Bound(c => c.NumberOfCloseUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfRestoreUserValid).Hidden();
+                    columns.Bound(c => c.NumberOfOtherUserValid).Hidden();
+
                 })
                 .HtmlAttributes(new { style = "height: 680px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>

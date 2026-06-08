@@ -128,6 +128,16 @@
         background-color: #e6f3ff !important;
         cursor: pointer;
     }
+
+    #gridMainIDCApproval .k-pager {
+        height: 27px;
+    }
+
+    #gridMainIDCApproval .k-grid-toolbar {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
 </style>
 <script>
    
@@ -161,6 +171,30 @@
             pUserPosCode: "",
             pUserName: "",
             pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadListPosCodeNewWhenChangePos() {
+        var lcMainPosTemp = sMainPosCodeNewChangeInfo;
+        return {
+            pFlagCondi: "9",
+            pStatus: "O",
+            pShortName: "1",
+            pTitleChoice: "--- Chọn đơn vị mới chuyển đến ---",
+            pFlagTextShow: "1",
+            pUserPosCode: lcMainPosTemp,
+            pUserName: "",
+            pFlagWholeBank: 1
+        };
+    }
+
+    function paramLoadListGroupNameNewWhenChangePos() {
+        var cboPosCodeNewWhenChangePos = $("#PosCodeNewWhenChangePos").data("kendoComboBox");
+        var lcPosCodeNewChoiceTemp = cboPosCodeNewWhenChangePos.value();
+        return {
+            pPosCode: lcPosCodeNewChoiceTemp,// $("#UserPosCodeView").val(),
+            pTitleChoice: "---Chọn nhóm quyền mới cho người dùng chuyển đến---",
+            pFlagShow: "3"
         };
     }
 
@@ -338,10 +372,9 @@
         // Phần label 
         var totalRecordTmp01 = grid.dataSource.data().length || 0;
                         $("#idRowChoiceTmp").text("Tổng số yêu cầu: " + totalRecordTmp01);
-
-
         //Set lại tài khoản đang xem
         $("#divInforUserSelect").text("");
+        sMainPosCodeNewChangeInfo = "";
     }
 
     function updateSelectedRowIdUsers() {
@@ -413,7 +446,11 @@
         var lcUserGradeView = $("#UserGradeView").val();
         var lcFunctionCode = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
         var lcFunctionName = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
-
+        $("#idChangeInfoWithChangePosDiv").hide();
+        if(lcFunctionCode ==  $("#FunctionTypeFlag_CHANGE_POSView").val() && lcFlagCallView == $("#EventFlag_AuthorizeView").val() && lcStatusSelectRow == 8) {
+            $("#idChangeInfoWithChangePosDiv").show();
+        }
+       
         refreshGridIDCApproval();
     }
 
@@ -707,7 +744,10 @@
             alert('Please allow popups for this website');
         }
     }
-
+    
+    var sMainPosCodeNewChangeInfo = "";
+    var sGroupNameNewChangeInfo = "";
+    var lcStatusSelectRow = -1;
     function onRowSelectUserId(e) {
         $("#_no_file_attachIdDocumentApproval").text("");
         $("#divInforUserSelect").text("");
@@ -718,14 +758,71 @@
         }
         // Lấy row đang được chọn
         var selectedRow = this.select();           // "this" ở đây là Grid
-
+        sGroupNameNewChangeInfo = "";
+        lcStatusSelectRow = -1;
         if (selectedRow.length > 0) {
             var dataItem = gridApprovalUserIDC.dataItem(selectedRow);   // ← Đây là dataItem bạn cần
             add_AttachFilesLinkOfUserId(dataItem.ListFileId, dataItem.UserId)
             $("#divInforUserSelect").text(" Tài khoản đang xem " + dataItem.UserId + " | " + dataItem.FullName + "   ");
+            sGroupNameNewChangeInfo = dataItem.GroupName;
+            sMainPosCodeNewChangeInfo = dataItem.MainPosCode;
+            lcStatusSelectRow = dataItem.Status;
         }
         else {
-            console.log("Không có bản ghi nào được chọn");
+            console.log("Không có bản ghi nào được chọn. Vui lòng kiểm tra lại!");
+        }
+        var lcFlagCallViewFlag = $("#FlagCallView").val();
+        var lcFunctionCodeFlag = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
+        
+        $("#idChangeInfoWithChangePosDiv").hide();
+        if (lcFunctionCodeFlag ==  $("#FunctionTypeFlag_CHANGE_POSView").val() && lcFlagCallViewFlag == $("#EventFlag_AuthorizeView").val() && lcStatusSelectRow == 8) {
+            $("#idChangeInfoWithChangePosDiv").show();
+            reLoadListPosCode();
+        }
+    }
+
+    function reLoadListPosCode() {
+        var cboPosCodeNewWhenChangePos = $("#PosCodeNewWhenChangePos").data("kendoComboBox");
+        if (cboPosCodeNewWhenChangePos != null) {
+            cboPosCodeNewWhenChangePos.dataSource.read();
+        }
+        cboPosCodeNewWhenChangePos.value(sMainPosCodeNewChangeInfo);
+        cboPosCodeNewWhenChangePos.trigger("change");
+
+        Change_PosCodeNew();
+    }
+
+    function Change_PosCodeNew() {
+        var cboGroupNameNewWhenChangePos = $("#GroupNameNewWhenChangePos").data("kendoComboBox");
+        if (cboGroupNameNewWhenChangePos != null) {
+            cboGroupNameNewWhenChangePos.dataSource.read();
+        }
+        cboGroupNameNewWhenChangePos.value(sGroupNameNewChangeInfo);
+        cboGroupNameNewWhenChangePos.trigger("change");
+    }
+
+    var roleListNews;
+    function Change_RoleOfUserIDCNew() {
+        $("#lblRoleToTransferCashDescriptionDetailNewChange").text("");
+        var objGroupNameSelectChangeNew = $("#GroupNameNewWhenChangePos").data("kendoComboBox");
+        var lcGroupNameText = objGroupNameSelectChangeNew.text();
+        var objGroupIdNew = objGroupNameSelectChangeNew.value();
+        if (objGroupIdNew != null) {
+            $.ajax({
+                type: "GET",
+                data: {
+                    pUserRole: objGroupIdNew
+                },
+                url: "../ListOfValue/GetRoleToTransferCashByUserRole",
+                success: function (data) {
+                    roleListNews = data;
+                    if (roleListNews != null && roleListNews.length != 0) {
+                        if (roleListNews[0].RoleToTransferCashValue == "Y")
+                            $("#lblRoleToTransferCashDescriptionDetailNewChange").text("Có quyền TM");
+                        else $("#lblRoleToTransferCashDescriptionDetailNewChange").text("Không có quyền TM");
+                    }
+                }
+            });
         }
     }
 </script>
@@ -812,7 +909,7 @@
                 {
                     columns.Template("<input type='checkbox' class='depProductCheckSelect' />").ClientHeaderTemplate("<input type='checkbox' id='chkSelectAllProducts' />")
                     .Title("")
-                    .Width(37)
+                    .Width(35)
                     .HeaderHtmlAttributes(new { style = "text-align:center;" })
                     .HtmlAttributes(new { style = "text-align:center;" });
                     columns.Command(command =>
@@ -837,17 +934,17 @@
                         });
                     }).Width(42).Title("Xem").HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.OrderNo).Title("STT").Width(40).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(120).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.FunctionTypeName).Title("Nghiệp vụ").Width(100).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.PosName).Title("Đơn vị").Width(110).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.UserId).Title("Tài khoản").Width(62).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.FullName).Title("Họ tên").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.FullName).Title("Họ tên").Width(110).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupNameText).Title("Nhóm quyền").HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.GroupName).Hidden();
                     columns.Bound(c => c.StartDate).Title("Ngày bắt đầu").Format("{0:dd/MM/yyyy}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.StartDateText).Hidden();
                     columns.Bound(c => c.CreatedDate).Title("Ngày đề nghị").Format("{0:dd/MM/yyyy}").Width(80).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.DescriptionUserRequest).Title("Mô tả").Width(130).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(60).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.DescriptionUserRequest).Title("Mô tả").Width(160).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.StatusText).Title("Trạng thái").Width(55).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.Id).Hidden();
                     columns.Bound(c => c.PosCode).Hidden();
                     columns.Bound(c => c.StaffId).Hidden(); ;
@@ -891,7 +988,7 @@
                     columns.Bound(c => c.AuthorizeUserIDC).Hidden();
                     columns.Bound(c => c.ListFileId).Hidden();
                 })
-                .HtmlAttributes(new { style = "height: 460px;color: navy; border: 1px solid #ddd;" })
+                .HtmlAttributes(new { style = "height: 400px;color: navy; border: 1px solid #ddd;" })
                 .ToolBar(toolbar =>
                 {
                     @* toolbar.Custom().IconClass("k-icon k-i-file-pdf").Text("In tờ trình").HtmlAttributes(new { id = "btnPrintToTrinh", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;", title = "In tờ trình yêu cầu về người dùng" }); *@
@@ -978,10 +1075,41 @@
                 }).ImageUrl(Url.Content("~/images/note_add.png")).Content("Trình duyệt &nbsp;"))
             &nbsp;
             @(Html.Kendo().Button().Name("btnCloseApproval").Events(ev => ev.Click("onCloseUpdateApproval")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 95px; font-weight:bold; color: blue;", title = "Đóng lại màn hình cập nhật thông tin" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
-
         </div>
-
     </div>
+
+    <div id="idChangeInfoWithChangePosDiv" class="row" style="margin-bottom: 1px; padding-top: 5px; padding-left: 10px; padding-bottom: 0px;">
+        <div class="col-md-12" style="vertical-align: bottom; color: navy;">
+            <label class="lbcontrol" style="width: 80px; vertical-align: bottom;color: navy;text-align:left; padding-left:0px;padding-right:0px;padding-top:7px;">Đơn vị mới</label>
+            @(Html.Kendo().ComboBox().Name("PosCodeNewWhenChangePos")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị mới ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListBranchs", "ListOfValue").Data("paramLoadListPosCodeNewWhenChangePos"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 250px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .Events(e => e.Change("Change_PosCodeNew"))
+                .Suggest(true)
+                .AutoBind(false)
+                .SelectedIndex(0))
+            <label class="lbcontrol" style="width: 130px; vertical-align: bottom;color: navy;text-align:right; padding-left:0px;padding-right:7px;padding-top:7px; ">Nhóm quyền mới</label>
+            @(Html.Kendo().ComboBox().Name("GroupNameNewWhenChangePos")
+                .Filter(FilterType.Contains)
+                .Placeholder("--- Đơn vị mới ---")
+                .DataTextField("value")
+                .DataValueField("id")
+                .ClearButton(false)
+                .DataSource(source => { source.Read(read => { read.Action("GetListRoleOfUserIDC", "ListOfValue").Data("paramLoadListGroupNameNewWhenChangePos"); }).ServerFiltering(false); })
+                .HtmlAttributes(new { style = "width: 400px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;color: green;!important; class='form - control';" })
+                .Events(e => e.Change("Change_RoleOfUserIDCNew"))
+                .Suggest(true)
+                .AutoBind(false)
+                .SelectedIndex(0))
+            <label id="lblRoleToTransferCashDescriptionDetailNewChange" class="lbcontrol" style="color: maroon;font-weight:normal; text-align:left;width:130px;padding-left:5px;padding-top: 7px;padding-right: 0px!important;"></label>
+        </div>
+    </div>
+
 
     <div id="divAuthorizeRequestUser" class="row" style="padding-top: 5px;">
         <div class="col-md-9 d-flex align-items-center">
@@ -994,6 +1122,7 @@
             @(Html.Kendo().Button().Name("btnCloseAuthorize").Events(ev => ev.Click("onCloseUpdateAuthorize")).HtmlAttributes(new { type = "button", style = "height: 25px;width: 92px; font-weight:bold; color: blue;", title = "Đóng lại màn hình phê duyệt" }).ImageUrl(Url.Content("~/images/close_icon.gif")).Content("Quay ra"))
         </div>
     </div>
+
 </div>
 
 
@@ -1130,7 +1259,9 @@
         var lcUserGradeView = $("#UserGradeView").val();
         var lcFlagCallView = $("#FlagCallView").val();
         var lcFunctionTypeNameChoice = $("#FunctionTypeApproval_Find").data("kendoComboBox").text();
-        var lcUserInfo = "";
+        var lcUserInfo = "", lcMainPosCodeRow = "",lcPosCodeRow = "", lcFunctionTypeRow = "";
+        var lcPosCodeNewWhenChangePos = "";
+        var lcGroupNameNewWhenChangePos = "";
         var grid = $("#gridMainIDCApproval").data("kendoGrid");
         grid.tbody.find(".depProductCheckSelect:checked").each(function () {
             var row = $(this).closest("tr");
@@ -1155,13 +1286,39 @@
                 var lcSystemDateTmp = dataItem.SystemDateText;
                 var dSystemDateTmp = stringToDate(lcSystemDateTmp, "dd/MM/yyyy", "/");
 
-                if (dataItem.functionType == $("#FunctionTypeFlag_CHANGE_ROLEView").val()) {
+                if (dataItem.FunctionType == $("#FunctionTypeFlag_CHANGE_ROLEView").val()) {
                     if (dStartDateTmp > dSystemDateTmp) {
-                        alert("Phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] có ngày hiệu lực [" + lcStartDateTmp + "] lớn hơn ngày hiện tại [" + lcSystemDate + "]. Vui lòng kiểm tra lại!\n Chú ý: Yêu cầu này sẽ được hệ thống tự động phê duyệt vào đầu ngày [" + lcStartDateTmp + "] ");
+                        alert("Phê duyệt yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] có ngày bắt đầu [" + lcStartDateTmp + "] lớn hơn ngày hiện tại của hệ thống [" + lcSystemDateTmp + "]. Vui lòng kiểm tra lại!\n Chú ý: Yêu cầu này sẽ được hệ thống tự động phê duyệt vào đầu ngày [" + lcStartDateTmp + "] ");
                         return;
                     }
                 }
+                var requireFileTypesCheckDate = [$("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_RESTORE_USERView").val()];
+
+                if (requireFileTypesCheckDate.includes(dataItem.FunctionType)) {
+                    if (dStartDateTmp > dSystemDateTmp) {
+                        alert("Phê duyệt yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "] có ngày bắt đầu [" + lcStartDateTmp + "] lớn hơn ngày hiện tại của hệ thống [" + lcSystemDateTmp + "]. Vui lòng kiểm tra lại!");
+                        return;
+                    }
+                }
+                //Kiểm tra phê duyệt chuyển POS khác khi nhánh khi Chấp nhận ở chi nhánh nhận về.
+                if (dataItem.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val() && dataItem.Status == 8) {
+                    if (dataItem.MainPosCode != dataItem.MainPosCodeOld) {
+                        lcPosCodeNewWhenChangePos = $("#PosCodeNewWhenChangePos").data("kendoComboBox").value();
+                        lcGroupNameNewWhenChangePos = $("#GroupNameNewWhenChangePos").data("kendoComboBox").value();
+                        if (lcPosCodeNewWhenChangePos == null || lcPosCodeNewWhenChangePos == "") {
+                            alert("Bạn hãy chọn đơn vị cho người dùng chuyển đến chi nhánh trước khi phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
+                            return;
+                        }
+                        if (lcGroupNameNewWhenChangePos == null || lcGroupNameNewWhenChangePos == "") {
+                            alert("Bạn hãy chọn quyền người dùng cho người dùng chuyển đến chi nhánh trước khi phê duyệt với yêu cầu [" + lcFunctionTypeNameChoice + "] với tài khoản người dùng [" + dataItem.UserId + "]. Vui lòng kiểm tra lại!");
+                            return;
+                        }
+                    }
+                }
             }
+            lcPosCodeRow = dataItem.PosCode;
+            lcFunctionTypeRow = dataItem.FunctionType;
+            lcMainPosCodeRow = dataItem.MainPosCode;
             lcUserInfo = lcUserInfo + dataItem.UserId + " - " + dataItem.FullName + "; "
             var dataTempRow = { Id: dataItem.Id, UserId: dataItem.UserId, Status: dataItem.Status };
             listUserIdChoiceApprovalTmp.push(dataTempRow);
@@ -1182,7 +1339,6 @@
         var functionType = $("#FunctionTypeApproval_Find").data("kendoComboBox").value();
         var requireFileTypes = [$("#FunctionTypeFlag_ADDNEW_USERView").val(), $("#FunctionTypeFlag_DELETE_USERView").val(), $("#FunctionTypeFlag_CHANGE_POSView").val(), $("#FunctionTypeFlag_DISABLE_USERView").val(), $("#FunctionTypeFlag_ENABLE_USERView").val(), $("#FunctionTypeFlag_MODIFY_USERView").val(), $("#FunctionTypeFlag_CHANGE_ROLEView").val()];
 
-
         var fileUploadUserIDC = uploadedFiles.length > 0 ? uploadedFiles : [];
         // //Chỉ có cấp lại mật khẩu là không có tờ trình
         // if (requireFileTypes.includes(functionType) && lcFlagCallView == $("#EventFlag_ApprovalView").val()) {
@@ -1199,11 +1355,14 @@
         // Append list data
         formData.append("pFlagCall", lcFlagCallView);
         formData.append("pListApprovalData", JSON.stringify(listUserIdChoiceApprovalTmp));
-        formData.append("pFunctionType", cboFunctionTypeChoice.value());
-        formData.append("pMainPosCode", cboMainPosCodeChoice.value());
-        formData.append("pPosCode", cboMainPosCodeChoice.value());
+        formData.append("pFunctionType", lcFunctionTypeRow);                //formData.append("pFunctionType", cboFunctionTypeChoice.value());
+        formData.append("pMainPosCode", lcMainPosCodeRow);                  //formData.append("pMainPosCode", cboMainPosCodeChoice.value());
+        formData.append("pPosCode", lcMainPosCodeRow);                      //formData.append("pPosCode", cboMainPosCodeChoice.value());
         formData.append("pSystemDate", lcSystemDateTextView);
         formData.append("pBusinessDate", lcBusinessDateTextView);
+        formData.append("pPosCodeNewWhenChangePos", lcPosCodeNewWhenChangePos);
+        formData.append("pGroupNameNewWhenChangePos", lcGroupNameNewWhenChangePos);
+
         var iCountUserdChoice = listUserIdChoiceApprovalTmp.length;
         var sCountUserdChoice = "";
         if(iCountUserdChoice < 10)
@@ -1306,6 +1465,8 @@
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin số điện thoại không hợp lệ. Vui lòng kiểm tra lại!");
                 else if (resultSaveUpdate == "26")
                     alert("Tồn tại yêu cầu [" + lcFunctionTypeNameChoice + "] có thông tin đã tồn tại. Vui lòng kiểm tra lại!");
+                else if (result == "30")
+                    alert("Tài khoản người dùng [" + lcUserInfo + "] còn giao dịch trong hàng chờ (Pending), không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeNameChoice + "]. Vui lòng kiểm tra lại!");
                 else {
                     if (lcFlagCallView == $("#EventFlag_ApprovalView").val())
                         alert("Trình duyệt yêu cầu [" + lcFunctionTypeNameChoice + "] của [" + lcUserInfo + "] có lỗi xẩy ra. Vui lòng kiểm tra lại!");

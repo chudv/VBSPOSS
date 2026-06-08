@@ -197,6 +197,7 @@ namespace VBSPOSS.Controllers
         ///          '6' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy 1 bản ghi Toàn hàng; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD
         ///          '7' - Lấy danh sách các POS theo quy ước: TQ sẽ lấy các Chi nhánh; Chi nhánh sẽ lấy riêng của đúng chi nhánh; PGD lấy riêng của PGD
         ///          '8' - Lấy danh sách các POS của chi nhánh theo UserPosCode, với chi nhánh khác thì lấy riêng chi nhánh (KHÔNG lấy đến PGD)
+        ///          '9' - Lấy danh sách các POS HSC/Chi nhánh/PGD: Cấp TQ lấy tất cả các POS; Cấp Chi nhánh/PGD Chỉ lấy POS của chi nhánh; PGD lấy duy nhất POS PGD (Nhưng nếu truyền pTitleChoice thì add thêm)
         /// </param>
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất cả truyền vào là '0'</param>
         /// <param name="pShortName">Chỉ số xác định: 1 - Lấy tên viết tắt hiển thị Combobox; 0 - Lấy tên đầy đủ</param>
@@ -220,7 +221,7 @@ namespace VBSPOSS.Controllers
             ArrayList data = new ArrayList();
             if (!string.IsNullOrEmpty(pUserPosCode) && pUserPosCode != "000100" && pUserPosCode != "000199" && pUserPosCode != "ALL")
             {
-                string sSQL = $"Select Top 1 As Id, IsNull(MainPosCode,'') Code , IsNull(MainPosCode,'') Value From ListOfPos Where Code = {pUserPosCode}";
+                string sSQL = $"Select Top 1 IsNull(MainPosCode,'') Code , IsNull(MainPosCode,'') Value From ListOfPos Where Code = {pUserPosCode}";
                 string sMainPosTMP = _serviceLOV.GetCellValueForQuery(sSQL);
                 sPosCode = (sMainPosTMP == pUserPosCode) ? "" : pUserPosCode;
                 sMainCode = sMainPosTMP;
@@ -264,11 +265,10 @@ namespace VBSPOSS.Controllers
                             sShortName = item.ShortName.Trim();
                         }
                     }
-                    else if (pFlagCondi == "8")
+                    else if (pFlagCondi == "8" || pFlagCondi == "9")
                     {
-                        sName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.Name.Trim();
-                        sShortName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : item.ShortName.Trim();
-                        //000199 - Văn phòng Hội sở chính
+                        sName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : $"  {item.Name.Trim()}";
+                        sShortName = (item.Code == item.MainPosCode) ? item.MainPosName.Trim() : $"  {item.ShortName.Trim()}";
                     }
                     else if (item.MainPosCode == item.Code)
                     {
@@ -280,6 +280,7 @@ namespace VBSPOSS.Controllers
                         sName = $" - {item.Name.Trim()}";
                         sShortName = (pFlagTextShow == "1") ? $" - {item.ShortName.Trim()}" : $"{item.ShortName.Trim()}";
                     }
+
                     if (pFlagTextShow == "1") //Hiển thị Tên chi nhánh
                     {
                         if (pShortName == "1")
@@ -1524,7 +1525,7 @@ namespace VBSPOSS.Controllers
             var listRoleOfUserIDC = listRoleOfUserIDCTmp;
             if(sCodeApply != "1")
                 listRoleOfUserIDC = listRoleOfUserIDCTmp.Where(w => w.Code != "" && (string.IsNullOrEmpty(sCodeApply) || w.CodeOfLovUsed.StartsWith(sCodeApply))).ToList();
-            if (string.IsNullOrEmpty(pTitleChoice) && listRoleOfUserIDC == null)
+            if (!string.IsNullOrEmpty(pTitleChoice) || listRoleOfUserIDC == null)
                 data.Add(new { id = "", value = sTitleChoice });
             if (listRoleOfUserIDC != null && listRoleOfUserIDC.Count != 0)
             {
@@ -1541,9 +1542,9 @@ namespace VBSPOSS.Controllers
                     else if (item.CodeOfLovUsed.Trim().Contains("SGD"))
                         sNameApply = "SGD";
                     else if (item.CodeOfLovUsed.Trim().Contains("CN"))
-                        sNameApply = "Chi nhánh";
+                        sNameApply = "CN";
                     else if (item.CodeOfLovUsed.Trim().Contains("PGD"))
-                        sNameApply = "PGD hoặc CSĐT";
+                        sNameApply = "PGD|CSĐT";
                     else sNameApply = "";
 
                     if (pFlagShow == "1") //Hiển thị: Tên quyền người dùng hoặc Tên viết tắt quyền người dùn
@@ -1563,9 +1564,9 @@ namespace VBSPOSS.Controllers
                     else if (pFlagShow == "3") //Hiển thị: Mã quyền - Tên quyền người dùng hoặc Tên viết tắt quyền người dùng - Áp dụng cho PGD/Chi nhánh/TTCNTT/TTĐT/HSC
                     {
                         if (pShortName == "1")
-                            data.Add(new { id = item.Code, value = $"{item.Code} - {sShortName} - Áp dụng với:  {sNameApply}" });
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sShortName} - Áp dụng {sNameApply}" });
                         else
-                            data.Add(new { id = item.Code, value = $"{item.Code} - {sName} - Áp dụng với: {sNameApply}" });
+                            data.Add(new { id = item.Code, value = $"{item.Code} - {sName} - Áp dụng {sNameApply}" });
                     }
                 }
             }

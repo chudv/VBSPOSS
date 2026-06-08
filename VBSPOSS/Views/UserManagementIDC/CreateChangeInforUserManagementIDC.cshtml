@@ -763,6 +763,8 @@
                         alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực trong Intellect iDC [" + lcExpiryDateOldText + "] lớn hơn ngày mở sổ hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                     else if (result == "29")
                         alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] có ngày hết hiệu lực trong Intellect iDC [" + lcExpiryDateOldText + "] lớn hơn ngày hiện thời của hệ thống Intellect [" + lcBusinessDate + "], không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
+                    else if (result == "30")
+                        alert("Tài khoản người dùng [" + lcUserId + " - " + lcFullName + "] còn giao dịch trong hàng chờ (Pending), không thể thực hiện yêu cầu nghiệp vụ [" + lcFunctionTypeName + "]. Vui lòng kiểm tra lại!");
                 }
             },
             error: function (xhr, status, error) {

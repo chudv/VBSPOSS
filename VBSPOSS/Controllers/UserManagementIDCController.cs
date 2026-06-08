@@ -184,9 +184,9 @@ namespace VBSPOSS.Controllers
                             else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
                             {
                                 if (itemUMIDC.MainPosCode == itemUMIDC.MainPosCodeOld)
-                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
                                 else
-                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName} ({itemUMIDC.MainPosName})";
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
                             }
                             else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
                             {
@@ -259,9 +259,9 @@ namespace VBSPOSS.Controllers
                             else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code)
                             {
                                 if (itemUMIDC.MainPosCode == itemUMIDC.MainPosCodeOld)
-                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
                                 else
-                                    itemUMIDC.DescriptionUserRequest = $"Chuyển POS từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName} ({itemUMIDC.MainPosName})";
+                                    itemUMIDC.DescriptionUserRequest = $"Chuyển từ {itemUMIDC.PosCodeOld} - {itemUMIDC.PosNameOld} tới {itemUMIDC.PosCode} - {itemUMIDC.PosName}";
                             }
                             else if (itemUMIDC.FunctionType == FunctionTypeFlag.FunctionTypeFlag_MODIFY_USER.Code)
                             {
@@ -285,7 +285,6 @@ namespace VBSPOSS.Controllers
                     listUserManagementIDCTmp = await _userManagementIDCService.GetListvUserManagementIDCSearch(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, false);
                     //listUserManagementIDCTmp = await _userManagementIDCService.GetListUserIDCManagement(0, sMainPosCode, pPosCode, pNickName, pFullName, "", pStatus, pFunctionType, true);
                 }
-
                 return Json(listUserManagementIDCTmp.ToDataSourceResult(request, ModelState));
             }
             catch (Exception ex)
@@ -1295,8 +1294,9 @@ namespace VBSPOSS.Controllers
         ///             27 - Tài khoản người dùng có trạng thái không phảilaà đóng, không thể thực hiện yêu cầu Khôi phục lại tài khoản người dùng
         ///             28 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày mở sổ hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
         ///             29 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
+        ///             30 - Tài khoản người dùng còn giao dịch Pending trong hàng chờ
         /// </returns>
-        public async Task<int> IsValidSaveUserManagementIDC(UserManagementIDCViewModel pUserManagementIDCUpdate, string pFlagCall)
+        public async Task<int> IsValidSaveUserManagementIDC(UserManagementIDCViewModel pUserManagementIDCUpdate, string pFlagCall, string pPosCodeNewWhenChangePos, string pGroupNameNewWhenChangePos)
         {
             int iResult = 0;
             try
@@ -1412,6 +1412,26 @@ namespace VBSPOSS.Controllers
                             return 29;//User cần khôi phục có ngày hết hạn lớn hơn ngày hiện thời
                     }
                 }
+                if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code
+                    || pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_ROLE.Code)
+                {
+                    PendingTransRequestViewModel objInputCheckPending = new PendingTransRequestViewModel();
+                    objInputCheckPending.UserId = pUserManagementIDCUpdate.UserId;
+                    var objPendingResultTmp = await _userManagementIDCService.GetPendingTransactionsByApiPendingTxn(objInputCheckPending, "", UserName);
+                    if (objPendingResultTmp != null && objPendingResultTmp.TxnStatus == ResultValueAPI.ResultValue_Status_Success
+                        && (objPendingResultTmp.ResponseCode == "0" || objPendingResultTmp.ResponseCode == "00000"))
+                    {
+                        if (objPendingResultTmp.Records != null && objPendingResultTmp.Records.Count != 0)
+                            return 30;      //Kiểm tra còn giao dịch Pending
+                    }
+                    //Kiểm tra xem Khi chuyển User khác POS có quyền mới Logic với POS/MainPosCode không
+                    if (pUserManagementIDCUpdate.FunctionType == FunctionTypeFlag.FunctionTypeFlag_CHANGE_POS.Code 
+                            && !string.IsNullOrEmpty(pPosCodeNewWhenChangePos) && !string.IsNullOrEmpty(pGroupNameNewWhenChangePos))
+                    {
+                        //Select PosFlag From ListOfPos Where Code='000302'
+                        //Select CodeOfLovUsed From ListOfValue Where ParentId = 1 And Code = 'TTDCB'
+                    } 
+                }
                 //Kiểm tra đã tồn tại bản ghi yêu cầu với tài khoản người dùng chưa?
                 var listUserIDCManagementTmp = await _userManagementIDCService.GetListUserIDCManagement(0, "", "", pUserManagementIDCUpdate.UserId, "", "", -1, pUserManagementIDCUpdate.FunctionType, false);
                 if (listUserIDCManagementTmp != null && listUserIDCManagementTmp.Count != 0)
@@ -1452,7 +1472,7 @@ namespace VBSPOSS.Controllers
             try
             {
                 string result = "0";
-                var resultCheck = await IsValidSaveUserManagementIDC(objUserIDCUpd, objUserIDCUpd.FlagCall);
+                var resultCheck = await IsValidSaveUserManagementIDC(objUserIDCUpd, objUserIDCUpd.FlagCall, "", "");
                 result = resultCheck.ToString();
                 if (result == "0" && objUserIDCUpd != null && ModelState.IsValid)
                 {
@@ -1730,6 +1750,8 @@ namespace VBSPOSS.Controllers
         ///                                 2 - Chỉnh sửa thông tin bản ghi (EventFlag.EventFlag_Edit.Value)
         ///                                 6 - Tạo mới/Chỉnh sửa bản ghi Yêu cầu nghiệp vụ (EventFlag.EventFlag_EditIDC.Value)
         /// </param>
+        /// <param name="pPosCodeNewWhenChangePos">Mã POS mới do đơn vị Nhận User chuyển POS chấp nhận chọn cho người dùng</param>
+        /// <param name="pGroupNameNewWhenChangePos">Quyền mới do đơn vị Nhận User chuyển POS chấp nhận chọn cho người dùng</param>
         /// <returns>Kết quả. Giá trị: 
         ///             0 - Hợp lệ;
         ///             15 - Yêu cầu tạo mới tài khoản người dùng nhưng trạng thái bản ghi là đóng
@@ -1755,8 +1777,12 @@ namespace VBSPOSS.Controllers
         ///             21 - Yêu cầu nghiệp vụ thay đổi quyền tài khoản người dùng có ngày bắt đầu lớn hơn ngày kết thúc
         ///             22 - Yêu cầu nghiệp vụ thay đổi POS tài khoản người dùng nhưng đơn vị mới thay đổi có giá trị như đơn vị cũ
         ///             26 - Yêu cầu nghiệp vụ thêm mới/thay đổi tài khoản người dùng Intellect iDC đã tồn tại
+        ///             27 - Tài khoản người dùng có trạng thái không phảilaà đóng, không thể thực hiện yêu cầu Khôi phục lại tài khoản người dùng
+        ///             28 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày mở sổ hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
+        ///             29 - Tài khoản người dùng có ngày hết hiệu lực lớn hơn ngày hiện thời của Intellect, không thể thực hiện yêu cầu nghiệp vụ phục hồi lại tài khoản
+        ///             30 - Tài khoản người dùng còn giao dịch Pending trong hàng chờ
         /// </returns>
-        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData, string pFlagEventCall)
+        public async Task<int> IsValidApprovalUserIDC(List<UserManagementIDCViewModel> listData, string pFlagEventCall, string pPosCodeNewWhenChangePos, string pGroupNameNewWhenChangePos)
         {
             int iResultCheckAll = 0;
             try
@@ -1767,7 +1793,7 @@ namespace VBSPOSS.Controllers
                 {
                     if (itemCheck == null)
                         continue;
-                    int iResultCheckItem = await IsValidSaveUserManagementIDC(itemCheck, EventFlag.EventFlag_Add.Value.ToString());
+                    int iResultCheckItem = await IsValidSaveUserManagementIDC(itemCheck, EventFlag.EventFlag_Add.Value.ToString(), pPosCodeNewWhenChangePos, pGroupNameNewWhenChangePos);
                     if (iResultCheckItem != 0)
                     {
                         iResultCheckAll = iResultCheckItem;
@@ -1801,10 +1827,13 @@ namespace VBSPOSS.Controllers
         ///                         Hủy người dùng: FunctionTypeFlag.FunctionTypeFlag_DELETE_USER.Code;
         /// </param>
         /// <param name="pMainPosCode"></param>
+        /// <param name="pPosCodeNewWhenChangePos">Mã POS mới do đơn vị Nhận User chuyển POS chấp nhận chọn cho người dùng</param>
+        /// <param name="pGroupNameNewWhenChangePos">Quyền mới do đơn vị Nhận User chuyển POS chấp nhận chọn cho người dùng</param>
         /// <returns></returns>
         [AcceptVerbs("Post")]
         public async Task<IActionResult> SaveUpdateApprovalOrAuthorize([DataSourceRequest] DataSourceRequest request, string pFlagCall, string pListApprovalData,
-                    IList<IFormFile> pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate)
+                    IList<IFormFile> pFileUpload, string pFunctionType, string pMainPosCode, string pPosCode, string pSystemDate, string pBusinessDate,
+                    string pPosCodeNewWhenChangePos, string pGroupNameNewWhenChangePos)
         {
             List<long> saveFileStatus = null;
             string sListUserId = "", sListId = "";
@@ -1951,7 +1980,7 @@ namespace VBSPOSS.Controllers
                     }
                     #endregion
                 }
-                var resultValue = await IsValidApprovalUserIDC(listDataNewTemp, pFlagCall);
+                var resultValue = await IsValidApprovalUserIDC(listDataNewTemp, pFlagCall, pPosCodeNewWhenChangePos, pGroupNameNewWhenChangePos);
                 resultSaveUpdate = resultValue.ToString();
                 if (resultSaveUpdate != "0")
                 {
@@ -1995,6 +2024,8 @@ namespace VBSPOSS.Controllers
                     }
                     sListUserId = $"{sListUserId}{objUserIDC.UserId}|";
                     sListId = $"{sListId}{objUserIDC.Id.ToString()};";
+                    objUserIDC.PosCodeNewWhenChangePos = pPosCodeNewWhenChangePos;
+                    objUserIDC.GroupNameNewWhenChangePos = pGroupNameNewWhenChangePos;
                 }
                 if (pFlagCall == EventFlag.EventFlag_Approval.Value.ToString())
                 {
