@@ -418,6 +418,27 @@
         mainWindowApproval.data("kendoWindow").close();
     }
 
+    function adjustStatusColumnWidth() {
+        var gridMainIDCApprovalAuto = $("#gridMainIDCApproval").data("kendoGrid");
+        var statusColIndex = gridMainIDCApprovalAuto.columns.findIndex(col => col.field === "StatusText");
+    
+        if (statusColIndex === -1) return;
+
+        gridMainIDCApprovalAuto.tbody.find("tr").each(function (index) {
+            var data = gridMainIDCApprovalAuto.dataItem(this);
+            if (!data) return;
+
+            let newWidth = 55; // default
+            if(data.FunctionType == $("#FunctionTypeFlag_CHANGE_POSView").val() && data.Status == 8)
+                newWidth = 80;
+            // Áp dụng width cho cột
+            gridMainIDCApprovalAuto.columns[statusColIndex].width = newWidth;
+        });
+
+        gridMainIDCApprovalAuto.refresh(); // Refresh để áp dụng
+    }
+
+
     function Change_FunctionTypeApproval(e) {
         var lcAuthorizePermitTmp = $("#AuthorizePermissionFlagChildView").val();
         var lcReportPermitTmp = $("#ReportPermissionFlagChildView").val();
@@ -452,6 +473,7 @@
         }
        
         refreshGridIDCApproval();
+        adjustStatusColumnWidth();
     }
 
     function submitForApprovalIDC(e) {
