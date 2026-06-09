@@ -67,10 +67,16 @@
             pFlagTextShow: "3"
         };
     }
-    function Change_Province() {
-        $("#DistrictCode").data("kendoComboBox")?.dataSource.read();
-        $("#DistrictCode").data("kendoComboBox")?.value("");
-        $("#CommuneCodeThon").data("kendoComboBox")?.value("");
+       function Change_Province() {
+        // Load lại Xã cho bên Thêm Xã
+        $("#CommuneCode").data("kendoComboBox")?.dataSource.read();
+
+        // Đồng bộ Tỉnh sang bên Thêm Thôn (Readonly)
+        var provinceCode = $("#ProvinceCode").val();
+        $("#ProvinceCodeThon").val(provinceCode);
+
+        // Load lại Xã cho bên Thêm Thôn
+        $("#CommuneCodeThon").data("kendoComboBox")?.dataSource.read();
     }
 
     function Change_District() {
@@ -109,43 +115,52 @@
         }
     }
 
-    function onClick(e) {
+        function onClick(e) {
         var addType = $('input[name="AddType"]:checked').val();
-        if (!$("#ProvinceCode").val()) { alert("Vui lòng chọn Tỉnh/Thành phố!"); $("#ProvinceCode").focus(); e.preventDefault(); return false; }
-        if (!$("#DistrictCode").val()) { alert("Vui lòng chọn Quận/Huyện!"); $("#DistrictCode").focus(); e.preventDefault(); return false; }
+
+        if (!$("#ProvinceCode").val()) {
+            alert("Vui lòng chọn Tỉnh/Thành phố!");
+            $("#ProvinceCode").focus();
+            e.preventDefault();
+            return false;
+        }
 
         if (addType === "Xa") {
-            if (!$("#CommuneCode").val()) { alert("Vui lòng chọn Mã Phường/Xã!"); $("#CommuneCode").focus(); e.preventDefault(); return false; }
-        } else if (addType === "Thon") {
-            if (!$("#CommuneCodeThon").val()) { alert("Vui lòng chọn Xã/Phường!"); $("#CommuneCodeThon").focus(); e.preventDefault(); return false; }
-            if (!$("#SubCommuneName").val().trim()) { alert("Vui lòng nhập Tên Thôn/Bản/Làng!"); $("#SubCommuneName").focus(); e.preventDefault(); return false; }
-            if (!$("#SubCommuneCode").val().trim()) { alert("Vui lòng chọn Mã Tổ/Thôn!"); $("#SubCommuneCode").focus(); e.preventDefault(); return false; }
+            if (!$("#CommuneCode").val().trim()) {
+                alert("Vui lòng nhập Mã Phường/Xã!");
+                $("#CommuneCode").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (!$("#CommuneName").val().trim()) {
+                alert("Vui lòng nhập Tên Phường/Xã!");
+                $("#CommuneName").focus();
+                e.preventDefault();
+                return false;
+            }
+        }
+        else if (addType === "Thon") {
+            if (!$("#CommuneCodeThon").val()) {
+                alert("Vui lòng chọn Phường/Xã!");
+                $("#CommuneCodeThon").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (!$("#SubCommuneName").val().trim()) {
+                alert("Vui lòng nhập Tên Thôn/Bản/Làng!");
+                $("#SubCommuneName").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (!$("#SubCommuneCode").val().trim()) {
+                alert("Vui lòng nhập Mã Tổ/Thôn!");
+                $("#SubCommuneCode").focus();
+                e.preventDefault();
+                return false;
+            }
         }
         return true;
     }
-
-       $(document).ready(function () {
-        $('#radioThon').prop('checked', true);
-
-        // Xử lý nút Load Mã Tổ/Thôn
-        $("#btnLoadSubCommune").click(function () {
-            var subCommuneCombo = $("#SubCommuneCode").data("kendoComboBox");
-            if (subCommuneCombo) {
-                subCommuneCombo.dataSource.read();
-            }
-        });
-
-        // Đồng bộ Mã Quận/Huyện
-        $("#DistrictCode").change(function () {
-            $("#DistrictCodeThon").val($(this).val());
-        });
-
-        // Load lại Xã khi thay đổi Quận/Huyện
-        $("#DistrictCode").change(function () {
-            var combo = $("#CommuneCodeThon").data("kendoComboBox");
-            if (combo) combo.dataSource.read();
-        });
-    });
 </script>
 
 <script>
@@ -235,44 +250,28 @@
             </div>
             <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
-                    <label class="lbcontrol" style="color: navy;;width:170px">Quận/Huyện <span style="color:red">*</span></label>
-                    @(Html.Kendo().ComboBoxFor(m => m.DistrictCode)
-                        .Filter(FilterType.Contains)
-                        .Placeholder("--- Chọn Quận/Huyện ---")
-                        .DataTextField("value").DataValueField("id")
-                        .HtmlAttributes(new { style = "width: 100%;" })
-                        .Events(e => e.Change("Change_District"))
-                        .DataSource(ds => ds.Read(read => read.Action("GetListDistricts", "ListOfValue").Data("paramLoadDistricts")))
-                        .Suggest(true).AutoBind(false))
+                    <label class="lbcontrol" style="color: navy;width:170px">Mã Phường/Xã <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.CommuneCode).HtmlAttributes(new { style = "width: 100%;", id = "CommuneCode" })
                 </div>
             </div>
             <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
-                    <label class="lbcontrol" style="color: navy;;width:170px">Phường/Xã <span style="color:red">*</span></label>
-                    @(Html.Kendo().ComboBox()
-                        .Name("CommuneCode")
-                        .Filter(FilterType.Contains)
-                        .Placeholder("--- Chọn Xã/Phường ---")
-                        .DataTextField("value")
-                        .DataValueField("id")
-                        .HtmlAttributes(new { style = "width: 100%;" })
-                        .DataSource(ds => ds.Read(read => read.Action("GetListCommunes", "ListOfValue").Data("paramLoadCommunes")))
-                        .Suggest(true).AutoBind(false))
+                    <label class="lbcontrol" style="color: navy;width:170px">Tên Phường/Xã <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.CommuneName).HtmlAttributes(new { style = "width: 100%;" })
                 </div>
             </div>
         </div>
-
         <!-- ==================== BÊN PHẢI: THÊM MỚI THÔN ==================== -->
         <div class="col-md-6 right-column">
             <h5>Thêm mới Thôn</h5>
 
             <div class="row" style="margin-top: 12px;">
-                <div class="col-md-6">
+               @*  <div class="col-md-6">
                     <label class="lbcontrol" style="color: navy;">Mã Quận/Huyện</label>
                     @Html.Kendo().TextBoxFor(m => m.DistrictCode).HtmlAttributes(new { style = "width: 100%;", @readonly = "readonly", id = "DistrictCodeThon" })
-                </div>
-                <div class="col-md-6">
-                    <label class="lbcontrol" style="color: navy;">Mã Phường/Xã <span style="color:red">*</span></label>
+                </div> *@
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;width:180px">Mã Phường/Xã <span style="color:red;width:170px">*</span></label>
                     @(Html.Kendo().ComboBox()
                         .Name("CommuneCodeThon")
                         .Filter(FilterType.Contains)
@@ -289,14 +288,14 @@
             <!-- ==================== MÃ ĐIỂM GDX ==================== -->
             <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
-                    <label class="lbcontrol" style="color: navy;">Mã Điểm GDX </label>
+                    <label class="lbcontrol" style="color: navy; width: 150px">Mã Điểm GDX </label>
                     @Html.Kendo().TextBoxFor(m => m.TxnPointCode).HtmlAttributes(new { style = "width: 100%;", @readonly = "readonly", id = "TxnPointCode" })
                 </div>
             </div>
 
             <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
-                    <label class="lbcontrol" style="color: navy;;width:170px">Tên Thôn/Bản/Làng <span style="color:red">*</span></label>
+                    <label class="lbcontrol" style="color: navy;;width:210px">Tên Thôn/Bản/Làng <span style="color:red">*</span></label>
                     @Html.Kendo().TextBoxFor(m => m.SubCommuneName).HtmlAttributes(new { style = "width: 100%;" })
                 </div>
             </div>
@@ -307,7 +306,7 @@
                 </div>
             </div>
 
-            <div class="row" style="margin-top: 12px;">
+            @* <div class="row" style="margin-top: 12px;">
                 <div class="col-md-12">
                     <label class="lbcontrol" style="color: navy;;width:170px">Mã Tổ/Thôn <span style="color:red">*</span></label>
                     @(Html.Kendo().ComboBox()
@@ -321,8 +320,15 @@
                         .Suggest(true)
                         .AutoBind(false))
                 </div>
-            </div>
+            </div> *@
 
+
+            <div class="row" style="margin-top: 12px;">
+                <div class="col-md-12">
+                    <label class="lbcontrol" style="color: navy;width:160px">Mã Tổ/Thôn <span style="color:red">*</span></label>
+                    @Html.Kendo().TextBoxFor(m => m.SubCommuneCode).HtmlAttributes(new { style = "width: 100%;", id = "SubCommuneCode" })
+                </div>
+            </div>
             <!-- ==================== TRƯỜNG MỚI: VÙNG KHÓ KHĂN CẤP THÔN ==================== -->
             <div class="row" style="margin-top: 20px;">
                 <div class="col-md-12">
@@ -394,6 +400,9 @@
 
 <script>
     $(document).ready(function () {
+
+        $("#btnLoadSubCommune").hide();
+
         $("#DiffAreaCode").change(function () {
             var value = $(this).val();
 
