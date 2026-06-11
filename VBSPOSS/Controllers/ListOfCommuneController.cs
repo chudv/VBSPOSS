@@ -77,7 +77,7 @@ namespace VBSPOSS.Controllers
             TempData["EventFlag_Authorize"] = EventFlag.EventFlag_Authorize.Value.ToString();
             TempData["EventFlag_View"] = EventFlag.EventFlag_View.Value.ToString();
 
-            ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfTransPoint();
+            ViewBag.EventBusinessCodes = EventBusinessCode.GetListOfCommune();
 
             return View("IndexListOfCommuneWork");
         }

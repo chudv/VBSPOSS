@@ -601,7 +601,7 @@
                     toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreateCommuneWork").HtmlAttributes(new { id = "btnCreateCommuneWork", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
                     toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
                 })
-                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi Diem GD.xlsx").AllPages(true))
+                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi thong tin dia phuong.xlsx").AllPages(true))
                 .Editable(editable => { editable.Mode(GridEditMode.InLine); })
                 .Sortable()
                 .Scrollable()
