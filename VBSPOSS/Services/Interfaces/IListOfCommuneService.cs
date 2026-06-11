@@ -19,8 +19,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pRecordStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfCommunesViewModel</returns>
-        List<ListOfCommunesViewModel> GetListOfCommunesSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pTxnLocation);
+        List<ListOfCommunesViewModel> GetListOfCommuneSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương
@@ -55,8 +55,20 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Danh sách bản ghi địa phương theo Model ListOfCommunesViewModel</returns>
         List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
                                             int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus, string pTxnLocation);
-
+                                            int pStatus);
+        /// <summary>
+        /// Hàm lấy danh sách điểm giao dịch để cho Lựa chọn thay đổi theo yêu cầu nghiệp vụ
+        /// </summary>
+        /// <param name="pProvinceCode">Mã tỉnh (Không bắt buộc)</param>
+        /// <param name="pPosCode">Mã Pos (Không bắt buộc). Nếu lấy cả chi nhánh thì truyền vào 4 ký tự đầu của POS Chi nhánh</param>
+        /// <param name="pTxnPointCode">Mã điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pTxnPointName">Tên điểm gioa dịch</param>
+        /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào -1</param>
+        /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
+        /// <param name="pEventCode">Tìm kiếm theo bản ghi có yêu cầu nghiệp vụ với điểm giao dịch (Không bắt buộc)</param>
+        /// <returns>Danh sách điểm giao dịch theo Model ListOfTransPointWorkViewModel</returns>
+        List<ListOfCommuneWorksViewModel> GetListOfCommunesSearch(string pProvinceCode, string pPosCode, string pTxnPointCode, string pTxnPointName,
+                                int pStatus, string pEventCode);
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương (Bảng ListOfCommunesWork)
         /// </summary>
@@ -99,7 +111,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <returns>Danh sách bản ghi danh mục địa phương theo Model ListOfCommunesViewModel</returns>
         List<ListOfCommuneHistsViewModel> GetListOfCommuneHistSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
                                             int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus, string pTxnLocation);
+                                            int pStatus);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương (Bảng ListOfCommunesHist)

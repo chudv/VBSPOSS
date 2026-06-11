@@ -41,7 +41,7 @@ namespace VBSPOSS.Controllers
         /// <param name="mapper">The mapper<see cref="IMapper"/>.</param>
         /// <param name="service">The service<see cref="IListOfCommuneService"/>.</param>
         /// <param name="internalServiceAPI">The internalServiceAPI<see cref="IApiInternalService"/>.</param>
-        public ListOfCommuneController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
+        public ListOfCommuneController(ILogger<BaseController> logger, IAdministrationService adminService, IListOfTransPointService serviceTransPoint, IListOfValueService serviceLOV, ISessionHelper sessionHelper,
                 IMapper mapper, IListOfCommuneService serviceCommune, IApiInternalService internalServiceAPI) : base(logger, adminService, sessionHelper)
 
         {
@@ -49,6 +49,7 @@ namespace VBSPOSS.Controllers
             _serviceCommune = serviceCommune;
             _internalServiceAPI = internalServiceAPI;
             _mapper = mapper;
+            _serviceTransPoint = serviceTransPoint;
         }
         public IActionResult IndexListOfCommune()
         {
@@ -93,36 +94,35 @@ namespace VBSPOSS.Controllers
         /// <param name="pFullName">Họ tên người dùng tìm kiếm</param>
         /// <param name="pStatus">Trạng thái</param>
         /// <returns>Danh sách người đại diện các đơn vị</returns>
-        //public ActionResult LoadGridData_CommuneWorks([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, int pStatus)
-        //{
-        //    try
-        //    {
-        //        string sTxnPointCode = "", sTxnPointName = "";
-        //        if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
-        //            pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
-        //        if (string.IsNullOrEmpty(pEventCode))
-        //            pEventCode = "";
-        //        if (string.IsNullOrEmpty(pTxnPointCode))
-        //            pTxnPointCode = "";
-        //        if (string.IsNullOrEmpty(pTxnPointName))
-        //            pTxnPointName = "";
-        //        if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
-        //        {
-        //            if (!string.IsNullOrEmpty(pPosCode))
-        //                pPosCode = pPosCode.Substring(0, 4);
-        //        }
-        //        var listCommuneWorks = _serviceCommune.GetListOfCommunesSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, "", pEventCode);
-        //        return Json(listCommuneWorks.ToDataSourceResult(request, ModelState));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.LogError(ex, $"LoadGridData_TransPointWorks('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
-        //        ModelState.AddModelError("ERROR", $"{ex.Message}");
-        //        return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
-        //    }
-        //}
+        public ActionResult LoadGridData_Commune([DataSourceRequest] DataSourceRequest request, string pPosCode, string pEventCode, string pTxnPointCode, string pTxnPointName, string pStatus)
+        {
+            try
+            {
+                string sTxnPointCode = "", sTxnPointName = "";
+                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+                if (string.IsNullOrEmpty(pEventCode))
+                    pEventCode = "";
+                if (string.IsNullOrEmpty(pTxnPointCode))
+                    pTxnPointCode = "";
+                if (string.IsNullOrEmpty(pTxnPointName))
+                    pTxnPointName = "";
+                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS) && (pPosCode != "000100" && pPosCode != "000199" && pPosCode != "000196" && pPosCode != "000197" && pPosCode != "000101"))
+                {
+                    if (!string.IsNullOrEmpty(pPosCode))
+                        pPosCode = pPosCode.Substring(0, 4);
+                }
+                var listCommuneWorks = _serviceCommune.GetListOfCommunesSearch("", pPosCode, pTxnPointCode, pTxnPointName, -1, pEventCode);
+                return Json(listCommuneWorks.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_Commune('{pPosCode}','{pEventCode}','{pTxnPointCode}','{pTxnPointName}',{pStatus}) => Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<UserManagementIDCViewModel>(), Total = 0 });
+            }
+        }
 
-        //add
         /// <summary>
         /// Hiển thị form Thêm mới thông tin danh mục địa phương (Xã/Phường)
         /// </summary>
@@ -130,7 +130,7 @@ namespace VBSPOSS.Controllers
         /// Hiển thị form Thêm mới thông tin danh mục địa phương
         /// </summary>
         /// <summary>
-       
+
         public ActionResult ShowUpdateListOfCommuneWork(string pButtonType, long pId, string pPosCode, string pEventCode, string pFlagCall)
         {
             ListOfCommuneWorksViewModel model = new ListOfCommuneWorksViewModel();
