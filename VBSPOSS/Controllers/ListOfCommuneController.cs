@@ -141,7 +141,7 @@ namespace VBSPOSS.Controllers
                 {
                     pPosCode = pPosCode.Substring(0, 4);
                 }
-
+                if (pStatus == "-1") pStatus = "";
                 var listCommuneWorks = _serviceCommune.GetListOfCommuneWorkSearch(
                     pPosCode: pPosCode,
                     pEventCode: pEventCode,
