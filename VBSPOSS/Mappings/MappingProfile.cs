@@ -26,6 +26,10 @@ namespace VBSPOSS.Mappings
             CreateMap<ListOfCommune, ListOfCommuneViewModel>();
             CreateMap<ListOfCommuneViewModel, ListOfCommune>();
 
+            CreateMap<ListOfCommuneWork, ListOfCommuneWorksViewModel>();
+            CreateMap<ListOfCommuneWorksViewModel, ListOfCommuneWork>();
+
+
             CreateMap<UserIDCMaster, UserIDCMasterViewModel>();
             CreateMap<UserIDCMasterViewModel, UserIDCMaster>();
 

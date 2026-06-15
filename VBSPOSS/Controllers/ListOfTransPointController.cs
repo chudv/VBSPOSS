@@ -154,6 +154,7 @@ namespace VBSPOSS.Controllers
         /// <param name="pFlagCall">Cờ xác định: 1 - Thêm mới; 2 - Chỉnh sửa bản ghi; 9 - Thay đổi nghiệp vụ điểm giao dịch</param>
         /// <param name="pTxnPointCode">Mã điểm giao dịch</param>
         /// <returns>Giá trị đối tượng ListOfTransPointWork</returns>
+        /// 
         public async Task<ActionResult> ShowUpdateListOfTransPointWork(string pButtonType, string pPosCode, string pBusinessDate, string pFlagCall, string pTxnPointCode, string pEventCode)
         {
             ListOfTransPointWorkViewModel objListOfTransPointWorkUpd = new ListOfTransPointWorkViewModel();

@@ -19,8 +19,8 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pRecordStatus">Trạng thái danh mục (Không bắt buộc). Nếu rỗng lấy tất; Nếu truyền A lấy danh mục mở</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi điểm giao dịch theo Model ListOfCommunesViewModel</returns>
-        List<ListOfCommunesViewModel> GetListOfCommunesSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pTxnLocation);
+        //List<ListOfCommunesViewModel> GetListOfCommunesSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+        //                                    int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pTxnLocation);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương
@@ -53,10 +53,15 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi địa phương theo Model ListOfCommunesViewModel</returns>
-        List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus, string pTxnLocation);
-
+        List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(
+       string pPosCode = "",
+       string pEventCode = "",
+       string pProvinceCode = "",
+       string pCommuneCode = "",
+       string pSubCommuneCode = "",
+       string pStatus = "",
+       string pUserPosCode = "",
+       int pUserGrade = 0);
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương (Bảng ListOfCommunesWork)
         /// </summary>
@@ -64,7 +69,7 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pUserNameUpd">Người cập nhật</param>
         /// <param name="pFlagCall">Cờ xác định sự kiện: 1 - Thêm mới; 2 - Chỉnh sửa (EventFlag.EventFlag_Edit.Value)</param>
         /// <returns>Số bản ghi được thêm/sửa</returns>
-        int UpdateListOfCommuneWork(ListOfCommuneWorksViewModel pCommuneWorkUpd, string pUserNameUpd, string pFlagCall);
+        int UpdateListOfCommuneWork(ListOfCommuneWorksViewModel pCommuneWorkUpd, string pUserNameUpd, string pFlagCall, string pPosCode = "");
 
         /// <summary>
         /// Hàm Xóa/Đánh dấu xóa bản ghi Danh mục địa phương (Bảng ListOfCommunesWork)
@@ -120,5 +125,22 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pFlagDelete">Trạng thái quy ước: 1 - Xóa bản ghi; 2 - Đánh dấu xóa (Chuyển trạng thại về 0)</param>
         /// <returns>True - Thành công; False - Thất bại</returns>
         bool DeleteListOfCommuneHist(string pEventCode, long pId, string pTxnPointCode, string pUserNameDelete, int pFlagDelete);
+
+
+        /// <summary>
+        /// Hàm trả về Danh sách Xã/Phường/Thôn theo những điều kiện truyền vào
+        /// </summary>
+        List<ListOfCommuneViewModel> GetListOfCommuneSearch(
+    string pPosCode = "",
+    string pProvinceCode = "",
+    string pDistrictCode = "",
+    string pCommuneCode = "",
+    string pSubCommuneCode = "",
+    string pStatus = "",
+    string pUserPosCode = "",
+    int pUserGrade = 0);
     }
+
+
+  
 }

@@ -541,7 +541,7 @@
                     }).Width(60).Title("Chức năng").HtmlAttributes(new { style = "text-align: center;" });
 
                     columns.Bound(c => c.OrderNo).Title("STT").Width(50).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.EventName).Title("Yêu cầu nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.EventName).Title("Nghiệp vụ").Width(110).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.EventCode).Hidden();
                     columns.Bound(c => c.PosName).Title("Đơn vị").Width(140).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.PosCode).Hidden();
@@ -550,11 +550,11 @@
                     columns.Bound(c => c.DistrictCode).Hidden();
                     columns.Bound(c => c.DistrictName).Hidden();
                     columns.Bound(c => c.CommuneCode).Hidden();
-                    columns.Bound(c => c.SubCommuneCode).Hidden();
-                    columns.Bound(c => c.SubCommuneName).Title("Thôn/ bản/ làng").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                 //   columns.Bound(c => c.SubCommuneCode).Hidden();
+                 //   columns.Bound(c => c.SubCommuneName).Title("Thôn/ bản/ làng").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
                     columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
-                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-                    columns.Bound(c => c.TxnPointName).Title("Tên điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.SubCommuneCode).Title("Mã Thôn").Width(90).HtmlAttributes(new { style = "text-align: center;" });
+                    columns.Bound(c => c.SubCommuneName).Title("Tên Thôn").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDate).Hidden();
                     columns.Bound(c => c.BusinessDateText).Title("Ngày hiệu lực thay đổi thông tin").Width(60).HtmlAttributes(new { style = "text-align: left;" });
@@ -626,7 +626,7 @@
                 .ServerOperation(false)
                 .Model(model => model.Id(p => p.TxnPointCode))
                 .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                .Read(read => read.Action("LoadGridData_CommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
+                .Read(read => read.Action("LoadGridData_ListOfCommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
                 .PageSize(100)
                 )
                 .Resizable(resize => resize.Columns(true))

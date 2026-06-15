@@ -749,14 +749,61 @@ namespace VBSPOSS.Controllers
 
         // tạm
 
+        //public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0",
+        //                            string pTitleChoice = "", string pFlagTextShow = "1", string pPosCode = "")
+        //{
+        //    string sTitleChoice = (string.IsNullOrEmpty(pTitleChoice))
+        //                        ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
+
+        //    ArrayList data = new ArrayList();
+        //    var listAll = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", pPosCode, "");
+
+        //    if (!string.IsNullOrEmpty(sTitleChoice))
+        //        data.Add(new { id = "", value = sTitleChoice });
+
+        //    // Lấy danh sách Tỉnh duy nhất
+        //    var dictProvince = new Dictionary<string, ListOfCommuneViewModel>();
+
+        //    foreach (ListOfCommuneViewModel item in listAll)
+        //    {
+        //        if (!string.IsNullOrEmpty(item.ProvinceCode) && !dictProvince.ContainsKey(item.ProvinceCode))
+        //        {
+        //            dictProvince[item.ProvinceCode] = item;
+        //        }
+        //    }
+
+        //    foreach (var item in dictProvince.Values)
+        //    {
+        //        if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
+        //        {
+        //            string displayText = item.ProvinceName?.Trim() ?? "";
+
+        //            if (pFlagTextShow == "2")
+        //                displayText = $"{item.ProvinceCode} - {displayText}";
+
+        //            data.Add(new { id = item.ProvinceCode, value = displayText });
+        //        }
+        //    }
+
+        //    return Json(data);
+        //}
+        //sửa
         public JsonResult GetListProvinces(string pProvinceCode = "", string pStatus = "0",
-                                    string pTitleChoice = "", string pFlagTextShow = "1", string pPosCode = "")
+                            string pTitleChoice = "", string pFlagTextShow = "1", string pPosCode = "")
         {
             string sTitleChoice = (string.IsNullOrEmpty(pTitleChoice))
                                 ? "---Chọn Tỉnh/Thành phố---" : pTitleChoice;
 
             ArrayList data = new ArrayList();
-            var listAll = _serviceLOV.GetLovCommuneList(pProvinceCode, "", "", pPosCode, "");
+
+            // Gọi service với pPosCode để lọc
+            var listAll = _serviceLOV.GetLovCommuneList(
+                pProvinceCode: "",
+                pDistrictCode: "",
+                pCommuneCode: "",
+                pPosCode: pPosCode,           // ← Truyền đúng
+                pSubCommuneCode: ""
+            );
 
             if (!string.IsNullOrEmpty(sTitleChoice))
                 data.Add(new { id = "", value = sTitleChoice });
@@ -777,7 +824,6 @@ namespace VBSPOSS.Controllers
                 if ((pStatus == "1" && item.Status == Constants.StatusLov.StatusOpenPOS) || (pStatus == "0"))
                 {
                     string displayText = item.ProvinceName?.Trim() ?? "";
-
                     if (pFlagTextShow == "2")
                         displayText = $"{item.ProvinceCode} - {displayText}";
 

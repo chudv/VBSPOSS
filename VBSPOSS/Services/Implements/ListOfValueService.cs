@@ -699,11 +699,62 @@ namespace VBSPOSS.Services.Implements
         /// <summary>
         /// Hàm lấy danh sách thông tin Xã/Phường/Thị trấn (Bao gồm cả thông tin Mã/Tên/Ngày của điểm GDX)
         /// </summary>
-        public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode = "", string pDistrictCode = "",
+        //    public List<ListOfCommuneViewModel> GetLovCommuneList(string pProvinceCode = "", string pDistrictCode = "",
+        //string pCommuneCode = "", string pPosCode = "", string pSubCommuneCode = "")
+        //    {
+        //        var answer = new List<ListOfCommuneViewModel>();
+
+        //        try
+        //        {
+        //            var query = _dbContext.ListOfCommunes
+        //                .AsNoTracking()
+        //                .Select(x => new ListOfCommuneViewModel
+        //                {
+        //                    PosCode = x.PosCode,
+        //                    PosName = x.PosName,
+        //                    ProvinceCode = x.ProvinceCode,
+        //                    ProvinceName = x.ProvinceName,
+        //                    DistrictCode = x.DistrictCode,
+        //                    DistrictName = x.DistrictName,
+        //                    CommuneCode = x.CommuneCode,
+        //                    CommuneName = x.CommuneName,
+        //                    SubCommuneCode = x.SubCommuneCode,
+        //                    SubCommuneName = x.SubCommuneName,
+        //                //    Status = x.Status,
+        //                 //   RecordStatus = x.RecordStatus,
+        //               //     VisitDate = x.VisitDate,
+
+        //                });
+
+        //            if (!string.IsNullOrEmpty(pProvinceCode))
+        //                query = query.Where(w => w.ProvinceCode == pProvinceCode);
+
+        //            if (!string.IsNullOrEmpty(pCommuneCode))
+        //                query = query.Where(w => w.CommuneCode == pCommuneCode);
+
+        //            if (!string.IsNullOrEmpty(pPosCode))
+        //                query = query.Where(w => w.PosCode == pPosCode);
+
+        //            var result = query.ToList();
+        //            return result;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            // Log chi tiết để xem lỗi chính xác
+        //            Console.WriteLine(ex.Message);
+        //            Console.WriteLine(ex.InnerException?.Message);
+        //            throw;
+        //        }
+        //    }
+
+
+
+        // tạm
+        public List<ListOfCommuneViewModel> GetLovCommuneList(
+    string pProvinceCode = "", string pDistrictCode = "",
     string pCommuneCode = "", string pPosCode = "", string pSubCommuneCode = "")
         {
             var answer = new List<ListOfCommuneViewModel>();
-
             try
             {
                 var query = _dbContext.ListOfCommunes
@@ -720,27 +771,55 @@ namespace VBSPOSS.Services.Implements
                         CommuneName = x.CommuneName,
                         SubCommuneCode = x.SubCommuneCode,
                         SubCommuneName = x.SubCommuneName,
-                    //    Status = x.Status,
-                     //   RecordStatus = x.RecordStatus,
-                   //     VisitDate = x.VisitDate,
-                       
                     });
 
+                // ================== FILTER LOGIC ==================
                 if (!string.IsNullOrEmpty(pProvinceCode))
                     query = query.Where(w => w.ProvinceCode == pProvinceCode);
+
+                if (!string.IsNullOrEmpty(pDistrictCode))
+                    query = query.Where(w => w.DistrictCode == pDistrictCode);
 
                 if (!string.IsNullOrEmpty(pCommuneCode))
                     query = query.Where(w => w.CommuneCode == pCommuneCode);
 
-                if (!string.IsNullOrEmpty(pPosCode))
-                    query = query.Where(w => w.PosCode == pPosCode);
+                if (!string.IsNullOrEmpty(pSubCommuneCode))
+                    query = query.Where(w => w.SubCommuneCode == pSubCommuneCode);
 
-                var result = query.ToList();
+                // ================ FILTER THEO POSCODE (Quan trọng) ================
+                if (!string.IsNullOrEmpty(pPosCode))
+                {
+                    // User cấp cao (Tổng công ty, Ban CMNV...) vẫn thấy hết
+                    if (pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    {
+                        // Không filter gì cả → thấy tất cả
+                    }
+                    else
+                    {
+                        // User chi nhánh: filter theo 4 ký tự đầu (thường là mã chi nhánh)
+                        if (pPosCode.Length >= 4)
+                        {
+                            string branchCode = pPosCode.Substring(0, 4);
+                            query = query.Where(w => w.PosCode.StartsWith(branchCode));
+                        }
+                        else
+                        {
+                            query = query.Where(w => w.PosCode == pPosCode);
+                        }
+                    }
+                }
+
+                var result = query
+                    .OrderBy(x => x.ProvinceCode)
+                    .ThenBy(x => x.DistrictCode)
+                    .ThenBy(x => x.CommuneCode)
+                    .ThenBy(x => x.SubCommuneCode)
+                    .ToList();
+
                 return result;
             }
             catch (Exception ex)
             {
-                // Log chi tiết để xem lỗi chính xác
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.InnerException?.Message);
                 throw;

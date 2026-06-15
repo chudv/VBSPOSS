@@ -147,6 +147,9 @@ namespace VBSPOSS.ViewModels
         public long Id { get; set; }           // 
         public string FlagCall { get; set; }
 
+        public string AddType { get; set; }// add
+
+
         public int OrderNo { get; set; }                        //Thêm
         public string OrderNoText { get; set; }                 //Thêm
         public string EventCode { get; set; }
@@ -204,7 +207,7 @@ namespace VBSPOSS.ViewModels
         public string EffectDateText { get; set; }     //Thêm
         public DateTime BusinessDate { get; set; }
         public string BusinessDateText { get; set; }     //Thêm
-        public long DocumentId { get; set; }
+        public long? DocumentId { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
         public string ModifiedBy { get; set; }

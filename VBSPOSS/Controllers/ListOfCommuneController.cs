@@ -81,6 +81,86 @@ namespace VBSPOSS.Controllers
             return View("IndexListOfCommuneWork");
         }
 
+        /// <summary>
+        /// Danh sách bản ghi Xã/Phường/Thôn => Tải từ bảng ListOfCommune
+        /// </summary>
+        public ActionResult LoadGridData_ListOfCommune([DataSourceRequest] DataSourceRequest request,
+            string pPosCode, string pProvinceCode, string pDistrictCode, string pCommuneCode,
+            string pSubCommuneCode, string pStatus)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+
+                // Giới hạn theo cấp người dùng
+                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS)
+                    && !string.IsNullOrEmpty(pPosCode)
+                    && pPosCode.Length >= 4)
+                {
+                    pPosCode = pPosCode.Substring(0, 4);
+                }
+
+                var listCommune = _serviceCommune.GetListOfCommuneSearch(
+                    pPosCode: pPosCode,
+                    pProvinceCode: pProvinceCode,
+                    pDistrictCode: pDistrictCode,
+                    pCommuneCode: pCommuneCode,
+                    pSubCommuneCode: pSubCommuneCode,
+                    pStatus: pStatus,
+                    pUserPosCode: UserPosCode,           // ← Truyền vào
+                    pUserGrade: UserGrade
+                    );
+
+                return Json(listCommune.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_ListOfCommune Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<ListOfCommuneViewModel>(), Total = 0 });
+            }
+        }
+
+        /// <summary>
+        /// Danh sách bản ghi Yêu cầu Thêm mới / Chỉnh sửa Xã - Thôn => Tải từ bảng ListOfCommuneWorks
+        /// </summary>
+        public ActionResult LoadGridData_ListOfCommuneWorks([DataSourceRequest] DataSourceRequest request,
+            string pPosCode, string pEventCode, string pProvinceCode, string pCommuneCode,
+            string pSubCommuneCode, string pStatus)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pPosCode) || pPosCode == "000100" || pPosCode == "000199" || pPosCode == "000196")
+                    pPosCode = (UserPosCode == "000100" || UserPosCode == "000199" || UserPosCode == "000196") ? "" : UserPosCode;
+
+                if ((UserGrade == PosGrade.MAIN_POS || UserGrade == PosGrade.HEAD_POS)
+                    && !string.IsNullOrEmpty(pPosCode)
+                    && pPosCode.Length >= 4)
+                {
+                    pPosCode = pPosCode.Substring(0, 4);
+                }
+
+                var listCommuneWorks = _serviceCommune.GetListOfCommuneWorkSearch(
+                    pPosCode: pPosCode,
+                    pEventCode: pEventCode,
+                    pProvinceCode: pProvinceCode,
+                    pCommuneCode: pCommuneCode,
+                    pSubCommuneCode: pSubCommuneCode,
+                    pStatus: pStatus,
+                    pUserPosCode: UserPosCode,      // ← Truyền vào
+                    pUserGrade: UserGrade);
+
+                return Json(listCommuneWorks.ToDataSourceResult(request, ModelState));
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"LoadGridData_ListOfCommuneWorks Error: {ex.Message}");
+                ModelState.AddModelError("ERROR", $"{ex.Message}");
+                return Json(new DataSourceResult { Data = new List<ListOfCommuneWorksViewModel>(), Total = 0 });
+            }
+        }
+
 
 
         /// <summary>
@@ -130,7 +210,7 @@ namespace VBSPOSS.Controllers
         /// Hiển thị form Thêm mới thông tin danh mục địa phương
         /// </summary>
         /// <summary>
-       
+
         public ActionResult ShowUpdateListOfCommuneWork(string pButtonType, long pId, string pPosCode, string pEventCode, string pFlagCall)
         {
             ListOfCommuneWorksViewModel model = new ListOfCommuneWorksViewModel();
@@ -232,6 +312,53 @@ namespace VBSPOSS.Controllers
             TempData["UserPosCode"] = UserPosCode;
 
             return PartialView(sNameView, model);
+        }
+        // Hàm xử lý Lưu Thêm/ Sửa bảng dữ liệu ListOfCommunesWork
+        [AcceptVerbs("Post")]
+        public async Task<IActionResult> SaveUpdateListOfCommuneWork(ListOfCommuneWorksViewModel objCommuneUpd, string pFlagCall)
+        {
+            try
+            {
+                if (objCommuneUpd == null)
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+
+                string addType = objCommuneUpd.AddType ?? "Thon";
+
+                if (addType == "Xa")
+                {
+                    if (string.IsNullOrWhiteSpace(objCommuneUpd.CommuneCode) || string.IsNullOrWhiteSpace(objCommuneUpd.CommuneName))
+                        return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin Xã" });
+                }
+                else if (addType == "Thon")
+                {
+                    if (string.IsNullOrWhiteSpace(objCommuneUpd.CommuneCode))
+                        return Json(new { success = false, message = "Vui lòng chọn Phường/Xã" });
+                    if (string.IsNullOrWhiteSpace(objCommuneUpd.SubCommuneCode))
+                        return Json(new { success = false, message = "Vui lòng nhập Mã Thôn" });
+                    if (string.IsNullOrWhiteSpace(objCommuneUpd.SubCommuneName))
+                        return Json(new { success = false, message = "Vui lòng nhập Tên Thôn" });
+                }
+
+                if (string.IsNullOrEmpty(pFlagCall)) pFlagCall = "1";
+
+                //int result = _serviceCommune.UpdateListOfCommuneWork(objCommuneUpd, UserName, pFlagCall);
+                int result = _serviceCommune.UpdateListOfCommuneWork(
+    objCommuneUpd,
+    UserName,
+    pFlagCall,
+    UserPosCode);   // ← Thêm dòng này
+
+                return Json(new
+                {
+                    success = result > 0,
+                    message = result > 0 ? "Thêm mới thành công!" : "Lưu thất bại"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "SaveUpdateListOfCommuneWork Error");
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
         }
 
 
