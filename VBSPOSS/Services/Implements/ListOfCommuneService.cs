@@ -170,6 +170,103 @@ namespace VBSPOSS.Services.Implements
                 throw ex;
             }
         }
+                List<ListOfCommune> listOfCommuneTmp = new List<ListOfCommune>();
+                var listOfCommuneTmp01 = _dbContext.ListOfCommunes.Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+                                            && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
+                                            && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode))
+                                            && (pStatus == -1 || w.Status == pStatus)
+                                        )
+                                        .Where(delegate (ListOfCommune c)
+                                        {
+                                            if (string.IsNullOrEmpty(pTxnPointName)
+                                                || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
+                                                || (c.TxnPointName != null && Utilities.ConvertToUnSign(c.TxnPointName.ToLower()).IndexOf(pTxnPointName.ToLower(), StringComparison.CurrentCultureIgnoreCase) >= 0)
+                                                || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()))
+                                                )
+                                                return true;
+                                            else
+                                                return false;
+                                        }
+                                        ).OrderBy(o => o.ProvinceCode).ThenBy(o => o.PosCode).ThenBy(o => o.CommuneCode).ThenBy(o => o.TxnPointCode).ThenBy(o => o.EffectDate).ToList();
+                var listOfCommuneWorkTmp = _dbContext.ListOfCommuneWorks
+                    .Where(w => (string.IsNullOrEmpty(pProvinceCode) || w.ProvinceCode == pProvinceCode)
+                        && (string.IsNullOrEmpty(pPosCode) || w.PosCode.StartsWith(pPosCode))
+                        && (string.IsNullOrEmpty(pTxnPointCode) || w.TxnPointCode.Contains(pTxnPointCode)))
+                    .Where(delegate (ListOfCommuneWork c)
+                    {
+                        return string.IsNullOrEmpty(pTxnPointName)
+                            || (c.TxnPointName != null && c.TxnPointName.ToLower().Contains(pTxnPointName.ToLower()))
+                            || (c.TxnPointCode != null && c.TxnPointCode.ToLower().Contains(pTxnPointName.ToLower()));
+                    }).ToList();
+                if (listOfCommuneTmp01 != null && listOfCommuneTmp01.Count != 0)
+                {
+                    foreach (var item in listOfCommuneTmp01)
+                    {
+                        iCountTMP++;
+                        ListOfCommuneWorksViewModel objItem = new ListOfCommuneWorksViewModel();
+                        objItem = _mapper.Map<ListOfCommuneWorksViewModel>(item);
+                        objItem.OrderNo = iCountTMP;
+                        objItem.EventName = EventBusinessCode.GetByCode(objItem.EventCode).Description; ;
+                        objItem.VisitDateText = item.VisitDate.ToString("D2");
+                        objItem.EffectDateText = item.EffectDate.ToString(FormatParameters.FORMAT_DATE);
+                        objItem.RecordStatusText = (item.RecordStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                        objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+                        //if (!string.IsNullOrEmpty(item.IsInCommune))
+                        //    objItem.MaApDungList = "1";
+                        //else if (!string.IsNullOrEmpty(item.IsInPos))
+                        //    objItem.MaApDungList = "2";
+
+                        if (listOfCommuneTmp != null && listOfCommuneTmp.Count != 0)
+                        {
+                            var objCommuneTmp = listOfCommuneTmp.Where(w => w.TxnPointCode == item.TxnPointCode).OrderByDescending(o => o.ModifiedDate).ThenByDescending(o => o.ApprovalDate).FirstOrDefault();
+                            if (objCommuneTmp != null && !string.IsNullOrEmpty(objCommuneTmp.TxnPointCode))
+                            {
+                                objItem = _mapper.Map<ListOfCommuneWorksViewModel>(objCommuneTmp);
+                                objItem.OrderNo = iCountTMP;
+                                objItem.EventCode = "";
+                                objItem.EventName = "";
+                                objItem.VisitDateText = objCommuneTmp.VisitDate.ToString("D2");
+                                objItem.EffectDateText = objCommuneTmp.EffectDate.ToString(FormatParameters.FORMAT_DATE);
+                                objItem.RecordStatusText = (objCommuneTmp.RecordStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                                objItem.StatusText = StatusTrans.GetByValue(objCommuneTmp.Status).Description;
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(pEventCode))
+                        {
+                            if (objItem.EventCode == pEventCode)
+                                listCommuneWorks.Add(objItem);
+                        }
+                        else listCommuneWorks.Add(objItem);
+                    }
+                }
+                else
+                {
+                    if (listOfCommuneTmp != null && listOfCommuneTmp.Count != 0)
+                    {
+                        foreach (var item in listOfCommuneTmp)
+                        {
+                            iCountTMP++;
+                            ListOfCommuneWorksViewModel objItem = new ListOfCommuneWorksViewModel();
+                            objItem = _mapper.Map<ListOfCommuneWorksViewModel>(item);
+                            objItem.OrderNo = iCountTMP;
+                            objItem.EventCode = "";
+                            objItem.EventName = "";
+                            objItem.VisitDateText = item.VisitDate.ToString("D2");
+                            objItem.EffectDateText = item.EffectDate.ToString(FormatParameters.FORMAT_DATE);
+                            objItem.RecordStatusText = (item.RecordStatus == DefaultValue.StatusOpenA) ? DefaultValue.StatusOpenText : DefaultValue.StatusClosedText;
+                            objItem.StatusText = StatusTrans.GetByValue(item.Status).Description;
+                            listCommuneWorks.Add(objItem);
+                        }
+                    }
+                }
+                return listCommuneWorks;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương
         /// </summary>
@@ -987,7 +1084,7 @@ namespace VBSPOSS.Services.Implements
         /// <returns>Danh sách bản ghi địa phương theo Model ListOfCommuneViewModel</returns>
         public List<ListOfCommuneHistsViewModel> GetListOfCommuneHistSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
                                             int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus, string pTxnLocation)
+                                            int pStatus)
         {
             var listCommuneHistAnswer = new List<ListOfCommuneHistsViewModel>();
             if (pVisitDateBegin <= 0 || pVisitDateBegin > 31)
@@ -1049,9 +1146,9 @@ namespace VBSPOSS.Services.Implements
                 //    }
                 //}
 
-                if (listOfCommuneTmp != null && listOfCommuneTmp.Count != 0)
+                if (listOfCommuneTmp01 != null && listOfCommuneTmp01.Count != 0)
                 {
-                    foreach (var item in listOfCommuneTmp)
+                    foreach (var item in listOfCommuneTmp01)
                     {
                         iCountTMP++;
                         ListOfCommuneHistsViewModel objItem = new ListOfCommuneHistsViewModel();

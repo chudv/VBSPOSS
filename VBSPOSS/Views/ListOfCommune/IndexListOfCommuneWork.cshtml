@@ -475,7 +475,7 @@
                 .HtmlAttributes(new { style = "width: 300px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px;max-width: 100% !important;color: green;" })
                 .Filter("contains")
                 .SelectedIndex(0))
-            <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Điểm giao dịch</label>
+            <label class="lbcontrol" style="color: navy;text-align:right;width:115px;padding-top: 7px;padding-right:5px;">Thông tin địa phương</label>
             @(Html.Kendo().TextBox().Name("TxnPointCode_Find")
                 .Placeholder("Mã điểm GD")
                 .HtmlAttributes(new { style = "width: 90px;padding-left: 3px;padding-right: 2px;color: green;" }))
@@ -490,7 +490,6 @@
                 .HtmlAttributes(new { style = "color: green;width: 130px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
                 .SelectedIndex(0)
                 )
-
             &nbsp;&nbsp;
             @(Html.Kendo().Button()
                 .Name("btnSearchCommuneWork")
@@ -557,15 +556,14 @@
                     columns.Bound(c => c.SubCommuneName).Title("Tên Thôn").Width(120).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.VisitDate).Hidden();
-                    columns.Bound(c => c.BusinessDateText).Title("Ngày hiệu lực thay đổi thông tin").Width(60).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.BusinessDateText).Hidden();
                     columns.Bound(c => c.BusinessDate).Hidden();
                     columns.Bound(c => c.DistrictFlag30A).Hidden();
                     columns.Bound(c => c.AreaEconomic).Hidden();
                     columns.Bound(c => c.CommuneFlag135).Hidden();
                     columns.Bound(c => c.IsNewCountryside).Hidden();
                     columns.Bound(c => c.DiffAreaCode).Title("Vùng khó khăn").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
-                    columns.Bound(c => c.Times).Title("Thời gian giao dịch").Width(90).HtmlAttributes(new { style = "text-align: center;" });
-
+                    columns.Bound(c => c.Times).Hidden();
                     columns.Bound(c => c.TimeBegin).Hidden();
                     columns.Bound(c => c.TimeEnd).Hidden();
                     columns.Bound(c => c.TimeBeginNum).Hidden();
@@ -574,33 +572,21 @@
                     columns.Bound(c => c.Minutes).Hidden();
                     columns.Bound(c => c.Longitude).Hidden();
                     columns.Bound(c => c.Latitude).Hidden();
-
                     columns.Bound(c => c.IsInCommune).Hidden();
                     columns.Bound(c => c.IsInPos).Hidden();
                     columns.Bound(c => c.IsInterWard).Hidden();
                     columns.Bound(c => c.InterWardName).Hidden();
                     columns.Bound(c => c.EffectDate).Hidden();
                     columns.Bound(c => c.EffectDateText).Title("Ngày hiệu lực").Width(80).HtmlAttributes(new { style = "text-align: center;" });
-@*                     columns.Bound(c => c.TxnLocation).Title("Địa điểm giao dịch").Width(120).HtmlAttributes(new { style = "text-align: center;" });
-
-                    columns.Bound(c => c.AddressDetail).Hidden();
-                    columns.Bound(c => c.AddressCode).Hidden();
-                    columns.Bound(c => c.AddressFull).Hidden();
-                    columns.Bound(c => c.PhoneSupport).Hidden();
-                    columns.Bound(c => c.PhoneSupport01).Hidden();
-                    columns.Bound(c => c.PhoneSupport02).Hidden(); *@
                     columns.Bound(c => c.Status).Hidden();
                     columns.Bound(c => c.StatusText).Title("Trạng thái").Width(100).HtmlAttributes(new { style = "text-align: left;" });
                     columns.Bound(c => c.RecordStatus).Hidden();
-@*                     columns.Bound(c => c.Remark).Title("Ghi chú").HtmlAttributes(new { style = "text-align: left;" }); *@
-
                     columns.Bound(c => c.CreatedBy).Hidden();
                     columns.Bound(c => c.CreatedDate).Hidden();
                     columns.Bound(c => c.ModifiedBy).Hidden();
                     columns.Bound(c => c.ModifiedDate).Hidden();
                     columns.Bound(c => c.ApproverBy).Hidden();
                     columns.Bound(c => c.ApprovalDate).Hidden();
-
                     columns.Bound(c => c.BusinessDate).Hidden();
                     columns.Bound(c => c.DocumentId).Hidden();
                     columns.Bound(c => c.StatusUpdateCore).Hidden();
@@ -615,7 +601,7 @@
                     toolbar.Custom().IconClass("k-icon k-i-plus").Text("Thêm mới").Name("btnCreateCommuneWork").HtmlAttributes(new { id = "btnCreateCommuneWork", style = "height: 25px;width: 100px; font-weight:bold; color: blue;font-size: 12px;font-family: tahoma;!important;" });
                     toolbar.Excel().HtmlAttributes(new { id = "btnExportExcel", style = "height: 25px;width: 110px; font-weight:bold; color: blue;font-family:Tahoma; font-size: 12px;font-weight:bold;!important;", title = "Xuất dữ liệu trên lưới ra file excel" }).Text("Xuất excel");
                 })
-                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi Diem GD.xlsx").AllPages(true))
+                .Excel(excel => excel.FileName("Danh sach yeu cau nghiep vu thay doi thong tin dia phuong.xlsx").AllPages(true))
                 .Editable(editable => { editable.Mode(GridEditMode.InLine); })
                 .Sortable()
                 .Scrollable()
@@ -626,7 +612,7 @@
                 .ServerOperation(false)
                 .Model(model => model.Id(p => p.TxnPointCode))
                 .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                .Read(read => read.Action("LoadGridData_ListOfCommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
+                .Read(read => read.Action("LoadGridData_CommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
                 .PageSize(100)
                 )
                 .Resizable(resize => resize.Columns(true))
@@ -636,12 +622,6 @@
     </div>
 
 </div>
-
-
-
-
-
-
 <script>
      function onSaveGridIDC(e) {
         if (e != null && e.response != null) {
@@ -676,6 +656,6 @@
     }
 
     $(document).ready(function () {
-        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH YÊU CẦU NGHIỆP VỤ VỀ ĐIỂM GIAO DỊCH</label>");
+        $(".k-grid-excel").after("<label id='lbl_space' style='padding-top:5px;padding-left: 10px;width:70%; font-size: 11px; font-weight: bold; color: blue;text-align:center;line-height: 25px;'>DANH SÁCH YÊU CẦU NGHIỆP VỤ VỀ DANH MỤC ĐỊA PHƯƠNG</label>");
     });
 </script>
