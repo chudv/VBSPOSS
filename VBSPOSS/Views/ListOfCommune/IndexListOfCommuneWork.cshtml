@@ -612,7 +612,7 @@
                 .ServerOperation(false)
                 .Model(model => model.Id(p => p.TxnPointCode))
                 .Events(e => e.RequestEnd("onSaveGridIDC").Error("error_handlerIDC"))
-                .Read(read => read.Action("LoadGridData_CommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
+                .Read(read => read.Action("LoadGridData_ListOfCommuneWorks", "ListOfCommune").Data("paramLoadGridData"))
                 .PageSize(100)
                 )
                 .Resizable(resize => resize.Columns(true))

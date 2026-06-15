@@ -53,9 +53,14 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi địa phương theo Model ListOfCommunesViewModel</returns>
-        List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus, string pTxnLocation);
+        //List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+        //                                    int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
+        //                                    int pStatus, string pTxnLocation);
+
+        List<ListOfCommuneWorksViewModel> GetListOfCommuneWorkSearch(
+    string pPosCode = "", string pEventCode = "", string pProvinceCode = "",
+    string pCommuneCode = "", string pSubCommuneCode = "", string pStatus = "",
+    string pUserPosCode = "", int pUserGrade = 0);
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương (Bảng ListOfCommunesWork)
@@ -97,9 +102,23 @@ namespace VBSPOSS.Services.Interfaces
         /// <param name="pStatus">Trạng thái bản ghi. Nếu lấy tất truyền vào là -1 (Không bắt buộc)</param>
         /// <param name="pTxnLocation">Địa điểm giao dịch (Không bắt buộc)</param>
         /// <returns>Danh sách bản ghi danh mục địa phương theo Model ListOfCommunesViewModel</returns>
-        List<ListOfCommuneHistsViewModel> GetListOfCommuneHistSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
-                                            int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
-                                            int pStatus);
+        //List<ListOfCommuneHistsViewModel> GetListOfCommuneHistSearch(string pProvinceCode, string pPosCode, string pCommuneCode, string pTxnPointCode, string pTxnPointName,
+        //                                    int pVisitDateBegin, int pVisitDateEnd, string pRecordStatus, string pEffectDateBegin, string pEffectDateEnd,
+        //                                    int pStatus);
+
+        List<ListOfCommuneHistsViewModel> GetListOfCommuneHistSearch(
+    string pProvinceCode,
+    string pPosCode,
+    string pCommuneCode,
+    string pTxnPointCode,
+    string pTxnPointName,
+    int pVisitDateBegin,
+    int pVisitDateEnd,
+    string pRecordStatus,
+    string pEffectDateBegin,
+    string pEffectDateEnd,
+    int pStatus,
+    string pTxnLocation = "");
 
         /// <summary>
         /// Hàm Cập nhật (Thêm mới/Sửa đổi) bản ghi vào bảng danh mục địa phương (Bảng ListOfCommunesHist)
