@@ -31,6 +31,11 @@
         padding-right: 10px;
         padding-top: 7px;
     }
+
+    /* Ẩn input ẩn của Kendo ComboBox nếu bị duplicate */
+    input[name="ProvinceCode"][type="hidden"] {
+        display: none !important;
+    }
 </style>
 
 <script>
@@ -56,13 +61,24 @@
         };
     }
 
-    function Change_Province() {
-        var provinceCode = $("#ProvinceCode").val();
-        $("#ProvinceCodeThon").val(provinceCode);
+    // function Change_Province() {
+    //     var provinceCode = $("#ProvinceCode").val();
+      
+    //     $("#ProvinceCodeThon").val(provinceCode);
 
+    //     $("#CommuneCode").data("kendoComboBox")?.dataSource.read();
+    //     $("#CommuneCodeThon").data("kendoComboBox")?.dataSource.read();
+    // }
+        function Change_Province() {
+        var provinceCode = $("#ProvinceCodeMain").val();
+        $("#ProvinceCodeThon").val(provinceCode);
         $("#CommuneCode").data("kendoComboBox")?.dataSource.read();
         $("#CommuneCodeThon").data("kendoComboBox")?.dataSource.read();
+
+        // Gán giá trị vào hidden field
+        $("#ProvinceCode").val(provinceCode);
     }
+
 
     function Change_CommuneThon() {
         var communeCode = $("#CommuneCodeThon").val();
@@ -115,7 +131,7 @@
     @Html.HiddenFor(m => m.SubCommuneFeeLenArea)
     @Html.HiddenFor(m => m.EventCode)
     @Html.HiddenFor(m => m.AddType)
-    @Html.Hidden("pFlagCall", "1")
+     @Html.Hidden("pFlagCall", "1") 
     @Html.HiddenFor(m => m.CommuneCode)
     @Html.HiddenFor(m => m.ProvinceName)
     @Html.HiddenFor(m => m.ProvinceCode)
@@ -135,23 +151,52 @@
         </div>
     </div>
 
-    <!-- ==================== PHẦN CHÍNH - THEO KIỂU NGANG ==================== -->
-    <div class="row">
-        <!-- Thêm mới Xã -->
-        <div class="col-md-6">
-            <h5 style="color: navy; font-weight: bold;">Thêm mới Xã</h5>
+   
 
+@*     <div class="row" style="padding: 15px 0;">
+        <div class="col-md-12">
             <div class="form-row">
                 <label class="lbcontrol">Tỉnh/Thành phố <span style="color:red">*</span></label>
                 @(Html.Kendo().ComboBoxFor(m => m.ProvinceCode)
                     .Filter(FilterType.Contains)
                     .Placeholder("--- Chọn Tỉnh/Thành phố ---")
                     .DataTextField("value").DataValueField("id")
-                    .HtmlAttributes(new { style = "width: 300px;" })
+                    .HtmlAttributes(new { style = "width: 350px;" })
                     .Events(e => e.Change("Change_Province"))
                     .DataSource(ds => ds.Read(read => read.Action("GetListProvinces", "ListOfValue").Data("paramLoadProvinces")))
-                    .Suggest(true).AutoBind(true))
+                    .Suggest(true)
+                    .AutoBind(true))
             </div>
+        </div>
+    </div>
+ *@
+
+    <div class="row" style="padding: 15px 0;">
+        <div class="col-md-12">
+            <div class="form-row">
+                <label class="lbcontrol">Tỉnh/Thành phố <span style="color:red">*</span></label>
+                @(Html.Kendo().ComboBox()
+                    .Name("ProvinceCodeMain") 
+                    .Filter(FilterType.Contains)
+                    .Placeholder("--- Chọn Tỉnh/Thành phố ---")
+                    .DataTextField("value").DataValueField("id")
+                    .HtmlAttributes(new { style = "width: 350px;" })
+                    .Events(e => e.Change("Change_Province"))
+                    .DataSource(ds => ds.Read(read => read.Action("GetListProvinces", "ListOfValue").Data("paramLoadProvinces")))
+                    .Suggest(true)
+                    .AutoBind(true))
+            </div>
+        </div>
+    </div>
+
+    @Html.HiddenFor(m => m.ProvinceCode)   <!-- Hidden này dùng để submit dữ liệu -->
+    <!-- ==================== PHẦN CHÍNH - THEO KIỂU NGANG ==================== -->
+    <div class="row">
+        <!-- Thêm mới Xã -->
+        <div class="col-md-6">
+            <h5 style="color: navy; font-weight: bold;">Thêm mới Xã</h5>
+
+         
 
             <div class="form-row">
                 <label class="lbcontrol">Mã Phường/Xã <span style="color:red">*</span></label>
@@ -168,20 +213,7 @@
         <div class="col-md-6">
             <h5 style="color: navy; font-weight: bold;">Thêm mới Thôn</h5>
 
-            <div class="form-row">
-                <label class="lbcontrol">Tỉnh/Thành phố <span style="color:red">*</span></label>
-                @(Html.Kendo().ComboBox()
-                    .Name("ProvinceCodeThon")
-                    .Filter(FilterType.Contains)
-                    .Placeholder("--- Chọn Tỉnh/Thành phố ---")
-                    .DataTextField("value")
-                    .DataValueField("id")
-                    .HtmlAttributes(new { style = "width: 300px;" })
-                    .Events(e => e.Change("Change_Province"))
-                    .DataSource(ds => ds.Read(read => read.Action("GetListProvinces", "ListOfValue").Data("paramLoadProvinces")))
-                    .Suggest(true).AutoBind(true))
-            </div>
-
+           
           
 
             <div class="form-row">
@@ -280,30 +312,57 @@
         @(Html.Kendo().Button().Name("btnThoat").Content("Quay ra").HtmlAttributes(new { type = "button", style = "width: 120px; margin-left: 10px;" }).Events(ev => ev.Click("onCloseUpdate")))
     </div>
 </form>
-
 <script>
     $(document).ready(function () {
         $("#EventCode").val("LOCALITY_ADDNEW");
         $("#AddType").val($('input[name="AddType"]:checked').val());
 
         // Tự động gán ProvinceName khi chọn Tỉnh
-        function bindProvinceName(comboId) {
-            var combo = $("#" + comboId).data("kendoComboBox");
-            if (combo) {
-                combo.bind("change", function(e) {
-                    var dataItem = this.dataItem();
-                    if (dataItem) {
-                        // Ưu tiên lấy text hiển thị (tên tỉnh)
-                        var provinceName = dataItem.text || dataItem.value || "";
-                        $("#ProvinceName").val(provinceName);
-                    }
-                });
+        // function bindProvinceName() {
+        //     var combo = $("#ProvinceCode").data("kendoComboBox");
+          
+        //     if (combo) {
+        //         combo.bind("change", function(e) {
+        //             var dataItem = this.dataItem();
+        //             if (dataItem) {
+        //                 var provinceName = dataItem.text || dataItem.value || "";
+        //                 $("#ProvinceName").val(provinceName);
+        //             }
+        //         });
+        //     }
+        // }
+
+            function bindProvinceName() {
+        var combo = $("#ProvinceCodeMain").data("kendoComboBox");
+        if (combo) {
+            combo.bind("change", function(e) {
+                var dataItem = this.dataItem();
+                if (dataItem) {
+                    var provinceName = dataItem.text || dataItem.value || "";
+                    $("#ProvinceName").val(provinceName);
+                    $("#ProvinceCode").val(dataItem.id || provinceCode);   // Gán code vào hidden
+                }
+            });
+        }
+    }
+
+        bindProvinceName();
+
+        // Xử lý hiển thị / ẩn phần Xã hoặc Thôn
+        function toggleFormType() {
+            var addType = $('input[name="AddType"]:checked').val();
+            if (addType === "Xa") {
+                $("#divXa").show();
+                $("#divThon").hide();
+            } else {
+                $("#divXa").hide();
+                $("#divThon").show();
             }
         }
 
-        // Bind cho cả 2 ComboBox Tỉnh
-        bindProvinceName("ProvinceCode");
-        bindProvinceName("ProvinceCodeThon");
+        // Bind event cho Radio button
+        $('input[name="AddType"]').on('change', toggleFormType);
+        toggleFormType(); // Gọi lần đầu khi load form
 
         // Submit form
         $("#form0").submit(function () {
@@ -320,9 +379,10 @@
                 $("#TxnPointCode").val("");
             }
 
-            // Đảm bảo ProvinceName đã được gán trước khi submit
+            // Đảm bảo ProvinceName đã được gán
             if ($("#ProvinceName").val() === "") {
-                var provinceCombo = $("#ProvinceCode").data("kendoComboBox") || $("#ProvinceCodeThon").data("kendoComboBox");
+                var provinceCombo = $("#ProvinceCode").data("kendoComboBox");
+               
                 if (provinceCombo) {
                     var dataItem = provinceCombo.dataItem();
                     if (dataItem) {
@@ -330,6 +390,8 @@
                     }
                 }
             }
+
+            return true;
         });
     });
 </script>
