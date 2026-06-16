@@ -3,6 +3,10 @@
 *@
 @{
 }
+
+
+
+
 @using Kendo.Mvc
 @using VBSPOSS.Models
 @using VBSPOSS.Constants
@@ -28,7 +32,7 @@
         border-right: 1px solid #ddd !important;
     }
 
-   
+
     #gridMainCommuneWork .k-grid-header th {
         border-right: 1px solid #ddd !important;
     }
@@ -46,7 +50,7 @@
         height: 23px;
     }
 
-     .k-grid .k-grid-header .k-header .k-link {
+    .k-grid .k-grid-header .k-header .k-link {
         height: auto;
     }
 
@@ -486,7 +490,7 @@
             @(Html.Kendo().DropDownList().Name("Status_Find")
                 .DataTextField("Text")
                 .DataValueField("Value")
-                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Phê duyệt", Value = "3" }, new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" } })
+                .BindTo(new List<SelectListItem>() { new SelectListItem() { Text = "Tất cả", Value = "-1" }, new SelectListItem() { Text = "Phê duyệt", Value = "3" }, new SelectListItem() { Text = "Tạo lập", Value = "1" }, new SelectListItem() { Text = "Đóng", Value = "0" }, new SelectListItem() { Text = "Chỉnh sửa", Value = "5" } })
                 .HtmlAttributes(new { style = "color: green;width: 130px;padding-top: 0px;padding-bottom: 0px;padding-top: 0px;padding-left: 3px;padding-right: 2px; !important;max-width: 100% !important;" })
                 .SelectedIndex(0)
                 )
@@ -549,12 +553,13 @@
                     columns.Bound(c => c.DistrictCode).Hidden();
                     columns.Bound(c => c.DistrictName).Hidden();
                     columns.Bound(c => c.CommuneCode).Hidden();
-                 //   columns.Bound(c => c.SubCommuneCode).Hidden();
-                 //   columns.Bound(c => c.SubCommuneName).Title("Thôn/ bản/ làng").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
+                    //   columns.Bound(c => c.SubCommuneCode).Hidden();
+                    //   columns.Bound(c => c.SubCommuneName).Title("Thôn/ bản/ làng").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
                     columns.Bound(c => c.CommuneName).Title("Xã/phường/ đặc khu").Width(110).HtmlAttributes(new { style = "text-align: left;text-wrap: auto;" });
                     columns.Bound(c => c.SubCommuneCode).Title("Mã Thôn").Width(90).HtmlAttributes(new { style = "text-align: center;" });
                     columns.Bound(c => c.SubCommuneName).Title("Tên Thôn").Width(120).HtmlAttributes(new { style = "text-align: left;" });
-                    columns.Bound(c => c.VisitDateText).Title("Ngày GD").Width(60).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.TxnPointCode).Title("Mã điểm GD").Width(80).HtmlAttributes(new { style = "text-align: left;" });
+                    columns.Bound(c => c.VisitDateText).Hidden();
                     columns.Bound(c => c.VisitDate).Hidden();
                     columns.Bound(c => c.BusinessDateText).Hidden();
                     columns.Bound(c => c.BusinessDate).Hidden();
